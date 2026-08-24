@@ -31,11 +31,14 @@ export default defineConfig(({ mode }) => {
       "TURNSTILE_SITE_KEY",
     ],
     server: {
-      allowedHosts,
+      // FORK: bind all interfaces so LAN / *.local hostnames work
+      host: true,
+      allowedHosts: [...allowedHosts, ".local"],
       port,
     },
     preview: {
-      allowedHosts,
+      host: true,
+      allowedHosts: [...allowedHosts, ".local"],
       port,
     },
     build: {
