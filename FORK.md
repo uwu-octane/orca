@@ -13,7 +13,7 @@ Branch model and rules: see "Fork maintenance" in [README.md](./README.md).
 
 | Date | Description | Commits |
 | ---- | ----------- | -------- |
-| — | (none yet) | — |
+| 2026-08-24 | Dev/preview default port 3001 → 8989 (`vite.config.ts` fallback + package.json `preview` script). Docker self-host port left at 3001. | `ce5418d` |
 
 ## Skipped / reverted upstream changes
 
