@@ -126,6 +126,7 @@ Upstream moves fast (~3 commits/day). Merge weekly so each merge is small, and k
   - `pnpm-lock.yaml` → `git checkout --theirs pnpm-lock.yaml && pnpm install`
   - Drizzle migrations → never edit upstream migration files; add new migration files for fork schema changes (`drizzle/` and `drizzle-pg/`, keeping both dialects in sync)
 - After every merge: `pnpm ci:check && pnpm test`.
+- If the merge added files under `drizzle/`, apply them to local D1: `pnpm db:migrate:local`.
 
 ### Releases
 
