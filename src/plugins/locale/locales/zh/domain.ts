@@ -2,8 +2,6 @@ export const domainZh = {
   "Lookup failed.": "查询失败。",
   "Not enough data for this domain": "该域名的数据不足",
   "Whole domain incl. subdomains": "整个域名及其子域名",
-  "Recent searches": "最近搜索",
-  "Domain Overview": "域名概览",
   "Analyze any domain's SEO profile: traffic, keywords, and backlinks.":
     "分析任意域名的 SEO 概况:流量、关键词和反链。",
   "Exact URL": "完整 URL",
@@ -16,10 +14,8 @@ export const domainZh = {
     "此范围的数据还不足。请尝试其他域名或更宽泛的范围。",
   "Top Keywords": "热门关键词",
   "Top Pages": "热门页面",
-  "Refine table results": "优化表格结果",
-  "{count} active": "{count} 个已启用",
+  "Refine table results": "筛选表格结果",
   "{count} unapplied": "{count} 个未应用",
-  "Clear all": "全部清除",
   Min: "最小值",
   Max: "最大值",
   "Too many filter conditions ({count} of {max} max). Remove some terms or ranges before applying.":
@@ -39,12 +35,9 @@ export const domainZh = {
   Search: "搜索",
   "Please enter a domain": "请输入域名",
   "Enter a valid domain like example.com": "请输入有效域名,例如 example.com",
-  "URLs with embedded credentials are not supported":
-    "不支持包含嵌入式凭据的 URL",
+  "URLs with embedded credentials are not supported": "不支持内嵌凭据的 URL",
   "Add a path to use Subfolder (e.g. example.com/blog)":
     "请添加路径以使用子目录(例如 example.com/blog)",
-  "Include Terms": "包含词",
-  "Exclude Terms": "排除词",
   "Include Page Terms": "包含页面词",
   "Exclude Page Terms": "排除页面词",
   "audit, checker, template": "审计、检查器、模板",

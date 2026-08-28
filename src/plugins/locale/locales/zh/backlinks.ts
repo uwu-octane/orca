@@ -24,7 +24,7 @@ export const backlinksZh = {
   "spam, forum": "spam、forum",
   "Domain Authority": "域名权威度",
   "Link Authority": "链接权威度",
-  "Spam Score": "垃圾链接分数",
+  "Spam Score": "垃圾分数",
   "Domain Contains": "域名包含",
   "Domain Excludes": "域名排除",
   Rank: "排名",

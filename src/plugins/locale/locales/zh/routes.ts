@@ -57,7 +57,6 @@ export const routesZh = {
   "Generate drafts using saved keywords and business context":
     "使用已存关键词和业务上下文生成草稿",
   "Have feedback? Reach out on": "有反馈吗？请通过",
-  "or email": "或发送邮件至",
   "Add with the CLI": "通过 CLI 添加",
   "Add a custom connector": "添加自定义连接器",
   "Recommended cross-agent installer": "推荐的跨代理安装方式",
@@ -73,8 +72,7 @@ export const routesZh = {
   "Billing unavailable": "账单不可用",
   "We couldn't load your billing details right now. Please try again.":
     "目前无法加载账单详情,请重试。",
-  "Try again": "重试",
-  "Redirecting to Stripe...": "正在跳转到 Stripe...",
+  "Redirecting to Stripe...": "正在跳转到 Stripe…",
   remaining: "剩余",
   Monthly: "每月",
   "Top-ups": "充值",
@@ -120,7 +118,6 @@ export const routesZh = {
     "直接发送想法、问题、疑问或反馈。",
   "Ask for help, share ideas and learn from the community.":
     "寻求帮助、分享想法并向社区学习。",
-  "Join the Discord": "加入 Discord",
   "Report bugs or request features on GitHub.":
     "在 GitHub 报告问题或请求功能。",
   "Open an issue": "提交问题",
@@ -178,7 +175,7 @@ export const routesZh = {
     "运行工具并将结果写回你的工作区。",
   "Signed in as": "登录账户",
   "This will allow it to": "这将允许它",
-  "Authorizing...": "授权中...",
+  "Authorizing...": "授权中…",
   Authorize: "授权",
   "You can revoke access at any time in Settings.":
     "你可以随时在设置中撤销访问权限。",
@@ -200,11 +197,9 @@ export const routesZh = {
     "适用于 Claude、Cursor 和 ChatGPT 的 MCP 服务器和代理技能",
   "Google Search Console Integration": "Google Search Console 集成",
   "How far do usage credits go?": "使用额度可以支持多少用量？",
-  "Redirecting...": "正在跳转...",
   Subscribe: "订阅",
   "Not for you yet? Email {email} within 30 days of your charge and we'll refund your subscription.":
-    "还不适合你？请在扣款后 30 天内发送邮件至 {email},我们会为你退款。",
-  "30-day money-back guarantee": "30 天退款保证",
+    "还在犹豫？请在扣款后 30 天内发送邮件至 {email},我们会为你退款。",
   "Cancel anytime. Powered by Stripe.": "随时取消。由 Stripe 提供支持。",
   "Questions? Email {email}.": "有问题？请发送邮件至 {email}。",
   "Back to app": "返回应用",
@@ -223,7 +218,7 @@ export const routesZh = {
   "free, open source": "免费、开源的",
   or: "或",
   "free up to 500 URLs": "免费抓取最多 500 个 URL 的",
-  "This audit stopped early after": "此审计在完成以下数量后提前停止:",
+  "This audit stopped early after": "此审计提前停止,已抓取:",
   page: "页",
   pages: "页",
   "The results below cover everything crawled before it stopped.":

@@ -1,5 +1,4 @@
 export const savedKeywordsZh = {
-  "Saved Keywords": "已存关键词",
   "Save keyword ideas from research, organize them with tags, and revisit when you're ready to act.":
     "保存研究中的关键词创意,用标签整理,准备行动时再次查看。",
   "Updating...": "更新中...",
@@ -7,17 +6,10 @@ export const savedKeywordsZh = {
   "Update keyword stats": "更新关键词数据",
   "Volume, difficulty & CPC": "搜索量、难度和 CPC",
   Export: "导出",
-  "Export to Sheets": "导出到 Sheets",
-  "Export CSV": "导出 CSV",
-  "Refine results": "优化结果",
-  "{count} active": "{count} 个已启用",
-  "Clear all": "全部清除",
   Include: "包含",
   Exclude: "排除",
   "Must contain… e.g. audit": "必须包含…例如审计",
   "Must not contain… e.g. jobs": "不得包含…例如职位",
-  "Search Volume": "搜索量",
-  "CPC (USD)": "CPC (USD)",
   Difficulty: "难度",
   Min: "最小值",
   Max: "最大值",
@@ -29,7 +21,6 @@ export const savedKeywordsZh = {
   "No tags yet. Add tags from a selection of keywords.":
     "还没有标签。请从选中的关键词中添加标签。",
   "No tags match that search.": "没有匹配该搜索的标签。",
-  "{count} selected": "已选择 {count} 个",
   "Manage {tag}": "管理 {tag}",
   "Update tags": "更新标签",
   "Apply or remove tags across {count} selected keyword.":
@@ -53,5 +44,4 @@ export const savedKeywordsZh = {
     "将从选中的关键词中移除 {count} 个标签。",
   Cancel: "取消",
   Apply: "应用",
-  "{start}-{end} of {total}": "{start}-{end} / {total}",
 } satisfies Record<string, string>;

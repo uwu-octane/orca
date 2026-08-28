@@ -16,6 +16,7 @@ import { onboardingZh } from "./onboarding";
 import { samZh } from "./sam";
 import { ga4Zh } from "./ga4";
 import { routesZh } from "./routes";
+import { settingsZh } from "./settings";
 
 /**
  * zh dictionary — the merged key set across every dictionary the locale
@@ -46,6 +47,7 @@ export const zh = {
   ...samZh,
   ...ga4Zh,
   ...routesZh,
+  ...settingsZh,
 } as const;
 
 export type ShellKey = keyof typeof zh;

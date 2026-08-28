@@ -6,8 +6,6 @@ export const onboardingZh = {
   "We'll use this country and language for keyword, SERP, and domain data unless you pick a different one. You can change it in project settings.":
     "关键词、SERP 和域名数据将使用此国家和语言,除非你选择其他选项。你可以在项目设置中更改。",
   "Connected to {siteUrl}.": "已连接到 {siteUrl}。",
-  "Connect with Google": "使用 Google 连接",
-  "Checking…": "检查中…",
   "Couldn’t load your strategy. Please refresh to try again.":
     "无法加载你的策略,请刷新后重试。",
   "Loading…": "加载中…",
@@ -17,7 +15,6 @@ export const onboardingZh = {
   "Your website": "你的网站",
   "This is the country we will use when getting SEO data.":
     "获取 SEO 数据时我们将使用此国家。",
-  "Saving…": "保存中…",
   Continue: "继续",
   "Hey, I’m Sam — welcome to OpenSEO.": "你好,我是 Sam——欢迎使用 OpenSEO。",
   "To get full access to OpenSEO, you need to upgrade to the paid plan. But, I’m here if you have any questions.":
@@ -58,7 +55,6 @@ export const onboardingZh = {
     "询问 Sam 关于你的策略或 OpenSEO 的问题…",
   "Send message": "发送消息",
   "Google OAuth client not configured": "Google OAuth 客户端未配置",
-  "Open setup guide": "打开设置指南",
   "Add your Google client ID and secret to this OpenSEO deployment before connecting {integrationName}.":
     "连接 {integrationName} 前,请将 Google 客户端 ID 和密钥添加到此 OpenSEO 部署中。",
 } satisfies Record<string, string>;

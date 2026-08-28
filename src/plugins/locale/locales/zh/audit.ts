@@ -1,5 +1,4 @@
 export const auditZh = {
-  "Site Audit": "站点审计",
   "No audits yet": "还没有审计",
   "Previous Audits": "之前的审计",
   Date: "日期",
@@ -23,7 +22,7 @@ export const auditZh = {
     "Lighthouse 会衡量页面性能并识别问题。",
   "Include Lighthouse": "包含 Lighthouse",
   "We choose a sample of 20 pages to audit, removing pages from duplicate templates.":
-    "我们会抽取 20 个页面进行审计,并移除重复模板中的页面。",
+    "我们会抽取 20 个页面进行审计,并去除同模板的重复页面。",
   "Please enter a URL.": "请输入 URL。",
   "Failed to start audit": "启动审计失败",
   "No issues recorded for this audit.": "此审计没有记录问题。",
@@ -44,7 +43,7 @@ export const auditZh = {
   "Alt text": "替代文本",
   Missing: "缺失",
   "Missing alt": "缺失替代文本",
-  "No missing alt": "没有缺失替代文本",
+  "No missing alt": "无缺失替代文本",
   Words: "字数",
   "Speed ms": "速度 (毫秒)",
   Device: "设备",
@@ -58,8 +57,6 @@ export const auditZh = {
   "Toggle filters": "切换筛选",
   Filters: "筛选",
   "{count} of {total}": "{count} / {total}",
-  "Refine results": "优化结果",
-  "Clear all": "全部清除",
   Min: "最小值",
   Max: "最大值",
   "No pages match these filters.": "没有页面符合这些筛选条件。",

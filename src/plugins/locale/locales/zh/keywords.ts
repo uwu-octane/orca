@@ -1,9 +1,7 @@
 export const keywordsZh = {
-  "Keyword Research": "关键词研究",
   "Discover keyword ideas, search demand, and ranking opportunities.":
     "发现关键词创意、搜索需求和排名机会。",
   "Go to Billing": "前往账单",
-  "Try again": "重试",
   "Save {count} Keywords": "保存 {count} 个关键词",
   "These keywords will be saved to your current project.":
     "这些关键词将保存到当前项目。",
@@ -16,7 +14,7 @@ export const keywordsZh = {
   "Please enter at least one keyword.": "请至少输入一个关键词。",
   "Please enter no more than 5 keywords (one per line).":
     "每次最多输入 5 个关键词,每行一个。",
-  "Clickstream-refined volumes": "Clickstream 优化搜索量",
+  "Clickstream-refined volumes": "经 Clickstream 修正的搜索量",
   "Google reports one combined search volume for similar keywords (e.g. 'seo tool' and 'seo tools'). Turn this on to estimate each keyword's own volume. Costs 2x the credits.":
     "Google 会为相似关键词报告合并后的搜索量(例如 'seo tool' 和 'seo tools')。开启此选项可估算每个关键词自身的搜索量,但会消耗 2 倍额度。",
   "Keyword data for this country comes from Google Ads — search volume, CPC, and trends are available, but difficulty and intent are not.":
@@ -38,10 +36,6 @@ export const keywordsZh = {
   "Showing {filtered} of {total} keywords":
     "显示 {filtered} / {total} 个关键词",
   "Showing {count} keywords": "显示 {count} 个关键词",
-  "Include Terms": "包含词",
-  "audit, checker, template": "审计、检查器、模板",
-  "Exclude Terms": "排除词",
-  "jobs, salary, course": "职位、薪资、课程",
   "Search Volume": "搜索量",
   Difficulty: "难度",
   "Last 12 available months": "最近 12 个可用月份",

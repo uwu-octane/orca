@@ -11,7 +11,6 @@ export const aiSearchZh = {
   "Enter a prompt": "请输入提示词",
   "Keep prompts under {count} characters": "提示词不能超过 {count} 个字符",
   "Select at least one model": "请至少选择一个模型",
-  "Prompt Explorer": "提示词探索",
   "Ask any prompt across ChatGPT, Claude, Gemini, and Perplexity side-by-side.":
     "在 ChatGPT、Claude、Gemini 和 Perplexity 中并排询问任意提示词。",
   "Ask one prompt across ChatGPT, Claude, Gemini, and Perplexity at the same time and compare their answers — including which sources each model cites.":
@@ -53,12 +52,11 @@ export const aiSearchZh = {
   "Related queries the model considered": "模型考虑的相关查询",
   "Cited sources ({count})": "引用来源({count})",
   "Show less": "收起",
-  "+{count} more": "+{count} 个更多",
+  "+{count} more": "另外 {count} 个",
   Error: "错误",
   "web search": "网络搜索",
   tokens: "tokens",
   "No {brand}": "未提及 {brand}",
-  "Brand Lookup": "品牌查询",
   "Track AI visibility": "追踪 AI 可见度",
   "See estimated counts for ChatGPT and Google AI Overview answers that cite your brand, and watch the trend month over month.":
     "查看引用你品牌的 ChatGPT 和 Google AI Overview 回答的预计数量,并按月观察趋势。",
@@ -67,7 +65,7 @@ export const aiSearchZh = {
     "查看 LLM 提及你的品牌或域名的用户问题样本。",
   "Map the competition": "了解竞争情况",
   "Spot the pages LLMs cite alongside you so you know who's competing for attention in AI answers.":
-    "找出 LLM 与你一同引用的页面,了解谁在 AI 回答中争夺关注。",
+    "找出与你一同被 LLM 引用的页面,了解谁在 AI 回答中与你争夺关注。",
   "Enter a brand name or domain": "输入品牌名称或域名",
   "Keep it under {count} characters": "内容不能超过 {count} 个字符",
   "Keep each competitor under {count} characters":
@@ -89,7 +87,7 @@ export const aiSearchZh = {
   All: "全部",
   "Source mentions": "来源提及次数",
   "AI search volume": "AI 搜索量",
-  "Refine results": "优化结果",
+  "Refine results": "筛选结果",
   "{count} active": "{count} 个已启用",
   "Clear all": "全部清除",
   You: "你的",

@@ -30,6 +30,6 @@ export const ga4Zh = {
   "Time zone": "时区",
   Currency: "货币",
   "Connected account": "已连接账号",
-  "Change property": "更改资源",
+  "Change property": "更换资源",
   "Disconnecting…": "断开连接中…",
 } satisfies Record<string, string>;

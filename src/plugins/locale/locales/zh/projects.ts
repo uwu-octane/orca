@@ -55,15 +55,15 @@ export const projectsZh = {
     "例如:唯一能在一个下午完成设置的预订工具。比现有方案更便宜,比自行搭建的工具栈更简单。",
   "e.g. Plain and direct, no hype. Never say 'seamless' or 'game-changing'. Don't write about competitor pricing.":
     "例如:朴素直接,不夸大。不要说“无缝”或“颠覆性”。不要撰写竞争对手的定价。",
-  "Custom sections": "自定义部分",
+  "Custom sections": "自定义版块",
   "Anything an agent wrote down that didn't fit the sections above.":
-    "代理记录但不适合归入上述部分的内容。",
+    "代理记录但不适合归入上述版块的内容。",
   "Nothing here yet. Agents add a section when they learn something important that has nowhere else to live.":
-    "这里还没有内容。代理发现重要信息且没有其他合适位置时,会在这里添加部分。",
+    "这里还没有内容。代理发现重要信息且没有其他合适位置时,会在这里添加版块。",
   "Edit {title}": "编辑 {title}",
   "Delete {title}": "删除 {title}",
-  "Section title": "部分标题",
-  "Section content": "部分内容",
+  "Section title": "版块标题",
+  "Section content": "版块内容",
   "Research log": "研究日志",
   "What's already been looked up, so nobody buys the same data twice.":
     "记录已经查找过的内容,避免重复购买相同数据。",

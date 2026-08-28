@@ -14,7 +14,6 @@ export const lighthouseZh = {
   All: "全部",
   "Export Lighthouse issues": "导出 Lighthouse 问题",
   Export: "导出",
-  "Export to Sheets": "导出到 Sheets",
   "Open in Sheets — {category}": "在 Sheets 中打开——{category}",
   "Open in Sheets — all actionable": "在 Sheets 中打开——全部可操作问题",
   Copy: "复制",
@@ -32,7 +31,7 @@ export const lighthouseZh = {
   "Loading issues...": "正在加载问题…",
   "No actionable issues for this category.": "此类别没有可操作的问题。",
   "This audit was saved without issue-level Lighthouse details. Re-run the audit to populate this screen.":
-    "此审计保存时没有保留 Lighthouse 问题详情。请重新运行审计以填充此页面。",
+    "此审计保存时没有保留 Lighthouse 问题详情。请重新运行审计以生成本页数据。",
   Severity: "严重程度",
   Issue: "问题",
   Category: "类别",
