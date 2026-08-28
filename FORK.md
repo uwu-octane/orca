@@ -19,6 +19,7 @@ Branch model and rules: see "Fork maintenance" in [README.md](./README.md).
 
 ## Skipped / reverted upstream changes
 
-| Upstream commit | Why skipped |
-| --------------- | ----------- |
-| —               | —           |
+| Upstream commit | Why skipped                                                                                                                                                                                                                                                                                                                           |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| —               | —                                                                                                                                                                                                                                                                                                                                     |
+| 2026-08-28      | Cordis plugin layer, phase 1: manifest boot (`src/plugins/manifest.yaml` + Zod-validated parse + static module map), dual contexts (server lazy singleton wired in `src/server.ts`; client `CordisProvider` in `__root.tsx`); vendored loader's `new Function` evaluator replaced with a throwing stub (workerd bans string codegen). | `ea1fcb0` |
