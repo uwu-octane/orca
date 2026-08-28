@@ -25,6 +25,7 @@ Branch model and rules: see "Fork maintenance" in [README.md](./README.md).
 
 ## Skipped / reverted upstream changes
 
-| Upstream commit | Why skipped |
-| --------------- | ----------- |
-| —               | —           |
+| Upstream commit | Why skipped                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| —               | —                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| 2026-08-28      | Cordis plugin layer, fix 3: `translate` was locale-blind — it returned the zh entry whenever a key existed in the dictionary, so the shell always rendered Chinese and selecting English (or any preference) had no visible effect. It now reads `readActiveLocale()` at call time; the zh dictionary applies only while zh is active, and English passes the keys through. Regression tests cover en preference and browser-following preference. | `b3670ed` |
