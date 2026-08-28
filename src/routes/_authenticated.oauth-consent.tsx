@@ -3,6 +3,7 @@ import { Check, Database, KeyRound, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import { captureClientEvent } from "@/client/lib/posthog";
+import { useLocale } from "@/plugins/client/context";
 
 export const Route = createFileRoute("/_authenticated/oauth-consent")({
   component: OAuthConsentPage,
@@ -22,6 +23,7 @@ const SCOPES = [
 ];
 
 function OAuthConsentPage() {
+  const { t } = useLocale();
   const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +57,7 @@ function OAuthConsentPage() {
     } = await response.json();
 
     if (!response.ok) {
-      setError(data.error ?? "Unable to complete authorization.");
+      setError(data.error ?? t("Unable to complete authorization."));
       setIsSubmitting(false);
       return;
     }
@@ -65,7 +67,7 @@ function OAuthConsentPage() {
       return;
     }
 
-    setError("Authorization response did not include a redirect URL.");
+    setError(t("Authorization response did not include a redirect URL."));
     setIsSubmitting(false);
   }
 
@@ -77,9 +79,11 @@ function OAuthConsentPage() {
           alt="OpenSEO"
           className="size-10 rounded-lg"
         />
-        <h1 className="mt-5 text-xl font-semibold">Authorize MCP access</h1>
+        <h1 className="mt-5 text-xl font-semibold">
+          {t("Authorize MCP access")}
+        </h1>
         <p className="mt-2 text-sm text-base-content/70">
-          An MCP client is requesting access to your OpenSEO workspace.
+          {t("An MCP client is requesting access to your OpenSEO workspace.")}
         </p>
       </div>
 
@@ -89,7 +93,9 @@ function OAuthConsentPage() {
             <User className="size-4" />
           </div>
           <div className="flex-1">
-            <div className="text-xs text-base-content/60">Signed in as</div>
+            <div className="text-xs text-base-content/60">
+              {t("Signed in as")}
+            </div>
             <div className="font-medium">{userEmail}</div>
           </div>
         </div>
@@ -97,16 +103,16 @@ function OAuthConsentPage() {
 
       <div className="mt-6">
         <div className="text-xs font-medium uppercase tracking-wide text-base-content/60">
-          This will allow it to
+          {t("This will allow it to")}
         </div>
         <ul className="mt-3 space-y-3">
           {SCOPES.map((scope) => (
             <li key={scope.label} className="flex gap-3">
               <Check className="mt-0.5 size-4 shrink-0 text-primary" />
               <div>
-                <div className="text-sm font-medium">{scope.label}</div>
+                <div className="text-sm font-medium">{t(scope.label)}</div>
                 <div className="text-xs text-base-content/60">
-                  {scope.description}
+                  {t(scope.description)}
                 </div>
               </div>
             </li>
@@ -127,7 +133,7 @@ function OAuthConsentPage() {
           disabled={isSubmitting}
           onClick={() => void respond(false)}
         >
-          Cancel
+          {t("Cancel")}
         </button>
         <button
           type="button"
@@ -135,12 +141,12 @@ function OAuthConsentPage() {
           disabled={isSubmitting}
           onClick={() => void respond(true)}
         >
-          {isSubmitting ? "Authorizing..." : "Authorize"}
+          {isSubmitting ? t("Authorizing...") : t("Authorize")}
         </button>
       </div>
 
       <p className="mt-6 text-center text-xs text-base-content/50">
-        You can revoke access at any time in Settings.
+        {t("You can revoke access at any time in Settings.")}
       </p>
     </div>
   );

@@ -21,6 +21,7 @@ import {
   AUTUMN_SEO_DATA_TOPUP_BALANCE_FEATURE_ID,
   autumnSeoDataCreditsToUsd,
 } from "@/shared/billing";
+import { useLocale } from "@/plugins/client/context";
 
 export const Route = createFileRoute("/_app/billing")({
   beforeLoad: () => {
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/_app/billing")({
 });
 
 function BillingPage() {
+  const { t } = useLocale();
   const { data: session, isPending: isSessionPending } = useSession();
   const [topUpAmount, setTopUpAmount] = useState("20");
   const [isPending, setIsPending] = useState(false);
@@ -72,11 +74,14 @@ function BillingPage() {
   if (billingRouteState === "error") {
     return (
       <div className="mx-auto w-full max-w-2xl space-y-4 p-4 py-10 md:p-6 md:py-12">
-        <h1 className="text-xl font-semibold">Billing unavailable</h1>
+        <h1 className="text-xl font-semibold">{t("Billing unavailable")}</h1>
         <p className="text-sm text-base-content/70">
           {getStandardErrorMessage(
             customerQuery.error,
-            "We couldn't load your billing details right now. Please try again.",
+            t(
+              "We couldn't load your billing details right now. Please try again.",
+            ),
+            t,
           )}
         </p>
         <button
@@ -86,7 +91,7 @@ function BillingPage() {
             void customerQuery.refetch();
           }}
         >
-          Try again
+          {t("Try again")}
         </button>
       </div>
     );
@@ -111,7 +116,7 @@ function BillingPage() {
       await callback();
       await customerQuery.refetch();
     } catch (err) {
-      setError(getStandardErrorMessage(err, fallbackMessage));
+      setError(getStandardErrorMessage(err, fallbackMessage, t));
     } finally {
       setIsPending(false);
     }
@@ -120,14 +125,16 @@ function BillingPage() {
   if (isPending) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-sm text-base-content/50">Redirecting to Stripe...</p>
+        <p className="text-sm text-base-content/50">
+          {t("Redirecting to Stripe...")}
+        </p>
       </div>
     );
   }
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-5 p-4 py-10 md:p-6 md:py-12">
-      <h1 className="text-xl font-semibold">Billing</h1>
+      <h1 className="text-xl font-semibold">{t("Billing")}</h1>
 
       <div className="grid gap-5 md:grid-cols-2">
         {/* Subscription card */}
@@ -136,48 +143,48 @@ function BillingPage() {
             <div className="text-2xl font-semibold tabular-nums">
               ${totalRemaining.toFixed(2)}{" "}
               <span className="text-sm font-normal text-base-content/50">
-                remaining
+                {t("remaining")}
               </span>
             </div>
             {!isFreePlan ? (
               <div className="mt-1 flex gap-3 text-xs text-base-content/50">
                 <span className="tabular-nums">
-                  Monthly ${monthlyRemaining.toFixed(2)}
+                  {t("Monthly")} ${monthlyRemaining.toFixed(2)}
                 </span>
                 <span>&middot;</span>
                 <span className="tabular-nums">
-                  Top-ups ${topUpRemaining.toFixed(2)}
+                  {t("Top-ups")} ${topUpRemaining.toFixed(2)}
                 </span>
               </div>
             ) : null}
             {totalRemaining <= 0 ? (
               <p className="mt-2 text-xs text-error">
-                You&rsquo;ve used all your credits.{" "}
+                {t("You’ve used all your credits.")}{" "}
                 {isFreePlan
-                  ? "Upgrade your plan to continue."
-                  : "Buy more credits below to continue."}
+                  ? t("Upgrade your plan to continue.")
+                  : t("Buy more credits below to continue.")}
               </p>
             ) : totalRemaining < LOW_CREDITS_THRESHOLD_USD ? (
               <p className="mt-2 text-xs text-amber-600">
-                You&rsquo;re running low on credits.{" "}
+                {t("You’re running low on credits.")}{" "}
                 {isFreePlan
-                  ? "Upgrade to get $10/month."
-                  : "Buy more credits below."}
+                  ? t("Upgrade to get $10/month.")
+                  : t("Buy more credits below.")}
               </p>
             ) : null}
           </div>
 
           <div className="text-sm">
-            <span className="font-medium">Plan</span>{" "}
+            <span className="font-medium">{t("Plan")}</span>{" "}
             <span className="text-base-content/50">
-              {isFreePlan ? "Free Plan" : "Base Plan"}
+              {isFreePlan ? t("Free Plan") : t("Base Plan")}
             </span>
           </div>
 
           {isFreePlan ? (
             <div className="space-y-3 border-t border-base-300 pt-3">
               <div className="flex items-baseline justify-between gap-4">
-                <span className="text-sm font-medium">Base Plan</span>
+                <span className="text-sm font-medium">{t("Base Plan")}</span>
                 <span className="text-sm font-medium tabular-nums">
                   $10/month
                 </span>
@@ -194,7 +201,7 @@ function BillingPage() {
                     <span className="text-base-content/30 mt-[1px] shrink-0">
                       &mdash;
                     </span>
-                    {item}
+                    {t(item)}
                   </li>
                 ))}
               </ul>
@@ -208,7 +215,7 @@ function BillingPage() {
                   )
                 }
               >
-                Upgrade Plan
+                {t("Upgrade Plan")}
               </button>
             </div>
           ) : (
@@ -225,7 +232,7 @@ function BillingPage() {
                 )
               }
             >
-              Manage subscription
+              {t("Manage subscription")}
             </button>
           )}
         </div>
@@ -234,10 +241,11 @@ function BillingPage() {
         {!isFreePlan ? (
           <div className="rounded-lg border border-base-300 bg-base-100 p-4 space-y-3">
             <div>
-              <span className="font-semibold">Buy credits</span>
+              <span className="font-semibold">{t("Buy credits")}</span>
               <p className="mt-1 text-sm text-base-content/60">
-                Top-up credits never expire and are used after your monthly
-                credits.
+                {t(
+                  "Top-up credits never expire and are used after your monthly credits.",
+                )}
               </p>
             </div>
 
@@ -257,7 +265,7 @@ function BillingPage() {
               </div>
               {topUpAmount.trim() !== "" && !isValidTopUp ? (
                 <p className="mt-1 text-xs text-error">
-                  Enter between $10–$99.
+                  {t("Enter between $10–$99.")}
                 </p>
               ) : null}
             </div>
@@ -285,7 +293,7 @@ function BillingPage() {
                 )
               }
             >
-              Buy credits
+              {t("Buy credits")}
             </button>
           </div>
         ) : null}
@@ -300,7 +308,7 @@ function BillingPage() {
       {error ? <p className="text-sm text-error">{error}</p> : null}
 
       <p className="text-xs text-base-content/40">
-        Billing is powered by Stripe.
+        {t("Billing is powered by Stripe.")}
       </p>
     </div>
   );

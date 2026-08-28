@@ -14,6 +14,7 @@ import {
   AUTUMN_MANAGED_ACCESS_FEATURE_ID,
   AUTUMN_PAID_PLAN_ID,
 } from "@/shared/billing";
+import { useLocale } from "@/plugins/client/context";
 
 const SUPPORT_EMAIL = "ben@openseo.so";
 
@@ -44,6 +45,7 @@ export const Route = createFileRoute("/_authenticated/subscribe")({
 });
 
 function SubscribePage() {
+  const { t } = useLocale();
   const navigate = useNavigate();
   const { upgrade: isUpgradeFlow, redirect, checkout } = Route.useSearch();
   const { data: session } = useSession();
@@ -134,16 +136,16 @@ function SubscribePage() {
           className="mx-auto size-10 rounded-lg"
         />
         <h1 className="text-xl font-semibold">
-          Finalizing your subscription&hellip;
+          {t("Finalizing your subscription")}&hellip;
         </h1>
         <span className="loading loading-spinner loading-md" />
         <p className="text-sm text-base-content/60">
-          This usually takes a few seconds.
+          {t("This usually takes a few seconds.")}
         </p>
         <p className="text-xs text-base-content/50">
-          Taking longer?{" "}
+          {t("Taking longer?")}{" "}
           <a className="link" href={`mailto:${SUPPORT_EMAIL}`}>
-            Email {SUPPORT_EMAIL}
+            {t("Email")} {SUPPORT_EMAIL}
           </a>
           .
         </p>
@@ -160,13 +162,16 @@ function SubscribePage() {
             alt="OpenSEO"
             className="mx-auto size-10 rounded-lg"
           />
-          <h1 className="text-xl font-semibold">Billing unavailable</h1>
+          <h1 className="text-xl font-semibold">{t("Billing unavailable")}</h1>
         </div>
 
         <p className="text-sm text-center text-base-content/70">
           {getStandardErrorMessage(
             customerQuery.error,
-            "We couldn't verify your billing status right now. Please try again.",
+            t(
+              "We couldn't verify your billing status right now. Please try again.",
+            ),
+            t,
           )}
         </p>
 
@@ -177,7 +182,7 @@ function SubscribePage() {
             void customerQuery.refetch();
           }}
         >
-          Try again
+          {t("Try again")}
         </button>
       </div>
     );
@@ -200,7 +205,7 @@ function SubscribePage() {
       setError(
         getStandardErrorMessage(
           err,
-          "We couldn't start the checkout. Please try again.",
+          t("Couldn't start the checkout. Please try again."),
         ),
       );
       setIsAttaching(false);
@@ -221,19 +226,21 @@ function SubscribePage() {
         />
         <h1 className="text-xl font-semibold">
           {isUpgradeFlow
-            ? "Upgrade your plan"
+            ? t("Upgrade your plan")
             : firstName
-              ? `Welcome to OpenSEO, ${firstName}!`
-              : "Welcome to OpenSEO!"}
+              ? t("Welcome to OpenSEO, {name}!", { name: firstName })
+              : t("Welcome to OpenSEO!")}
         </h1>
         <p className="text-sm text-base-content/60">
-          SEO on your terms. All your SEO tools in one place at a fair price.
+          {t(
+            "SEO on your terms. All your SEO tools in one place at a fair price.",
+          )}
         </p>
       </div>
 
       <div className="rounded-lg border border-base-300 p-5 space-y-4">
         <div className="flex items-baseline justify-between gap-4">
-          <span className="font-semibold">Base Plan</span>
+          <span className="font-semibold">{t("Base Plan")}</span>
           <span className="text-lg font-semibold tabular-nums">$10/month</span>
         </div>
 
@@ -246,7 +253,7 @@ function SubscribePage() {
               <span className="text-base-content/40 mt-[2px] shrink-0">
                 &mdash;
               </span>
-              {item}
+              {t(item)}
             </li>
           ))}
           {/* Sub-bullet of the Usage Credits line above. */}
@@ -260,7 +267,7 @@ function SubscribePage() {
                 captureClientEvent("billing:pricing_estimator_click")
               }
             >
-              How far do usage credits go?{" "}
+              {t("How far do usage credits go?")}{" "}
               <span aria-hidden="true">&#8599;</span>
             </a>
           </li>
@@ -273,25 +280,28 @@ function SubscribePage() {
           disabled={isAttaching}
           onClick={() => void handleSubscribe()}
         >
-          {isAttaching ? "Redirecting..." : "Subscribe"}
+          {isAttaching ? t("Redirecting...") : t("Subscribe")}
         </button>
 
         <p className="text-center text-xs text-base-content/50">
           <span
             className="tooltip before:max-w-60 before:whitespace-normal"
-            data-tip={`Not for you yet? Email ${SUPPORT_EMAIL} within 30 days of your charge and we'll refund your subscription.`}
+            data-tip={t(
+              "Not for you yet? Email {email} within 30 days of your charge and we'll refund your subscription.",
+              { email: SUPPORT_EMAIL },
+            )}
           >
             <span className="cursor-help underline decoration-dotted">
-              30-day money-back guarantee
+              {t("30-day money-back guarantee")}
             </span>
           </span>
-          . Cancel anytime. Powered by Stripe.
+          . {t("Cancel anytime. Powered by Stripe.")}
         </p>
       </div>
 
       <div className="text-center space-y-2">
         <p className="text-sm text-base-content/60">
-          Questions? Email {SUPPORT_EMAIL}.
+          {t("Questions? Email {email}.", { email: SUPPORT_EMAIL })}
         </p>
         {isUpgradeFlow ? (
           <button
@@ -300,7 +310,7 @@ function SubscribePage() {
             onClick={() => void navigate({ to: "/", replace: true })}
           >
             <ArrowRight className="size-3.5 rotate-180" />
-            Back to app
+            {t("Back to app")}
           </button>
         ) : null}
       </div>
@@ -309,6 +319,7 @@ function SubscribePage() {
 }
 
 function SubscribePageAccountMenu({ email }: { email: string | undefined }) {
+  const { t } = useLocale();
   if (!email) return null;
 
   const handleSignOut = () => signOutAndRedirect();
@@ -320,7 +331,7 @@ function SubscribePageAccountMenu({ email }: { email: string | undefined }) {
           type="button"
           tabIndex={0}
           className="btn btn-ghost btn-circle"
-          aria-label="Open account menu"
+          aria-label={t("Open account menu")}
         >
           <User className="h-5 w-5" />
         </button>
@@ -336,7 +347,7 @@ function SubscribePageAccountMenu({ email }: { email: string | undefined }) {
           <li>
             <Link to="/settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
-              Settings
+              {t("Settings")}
             </Link>
           </li>
           <ThemePreferenceMenuItems />
@@ -346,7 +357,7 @@ function SubscribePageAccountMenu({ email }: { email: string | undefined }) {
               className="text-error"
               onClick={handleSignOut}
             >
-              Sign out
+              {t("Sign out")}
             </button>
           </li>
         </ul>

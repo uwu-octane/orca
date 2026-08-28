@@ -18,6 +18,7 @@ import {
   StatusBadge,
   SUPPORT_EMAIL,
 } from "@/client/features/audit/shared";
+import { useLocale } from "@/plugins/client/context";
 
 export const Route = createFileRoute<"/_project/p/$projectId/audit/">(
   "/_project/p/$projectId/audit/",
@@ -74,6 +75,7 @@ function AuditDetail({
   onBack: () => void;
   onTabChange: (tab: "issues" | "pages" | "performance") => void;
 }) {
+  const { t } = useLocale();
   const statusQuery = useQuery({
     queryKey: ["audit-status", projectId, auditId],
     queryFn: () => getAuditStatus({ data: { projectId, auditId } }),
@@ -110,10 +112,12 @@ function AuditDetail({
         <div className="mx-auto max-w-3xl space-y-4">
           <div className="alert alert-error">
             <AlertCircle className="size-5" />
-            <span>We could not load this audit. It may have been deleted.</span>
+            <span>
+              {t("We could not load this audit. It may have been deleted.")}
+            </span>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onBack}>
-            &larr; Back to audits
+            &larr; {t("Back to audits")}
           </button>
         </div>
       </div>
@@ -136,11 +140,11 @@ function AuditDetail({
       <div className="mx-auto max-w-5xl space-y-4">
         <div className="space-y-1">
           <button className="btn btn-ghost btn-sm px-0" onClick={onBack}>
-            &larr; All audits
+            &larr; {t("All audits")}
           </button>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <h1 className="text-2xl font-semibold">
-              {status ? extractHostname(status.startUrl) : "Site Audit"}
+              {status ? extractHostname(status.startUrl) : t("Site Audit")}
             </h1>
             {status?.status !== "running" && status && (
               <StatusBadge status={status.status} />
@@ -148,7 +152,8 @@ function AuditDetail({
           </div>
           {status && (
             <p className="text-sm text-base-content/60">
-              Site audit &middot; Started {formatStartedAt(status.startedAt)}
+              {t("Site audit")} &middot; {t("Started")}{" "}
+              {formatStartedAt(status.startedAt)}
             </p>
           )}
         </div>
@@ -168,12 +173,12 @@ function AuditDetail({
             <AlertCircle className="size-5" />
             <div className="space-y-1">
               <p className="font-medium">
-                Site audit couldn't fully crawl this website.
+                {t("Site audit couldn't fully crawl this website.")}
               </p>
               <p>
-                Sorry! This site's bot protection blocked our crawler. We don't
-                have a workaround for this yet. Desktop crawlers run from your
-                own machine and usually get past it: try{" "}
+                {t(
+                  "Sorry! This site's bot protection blocked our crawler. We don't have a workaround for this yet. Desktop crawlers run from your own machine and usually get past it: try",
+                )}{" "}
                 <a
                   className="link link-primary"
                   href="https://github.com/PhialsBasement/LibreCrawl"
@@ -182,7 +187,7 @@ function AuditDetail({
                 >
                   LibreCrawl
                 </a>{" "}
-                (free, open source) or{" "}
+                ({t("free, open source")}) {t("or")}{" "}
                 <a
                   className="link link-primary"
                   href="https://www.screamingfrog.co.uk/seo-spider/"
@@ -191,7 +196,7 @@ function AuditDetail({
                 >
                   Screaming Frog
                 </a>{" "}
-                (free up to 500 URLs).
+                ({t("free up to 500 URLs")}).
               </p>
             </div>
           </div>
@@ -202,19 +207,21 @@ function AuditDetail({
             <AlertCircle className="size-5" />
             <div className="space-y-1">
               <p className="font-medium">
-                This audit stopped early after {partialPageCount} page
-                {partialPageCount === 1 ? "" : "s"}.
+                {t("This audit stopped early after")} {partialPageCount}{" "}
+                {t(partialPageCount === 1 ? "page" : "pages")}.
               </p>
               <p>
-                The results below cover everything crawled before it stopped.
-                Run a new audit to try again, or email{" "}
+                {t(
+                  "The results below cover everything crawled before it stopped.",
+                )}{" "}
+                {t("Run a new audit to try again, or email")}{" "}
                 <a
                   className="link link-primary"
                   href={`mailto:${SUPPORT_EMAIL}`}
                 >
                   {SUPPORT_EMAIL}
                 </a>{" "}
-                if this keeps happening.
+                {t("if this keeps happening.")}
               </p>
             </div>
           </div>
@@ -249,6 +256,7 @@ function ProgressCard({
     currentPhase: string | null;
   };
 }) {
+  const { t } = useLocale();
   const crawlProgress =
     status.pagesTotal > 0
       ? Math.round((status.pagesCrawled / status.pagesTotal) * 100)
@@ -261,14 +269,14 @@ function ProgressCard({
   const isLighthousePhase = status.currentPhase === "lighthouse";
   const phaseLabel =
     status.currentPhase === "discovery"
-      ? "Discovery"
+      ? t("Discovery")
       : status.currentPhase === "crawling"
-        ? "Crawling"
+        ? t("Crawling")
         : status.currentPhase === "lighthouse"
-          ? "Lighthouse"
+          ? t("Lighthouse")
           : status.currentPhase === "finalizing"
-            ? "Finalizing"
-            : (status.currentPhase ?? "Running");
+            ? t("Finalizing")
+            : (status.currentPhase ?? t("Running"));
   const progress = isLighthousePhase ? lighthouseProgress : crawlProgress;
 
   const crawlProgressQuery = useQuery({
@@ -287,8 +295,8 @@ function ProgressCard({
             <h2 className="font-medium flex items-center gap-2">
               <Loader2 className="size-4 animate-spin text-primary" />
               {isLighthousePhase
-                ? "Running Lighthouse checks"
-                : "Crawling pages"}
+                ? t("Running Lighthouse checks")
+                : t("Crawling pages")}
             </h2>
             <span className="badge badge-ghost badge-sm">{phaseLabel}</span>
           </div>
@@ -302,14 +310,14 @@ function ProgressCard({
           <div className="flex items-center justify-between text-sm">
             {isLighthousePhase ? (
               <span>
-                {lighthouseDone} / {status.lighthouseTotal} checks
+                {lighthouseDone} / {status.lighthouseTotal} {t("checks")}
                 {status.lighthouseFailed > 0
-                  ? ` (${status.lighthouseFailed} failed)`
+                  ? ` (${status.lighthouseFailed} ${t("failed")})`
                   : ""}
               </span>
             ) : (
               <span>
-                {status.pagesCrawled} / {status.pagesTotal} pages
+                {status.pagesCrawled} / {status.pagesTotal} {t("pages")}
               </span>
             )}
             <span className="text-base-content/60">{progress}%</span>
@@ -321,10 +329,11 @@ function ProgressCard({
         <div className="card bg-base-100 border border-base-300">
           <div className="card-body gap-2 p-4">
             <h3 className="text-sm font-medium text-base-content/70">
-              Crawled Pages ({crawledUrls.length})
+              {t("Crawled Pages ({count})", { count: crawledUrls.length })}
             </h3>
             <p className="text-xs text-base-content/50">
-              Updated {new Date(crawledUrls[0].crawledAt).toLocaleTimeString()}
+              {t("Updated")}{" "}
+              {new Date(crawledUrls[0].crawledAt).toLocaleTimeString()}
             </p>
             <div className="max-h-[400px] overflow-y-auto -mx-1">
               {crawledUrls.map((entry, i) => (

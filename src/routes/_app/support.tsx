@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useLocale } from "@/plugins/client/context";
 
 const SUPPORT_EMAIL = "ben@openseo.so";
 const DISCORD_URL = "https://discord.gg/c9uGs3cFXr";
@@ -12,11 +13,12 @@ export const Route = createFileRoute("/_app/support")({
 });
 
 function SupportPage() {
+  const { t } = useLocale();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(SUPPORT_EMAIL);
-    toast.success("Email copied to clipboard");
+    toast.success(t("Email copied to clipboard"));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -25,21 +27,22 @@ function SupportPage() {
     <div className="h-full overflow-auto bg-base-100 px-4 py-8 pb-24 md:px-6 md:py-12 md:pb-8">
       <div className="mx-auto max-w-xl">
         <p className="text-sm font-medium text-base-content/40">
-          Help & Community
+          {t("Help & Community")}
         </p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight">
-          We want to hear from you
+          {t("We want to hear from you")}
         </h1>
         <p className="mt-2 text-sm text-base-content/60">
-          We want to talk to you! We're super open to feedback and want to learn
-          how you work so we can make OpenSEO better.
+          {t(
+            "We want to talk to you! We're super open to feedback and want to learn how you work so we can make OpenSEO better.",
+          )}
         </p>
 
         <div className="mt-8 space-y-3">
           <div className="rounded-lg border border-base-300 px-5 py-4">
-            <p className="text-sm font-semibold">Email</p>
+            <p className="text-sm font-semibold">{t("Email")}</p>
             <p className="mt-1 text-sm text-base-content/60">
-              Send ideas, problems, questions, or feedback directly.
+              {t("Send ideas, problems, questions, or feedback directly.")}
             </p>
             <button
               type="button"
@@ -63,10 +66,10 @@ function SupportPage() {
           >
             <p className="text-sm font-semibold">Discord</p>
             <p className="mt-1 text-sm text-base-content/60">
-              Ask for help, share ideas and learn from the community.
+              {t("Ask for help, share ideas and learn from the community.")}
             </p>
             <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-base-content">
-              Join the Discord
+              {t("Join the Discord")}
               <span aria-hidden="true">&rarr;</span>
             </span>
           </a>
@@ -79,10 +82,10 @@ function SupportPage() {
           >
             <p className="text-sm font-semibold">GitHub Issues</p>
             <p className="mt-1 text-sm text-base-content/60">
-              Report bugs or request features on GitHub.
+              {t("Report bugs or request features on GitHub.")}
             </p>
             <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-base-content">
-              Open an issue
+              {t("Open an issue")}
               <span aria-hidden="true">&rarr;</span>
             </span>
           </a>
