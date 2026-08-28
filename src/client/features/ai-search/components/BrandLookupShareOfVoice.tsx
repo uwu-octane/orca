@@ -3,6 +3,7 @@ import {
   formatPlatformLabel,
 } from "@/client/features/ai-search/platformLabels";
 import type { BrandLookupResult } from "@/types/schemas/ai-search";
+import { useLocale } from "@/plugins/client/context";
 
 type ShareOfVoice = NonNullable<BrandLookupResult["shareOfVoice"]>;
 type ShareEntry = ShareOfVoice["entries"][number];
@@ -21,6 +22,7 @@ export function BrandLookupShareOfVoice({
   /** True under a URL scope: SoV always compares whole domains. */
   isDomainLevel: boolean;
 }) {
+  const { t } = useLocale();
   const target = shareOfVoice.entries.find((entry) => entry.isTarget) ?? null;
   const maxPct = Math.max(
     0,
@@ -31,13 +33,15 @@ export function BrandLookupShareOfVoice({
     <section className="flex h-full flex-col overflow-hidden rounded-xl border border-base-300 bg-base-100">
       <div className="flex items-baseline justify-between gap-2 border-b border-base-300 px-4 py-3">
         <h3 className="flex items-center gap-2 text-sm font-semibold">
-          Share of Voice
+          {t("Share of Voice")}
           {isDomainLevel ? (
             <span
               className="tooltip badge badge-ghost badge-sm shrink-0 font-normal"
-              data-tip="Share of Voice compares whole domains — it is not narrowed to the page or folder you searched."
+              data-tip={t(
+                "Share of Voice compares whole domains — it is not narrowed to the page or folder you searched.",
+              )}
             >
-              Domain-level
+              {t("Domain-level")}
             </span>
           ) : null}
         </h3>
@@ -47,7 +51,7 @@ export function BrandLookupShareOfVoice({
               {target.label}
             </span>{" "}
             {target.sharePct == null
-              ? "· no comparable data"
+              ? `· ${t("no comparable data")}`
               : `· ${Math.round(target.sharePct)}%`}
           </span>
         ) : null}
@@ -67,9 +71,11 @@ export function BrandLookupShareOfVoice({
       {/* Captions only the platforms actually summed — when one platform's
           cross_aggregated call failed, the leaderboard must not claim both. */}
       <p className="border-t border-base-200 px-4 py-2 text-[11px] text-base-content/50">
-        Mentions share across{" "}
-        {shareOfVoice.platforms.map(formatPlatformLabel).join(" and ")} · bars
-        relative to the leader.
+        {t("Mentions share across {platforms} · bars relative to the leader.", {
+          platforms: shareOfVoice.platforms
+            .map(formatPlatformLabel)
+            .join(` ${t("and")} `),
+        })}
       </p>
     </section>
   );
@@ -84,6 +90,7 @@ function LeaderboardRow({
   rank: number;
   maxPct: number;
 }) {
+  const { t } = useLocale();
   const hasData = entry.mentions != null && entry.sharePct != null;
   const barWidth =
     hasData && maxPct > 0 ? ((entry.sharePct ?? 0) / maxPct) * 100 : 0;
@@ -99,7 +106,9 @@ function LeaderboardRow({
         <div className="flex items-center gap-2">
           <span className="truncate text-sm">{entry.label}</span>
           {entry.isTarget ? (
-            <span className="badge badge-primary badge-xs border-0">You</span>
+            <span className="badge badge-primary badge-xs border-0">
+              {t("You")}
+            </span>
           ) : null}
           <span className="ml-auto shrink-0 text-xs tabular-nums text-base-content/50">
             {/* Null mentions = "no data"; render a dash, not zero. */}

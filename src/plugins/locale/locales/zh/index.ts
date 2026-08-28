@@ -9,6 +9,7 @@ import { rankTrackingZh } from "./rank-tracking";
 import { gscZh } from "./gsc";
 import { searchPerformanceZh } from "./search-performance";
 import { lighthouseZh } from "./lighthouse";
+import { aiSearchZh } from "./ai-search";
 
 /**
  * zh dictionary — the merged key set across every dictionary the locale
@@ -32,6 +33,7 @@ export const zh = {
   ...gscZh,
   ...searchPerformanceZh,
   ...lighthouseZh,
+  ...aiSearchZh,
 } as const;
 
 export type ShellKey = keyof typeof zh;

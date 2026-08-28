@@ -30,6 +30,7 @@ import {
   toScopeSearchParam,
   type ResearchScope,
 } from "@/shared/researchScope";
+import { useLocale } from "@/plugins/client/context";
 
 type Props = {
   projectId: string;
@@ -79,6 +80,7 @@ function BrandLookupPageInner({
   onSearchChange,
   planGate,
 }: Props & { planGate: HostedPlanGateState }) {
+  const { t } = useLocale();
   const [query, setQuery] = useState(initialQuery);
   // The user's explicit scope pick, or undefined to follow the input's default.
   const [scopeChoice, setScopeChoice] = useState<ResearchScope | undefined>(
@@ -114,7 +116,7 @@ function BrandLookupPageInner({
   // Only grey the control once the input is clearly a brand keyword — an
   // empty box shouldn't look disabled before the user has typed anything.
   const scopeDisabledReason =
-    query.trim() !== "" && !scopeTarget ? KEYWORD_SCOPE_REASON : undefined;
+    query.trim() !== "" && !scopeTarget ? t(KEYWORD_SCOPE_REASON) : undefined;
 
   const lookupQuery = useQuery({
     queryKey: [
@@ -179,14 +181,16 @@ function BrandLookupPageInner({
     if (trimmed.length === 0) {
       setValidationError({
         field: "query",
-        message: "Enter a brand name or domain",
+        message: t("Enter a brand name or domain"),
       });
       return;
     }
     if (trimmed.length > BRAND_LOOKUP_MAX_INPUT_LENGTH) {
       setValidationError({
         field: "query",
-        message: `Keep it under ${BRAND_LOOKUP_MAX_INPUT_LENGTH} characters`,
+        message: t("Keep it under {count} characters", {
+          count: BRAND_LOOKUP_MAX_INPUT_LENGTH,
+        }),
       });
       return;
     }
@@ -201,7 +205,9 @@ function BrandLookupPageInner({
     if (tooLong) {
       setValidationError({
         field: "competitors",
-        message: `Keep each competitor under ${BRAND_LOOKUP_MAX_INPUT_LENGTH} characters`,
+        message: t("Keep each competitor under {count} characters", {
+          count: BRAND_LOOKUP_MAX_INPUT_LENGTH,
+        }),
       });
       return;
     }
@@ -213,7 +219,10 @@ function BrandLookupPageInner({
     if (matchesTarget) {
       setValidationError({
         field: "competitors",
-        message: `"${matchesTarget}" matches the brand you're looking up — remove it from competitors`,
+        message: t(
+          '"{target}" matches the brand you\'re looking up — remove it from competitors',
+          { target: matchesTarget },
+        ),
       });
       return;
     }
@@ -224,7 +233,7 @@ function BrandLookupPageInner({
     ) {
       setValidationError({
         field: "query",
-        message: "Add a path to use Subfolder (e.g. example.com/blog)",
+        message: t("Add a path to use Subfolder (e.g. example.com/blog)"),
       });
       return;
     }
@@ -255,22 +264,29 @@ function BrandLookupPageInner({
       ? getStandardErrorMessage(lookupQuery.error)
       : null;
   const resultData = hasActiveQuery ? lookupQuery.data : undefined;
+  const bullets = BRAND_LOOKUP_BULLETS.map((bullet) => ({
+    ...bullet,
+    title: t(bullet.title),
+    body: t(bullet.body),
+  }));
 
   return (
     <div className="px-4 py-4 pb-24 overflow-auto md:px-6 md:py-6 md:pb-8">
       <div className="mx-auto max-w-7xl space-y-4">
         <div>
-          <h1 className="text-2xl font-semibold">Brand Lookup</h1>
+          <h1 className="text-2xl font-semibold">{t("Brand Lookup")}</h1>
           <p className="text-sm text-base-content/70">
-            See how AI search cites any brand name or domain.
+            {t("See how AI search cites any brand name or domain.")}
           </p>
         </div>
 
         {planGate.isFreePlan ? (
           <AiSearchPaidPlanGate
-            feature="Brand Lookup"
-            description="See how ChatGPT and Google AI Overview cite any brand or domain — total mentions, sample prompts where it appears, and the pages cited alongside it."
-            bullets={BRAND_LOOKUP_BULLETS}
+            feature={t("Brand Lookup")}
+            description={t(
+              "See how ChatGPT and Google AI Overview cite any brand or domain — total mentions, sample prompts where it appears, and the pages cited alongside it.",
+            )}
+            bullets={bullets}
           />
         ) : (
           <>
@@ -317,7 +333,7 @@ function BrandLookupPageInner({
                     className="btn btn-ghost btn-sm gap-2 px-0 text-base-content/70 hover:bg-transparent"
                   >
                     <ArrowLeft className="size-4" />
-                    Recent searches
+                    {t("Recent searches")}
                   </Link>
                 </div>
                 <BrandLookupResults result={resultData} projectId={projectId} />

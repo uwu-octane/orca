@@ -10,6 +10,7 @@ import {
   type PromptExplorerModel,
   type WebSearchCountryCode,
 } from "@/types/schemas/ai-search";
+import { useLocale } from "@/plugins/client/context";
 
 type FormValues = {
   prompt: string;
@@ -50,6 +51,7 @@ export function PromptExplorerForm({
   isLoading,
   validationError,
 }: Props) {
+  const { t } = useLocale();
   const toggleModel = (model: PromptExplorerModel) => {
     if (form.models.includes(model)) {
       onModelsChange(form.models.filter((m) => m !== model));
@@ -72,7 +74,7 @@ export function PromptExplorerForm({
             className="block text-sm font-medium"
             htmlFor="prompt-explorer-prompt"
           >
-            Prompt
+            {t("Prompt")}
           </label>
           <textarea
             id="prompt-explorer-prompt"
@@ -87,7 +89,7 @@ export function PromptExplorerForm({
             autoFocus
           />
           <div className="flex items-center justify-between text-xs text-base-content/60">
-            <span>What your customers might ask AI.</span>
+            <span>{t("What your customers might ask AI.")}</span>
             <span
               className={`tabular-nums ${promptOverLimit ? "font-medium text-error" : ""}`}
             >
@@ -102,7 +104,7 @@ export function PromptExplorerForm({
               className="block text-sm font-medium"
               htmlFor="prompt-explorer-brand"
             >
-              Highlight brand (optional)
+              {t("Highlight brand (optional)")}
             </label>
             <input
               id="prompt-explorer-brand"
@@ -114,12 +116,12 @@ export function PromptExplorerForm({
               spellCheck={false}
             />
             <p className="text-xs text-base-content/60">
-              We&apos;ll flag whether each model mentions this brand.
+              {t("We'll flag whether each model mentions this brand.")}
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <span className="block text-sm font-medium">Models</span>
+            <span className="block text-sm font-medium">{t("Models")}</span>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1.5">
               {PROMPT_EXPLORER_MODELS.map((model) => {
                 const isActive = form.models.includes(model);
@@ -152,12 +154,12 @@ export function PromptExplorerForm({
                 onChange={(event) => onWebSearchChange(event.target.checked)}
               />
               <span className="text-sm">
-                Allow web search (more current answers)
+                {t("Allow web search (more current answers)")}
               </span>
             </label>
             <select
               id="prompt-explorer-country"
-              aria-label="Web search location"
+              aria-label={t("Web search location")}
               className="select select-bordered select-sm min-w-0 sm:max-w-xs"
               value={form.webSearchCountryCode}
               onChange={(event) =>
@@ -167,7 +169,7 @@ export function PromptExplorerForm({
             >
               {WEB_SEARCH_COUNTRY_CODES.map((code) => (
                 <option key={code} value={code}>
-                  {formatCountryLabel(code)}
+                  {t(formatCountryLabel(code))}
                 </option>
               ))}
             </select>
@@ -177,7 +179,7 @@ export function PromptExplorerForm({
             className="btn btn-primary shrink-0 px-6"
             disabled={isLoading || form.models.length === 0}
           >
-            {isLoading ? "Running…" : "Run"}
+            {isLoading ? t("Running…") : t("Run")}
           </button>
         </div>
 
