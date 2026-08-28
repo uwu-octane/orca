@@ -7,6 +7,7 @@ import { useSession } from "@/lib/auth-client";
 import { saveOnboardingSite } from "@/serverFunctions/onboardingChat";
 import { OnboardingAccountMenu } from "./OnboardingAccountMenu";
 import { OnboardingChatConversation } from "./OnboardingChatConversation";
+import { useLocale } from "@/plugins/client/context";
 import {
   invalidateOnboardingChatState,
   onboardingChatStateQueryOptions,
@@ -23,6 +24,7 @@ function StrategyShell({ children }: { children: React.ReactNode }) {
 }
 
 export function OnboardingChat() {
+  const { t } = useLocale();
   const stateQuery = useQuery(onboardingChatStateQueryOptions());
   const { data: session } = useSession();
   const accountMenu = <OnboardingAccountMenu email={session?.user?.email} />;
@@ -31,7 +33,7 @@ export function OnboardingChat() {
     return (
       <StrategyShell>
         <div className="flex flex-1 items-center justify-center p-6 text-sm text-error">
-          Couldn’t load your strategy. Please refresh to try again.
+          {t("Couldn’t load your strategy. Please refresh to try again.")}
         </div>
       </StrategyShell>
     );
@@ -42,7 +44,7 @@ export function OnboardingChat() {
       <StrategyShell>
         <div className="flex flex-1 items-center justify-center gap-2 p-6 text-sm text-base-content/60">
           <Loader2 className="size-4 animate-spin" />
-          Loading…
+          {t("Loading…")}
         </div>
       </StrategyShell>
     );
@@ -63,6 +65,7 @@ export function OnboardingChat() {
 }
 
 function SiteForm({ projectId }: { projectId: string }) {
+  const { t } = useLocale();
   const [domain, setDomain] = useState("");
   const [locationCode, setLocationCode] = useState(DEFAULT_LOCATION_CODE);
 
@@ -89,15 +92,17 @@ function SiteForm({ projectId }: { projectId: string }) {
             alt="OpenSEO"
             className="mx-auto size-10 rounded-lg"
           />
-          <h1 className="text-xl font-semibold">Tell us about your website.</h1>
+          <h1 className="text-xl font-semibold">
+            {t("Tell us about your website.")}
+          </h1>
           <p className="text-sm text-base-content/60">
-            If you have multiple websites, you can set that up later.
+            {t("If you have multiple websites, you can set that up later.")}
           </p>
         </div>
 
         <div className="space-y-4 rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm">
           <label className="block space-y-1">
-            <span className="text-sm font-medium">Your website</span>
+            <span className="text-sm font-medium">{t("Your website")}</span>
             <input
               type="text"
               className="input input-bordered w-full"
@@ -109,7 +114,7 @@ function SiteForm({ projectId }: { projectId: string }) {
 
           <label className="block space-y-1">
             <span className="text-sm font-medium">
-              This is the country we will use when getting SEO data.
+              {t("This is the country we will use when getting SEO data.")}
             </span>
             <LocationSelect value={locationCode} onChange={setLocationCode} />
           </label>
@@ -119,7 +124,7 @@ function SiteForm({ projectId }: { projectId: string }) {
             className="btn btn-primary w-full"
             disabled={!domain.trim() || save.isPending}
           >
-            {save.isPending ? "Saving…" : "Continue"}
+            {save.isPending ? t("Saving…") : t("Continue")}
           </button>
         </div>
       </form>

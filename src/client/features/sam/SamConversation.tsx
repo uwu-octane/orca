@@ -3,6 +3,7 @@ import { useAgent } from "agents/react";
 // variant skips the client->server transcript sync Think doesn't support.
 import { useAgentChat } from "@cloudflare/think/react";
 import { useEffect, useRef } from "react";
+import { useLocale } from "@/plugins/client/context";
 import { ChatComposer } from "@/client/features/onboarding/OnboardingChatParts";
 import { invalidateSamSessions } from "@/client/features/sam/samQueries";
 import {
@@ -26,6 +27,8 @@ export function SamConversation({
   projectId: string;
   sessionId: string;
 }) {
+  const { t } = useLocale();
+
   // The conversation lives in the SamChatAgent Durable Object, keyed by the
   // session id. The WebSocket is authorized in the Worker (src/server.ts) before
   // it reaches the DO; billing gates come back as normal assistant messages.
@@ -99,7 +102,7 @@ export function SamConversation({
           className="btn btn-ghost btn-xs absolute right-3 top-2 z-10 text-base-content/40"
           onClick={() => clearHistory()}
         >
-          Clear history (dev)
+          {t("Clear history (dev)")}
         </button>
       ) : null}
       <div
@@ -111,12 +114,11 @@ export function SamConversation({
           {messages.length === 0 ? (
             <div className="space-y-2 text-sm text-base-content/80">
               <p>
-                Hey, I’m SAM — your in-app SEO agent. I can research keywords,
-                size up competitors, read your SERPs, backlinks, rank tracking
-                and Search Console, and turn it into next steps for this
-                project.
+                {t(
+                  "Hey, I’m SAM — your in-app SEO agent. I can research keywords, size up competitors, read your SERPs, backlinks, rank tracking and Search Console, and turn it into next steps for this project.",
+                )}
               </p>
-              <p>Ask me anything, or start with one of these:</p>
+              <p>{t("Ask me anything, or start with one of these:")}</p>
             </div>
           ) : null}
 
@@ -158,7 +160,7 @@ export function SamConversation({
 
           {status === "error" ? (
             <p className="text-sm text-error">
-              Something went wrong. Please try again.
+              {t("Something went wrong. Please try again.")}
             </p>
           ) : null}
 
@@ -171,7 +173,7 @@ export function SamConversation({
                   className="rounded-full border border-base-300 bg-base-100 px-3 py-1.5 text-xs font-medium text-base-content/70 transition-colors hover:border-primary/50 hover:text-base-content"
                   onClick={() => sendText(question)}
                 >
-                  {question}
+                  {t(question)}
                 </button>
               ))}
             </div>
@@ -184,7 +186,7 @@ export function SamConversation({
           <ChatComposer
             busy={isBusy}
             onSend={sendText}
-            placeholder="Ask SAM to research, analyze, or track anything…"
+            placeholder={t("Ask SAM to research, analyze, or track anything…")}
           />
         </div>
       </div>

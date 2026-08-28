@@ -7,6 +7,7 @@ import {
 } from "react";
 import { ArrowUp, Check, Globe, Loader2, Sparkles } from "lucide-react";
 import { FREE_ONBOARDING_QUESTION_LIMIT } from "@/shared/onboardingChat";
+import { useLocale } from "@/plugins/client/context";
 
 const DISCORD_URL = "https://discord.gg/c9uGs3cFXr";
 
@@ -58,6 +59,7 @@ export function WelcomeMessage({
   isStartingCheckout: boolean;
   onUpgrade: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="flex gap-3">
       <div className="flex size-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -65,40 +67,44 @@ export function WelcomeMessage({
       </div>
       <div className="min-w-0 flex-1 space-y-3 pt-0.5 text-sm">
         <div className="space-y-3 text-base-content/80">
-          <p>Hey, I’m Sam — welcome to OpenSEO.</p>
+          <p>{t("Hey, I’m Sam — welcome to OpenSEO.")}</p>
           <p>
-            To get full access to OpenSEO, you need to upgrade to the paid plan.
-            But, I’m here if you have any questions.
+            {t(
+              "To get full access to OpenSEO, you need to upgrade to the paid plan. But, I’m here if you have any questions.",
+            )}
           </p>
           <p>
-            You can also{" "}
+            {t("You can also")}{" "}
             <a
               href={DISCORD_URL}
               target="_blank"
               rel="noreferrer"
               className="link link-primary"
             >
-              join the Discord
+              {t("join the Discord")}
             </a>{" "}
-            or email{" "}
+            {t("or email")}{" "}
             <a href="mailto:ben@openseo.so" className="link link-primary">
               ben@openseo.so
             </a>{" "}
-            if you have any questions I can’t help you with.
+            {t("if you have any questions I can’t help you with.")}
           </p>
           <p>
-            Want me to analyze{" "}
-            <span className="font-medium text-base-content">{domain}</span> and
-            draft a strategy, or do you have questions first? Pick one below to
-            get started.
+            {t("Want me to analyze")}{" "}
+            <span className="font-medium text-base-content">{domain}</span>{" "}
+            {t(
+              "and draft a strategy, or do you have questions first? Pick one below to get started.",
+            )}
           </p>
         </div>
 
         <div className="rounded-box border border-base-300 bg-base-200/50 p-3 text-xs lg:hidden">
-          <p className="font-medium">Want Sam to keep going?</p>
+          <p className="font-medium">{t("Want Sam to keep going?")}</p>
           <p className="mt-0.5 text-base-content/70">
-            Upgrade to run keyword research, rank tracking, and site audits on{" "}
-            {domain}.
+            {t(
+              "Upgrade to run keyword research, rank tracking, and site audits on {domain}.",
+              { domain },
+            )}
           </p>
           <button
             type="button"
@@ -106,7 +112,7 @@ export function WelcomeMessage({
             disabled={isStartingCheckout}
             onClick={onUpgrade}
           >
-            {isStartingCheckout ? "Redirecting..." : "Upgrade"}
+            {isStartingCheckout ? t("Redirecting...") : t("Upgrade")}
           </button>
           {checkoutError ? (
             <p className="mt-2 text-error">{checkoutError}</p>
@@ -130,11 +136,12 @@ export function UpgradeSidebar({
   isStartingCheckout: boolean;
   onUpgrade: () => void;
 }) {
+  const { t } = useLocale();
   const features = [
-    "Keyword research, backlinks, rank tracking & site audits",
-    "Google Search Console — read-only, no credits, no Google Cloud setup",
-    "Connect Claude, Cursor, Codex & other MCP clients",
-    "Top-up credits roll over and never expire",
+    t("Keyword research, backlinks, rank tracking & site audits"),
+    t("Google Search Console — read-only, no credits, no Google Cloud setup"),
+    t("Connect Claude, Cursor, Codex & other MCP clients"),
+    t("Top-up credits roll over and never expire"),
   ];
   const used = Math.min(questionsUsed, FREE_ONBOARDING_QUESTION_LIMIT);
   const progress = (used / FREE_ONBOARDING_QUESTION_LIMIT) * 100;
@@ -146,7 +153,9 @@ export function UpgradeSidebar({
           <Globe className="size-4" />
         </span>
         <div className="min-w-0">
-          <p className="font-medium text-base-content/80">Previewing OpenSEO</p>
+          <p className="font-medium text-base-content/80">
+            {t("Previewing OpenSEO")}
+          </p>
           <p className="truncate" title={domain}>
             {domain}
           </p>
@@ -157,11 +166,12 @@ export function UpgradeSidebar({
         <div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-3xl font-semibold tracking-tight">$10</span>
-            <span className="text-sm text-base-content/55">/month</span>
+            <span className="text-sm text-base-content/55">{t("/month")}</span>
           </div>
           <p className="mt-1.5 text-xs leading-relaxed text-base-content/55">
-            Includes $10 of usage credits every month, plus a 30-day money-back
-            guarantee.
+            {t(
+              "Includes $10 of usage credits every month, plus a 30-day money-back guarantee.",
+            )}
           </p>
         </div>
 
@@ -184,17 +194,19 @@ export function UpgradeSidebar({
             disabled={isStartingCheckout}
             onClick={onUpgrade}
           >
-            {isStartingCheckout ? "Redirecting..." : "Upgrade to continue"}
+            {isStartingCheckout
+              ? t("Redirecting...")
+              : t("Upgrade to continue")}
           </button>
           <p className="text-center text-xs leading-relaxed text-base-content/55">
-            Want advice from other OpenSEO users?{" "}
+            {t("Want advice from other OpenSEO users?")}{" "}
             <a
               href={DISCORD_URL}
               target="_blank"
               rel="noreferrer"
               className="link link-primary"
             >
-              Join the Discord
+              {t("Join the Discord")}
             </a>
             .
           </p>
@@ -209,7 +221,10 @@ export function UpgradeSidebar({
           />
         </div>
         <p className="text-xs text-base-content/55">
-          {used} of {FREE_ONBOARDING_QUESTION_LIMIT} free questions used
+          {t("{used} of {limit} free questions used", {
+            used,
+            limit: FREE_ONBOARDING_QUESTION_LIMIT,
+          })}
         </p>
       </div>
     </aside>
@@ -224,14 +239,19 @@ export function ChatGate({
   isStartingCheckout: boolean;
   onUpgrade: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="flex-shrink-0 border-t border-base-300 px-5 py-4">
       <div className="mx-auto w-full max-w-2xl rounded-box border border-primary/30 bg-primary/5 p-4 text-center">
         <p className="text-sm font-medium">
-          That’s all {FREE_ONBOARDING_QUESTION_LIMIT} free questions
+          {t("That’s all {limit} free questions", {
+            limit: FREE_ONBOARDING_QUESTION_LIMIT,
+          })}
         </p>
         <p className="mx-auto mt-1 max-w-md text-xs text-base-content/70">
-          Upgrade to keep working with Sam and unlock the full OpenSEO app.
+          {t(
+            "Upgrade to keep working with Sam and unlock the full OpenSEO app.",
+          )}
         </p>
         <button
           type="button"
@@ -239,10 +259,10 @@ export function ChatGate({
           disabled={isStartingCheckout}
           onClick={onUpgrade}
         >
-          {isStartingCheckout ? "Redirecting..." : "Upgrade to continue"}
+          {isStartingCheckout ? t("Redirecting...") : t("Upgrade to continue")}
         </button>
         <p className="mt-2 text-xs text-base-content/45">
-          30-day money-back guarantee
+          {t("30-day money-back guarantee")}
         </p>
       </div>
     </div>
@@ -252,12 +272,13 @@ export function ChatGate({
 export function ChatComposer({
   busy,
   onSend,
-  placeholder = "Ask Sam about your strategy or OpenSEO…",
+  placeholder,
 }: {
   busy: boolean;
   onSend: (text: string) => void;
   placeholder?: string;
 }) {
+  const { t } = useLocale();
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -300,12 +321,14 @@ export function ChatComposer({
         onChange={(event) => setValue(event.target.value)}
         onKeyDown={handleKey}
         rows={1}
-        placeholder={placeholder}
+        placeholder={
+          placeholder ?? t("Ask Sam about your strategy or OpenSEO…")
+        }
         className="max-h-40 flex-1 resize-none border-0 bg-transparent px-1 py-1 text-sm leading-relaxed outline-none placeholder:text-base-content/50 focus:outline-none"
       />
       <button
         type="submit"
-        aria-label="Send message"
+        aria-label={t("Send message")}
         disabled={busy || !value.trim()}
         className="btn btn-primary btn-circle btn-sm"
       >

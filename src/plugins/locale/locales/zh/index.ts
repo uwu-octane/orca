@@ -12,6 +12,9 @@ import { lighthouseZh } from "./lighthouse";
 import { aiSearchZh } from "./ai-search";
 import { billingZh } from "./billing";
 import { projectsZh } from "./projects";
+import { onboardingZh } from "./onboarding";
+import { samZh } from "./sam";
+import { ga4Zh } from "./ga4";
 
 /**
  * zh dictionary — the merged key set across every dictionary the locale
@@ -38,6 +41,9 @@ export const zh = {
   ...aiSearchZh,
   ...billingZh,
   ...projectsZh,
+  ...onboardingZh,
+  ...samZh,
+  ...ga4Zh,
 } as const;
 
 export type ShellKey = keyof typeof zh;
