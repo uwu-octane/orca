@@ -1,10 +1,36 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { LOCALE_STORAGE_KEY } from "./locale-settings";
+import { setLocaleStorageForTesting, type LocaleStorage } from "./store";
 import { translate } from "./t";
 import { zh } from "./locales/shell";
 
+function memoryStorage(entries: Record<string, string>): LocaleStorage {
+  const data = new Map(Object.entries(entries));
+  return {
+    get: (key) => data.get(key) ?? null,
+    set: (key, value) => void data.set(key, value),
+  };
+}
+
 describe("translate", () => {
-  it("returns the zh entry for a known key", () => {
+  beforeEach(() => {
+    // zh-active: the dictionary only applies when the preference resolves zh.
+    setLocaleStorageForTesting(memoryStorage({ [LOCALE_STORAGE_KEY]: "zh" }));
+  });
+
+  it("returns the zh entry for a known key while zh is active", () => {
     expect(translate("Dashboard")).toBe("仪表盘");
+  });
+
+  it("passes known keys through as English while en is active", () => {
+    setLocaleStorageForTesting(memoryStorage({ [LOCALE_STORAGE_KEY]: "en" }));
+    expect(translate("Dashboard")).toBe("Dashboard");
+  });
+
+  it("passes known keys through while the preference follows the browser", () => {
+    setLocaleStorageForTesting(memoryStorage({}));
+    // node's navigator.language is not zh, so system resolves to English.
+    expect(translate("Dashboard")).toBe("Dashboard");
   });
 
   it("interpolates {param} placeholders", () => {
