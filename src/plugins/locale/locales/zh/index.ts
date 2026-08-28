@@ -4,6 +4,7 @@ import { domainZh } from "./domain";
 import { auditZh } from "./audit";
 import { keywordsZh } from "./keywords";
 import { savedKeywordsZh } from "./saved-keywords";
+import { backlinksZh } from "./backlinks";
 
 /**
  * zh dictionary — the merged key set across every dictionary the locale
@@ -22,6 +23,7 @@ export const zh = {
   ...auditZh,
   ...keywordsZh,
   ...savedKeywordsZh,
+  ...backlinksZh,
 } as const;
 
 export type ShellKey = keyof typeof zh;

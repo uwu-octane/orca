@@ -1,4 +1,5 @@
 import { DomainFilterPanel } from "@/client/features/domain/components/DomainFilterPanel";
+import { useLocale } from "@/plugins/client/context";
 import type { BacklinksTab } from "@/types/schemas/backlinks";
 import {
   BACKLINKS_FILTER_FIELDS,
@@ -27,6 +28,7 @@ export function BacklinksFilterPanel({
   /** Scope filters can consume part of the DataForSEO condition budget. */
   maxConditions?: number;
 }) {
+  const { t } = useLocale();
   if (activeTab === "backlinks") {
     const state = filters.backlinks;
     return (
@@ -41,28 +43,28 @@ export function BacklinksFilterPanel({
         textFields={[
           {
             key: "include",
-            label: "Source URL Contains",
-            placeholder: "example.com, blog",
+            label: t("Source URL Contains"),
+            placeholder: t("example.com, blog"),
           },
           {
             key: "exclude",
-            label: "Source URL Excludes",
-            placeholder: "spam, forum",
+            label: t("Source URL Excludes"),
+            placeholder: t("spam, forum"),
           },
         ]}
         rangeFields={[
           {
-            title: "Domain Authority",
+            title: t("Domain Authority"),
             minKey: "minDomainRank",
             maxKey: "maxDomainRank",
           },
           {
-            title: "Link Authority",
+            title: t("Link Authority"),
             minKey: "minLinkAuthority",
             maxKey: "maxLinkAuthority",
           },
           {
-            title: "Spam Score",
+            title: t("Spam Score"),
             minKey: "minSpamScore",
             maxKey: "maxSpamScore",
             step: "0.1",
@@ -97,24 +99,24 @@ export function BacklinksFilterPanel({
         textFields={[
           {
             key: "include",
-            label: "Domain Contains",
-            placeholder: "example.com, blog",
+            label: t("Domain Contains"),
+            placeholder: t("example.com, blog"),
           },
           {
             key: "exclude",
-            label: "Domain Excludes",
-            placeholder: "spam, forum",
+            label: t("Domain Excludes"),
+            placeholder: t("spam, forum"),
           },
         ]}
         rangeFields={[
           {
-            title: "Backlinks",
+            title: t("Backlinks"),
             minKey: "minBacklinks",
             maxKey: "maxBacklinks",
           },
-          { title: "Rank", minKey: "minRank", maxKey: "maxRank" },
+          { title: t("Rank"), minKey: "minRank", maxKey: "maxRank" },
           {
-            title: "Spam Score",
+            title: t("Spam Score"),
             minKey: "minSpamScore",
             maxKey: "maxSpamScore",
             step: "0.1",
@@ -145,23 +147,27 @@ export function BacklinksFilterPanel({
       textFields={[
         {
           key: "include",
-          label: "Page URL Contains",
-          placeholder: "/blog, /products",
+          label: t("Page URL Contains"),
+          placeholder: t("/blog, /products"),
         },
         {
           key: "exclude",
-          label: "Page URL Excludes",
-          placeholder: "/tag, /author",
+          label: t("Page URL Excludes"),
+          placeholder: t("/tag, /author"),
         },
       ]}
       rangeFields={[
-        { title: "Backlinks", minKey: "minBacklinks", maxKey: "maxBacklinks" },
         {
-          title: "Referring Domains",
+          title: t("Backlinks"),
+          minKey: "minBacklinks",
+          maxKey: "maxBacklinks",
+        },
+        {
+          title: t("Referring Domains"),
           minKey: "minReferringDomains",
           maxKey: "maxReferringDomains",
         },
-        { title: "Rank", minKey: "minRank", maxKey: "maxRank" },
+        { title: t("Rank"), minKey: "minRank", maxKey: "maxRank" },
       ]}
       onApply={(values) => {
         state.apply(values);
@@ -182,11 +188,12 @@ function BacklinksToggleControls({
   draft: BacklinksTabFilterValues;
   setValue: (key: keyof BacklinksTabFilterValues, value: string) => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="flex flex-wrap items-center gap-4">
       <div className="space-y-1.5">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-          Link Type
+          {t("Link Type")}
         </p>
         <div className="flex items-center gap-1">
           {(["", "dofollow", "nofollow"] as const).map((value) => (
@@ -197,10 +204,10 @@ function BacklinksToggleControls({
               onClick={() => setValue("linkType", value)}
             >
               {value === ""
-                ? "All"
+                ? t("All")
                 : value === "dofollow"
-                  ? "Dofollow"
-                  : "Nofollow"}
+                  ? t("Dofollow")
+                  : t("Nofollow")}
             </button>
           ))}
         </div>
@@ -208,7 +215,7 @@ function BacklinksToggleControls({
 
       <div className="space-y-1.5">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-          Visibility
+          {t("Visibility")}
         </p>
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-1.5 cursor-pointer">
@@ -220,7 +227,7 @@ function BacklinksToggleControls({
                 setValue("hideLost", event.target.checked ? "true" : "")
               }
             />
-            <span className="text-xs">Hide lost</span>
+            <span className="text-xs">{t("Hide lost")}</span>
           </label>
           <label className="flex items-center gap-1.5 cursor-pointer">
             <input
@@ -231,7 +238,7 @@ function BacklinksToggleControls({
                 setValue("hideBroken", event.target.checked ? "true" : "")
               }
             />
-            <span className="text-xs">Hide broken</span>
+            <span className="text-xs">{t("Hide broken")}</span>
           </label>
         </div>
       </div>

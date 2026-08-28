@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { useLocale } from "@/plugins/client/context";
 import { RESEARCH_SCOPE_LABELS } from "@/shared/researchScope";
 import { HeaderHelpLabel } from "@/client/features/keywords/components";
 import {
@@ -20,6 +21,7 @@ export function BacklinksOverviewPanels({
   data: BacklinksOverviewData;
   summaryStats: SummaryStat[];
 }) {
+  const { t } = useLocale();
   return (
     <>
       <div>
@@ -39,37 +41,42 @@ export function BacklinksOverviewPanels({
           className="btn btn-ghost btn-sm gap-2 px-0 text-base-content/70 hover:bg-transparent"
         >
           <ArrowLeft className="size-4" />
-          Recent searches
+          {t("Recent searches")}
         </Link>
       </div>
       <div className="flex flex-wrap items-center gap-2 text-sm text-base-content/65">
         <span className="badge badge-outline">
-          {RESEARCH_SCOPE_LABELS[data.scope]}
+          {t(RESEARCH_SCOPE_LABELS[data.scope])}
         </span>
-        <span>Target: {data.displayTarget}</span>
+        <span>{t("Target: {target}", { target: data.displayTarget })}</span>
         <span>-</span>
-        <span>Updated {formatRelativeTimestamp(data.fetchedAt)}</span>
+        <span>
+          {t("Updated {timestamp}", {
+            timestamp: formatRelativeTimestamp(data.fetchedAt),
+          })}
+        </span>
         {/* history/live can't exclude subdomains, so say so rather than imply
             the charts match the domain-scoped totals. */}
         {data.scope === "domain" ? (
-          <span>- Trends include subdomains</span>
+          <span>- {t("Trends include subdomains")}</span>
         ) : null}
       </div>
       <OverviewGrid data={data} summaryStats={summaryStats} />
       {data.scope === "exact_url" ? (
         <div className="alert alert-info">
           <span>
-            Showing backlinks for this exact page. Switch the scope to Domain or
-            Subdomains for site-wide results — trend charts need one of those.
+            {t(
+              "Showing backlinks for this exact page. Switch the scope to Domain or Subdomains for site-wide results — trend charts need one of those.",
+            )}
           </span>
         </div>
       ) : null}
       {data.scope === "subfolder" ? (
         <div className="alert alert-info">
           <span>
-            Showing backlinks pointing into this subfolder. Counts come from
-            filtered backlink totals; rank, trends, and the referring-domains
-            breakdown need Domain or Subdomains scope.
+            {t(
+              "Showing backlinks pointing into this subfolder. Counts come from filtered backlink totals; rank, trends, and the referring-domains breakdown need Domain or Subdomains scope.",
+            )}
           </span>
         </div>
       ) : null}
@@ -104,6 +111,7 @@ function SummaryStatsGrid({
   data: BacklinksOverviewData;
   summaryStats: SummaryStat[];
 }) {
+  const { t } = useLocale();
   const hasTrendPanels = data.scope === "domain" || data.scope === "subdomains";
   const cardClassName = `card bg-base-100 border border-base-300 ${hasTrendPanels ? "md:col-span-2 xl:col-span-1" : ""}`;
 
@@ -115,8 +123,8 @@ function SummaryStatsGrid({
             <div key={item.label}>
               <div className="text-xs uppercase tracking-wide text-base-content/55">
                 <HeaderHelpLabel
-                  label={item.label}
-                  helpText={item.description}
+                  label={t(item.label)}
+                  helpText={t(item.description)}
                 />
               </div>
               <p className="text-2xl font-semibold">{item.value}</p>
@@ -129,17 +137,18 @@ function SummaryStatsGrid({
 }
 
 function TrendPanels({ data }: { data: BacklinksOverviewData }) {
+  const { t } = useLocale();
   return (
     <>
       <TrendCard
-        title="Backlink growth"
-        description="Backlinks and referring domains over the last year"
+        title={t("Backlink growth")}
+        description={t("Backlinks and referring domains over the last year")}
       >
         <BacklinksTrendChart data={data.trends} />
       </TrendCard>
       <TrendCard
-        title="New vs lost"
-        description="Backlink acquisition and attrition"
+        title={t("New vs lost")}
+        description={t("Backlink acquisition and attrition")}
       >
         <BacklinksNewLostChart data={data.newLostTrends} />
       </TrendCard>

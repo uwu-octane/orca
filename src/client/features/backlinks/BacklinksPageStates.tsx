@@ -1,4 +1,5 @@
 import { ShieldAlert } from "lucide-react";
+import { useLocale } from "@/plugins/client/context";
 
 export function BacklinksLoadingState() {
   return (
@@ -40,6 +41,7 @@ export function BacklinksErrorState({
   errorMessage: string | null;
   onRetry: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <section className="rounded-2xl border border-error/30 bg-error/5 p-6 space-y-3">
       <div className="flex items-start gap-3">
@@ -47,14 +49,18 @@ export function BacklinksErrorState({
           <ShieldAlert className="size-5" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold">Could not load backlinks</h2>
+          <h2 className="text-lg font-semibold">
+            {t("Could not load backlinks")}
+          </h2>
           <p className="text-sm text-base-content/70">
-            {errorMessage ?? "Please try again in a moment."}
+            {errorMessage
+              ? t(errorMessage)
+              : t("Please try again in a moment.")}
           </p>
         </div>
       </div>
       <button className="btn btn-sm" onClick={onRetry}>
-        Retry
+        {t("Retry")}
       </button>
     </section>
   );
