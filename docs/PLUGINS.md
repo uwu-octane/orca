@@ -11,16 +11,19 @@ vendored into `vendor/loader` and the core comes from npm `cordis@4.0.0-rc.8`.
 ## Status
 
 - [x] Phase 0 — loader vendored, spike green, manifest-driven assembly boots
-- [ ] Phase 1 — manifest + module map + server/client contexts (WIP)
-- [ ] Phase 2 — locale plugin runtime (WIP)
-- [ ] Phase 3 — shell translation (WIP)
-- [ ] Phase 4 — Intl locale threading (WIP)
-- [ ] Phase 5 — seams for `billing` / `seoData` / `mcp`
+- [x] Phase 1 — manifest + module map + server/client contexts
+- [x] Phase 2 — locale plugin runtime (zh shell dictionary, store, t())
+- [x] Phase 3 — shell translation (sidebar/nav/menus, auth, errors, settings)
+- [x] Phase 4 — Intl locale threading (client formatters + server locale param)
+- [x] Phase 5 — seams for `billing` / `seoData` / `mcp` documented; evolution
+      paths recorded below. Seam implementation is separate, planned work.
 
 ## Assembly model
 
 - **Manifest** — `src/plugins/manifest.yaml`, versioned in-repo. Rows are
-  loader entry options: `{ id, name, config, inject, disabled }`.
+  loader entry options: `{ id, name, config, disabled }`. `inject` is
+  deliberately rejected at the manifest boundary until a plugin needs it
+  (billing phase); plugins may still declare `inject` from their module.
 - **Module map** — `src/plugins/module-map.ts` maps plugin names to static
   `import()`s. The loader's `internal` is this map; plugin resolution is
   compile-time, assembly (enable/disable/config/failure isolation) is
@@ -35,25 +38,39 @@ vendored into `vendor/loader` and the core comes from npm `cordis@4.0.0-rc.8`.
 
 ## Plugin shape
 
-A plugin is a module exporting (or default-exporting) a function or object:
+A plugin is a module exporting (or default-exporting) a function or object.
+This is the actual locale pilot, which is the canonical shape:
 
 ```ts
 // src/plugins/locale/index.ts
 import type { Context } from "cordis";
-import { z } from "zod";
 
 export const name = "locale";
+
+export function apply(ctx: Context): void {
+  ctx.provide("locale", makeLocaleService());
+}
+```
+
+A plugin that takes configuration additionally exports `Config`, a **Zod v4
+schema** (Standard Schema interop — cordis validates it natively; no
+schemastery, no custom validation layer):
+
+```ts
+import { z } from "zod";
+
 export const Config = z.object({
   defaultLocale: z.enum(["en", "zh"]).default("en"),
 });
 
 export function apply(ctx: Context, config: z.infer<typeof Config>) {
-  ctx.provide("locale", makeLocaleService(config));
+  // ...
 }
 ```
 
-- `Config` is a **Zod v4 schema** (Standard Schema interop — cordis validates
-  it natively; no schemastery, no custom validation layer).
+The locale pilot itself has no `Config`; its preference is runtime state
+(localStorage on the client), not boot-time configuration.
+
 - `inject: string[]` lists required services; the fiber stays pending until
   all exist and re-runs when one appears/disappears/changes.
 - Services are **kebab-case names** (`billing`, `seoData`, `locale`, `mcp`).
@@ -99,3 +116,24 @@ export function apply(ctx: Context, config: z.infer<typeof Config>) {
   connectors become a second adapter.
 - **`mcp`** — `ctx.mcp.registerTool(name, zodSchema, handler)`; tool plugins
   declare `inject: ["seoData", "billing"]`.
+
+## Evolution paths (recorded, not scheduled)
+
+- **Build-free runtime manifests** — today the manifest ships in the bundle
+  (vite dev hot-reloads it; production workerd re-deploys it). Runtime-editable
+  manifests for self-hosted installs need a KV-backed manifest store the
+  server context reads at boot. Not planned until a self-host user asks.
+- **Per-request state** — when a service genuinely needs request scope, boot a
+  child context with `ctx.isolate` inside the request handler rather than
+  growing a stateful service. The server tree itself stays stateless.
+- **Third-party plugins** — a plugin published outside this repo is one line
+  in `module-map.ts` (`name: () => import("pkg")`). Versioning, review, and
+  supply-chain policy for external plugins are open questions by design.
+- **Manifest `inject`** — re-enable the `inject` field in the manifest entry
+  schema when a plugin needs per-entry service injection (billing phase).
+- **Dictionary growth** — zh shell keys stay eagerly bundled; if per-feature
+  translation grows the dictionary beyond a few hundred entries, split
+  per-page dictionaries behind the same `t()` and load them lazily.
+- **Plugin settings UI** — dsh pairs its loader with a schemastery-driven
+  settings UI we skipped. If a configurable plugin ships, revisit a
+  settings-page renderer; not needed while configs are manifest-only.
