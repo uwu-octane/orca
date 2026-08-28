@@ -1,32 +1,22 @@
-import { valueMap } from 'cosmokit'
+// FORK: the upstream `new Function` evaluator is banned in workerd ("Code
+// generation from strings disallowed" at module load, regardless of use).
+// `!js` expressions are unsupported on this platform — callers that reach
+// this path (e.g. an entry whose `disabled` is a !!js expression) get an
+// explicit error. See docs/PLUGINS.md.
 
-// eslint-disable-next-line no-new-func
 /** Evaluate a JavaScript expression against a loader context scope. */
-export const evaluate = new Function('ctx', 'expr', `
-  with (ctx) {
-    return eval(expr)
-  }
-`) as ((ctx: object, expr: string) => any)
-
-/** Recursively replace YAML `!js` expression nodes with evaluated values. */
-export function interpolate(ctx: object, value: any): any {
-  if (isJsExpr(value)) {
-    return evaluate(ctx, value.__jsExpr)
-  } else if (!value || typeof value !== 'object') {
-    return value
-  } else if (Array.isArray(value)) {
-    return value.map(item => interpolate(ctx, item))
-  } else {
-    return valueMap(value, item => interpolate(ctx, item))
-  }
+export function evaluate(_ctx: object, _expr: string): never {
+  throw new Error(
+    "!js expressions are unsupported on this platform (see docs/PLUGINS.md)",
+  );
 }
 
 /** Return true when a value is a serialized loader JavaScript expression. */
 export function isJsExpr(value: any): value is JsExpr {
-  return value instanceof Object && '__jsExpr' in value
+  return value instanceof Object && "__jsExpr" in value;
 }
 
 /** Serialized JavaScript expression produced by the include YAML tag. */
 export interface JsExpr {
-  __jsExpr: string
+  __jsExpr: string;
 }

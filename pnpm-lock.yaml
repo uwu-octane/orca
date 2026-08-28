@@ -55,8 +55,8 @@ importers:
         specifier: ^2.9.0
         version: 2.9.0(ai@6.0.199(zod@4.3.6))(zod@4.3.6)
       '@orca/cordis-plugin-loader':
-        specifier: file:vendor/loader
-        version: file:vendor/loader(cordis@4.0.0-rc.8)
+        specifier: link:vendor/loader
+        version: link:vendor/loader
       '@tanstack/query-core':
         specifier: ^5.101.2
         version: 5.101.2
@@ -1888,11 +1888,6 @@ packages:
   '@opentelemetry/semantic-conventions@1.40.0':
     resolution: {integrity: sha512-cifvXDhcqMwwTlTK04GBNeIe7yyo28Mfby85QXFe1Yk8nmi36Ab/5UQwptOx84SsoGNRg+EVSjwzfSZMy6pmlw==}
     engines: {node: '>=14'}
-
-  '@orca/cordis-plugin-loader@file:vendor/loader':
-    resolution: {directory: vendor/loader, type: directory}
-    peerDependencies:
-      cordis: ^4.0.0-rc.0
 
   '@oxc-project/types@0.130.0':
     resolution: {integrity: sha512-ibD2usx9JRu7f5pu2tMKMI4cpA4NgXJQoYRP4pQ7Pxmn1l6k/53qWtQWZayhYy3X4QZkt90Ot+mJEaeXouio6Q==}
@@ -7643,11 +7638,6 @@ snapshots:
   '@opentelemetry/api@1.9.1': {}
 
   '@opentelemetry/semantic-conventions@1.40.0': {}
-
-  '@orca/cordis-plugin-loader@file:vendor/loader(cordis@4.0.0-rc.8)':
-    dependencies:
-      cordis: 4.0.0-rc.8
-      cosmokit: 1.8.1
 
   '@oxc-project/types@0.130.0': {}
 

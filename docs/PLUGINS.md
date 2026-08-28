@@ -26,8 +26,10 @@ vendored into `vendor/loader` and the core comes from npm `cordis@4.0.0-rc.8`.
   compile-time, assembly (enable/disable/config/failure isolation) is
   runtime. workerd has no filesystem, so Node-style package resolution is
   replaced by this map on both server and client.
-- **No `!js` config expressions** — cordis rc.8 emits no `internal/config`
-  event, so manifest configs must be plain YAML data.
+- **No `!js` config expressions** — workerd bans `new Function` ("Code
+  generation from strings disallowed"), so the vendored evaluator throws on
+  call; and cordis rc.8 emits no `internal/config` event for resolution-time
+  interpolation anyway. Manifest configs must be plain YAML data.
 - **No HMR, no patch layers** — the vendored `include`/`group` builtins and
   the Node-host HMR plugin are omitted; vite dev restarts cover reload needs.
 

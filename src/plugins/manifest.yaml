@@ -1,0 +1,6 @@
+# Runtime assembly manifest (versioned in-repo). Rows are cordis loader entry
+# options; `name` resolves through the static module map
+# (src/plugins/module-map.ts). Configs are plain YAML data — `!js` expressions
+# are unsupported on cordis rc.8 (see docs/PLUGINS.md).
+server: []
+client: []

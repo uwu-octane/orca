@@ -85,7 +85,7 @@
     "@modelcontextprotocol/sdk": "1.30.0",
     "@modelcontextprotocol/server": "2.0.0",
     "@openrouter/ai-sdk-provider": "^2.9.0",
-    "@orca/cordis-plugin-loader": "file:vendor/loader",
+    "@orca/cordis-plugin-loader": "link:vendor/loader",
     "@tanstack/query-core": "^5.101.2",
     "@tanstack/react-form": "^1.33.0",
     "@tanstack/react-query": "^5.101.2",

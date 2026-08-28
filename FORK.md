@@ -11,10 +11,10 @@ Branch model and rules: see "Fork maintenance" in [README.md](./README.md).
 
 ## Customizations
 
-| Date       | Description                                                                                                                                                                | Commits   |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| 2026-08-24 | Dev/preview default port 3001 → 8989 (`vite.config.ts` fallback + package.json `preview` script). Docker self-host port left at 3001.                                      | `b57c695` |
-| 2026-08-24 | Dev/preview server binds all interfaces (`host: true`) and allows `*.local` hostnames via leading-dot `.local` syntax (Vite does not support `*` globs in `allowedHosts`). | `6d5a6d9` |
+| Date       | Description                                                                                                                                                                                                                                         | Commits   |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| 2026-08-24 | Dev/preview default port 3001 → 8989 (`vite.config.ts` fallback + package.json `preview` script). Docker self-host port left at 3001.                                                                                                               | `b57c695` |
+| 2026-08-24 | Dev/preview server binds all interfaces (`host: true`) and allows `*.local` hostnames via leading-dot `.local` syntax (Vite does not support `*` globs in `allowedHosts`).                                                                          | `6d5a6d9` |
 | 2026-08-28 | Cordis plugin layer, phase 0: vendored `@orca/cordis-plugin-loader` (`vendor/loader`, from deepseek-harness, MIT — internal.ts dropped, `!js` config expressions unsupported on rc.8); `cordis@4.0.0-rc.8` exact-pinned; spec in `docs/PLUGINS.md`. | `1abc9f2` |
 
 ## Skipped / reverted upstream changes

@@ -44,8 +44,5 @@
     // Tailwindcss used via @tailwindcss/vite plugin
     "tailwindcss",
     "daisyui",
-    // Phase 1 imports these (plugin contexts + manifest boot); remove then.
-    "@orca/cordis-plugin-loader",
-    "cordis",
   ],
 }
