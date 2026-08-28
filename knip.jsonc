@@ -34,6 +34,8 @@
     // Alchemy state/bundle artifacts (gitignored)
     "!.alchemy/**",
     "!badseo/**",
+    // vendored cordis loader — typechecked by tsc, not analyzed by knip
+    "!vendor/**",
   ],
   "ignore": ["drizzle-prod.config.ts"],
   // Disable Drizzle plugin - it tries to load drizzle.config.ts which imports cloudflare:workers
@@ -42,5 +44,8 @@
     // Tailwindcss used via @tailwindcss/vite plugin
     "tailwindcss",
     "daisyui",
+    // Phase 1 imports these (plugin contexts + manifest boot); remove then.
+    "@orca/cordis-plugin-loader",
+    "cordis",
   ],
 }
