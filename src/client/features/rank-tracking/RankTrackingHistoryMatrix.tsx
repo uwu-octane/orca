@@ -1,3 +1,5 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
 import { useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import type { RankPositionMatrixCell } from "@/serverFunctions/rank-tracking";
@@ -138,7 +140,7 @@ function buildMatrix(cells: RankPositionMatrixCell[]): {
 }
 
 function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString("en-US", {
+  return new Date(value).toLocaleDateString(getIntlLocale(readActiveLocale()), {
     month: "short",
     day: "numeric",
   });

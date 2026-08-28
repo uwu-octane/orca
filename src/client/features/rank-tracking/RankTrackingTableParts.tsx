@@ -1,3 +1,5 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { buildCsv, downloadCsv } from "@/client/lib/csv";
@@ -129,10 +131,13 @@ export function DeviceUrlCell({
   );
 }
 
-const compactFormatter = new Intl.NumberFormat("en-US", {
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
+const compactFormatter = new Intl.NumberFormat(
+  getIntlLocale(readActiveLocale()),
+  {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  },
+);
 
 export function VolumeCell({ value }: { value: number | null }) {
   if (value == null) return <span className="text-base-content/40">-</span>;

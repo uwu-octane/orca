@@ -7,8 +7,14 @@ export function shiftGa4Date(value: string, days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
-export function ga4DateInTimeZone(now: Date, timeZone: string): string {
-  const parts = new Intl.DateTimeFormat("en-US", {
+// FORK: locale plugin — optional locale param (default keeps the original
+// en-US padding guarantees for server-side date keys).
+export function ga4DateInTimeZone(
+  now: Date,
+  timeZone: string,
+  locale: string = "en-US",
+): string {
+  const parts = new Intl.DateTimeFormat(locale, {
     timeZone,
     year: "numeric",
     month: "2-digit",

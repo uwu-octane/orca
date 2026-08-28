@@ -1,3 +1,5 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
 import type {
   PromptExplorerModel,
   WebSearchCountryCode,
@@ -98,7 +100,9 @@ export function formatCountryLabel(code: WebSearchCountryCode): string {
   return COUNTRY_LABELS[code];
 }
 
-const NUMBER_FORMATTER = new Intl.NumberFormat("en-US");
+const NUMBER_FORMATTER = new Intl.NumberFormat(
+  getIntlLocale(readActiveLocale()),
+);
 
 /** Render a count for display. Null/undefined renders as an em-dash. */
 export function formatCount(value: number | null | undefined): string {

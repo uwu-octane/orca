@@ -1,3 +1,5 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
 import { useMemo, useState } from "react";
 import { Copy, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -301,7 +303,7 @@ function ChartTooltip({
   return (
     <div className="rounded-md border border-base-300 bg-base-100 px-3 py-2 shadow-sm space-y-0.5">
       <p className="text-xs text-base-content/60">
-        {new Date(label).toLocaleDateString("en-US", {
+        {new Date(label).toLocaleDateString(getIntlLocale(readActiveLocale()), {
           month: "short",
           day: "numeric",
           year: "numeric",

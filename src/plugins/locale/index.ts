@@ -10,6 +10,7 @@ import type { LocaleId, LocalePreference } from "./locale-settings";
 
 export type { LocaleId, LocalePreference } from "./locale-settings";
 export { getIntlLocale } from "./locale-settings";
+export { readActiveLocale } from "./store";
 export { translate, type T } from "./t";
 
 /** Service exposed on the client plugin tree as `ctx.locale`. */

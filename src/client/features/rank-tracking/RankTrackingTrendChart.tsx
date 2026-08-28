@@ -1,3 +1,5 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import {
   CartesianGrid,
@@ -153,7 +155,7 @@ export function RankTrendChart({
 }
 
 export function formatDateTick(value: number): string {
-  return new Date(value).toLocaleDateString("en-US", {
+  return new Date(value).toLocaleDateString(getIntlLocale(readActiveLocale()), {
     month: "short",
     day: "numeric",
   });
