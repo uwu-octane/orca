@@ -89,6 +89,10 @@ The locale pilot itself has no `Config`; its preference is runtime state
   module-scope singleton, wired once from `src/server.ts`).
 - Client boot: `src/plugins/client/context.tsx` (`CordisProvider` mounted
   inside `ClientOnly` in `__root.tsx`; React reads services via `useService`).
+  Fiber activation is async, so hooks must tolerate the boot window: the
+  provider re-renders when boot settles and `useLocale` falls back to
+  English passthrough while a service is absent — the error boundary calls
+  it, so it must never throw.
 - **Banned:** dynamic plugin loading outside the manifest; one-off service
   abstractions; `node:` imports in plugin code; server↔client imports.
 - Tests are plain vitest (node env): `new Context()` + `ctx.plugin(...)` or a
