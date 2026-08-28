@@ -2,6 +2,7 @@ import { shellZh } from "./shell";
 import { dashboardZh } from "./dashboard";
 import { domainZh } from "./domain";
 import { auditZh } from "./audit";
+import { keywordsZh } from "./keywords";
 
 /**
  * zh dictionary — the merged key set across every dictionary the locale
@@ -18,6 +19,7 @@ export const zh = {
   ...dashboardZh,
   ...domainZh,
   ...auditZh,
+  ...keywordsZh,
 } as const;
 
 export type ShellKey = keyof typeof zh;

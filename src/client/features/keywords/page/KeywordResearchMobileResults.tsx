@@ -27,12 +27,14 @@ import {
   TableBulkActionButton,
   TableBulkExportMenu,
 } from "@/client/components/table/TableBulkActionBar";
+import { useLocale } from "@/plugins/client/context";
 
 type Props = {
   controller: KeywordResearchControllerState;
 };
 
 export function KeywordResearchMobileResults({ controller }: Props) {
+  const { t } = useLocale();
   const { filteredRows, mobileTab } = controller;
 
   return (
@@ -46,7 +48,7 @@ export function KeywordResearchMobileResults({ controller }: Props) {
           }`}
           onClick={() => controller.setMobileTab("keywords")}
         >
-          Keywords ({filteredRows.length})
+          {t("Keywords ({count})", { count: filteredRows.length })}
         </button>
         <button
           className={`flex-1 py-2 text-sm font-medium text-center border-b-2 transition-colors ${
@@ -56,7 +58,7 @@ export function KeywordResearchMobileResults({ controller }: Props) {
           }`}
           onClick={() => controller.setMobileTab("serp")}
         >
-          SERP Analysis
+          {t("SERP Analysis")}
         </button>
       </div>
 
@@ -81,6 +83,7 @@ export function KeywordResearchMobileResults({ controller }: Props) {
 }
 
 function MobileKeywordResults({ controller }: Props) {
+  const { t } = useLocale();
   const {
     activeFilterCount,
     filteredRows,
@@ -94,10 +97,13 @@ function MobileKeywordResults({ controller }: Props) {
 
   const keywordCountLabel =
     selectedRows.size > 0
-      ? `${selectedRows.size} selected`
+      ? t("{count} selected", { count: selectedRows.size })
       : activeFilterCount > 0
-        ? `Showing ${filteredRows.length} of ${rows.length}`
-        : `Showing ${filteredRows.length} keywords`;
+        ? t("Showing {filtered} of {total}", {
+            filtered: filteredRows.length,
+            total: rows.length,
+          })
+        : t("Showing {count} keywords", { count: filteredRows.length });
 
   const canExport = filteredRows.length > 0;
   const selectedExportRows = filteredRows
@@ -133,9 +139,12 @@ function MobileKeywordResults({ controller }: Props) {
           className="mx-4 mt-2 rounded-lg border border-warning/40 bg-warning/15 px-3 py-2 text-xs text-base-content"
           role="status"
         >
-          No exact match for{" "}
-          <span className="font-medium">"{controller.searchedKeyword}"</span>.
-          Showing closest related keywords.
+          {t(
+            'No exact match for "{keyword}". Showing closest related keywords.',
+            {
+              keyword: controller.searchedKeyword,
+            },
+          )}
         </div>
       ) : null}
 
@@ -145,7 +154,7 @@ function MobileKeywordResults({ controller }: Props) {
           onClick={() => controller.setShowFilters((current) => !current)}
         >
           <SlidersHorizontal className="size-3.5" />
-          Filters
+          {t("Filters")}
           {activeFilterCount > 0 ? (
             <span className="badge badge-xs badge-primary border-0 text-primary-content">
               {activeFilterCount}
@@ -161,7 +170,7 @@ function MobileKeywordResults({ controller }: Props) {
             tabIndex={0}
             role="button"
             className={`btn btn-ghost btn-xs gap-1 ${!canExport ? "btn-disabled" : ""}`}
-            aria-label="Export"
+            aria-label={t("Export")}
           >
             <Download className="size-3.5" />
             <ChevronDown className="size-3 opacity-60" />
@@ -173,13 +182,13 @@ function MobileKeywordResults({ controller }: Props) {
             <li>
               <button onClick={handleExportToSheets} disabled={!canExport}>
                 <Sheet className="size-4" />
-                Export to Sheets
+                {t("Export to Sheets")}
               </button>
             </li>
             <li>
               <button onClick={controller.exportCsv} disabled={!canExport}>
                 <FileDown className="size-4" />
-                Export CSV
+                {t("Export CSV")}
               </button>
             </li>
           </ul>
@@ -195,17 +204,17 @@ function MobileKeywordResults({ controller }: Props) {
               icon={<Save className="size-3.5" />}
               onClick={controller.handleSaveKeywords}
             >
-              Save
+              {t("Save")}
             </TableBulkActionButton>
             <TableBulkExportMenu
               actions={[
                 {
-                  label: "Export to Sheets",
+                  label: t("Export to Sheets"),
                   icon: <Sheet className="size-4" />,
                   onClick: handleExportSelectionToSheets,
                 },
                 {
-                  label: "Export CSV",
+                  label: t("Export CSV"),
                   icon: <FileDown className="size-4" />,
                   onClick: handleExportSelectionCsv,
                 },
@@ -243,13 +252,14 @@ function MobileKeywordResults({ controller }: Props) {
 }
 
 function MobileFilters({ controller }: Props) {
+  const { t } = useLocale();
   const { activeFilterCount, filtersForm } = controller;
 
   return (
     <div className="shrink-0 border-b border-base-300 bg-gradient-to-b from-base-100 to-base-200/30 px-4 py-3 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <p className="text-xs font-semibold">Refine table results</p>
+          <p className="text-xs font-semibold">{t("Refine table results")}</p>
           {activeFilterCount > 0 ? (
             <span className="badge badge-xs badge-primary border-0 text-primary-content">
               {activeFilterCount}
@@ -262,7 +272,7 @@ function MobileFilters({ controller }: Props) {
           disabled={activeFilterCount === 0}
         >
           <RotateCcw className="size-3" />
-          Clear
+          {t("Clear")}
         </button>
       </div>
 
@@ -271,7 +281,7 @@ function MobileFilters({ controller }: Props) {
           {(field) => (
             <input
               className="input input-bordered input-sm bg-base-100"
-              placeholder="Include terms (audit, checker)"
+              placeholder={t("Include terms (audit, checker)")}
               value={field.state.value}
               onChange={(event) => field.handleChange(event.target.value)}
             />
@@ -281,7 +291,7 @@ function MobileFilters({ controller }: Props) {
           {(field) => (
             <input
               className="input input-bordered input-sm bg-base-100"
-              placeholder="Exclude terms (jobs, course)"
+              placeholder={t("Exclude terms (jobs, course)")}
               value={field.state.value}
               onChange={(event) => field.handleChange(event.target.value)}
             />
@@ -293,34 +303,34 @@ function MobileFilters({ controller }: Props) {
         <MobileRangeInput
           form={filtersForm}
           name="minVol"
-          placeholder="Min volume"
+          placeholder={t("Min volume")}
         />
         <MobileRangeInput
           form={filtersForm}
           name="maxVol"
-          placeholder="Max volume"
+          placeholder={t("Max volume")}
         />
         <MobileRangeInput
           form={filtersForm}
           name="minCpc"
-          placeholder="Min CPC"
+          placeholder={t("Min CPC")}
           step="0.01"
         />
         <MobileRangeInput
           form={filtersForm}
           name="maxCpc"
-          placeholder="Max CPC"
+          placeholder={t("Max CPC")}
           step="0.01"
         />
         <MobileRangeInput
           form={filtersForm}
           name="minKd"
-          placeholder="Min difficulty"
+          placeholder={t("Min difficulty")}
         />
         <MobileRangeInput
           form={filtersForm}
           name="maxKd"
-          placeholder="Max difficulty"
+          placeholder={t("Max difficulty")}
         />
       </div>
 

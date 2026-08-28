@@ -11,6 +11,7 @@ import {
 import { isLabsLocationCode } from "@/client/features/keywords/locations";
 import { LocationSelect } from "@/client/components/LocationSelect";
 import type { KeywordResearchControllerState } from "./types";
+import { useLocale } from "@/plugins/client/context";
 
 type Props = {
   controller: KeywordResearchControllerState;
@@ -23,6 +24,7 @@ function getTextareaRows(value: string): number {
 }
 
 export function KeywordResearchSearchBar({ controller }: Props) {
+  const { t } = useLocale();
   const { controlsForm, handleSearchSubmit } = controller;
 
   return (
@@ -47,7 +49,7 @@ export function KeywordResearchSearchBar({ controller }: Props) {
                   <textarea
                     className="grow min-w-0 resize-none bg-transparent text-sm leading-6 outline-none placeholder:text-base-content/40"
                     rows={rows}
-                    placeholder="Enter a keyword"
+                    placeholder={t("Enter a keyword")}
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
                     onKeyDown={(event) => {
@@ -88,7 +90,7 @@ export function KeywordResearchSearchBar({ controller }: Props) {
                 >
                   {RESULT_LIMITS.map((limit) => (
                     <option key={limit} value={limit}>
-                      {limit} results
+                      {t("{count} results", { count: limit })}
                     </option>
                   ))}
                 </select>
@@ -104,10 +106,10 @@ export function KeywordResearchSearchBar({ controller }: Props) {
                     field.handleChange(normalizeKeywordMode(event.target.value))
                   }
                 >
-                  <option value="auto">Auto</option>
-                  <option value="related">Related keywords</option>
-                  <option value="suggestions">Suggestions</option>
-                  <option value="ideas">Ideas</option>
+                  <option value="auto">{t("Auto")}</option>
+                  <option value="related">{t("Related keywords")}</option>
+                  <option value="suggestions">{t("Suggestions")}</option>
+                  <option value="ideas">{t("Ideas")}</option>
                 </select>
               )}
             </controlsForm.Field>
@@ -116,7 +118,7 @@ export function KeywordResearchSearchBar({ controller }: Props) {
               type="submit"
               className="btn btn-primary w-full px-6 lg:w-auto lg:shrink-0"
             >
-              Search
+              {t("Search")}
             </button>
           </div>
         </form>
@@ -125,7 +127,7 @@ export function KeywordResearchSearchBar({ controller }: Props) {
             const keywordError = getFieldError(field.state.meta.errors);
 
             return keywordError ? (
-              <p className="text-sm text-error">{keywordError}</p>
+              <p className="text-sm text-error">{t(keywordError)}</p>
             ) : null;
           }}
         </controlsForm.Field>
@@ -145,12 +147,14 @@ export function KeywordResearchSearchBar({ controller }: Props) {
                         }
                       />
                       <span className="text-sm font-medium text-base-content/80">
-                        Clickstream-refined volumes
+                        {t("Clickstream-refined volumes")}
                       </span>
                     </label>
                     <div
                       className="tooltip tooltip-right"
-                      data-tip="Google reports one combined search volume for similar keywords (e.g. 'seo tool' and 'seo tools'). Turn this on to estimate each keyword's own volume. Costs 2x the credits."
+                      data-tip={t(
+                        "Google reports one combined search volume for similar keywords (e.g. 'seo tool' and 'seo tools'). Turn this on to estimate each keyword's own volume. Costs 2x the credits.",
+                      )}
                     >
                       <Info className="size-3.5 text-base-content/50" />
                     </div>
@@ -164,9 +168,9 @@ export function KeywordResearchSearchBar({ controller }: Props) {
               >
                 <Info className="mt-0.5 size-4 shrink-0 text-info" />
                 <span>
-                  Keyword data for this country comes from Google Ads — search
-                  volume, CPC, and trends are available, but difficulty and
-                  intent are not.
+                  {t(
+                    "Keyword data for this country comes from Google Ads — search volume, CPC, and trends are available, but difficulty and intent are not.",
+                  )}
                 </span>
               </div>
             )

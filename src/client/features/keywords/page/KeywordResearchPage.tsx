@@ -25,6 +25,7 @@ import { KeywordResearchLoadingState } from "./KeywordResearchLoadingState";
 import { KeywordResearchResults } from "./KeywordResearchResults";
 import { KeywordResearchSearchBar } from "./KeywordResearchSearchBar";
 import type { KeywordResearchControllerState } from "./types";
+import { useLocale } from "@/plugins/client/context";
 
 type ControllerProps = Omit<KeywordResearchControllerInput, "onFormSubmit">;
 type Props = Omit<
@@ -38,6 +39,7 @@ function isKeywordSearchTab(tab: SearchTab): tab is KeywordSearchTab {
 }
 
 export function KeywordResearchPage(input: Props) {
+  const { t } = useLocale();
   const setSearchParams = useKeywordSearchParams();
   const projectId = input.projectId;
   const { locationCode, displayedLocationCode, setPreferredLocationCode } =
@@ -180,9 +182,11 @@ export function KeywordResearchPage(input: Props) {
     <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <div>
-          <h1 className="text-2xl font-semibold">Keyword Research</h1>
+          <h1 className="text-2xl font-semibold">{t("Keyword Research")}</h1>
           <p className="text-sm text-base-content/70">
-            Discover keyword ideas, search demand, and ranking opportunities.
+            {t(
+              "Discover keyword ideas, search demand, and ranking opportunities.",
+            )}
           </p>
         </div>
 
@@ -196,7 +200,7 @@ export function KeywordResearchPage(input: Props) {
               onClick={showRecentSearches}
             >
               <ArrowLeft className="size-4" />
-              Recent searches
+              {t("Recent searches")}
             </button>
             <SearchTabStrip
               projectId={projectId}
@@ -225,6 +229,7 @@ function KeywordResearchContent({
   controller: KeywordResearchControllerState;
   projectId: string;
 }) {
+  const { t } = useLocale();
   if (controller.isLoading) {
     return <KeywordResearchLoadingState />;
   }
@@ -238,15 +243,15 @@ function KeywordResearchContent({
         <div className="w-full max-w-xl rounded-xl border border-error/30 bg-error/10 p-5 text-error space-y-3">
           <div className="flex items-start gap-2">
             <AlertCircle className="mt-0.5 size-4 shrink-0" />
-            <p className="text-sm">{controller.researchError}</p>
+            <p className="text-sm">{t(controller.researchError)}</p>
           </div>
           {isCreditsError ? (
             <Link to={BILLING_ROUTE} className="btn btn-sm">
-              Go to Billing
+              {t("Go to Billing")}
             </Link>
           ) : (
             <button className="btn btn-sm" onClick={controller.retrySearch}>
-              Try again
+              {t("Try again")}
             </button>
           )}
         </div>
@@ -271,17 +276,18 @@ function KeywordSaveDialog({
 }: {
   controller: KeywordResearchControllerState;
 }) {
+  const { t } = useLocale();
   if (!controller.showSaveDialog) return null;
 
   return (
     <div className="modal modal-open">
       <div className="modal-box">
         <h3 className="font-bold text-lg">
-          Save {controller.selectedRows.size} Keywords
+          {t("Save {count} Keywords", { count: controller.selectedRows.size })}
         </h3>
         <div className="py-4">
           <p className="text-base-content/70 text-sm">
-            These keywords will be saved to your current project.
+            {t("These keywords will be saved to your current project.")}
           </p>
         </div>
         <div className="modal-action">
@@ -289,10 +295,10 @@ function KeywordSaveDialog({
             className="btn"
             onClick={() => controller.setShowSaveDialog(false)}
           >
-            Cancel
+            {t("Cancel")}
           </button>
           <button className="btn btn-primary" onClick={controller.confirmSave}>
-            Save
+            {t("Save")}
           </button>
         </div>
       </div>
