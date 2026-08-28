@@ -48,6 +48,7 @@ import {
 import { buildDomainFiltersClearSearchUpdate } from "@/client/features/domain/domainFilterUtils";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { captureClientEvent } from "@/client/lib/posthog";
+import { useLocale } from "@/plugins/client/context";
 import type { DomainOverviewRouteState } from "@/client/features/domain/domainRouteState";
 import type {
   DomainActiveTab,
@@ -189,6 +190,7 @@ function useDomainOverviewState({
   routeState: DomainOverviewRouteState;
   projectId: string;
 }) {
+  const { t } = useLocale();
   const lastTrackedKey = useRef<string>("");
   // While editing the domain input, the scope tracks the input's default until
   // the user picks one; a pick survives further edits unless it turns invalid.
@@ -359,12 +361,13 @@ function useDomainOverviewState({
         ? createFormValidationErrors({
             form: getStandardErrorMessage(
               overviewQuery.error,
-              "Lookup failed.",
+              t("Lookup failed."),
+              t,
             ),
           })
         : undefined,
     });
-  }, [controlsForm, overviewQuery.error]);
+  }, [controlsForm, overviewQuery.error, t]);
 
   useEffect(() => {
     if (!overviewQuery.isSuccess || !overview) return;
@@ -386,7 +389,7 @@ function useDomainOverviewState({
       locationCode: routeState.locationCode,
     });
     if (!overview.hasData) {
-      toast.info("Not enough data for this domain");
+      toast.info(t("Not enough data for this domain"));
     }
   }, [
     addSearch,
@@ -397,6 +400,7 @@ function useDomainOverviewState({
     routeState.scope,
     routeState.sort,
     routeState.tab,
+    t,
   ]);
 
   useEffect(() => {
@@ -456,6 +460,7 @@ export function DomainOverviewPage({
   navigate,
   onShowRecentSearches,
 }: Props) {
+  const { t } = useLocale();
   const state = useDomainOverviewState({
     navigate,
     routeState,
@@ -523,7 +528,7 @@ export function DomainOverviewPage({
   // hostname plus subdomains, so anything narrower needs a label.
   const overviewMetricsHint =
     state.overview && state.overview.scope !== "subdomains"
-      ? "Whole domain incl. subdomains"
+      ? t("Whole domain incl. subdomains")
       : undefined;
 
   const tabControls = routeState.domain ? (
@@ -538,7 +543,7 @@ export function DomainOverviewPage({
           }}
         >
           <ArrowLeft className="size-4" />
-          Recent searches
+          {t("Recent searches")}
         </button>
       </div>
       <SearchTabStrip
@@ -556,10 +561,11 @@ export function DomainOverviewPage({
     <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
       <div className="mx-auto max-w-7xl space-y-4">
         <div>
-          <h1 className="text-2xl font-semibold">Domain Overview</h1>
+          <h1 className="text-2xl font-semibold">{t("Domain Overview")}</h1>
           <p className="text-sm text-base-content/70">
-            Analyze any domain&apos;s SEO profile: traffic, keywords, and
-            backlinks.
+            {t(
+              "Analyze any domain's SEO profile: traffic, keywords, and backlinks.",
+            )}
           </p>
         </div>
 
@@ -599,12 +605,12 @@ export function DomainOverviewPage({
                 {state.overview.displayTarget}
               </span>
               <span className="badge badge-outline">
-                {RESEARCH_SCOPE_LABELS[state.overview.scope]}
+                {t(RESEARCH_SCOPE_LABELS[state.overview.scope])}
               </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <StatCard
-                label="Estimated Organic Traffic"
+                label={t("Estimated Organic Traffic")}
                 value={formatMetric(
                   state.overview.organicTraffic,
                   state.overview.hasData,
@@ -612,7 +618,7 @@ export function DomainOverviewPage({
                 hint={overviewMetricsHint}
               />
               <StatCard
-                label="Organic Keywords"
+                label={t("Organic Keywords")}
                 value={formatMetric(
                   state.overview.organicKeywords,
                   state.overview.hasData,
@@ -624,8 +630,9 @@ export function DomainOverviewPage({
             {!state.overview.hasData ? (
               <div className="alert alert-info">
                 <span>
-                  Not enough data for this scope yet. Try another domain or a
-                  broader scope.
+                  {t(
+                    "Not enough data for this scope yet. Try another domain or a broader scope.",
+                  )}
                 </span>
               </div>
             ) : null}
@@ -640,7 +647,7 @@ export function DomainOverviewPage({
                     className={`tab ${routeState.tab === "keywords" ? "tab-active" : ""}`}
                     onClick={() => state.handleTabChange("keywords")}
                   >
-                    Top Keywords
+                    {t("Top Keywords")}
                   </button>
                   <button
                     type="button"
@@ -649,7 +656,7 @@ export function DomainOverviewPage({
                     className={`tab ${routeState.tab === "pages" ? "tab-active" : ""}`}
                     onClick={() => state.handleTabChange("pages")}
                   >
-                    Top Pages
+                    {t("Top Pages")}
                   </button>
                 </div>
               </div>

@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { DOMAIN_KEYWORDS_PAGE_SIZES } from "@/types/schemas/domain";
+import { useLocale } from "@/plugins/client/context";
 
 type Props = {
   page: number;
@@ -36,6 +37,7 @@ export function DomainKeywordsPagination({
   onPageChange,
   onPageSizeChange,
 }: Props) {
+  const { t } = useLocale();
   const totalPages =
     totalCount != null ? Math.max(1, Math.ceil(totalCount / pageSize)) : null;
   const canGoPrev = page > 1;
@@ -52,7 +54,7 @@ export function DomainKeywordsPagination({
 
       <div className="flex items-center gap-6">
         <label className="flex items-center gap-2 text-sm text-base-content/70">
-          <span className="whitespace-nowrap">Rows per page</span>
+          <span className="whitespace-nowrap">{t("Rows per page")}</span>
           <select
             className="select select-bordered select-sm w-20"
             value={pageSize}
@@ -68,15 +70,19 @@ export function DomainKeywordsPagination({
 
         <div className="flex items-center gap-2">
           <span className="whitespace-nowrap text-sm tabular-nums text-base-content/70">
-            Page {page.toLocaleString()}
-            {totalPages != null ? ` of ${totalPages.toLocaleString()}` : ""}
+            {totalPages != null
+              ? t("Page {page} of {totalPages}", {
+                  page: page.toLocaleString(),
+                  totalPages: totalPages.toLocaleString(),
+                })
+              : t("Page {page}", { page: page.toLocaleString() })}
           </span>
           <div className="flex items-center gap-1">
             <PageLink
               page={page - 1}
               disabled={!canGoPrev || isLoading}
               onPageChange={onPageChange}
-              label="Previous page"
+              label={t("Previous page")}
             >
               <ChevronLeft className="size-4" />
             </PageLink>
@@ -84,7 +90,7 @@ export function DomainKeywordsPagination({
               page={page + 1}
               disabled={!canGoNext || isLoading}
               onPageChange={onPageChange}
-              label="Next page"
+              label={t("Next page")}
             >
               <ChevronRight className="size-4" />
             </PageLink>
