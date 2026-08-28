@@ -11,8 +11,10 @@ import {
 } from "@/client/features/keywords/locations";
 import { ProjectMarketFields } from "@/client/features/projects/ProjectMarketFields";
 import { createProject } from "@/serverFunctions/projects";
+import { useLocale } from "@/plugins/client/context";
 
 export function CreateProjectModal({ onClose }: { onClose: () => void }) {
+  const { t } = useLocale();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [name, setName] = React.useState("");
@@ -35,7 +37,7 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
       setLastProjectId(created.id);
       await queryClient.invalidateQueries({ queryKey: ["projects"] });
       onClose();
-      toast.success("Project created");
+      toast.success(t("Project created"));
       // Land on the new project's integrations so they can connect Search
       // Console and finish setting up the workspace.
       void navigate({
@@ -44,7 +46,9 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
       });
     },
     onError: (error) =>
-      toast.error(getStandardErrorMessage(error, "Failed to create project")),
+      toast.error(
+        getStandardErrorMessage(error, t("Failed to create project"), t),
+      ),
   });
 
   const isPending = createMutation.isPending;
@@ -53,7 +57,7 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
     event.preventDefault();
     if (isPending) return;
     if (!name.trim()) {
-      toast.error("Project name is required");
+      toast.error(t("Project name is required"));
       return;
     }
     createMutation.mutate();
@@ -67,11 +71,11 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <h2 id="create-project-title" className="text-lg font-semibold">
-          New project
+          {t("New project")}
         </h2>
 
         <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium">Name</span>
+          <span className="font-medium">{t("Name")}</span>
           <input
             type="text"
             value={name}
@@ -85,7 +89,8 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
 
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="font-medium">
-            Domain <span className="text-base-content/50">(optional)</span>
+            {t("Domain")}{" "}
+            <span className="text-base-content/50">{t("(optional)")}</span>
           </span>
           <input
             type="text"
@@ -96,17 +101,18 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
             className="input input-bordered w-full"
           />
           <span className="text-xs text-base-content/50">
-            You can connect Search Console and set up rank tracking after
-            creating the project.
+            {t(
+              "You can connect Search Console and set up rank tracking after creating the project.",
+            )}
           </span>
         </label>
 
         <div className="flex flex-col gap-1.5">
           <ProjectMarketFields value={market} onChange={setMarket} />
           <span className="text-xs text-base-content/50">
-            Keyword, SERP, and domain data uses this country and language unless
-            a call asks for a different one. Change it later in project
-            settings.
+            {t(
+              "Keyword, SERP, and domain data uses this country and language unless a call asks for a different one. Change it later in project settings.",
+            )}
           </span>
         </div>
 
@@ -117,14 +123,14 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
             onClick={onClose}
             disabled={isPending}
           >
-            Cancel
+            {t("Cancel")}
           </button>
           <button
             type="submit"
             className="btn btn-primary btn-sm"
             disabled={isPending}
           >
-            Create project
+            {t("Create project")}
           </button>
         </div>
       </form>

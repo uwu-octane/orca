@@ -1,4 +1,5 @@
 // FORK: locale plugin — display formatting follows the active locale.
+import { useLocale } from "@/plugins/client/context";
 import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
 import { useAggregateEvents } from "autumn-js/react";
 import { useEffect, useRef, useState } from "react";
@@ -15,6 +16,7 @@ const BILLING_USAGE_FEATURE_IDS: string[] = [
 ];
 
 export function BillingUsageChart() {
+  const { t } = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const [chartWidth, setChartWidth] = useState(0);
 
@@ -51,8 +53,10 @@ export function BillingUsageChart() {
   return (
     <div className="rounded-lg border border-base-300 bg-base-100 p-4 space-y-3">
       <div className="flex items-baseline justify-between gap-4">
-        <span className="font-semibold">Usage</span>
-        <span className="text-xs text-base-content/50">Last 30 days</span>
+        <span className="font-semibold">{t("Usage")}</span>
+        <span className="text-xs text-base-content/50">
+          {t("Last 30 days")}
+        </span>
       </div>
 
       <div className="text-2xl font-semibold tabular-nums">
@@ -63,7 +67,7 @@ export function BillingUsageChart() {
         {eventsQuery.isLoading ? null : chartData.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <span className="text-sm text-base-content/40">
-              No usage recorded yet
+              {t("No usage recorded yet")}
             </span>
           </div>
         ) : chartWidth > 0 ? (

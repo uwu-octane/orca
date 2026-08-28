@@ -13,6 +13,7 @@ import {
   getProjects,
   updateProject,
 } from "@/serverFunctions/projects";
+import { useLocale } from "@/plugins/client/context";
 import type { ProjectSummary } from "./types";
 
 export function ProjectGeneralSettings({ projectId }: { projectId: string }) {
@@ -41,6 +42,7 @@ export function ProjectGeneralSettings({ projectId }: { projectId: string }) {
 }
 
 function GeneralSection({ project }: { project: ProjectSummary }) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [name, setName] = React.useState(project.name);
   const [domain, setDomain] = React.useState(project.domain ?? "");
@@ -61,10 +63,12 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["projects"] });
-      toast.success("Project updated");
+      toast.success(t("Project updated"));
     },
     onError: (error) =>
-      toast.error(getStandardErrorMessage(error, "Failed to update project")),
+      toast.error(
+        getStandardErrorMessage(error, t("Failed to update project"), t),
+      ),
   });
 
   const isDirty =
@@ -77,7 +81,7 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
     event.preventDefault();
     if (updateMutation.isPending) return;
     if (!name.trim()) {
-      toast.error("Project name is required");
+      toast.error(t("Project name is required"));
       return;
     }
     updateMutation.mutate();
@@ -85,10 +89,12 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-medium text-base-content/50">General</h2>
+      <h2 className="text-sm font-medium text-base-content/50">
+        {t("General")}
+      </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium">Name</span>
+          <span className="font-medium">{t("Name")}</span>
           <input
             type="text"
             value={name}
@@ -100,7 +106,8 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
 
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="font-medium">
-            Domain <span className="text-base-content/50">(optional)</span>
+            {t("Domain")}{" "}
+            <span className="text-base-content/50">{t("(optional)")}</span>
           </span>
           <input
             type="text"
@@ -115,8 +122,9 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
         <div className="flex flex-col gap-1.5">
           <ProjectMarketFields value={market} onChange={setMarket} />
           <span className="text-xs text-base-content/50">
-            Keyword, SERP, and domain data uses this country and language unless
-            a call asks for a different one.
+            {t(
+              "Keyword, SERP, and domain data uses this country and language unless a call asks for a different one.",
+            )}
           </span>
         </div>
 
@@ -126,7 +134,7 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
             className="btn btn-primary btn-sm"
             disabled={updateMutation.isPending || !isDirty}
           >
-            Save changes
+            {t("Save changes")}
           </button>
         </div>
       </form>
@@ -141,6 +149,7 @@ function DangerSection({
   project: ProjectSummary;
   canArchive: boolean;
 }) {
+  const { t } = useLocale();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [confirming, setConfirming] = React.useState(false);
@@ -150,29 +159,32 @@ function DangerSection({
     onSuccess: async () => {
       if (getLastProjectId() === project.id) clearLastProjectId();
       await queryClient.invalidateQueries({ queryKey: ["projects"] });
-      toast.success("Project archived");
+      toast.success(t("Project archived"));
       // Re-resolve to a remaining project via the landing redirect.
       void navigate({ to: "/" });
     },
     onError: (error) =>
-      toast.error(getStandardErrorMessage(error, "Failed to archive project")),
+      toast.error(
+        getStandardErrorMessage(error, t("Failed to archive project"), t),
+      ),
   });
 
   return (
     <section className="space-y-3 border-t border-base-300 pt-8">
       <h2 className="text-sm font-medium text-base-content/50">
-        Archive project
+        {t("Archive project")}
       </h2>
 
       {confirming ? (
         <div className="space-y-3">
           <p className="text-sm text-base-content/70">
-            Archiving{" "}
+            {t("Archiving")}{" "}
             <span className="font-medium text-base-content">
               {project.name}
             </span>{" "}
-            removes it from your workspace and stops its scheduled rank
-            tracking. You can restore it later from the Projects page.
+            {t(
+              "removes it from your workspace and stops its scheduled rank tracking. You can restore it later from the Projects page.",
+            )}
           </p>
           <div className="flex gap-2">
             <button
@@ -181,7 +193,7 @@ function DangerSection({
               onClick={() => archiveMutation.mutate()}
               disabled={archiveMutation.isPending}
             >
-              Yes, archive project
+              {t("Yes, archive project")}
             </button>
             <button
               type="button"
@@ -189,7 +201,7 @@ function DangerSection({
               onClick={() => setConfirming(false)}
               disabled={archiveMutation.isPending}
             >
-              Cancel
+              {t("Cancel")}
             </button>
           </div>
         </div>
@@ -197,8 +209,8 @@ function DangerSection({
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm text-base-content/60">
             {canArchive
-              ? "Archive this project to remove it from your workspace."
-              : "You can't archive your only project."}
+              ? t("Archive this project to remove it from your workspace.")
+              : t("You can't archive your only project.")}
           </p>
           <button
             type="button"
@@ -206,7 +218,7 @@ function DangerSection({
             onClick={() => setConfirming(true)}
             disabled={!canArchive}
           >
-            Archive project
+            {t("Archive project")}
           </button>
         </div>
       )}
