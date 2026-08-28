@@ -18,6 +18,7 @@ import { Ga4Card } from "@/client/features/dashboard/Ga4Card";
 import { McpConnectCard } from "@/client/features/dashboard/McpConnectCard";
 import { WorkspaceMergeBanner } from "@/client/features/dashboard/WorkspaceMergeBanner";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { useLocale } from "@/plugins/client/context";
 import type { DashboardActivation } from "@/server/features/dashboard/services/DashboardService";
 import {
   getDashboardActivation,
@@ -76,6 +77,7 @@ function OnboardingChecklist({
   projectId: string;
   activation: DashboardActivation;
 }) {
+  const { t } = useLocale();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [domainInput, setDomainInput] = useState("");
@@ -102,7 +104,11 @@ function OnboardingChecklist({
     },
     onError: (error) =>
       toast.error(
-        getStandardErrorMessage(error, "Couldn't save the domain. Try again."),
+        getStandardErrorMessage(
+          error,
+          t("Couldn't save the domain. Try again."),
+          t,
+        ),
       ),
   });
 
@@ -141,7 +147,7 @@ function OnboardingChecklist({
     <div className="rounded-xl border border-primary/25 bg-primary/5 shadow-sm">
       <div className="flex items-center justify-between gap-4 px-5 pt-4">
         <p className="text-xs font-medium uppercase tracking-wide text-primary">
-          Onboarding checklist
+          {t("Onboarding checklist")}
         </p>
         <div className="flex items-center gap-1">
           <button
@@ -149,7 +155,7 @@ function OnboardingChecklist({
             className={`btn btn-ghost btn-xs btn-square ${
               index === 0 ? "invisible" : ""
             }`}
-            aria-label="Previous step"
+            aria-label={t("Previous step")}
             disabled={index === 0}
             onClick={() => page(-1)}
           >
@@ -163,7 +169,7 @@ function OnboardingChecklist({
             className={`btn btn-ghost btn-xs btn-square ${
               index === STEP_ORDER.length - 1 ? "invisible" : ""
             }`}
-            aria-label="Next step"
+            aria-label={t("Next step")}
             disabled={index === STEP_ORDER.length - 1}
             onClick={() => page(1)}
           >
@@ -173,16 +179,16 @@ function OnboardingChecklist({
       </div>
       <div className="flex flex-row flex-wrap items-center justify-between gap-4 p-5 pt-2">
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold">{copy.title}</h2>
+          <h2 className="text-lg font-semibold">{t(copy.title)}</h2>
           <p className="mt-1 max-w-xl text-sm text-base-content/70">
-            {copy.body}
+            {t(copy.body)}
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-3">
           {done ? (
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
               <Check className="size-4" />
-              Done
+              {t("Done")}
             </span>
           ) : step === "domain" ? (
             <form
@@ -198,7 +204,7 @@ function OnboardingChecklist({
                 placeholder="acme.com"
                 value={domainInput}
                 onChange={(event) => setDomainInput(event.target.value)}
-                aria-label="Your site's domain"
+                aria-label={t("Your site's domain")}
               />
               <button
                 type="submit"
@@ -208,7 +214,7 @@ function OnboardingChecklist({
                   normalizeDomainInput(domainInput) === ""
                 }
               >
-                {copy.cta}
+                {t(copy.cta)}
               </button>
             </form>
           ) : step === "mcp" ? (
@@ -219,11 +225,11 @@ function OnboardingChecklist({
                 captureClientEvent("dashboard:next_move_click", { step })
               }
             >
-              {copy.cta} →
+              {t(copy.cta)} →
             </Link>
           ) : (
             <button type="button" className="btn btn-primary" onClick={onCta}>
-              {copy.cta}
+              {t(copy.cta)}
             </button>
           )}
         </div>
@@ -233,6 +239,7 @@ function OnboardingChecklist({
 }
 
 export function DashboardPage({ projectId }: { projectId: string }) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
 
   const activationQuery = useQuery({
@@ -272,7 +279,7 @@ export function DashboardPage({ projectId }: { projectId: string }) {
     return (
       <div className="px-4 py-4 md:px-6 md:py-6">
         <div className="alert alert-error">
-          {getStandardErrorMessage(activationQuery.error)}
+          {getStandardErrorMessage(activationQuery.error, undefined, t)}
         </div>
       </div>
     );
@@ -304,7 +311,7 @@ export function DashboardPage({ projectId }: { projectId: string }) {
   return (
     <div className="px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
       <div className="mx-auto flex max-w-5xl flex-col gap-5">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <h1 className="text-2xl font-semibold">{t("Dashboard")}</h1>
 
         <WorkspaceMergeBanner />
 
