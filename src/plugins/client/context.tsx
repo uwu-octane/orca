@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -13,30 +14,42 @@ import {
 import { translate } from "@/plugins/locale";
 import type { LocaleId, LocalePreference, T } from "@/plugins/locale";
 
-const CordisCtx = createContext<CordisContext | null>(null);
+interface ClientCordisState {
+  ctx: CordisContext;
+  /** True once the tree has booted (or failed) — flips the context object
+   * identity so consumers mounted during the async boot window re-render
+   * and re-subscribe to the real services. */
+  settled: boolean;
+}
+
+const CordisCtx = createContext<ClientCordisState | null>(null);
 
 /**
  * Mounts the client plugin tree. Lives inside `ClientOnly` in __root.tsx.
  * Fiber activation is async, so the first render happens before any service
- * exists; `useLocale` tolerates that window (English fallback) and this
- * provider re-renders once when boot settles, re-subscribing hooks to the
- * real services.
+ * exists; `useLocale` tolerates that window (English fallback) and the
+ * settled flip re-subscribes mounted hooks once boot completes.
  */
 export function CordisProvider({ children }: { children: React.ReactNode }) {
   const [ctx] = useState(createClientContext);
-  const [, setBootSettled] = useState(false);
+  const [settled, setSettled] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     void getClientBoot().then(() => {
-      if (mounted) setBootSettled(true);
+      if (mounted) setSettled(true);
     });
     return () => {
       mounted = false;
     };
   }, []);
 
-  return <CordisCtx.Provider value={ctx}>{children}</CordisCtx.Provider>;
+  // A stable ctx alone would short-circuit context propagation (React skips
+  // consumers when the value is Object.is-equal), so settled lives in the
+  // value itself.
+  const value = useMemo(() => ({ ctx, settled }), [ctx, settled]);
+
+  return <CordisCtx.Provider value={value}>{children}</CordisCtx.Provider>;
 }
 
 /** English passthrough while the tree boots or after it fails. */
@@ -68,7 +81,8 @@ export function useLocale(): {
   preference: LocalePreference;
   setPreference: (preference: LocalePreference) => void;
 } {
-  const locale = useContext(CordisCtx)?.locale;
+  const state = useContext(CordisCtx);
+  const locale = state?.ctx.locale;
   const active = useSyncExternalStore(
     locale ? (onChange) => locale.subscribe(onChange) : noSubscription,
     () => locale?.active ?? ENGLISH_LOCALE.active,
