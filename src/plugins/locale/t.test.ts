@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { LOCALE_STORAGE_KEY } from "./locale-settings";
 import { setLocaleStorageForTesting, type LocaleStorage } from "./store";
 import { translate } from "./t";
-import { zh } from "./locales/shell";
+import { zh } from "./locales/zh";
 
 function memoryStorage(entries: Record<string, string>): LocaleStorage {
   const data = new Map(Object.entries(entries));

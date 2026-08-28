@@ -6,9 +6,9 @@
  *
  * Static `t("literal")` calls are type-checked against ShellKey (see t.ts
  * overloads); dynamic call sites (nav labels, error messages) are covered
- * by tests instead.
+ * by tests instead. Merged into the zh dictionary by ../index.ts.
  */
-export const zh = {
+export const shellZh = {
   // navigation (src/client/navigation/items.ts)
   "AI & MCP": "AI 与 MCP",
   Backlinks: "反链",
@@ -105,5 +105,3 @@ export const zh = {
   "An unexpected error occurred. Please check server logs and try again.":
     "发生未知错误,请查看服务器日志后重试。",
 } satisfies Record<string, string>;
-
-export type ShellKey = keyof typeof zh;

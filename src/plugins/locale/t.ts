@@ -1,5 +1,5 @@
 import { readActiveLocale } from "./store";
-import { zh, type ShellKey } from "./locales/shell";
+import { zh, type ShellKey } from "./locales/zh";
 
 /** Translation function: `{name}` interpolation, English passthrough on
  *  miss. The zh dictionary applies only while the active locale is zh —
