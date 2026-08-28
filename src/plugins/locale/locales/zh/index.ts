@@ -1,6 +1,7 @@
 import { shellZh } from "./shell";
 import { dashboardZh } from "./dashboard";
 import { domainZh } from "./domain";
+import { auditZh } from "./audit";
 
 /**
  * zh dictionary — the merged key set across every dictionary the locale
@@ -12,6 +13,11 @@ import { domainZh } from "./domain";
  * Every dictionary added here extends `ShellKey`, so static `t("literal")`
  * call sites get compile-time checking for its keys automatically.
  */
-export const zh = { ...shellZh, ...dashboardZh, ...domainZh } as const;
+export const zh = {
+  ...shellZh,
+  ...dashboardZh,
+  ...domainZh,
+  ...auditZh,
+} as const;
 
 export type ShellKey = keyof typeof zh;

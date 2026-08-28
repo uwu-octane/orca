@@ -5,6 +5,7 @@ import { useLaunchController } from "@/client/features/audit/launch/useLaunchCon
 import { getCustomerPlanStatus } from "@/client/features/billing/plan-detection";
 import { useSession } from "@/lib/auth-client";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
+import { useLocale } from "@/plugins/client/context";
 
 type LaunchViewProps = {
   projectId: string;
@@ -43,6 +44,7 @@ function LaunchContent({
   isFreePlan,
   onAuditStarted,
 }: LaunchViewProps & { isFreePlan: boolean }) {
+  const { t } = useLocale();
   const controller = useLaunchController({
     projectId,
     isFreePlan,
@@ -52,7 +54,7 @@ function LaunchContent({
   return (
     <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
       <div className="mx-auto max-w-5xl space-y-4">
-        <h1 className="text-2xl font-semibold">Site Audit</h1>
+        <h1 className="text-2xl font-semibold">{t("Site Audit")}</h1>
 
         <LaunchFormCard
           launchForm={controller.launchForm}

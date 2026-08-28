@@ -4,6 +4,7 @@ import type {
   PagesFilters,
   PerformanceFilters,
 } from "@/client/features/audit/results/AuditResultsTableFilterLogic";
+import { useLocale } from "@/plugins/client/context";
 
 export function PagesFilterBar({
   filters,
@@ -141,7 +142,10 @@ export function PerformanceFilterBar({
 }
 
 export function EmptyTableMessage({ label }: { label: string }) {
-  return <div className="py-6 text-center text-base-content/60">{label}</div>;
+  const { t } = useLocale();
+  return (
+    <div className="py-6 text-center text-base-content/60">{t(label)}</div>
+  );
 }
 
 export function TableFilterToggle({
@@ -157,16 +161,17 @@ export function TableFilterToggle({
   resultCount: number;
   totalCount: number;
 }) {
+  const { t } = useLocale();
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 px-4 py-2.5">
       <button
         className={`btn btn-ghost btn-sm gap-1.5 ${showFilters ? "btn-active" : ""}`}
         onClick={onToggle}
-        title="Toggle filters"
+        title={t("Toggle filters")}
         type="button"
       >
         <SlidersHorizontal className="size-3.5" />
-        Filters
+        {t("Filters")}
         {activeFilterCount > 0 ? (
           <span className="badge badge-xs badge-primary border-0 text-primary-content">
             {activeFilterCount}
@@ -174,7 +179,10 @@ export function TableFilterToggle({
         ) : null}
       </button>
       <span className="text-sm tabular-nums text-base-content/60">
-        {resultCount.toLocaleString()} of {totalCount.toLocaleString()}
+        {t("{count} of {total}", {
+          count: resultCount.toLocaleString(),
+          total: totalCount.toLocaleString(),
+        })}
       </span>
     </div>
   );
@@ -199,14 +207,15 @@ function FilterPanel({
   onReset: () => void;
   children: ReactNode;
 }) {
+  const { t } = useLocale();
   return (
     <div className="space-y-3 border-b border-base-300 bg-gradient-to-b from-base-100 to-base-200/30 px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold">Refine results</p>
+          <p className="text-sm font-semibold">{t("Refine results")}</p>
           {activeFilterCount > 0 ? (
             <span className="badge badge-xs badge-primary border-0 text-primary-content">
-              {activeFilterCount} active
+              {t("{count} active", { count: activeFilterCount })}
             </span>
           ) : null}
         </div>
@@ -217,7 +226,7 @@ function FilterPanel({
           disabled={activeFilterCount === 0}
         >
           <RotateCcw className="size-3" />
-          Clear all
+          {t("Clear all")}
         </button>
       </div>
       {children}
@@ -238,16 +247,17 @@ function TextFilter({
   type?: "text" | "number";
   onChange: (value: string) => void;
 }) {
+  const { t } = useLocale();
   return (
     <label className="form-control gap-1.5">
       <span className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-        {label}
+        {t(label)}
       </span>
       <input
         className="input input-bordered input-sm w-full bg-base-100"
         type={type}
         value={value}
-        placeholder={placeholder}
+        placeholder={t(placeholder)}
         onChange={(event) => onChange(event.target.value)}
       />
     </label>
@@ -267,24 +277,25 @@ function RangeFilter({
   onMinChange: (value: string) => void;
   onMaxChange: (value: string) => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="space-y-2 rounded-lg border border-base-300 bg-base-100 p-2.5">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-        {label}
+        {t(label)}
       </p>
       <div className="grid grid-cols-2 gap-2">
         <input
           className="input input-bordered input-xs bg-base-100"
           type="number"
           value={min}
-          placeholder="Min"
+          placeholder={t("Min")}
           onChange={(event) => onMinChange(event.target.value)}
         />
         <input
           className="input input-bordered input-xs bg-base-100"
           type="number"
           value={max}
-          placeholder="Max"
+          placeholder={t("Max")}
           onChange={(event) => onMaxChange(event.target.value)}
         />
       </div>
@@ -303,10 +314,11 @@ function SelectFilter<T extends string>({
   options: Array<[T, string]>;
   onChange: (value: T) => void;
 }) {
+  const { t } = useLocale();
   return (
     <label className="form-control gap-1.5">
       <span className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-        {label}
+        {t(label)}
       </span>
       <select
         className="select select-bordered select-sm w-full bg-base-100"
@@ -320,7 +332,7 @@ function SelectFilter<T extends string>({
       >
         {options.map(([optionValue, optionLabel]) => (
           <option key={optionValue} value={optionValue}>
-            {optionLabel}
+            {t(optionLabel)}
           </option>
         ))}
       </select>
