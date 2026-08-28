@@ -9,7 +9,9 @@ import type { ModuleLoaderLike } from "@orca/cordis-plugin-loader";
 
 export const serverModules: Record<string, () => Promise<unknown>> = {};
 
-export const clientModules: Record<string, () => Promise<unknown>> = {};
+export const clientModules: Record<string, () => Promise<unknown>> = {
+  locale: () => import("@/plugins/locale"),
+};
 
 /** Minimal module-loader shape backed by a static map. */
 export function createModuleLoader(

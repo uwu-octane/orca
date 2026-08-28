@@ -9,5 +9,3 @@ export function CordisProvider({ children }: { children: React.ReactNode }) {
   const [ctx] = useState(createClientContext);
   return <CordisCtx.Provider value={ctx}>{children}</CordisCtx.Provider>;
 }
-// useService / useLocale land in phase 2, with the locale plugin as their
-// first consumer.

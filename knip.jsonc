@@ -37,12 +37,21 @@
     // vendored cordis loader — typechecked by tsc, not analyzed by knip
     "!vendor/**",
   ],
-  "ignore": ["drizzle-prod.config.ts"],
+  "ignore": [
+    "drizzle-prod.config.ts",
+    // Phase 3 wires these (FOUC script into __root.tsx; Context
+    // augmentation consumed by useLocale's components). Remove then.
+    "src/plugins/locale/client/init-script.ts",
+    "src/plugins/shared/types.ts",
+  ],
   // Disable Drizzle plugin - it tries to load drizzle.config.ts which imports cloudflare:workers
   "drizzle": false,
   "ignoreDependencies": [
     // Tailwindcss used via @tailwindcss/vite plugin
     "tailwindcss",
     "daisyui",
+    // Used by src/plugins/shared/*, but knip can't trace the usage because
+    // the package resolves into vendor/ which is excluded from its project.
+    "@orca/cordis-plugin-loader",
   ],
 }
