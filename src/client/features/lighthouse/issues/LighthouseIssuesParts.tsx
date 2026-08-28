@@ -8,6 +8,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { PortalMenu } from "@/client/components/PortalMenu";
+import { useLocale } from "@/plugins/client/context";
 import type {
   CategoryTab,
   ExportPayload,
@@ -19,7 +20,6 @@ import { LighthouseIssueRow } from "./LighthouseIssueRow";
 import { LighthouseIssuesSummary } from "./LighthouseIssuesSummary";
 import { categoryLabel } from "./utils";
 import { categoryTabs } from "./types";
-
 export function LighthouseIssuesHeader({
   backLabel,
   onBack,
@@ -37,40 +37,39 @@ export function LighthouseIssuesHeader({
   metrics?: LighthouseMetrics | null;
   severityCounts: { critical: number; warning: number; info: number };
 }) {
+  const { t } = useLocale();
+  const scannedLabel = scannedAt
+    ? t("Scanned {date}", { date: new Date(scannedAt).toLocaleString() })
+    : t("Reading latest issues...");
   return (
     <>
       <div className="flex items-center justify-between gap-3">
         <button className="btn btn-ghost btn-sm px-2" onClick={onBack}>
-          &larr; Back to {backLabel}
+          &larr; {t("Back to {label}", { label: t(backLabel) })}
         </button>
-        <span className="text-xs text-base-content/60">
-          {scannedAt
-            ? `Scanned ${new Date(scannedAt).toLocaleString()}`
-            : "Reading latest issues..."}
-        </span>
+        <span className="text-xs text-base-content/60">{scannedLabel}</span>
       </div>
-
       <div className="card bg-base-100 border border-base-300">
         <div className="card-body py-5 gap-4">
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold">Lighthouse Issues</h1>
+            <h1 className="text-2xl font-semibold">{t("Lighthouse Issues")}</h1>
             <p className="text-sm text-base-content/70 break-all">
-              {finalUrl ?? "Loading URL..."}
+              {finalUrl ?? t("Loading URL...")}
             </p>
           </div>
           <LighthouseIssuesSummary scores={scores} metrics={metrics} />
           <div className="flex flex-wrap gap-2 text-xs">
             <span className="badge border border-error/30 bg-error/10 text-error/80 gap-1">
               <FileWarning className="size-3" />
-              Critical {severityCounts.critical}
+              {t("Critical")} {severityCounts.critical}
             </span>
             <span className="badge border border-warning/30 bg-warning/10 text-warning/80 gap-1">
               <TriangleAlert className="size-3" />
-              Warning {severityCounts.warning}
+              {t("Warning")} {severityCounts.warning}
             </span>
             <span className="badge border border-info/30 bg-info/10 text-info/80 gap-1">
               <Info className="size-3" />
-              Info {severityCounts.info}
+              {t("Info")} {severityCounts.info}
             </span>
           </div>
         </div>
@@ -78,7 +77,6 @@ export function LighthouseIssuesHeader({
     </>
   );
 }
-
 export function LighthouseIssuesToolbar({
   category,
   categoryCounts,
@@ -107,11 +105,11 @@ export function LighthouseIssuesToolbar({
     variant: "all" | "current",
   ) => void;
 }) {
+  const { t } = useLocale();
   const exportCurrentCategory: ExportPayload =
     category === "all" ? { mode: "issues" } : { mode: "category", category };
 
-  const categoryLabelLower = selectedCategoryLabel.toLowerCase();
-
+  const categoryLabelLower = t(selectedCategoryLabel).toLowerCase();
   return (
     <div className="sticky top-0 z-[2] -mx-2 px-2 py-2 bg-base-100/95 backdrop-blur-sm border-b border-base-300/60">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -135,7 +133,6 @@ export function LighthouseIssuesToolbar({
     </div>
   );
 }
-
 function CategoryTabs({
   category,
   categoryCounts,
@@ -145,6 +142,7 @@ function CategoryTabs({
   categoryCounts: Record<CategoryTab, number>;
   onCategoryChange: (next: CategoryTab) => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="flex flex-wrap items-center gap-4">
       {categoryTabs.map((tab) => (
@@ -157,7 +155,7 @@ function CategoryTabs({
           }`}
           onClick={() => onCategoryChange(tab)}
         >
-          <span>{categoryLabel(tab)}</span>
+          <span>{t(categoryLabel(tab))}</span>
           <span className="ml-1 text-xs opacity-70">
             ({categoryCounts[tab]})
           </span>
@@ -166,7 +164,6 @@ function CategoryTabs({
     </div>
   );
 }
-
 function ExportMenu({
   allIssues,
   categoryLabelLower,
@@ -191,14 +188,17 @@ function ExportMenu({
   ) => void;
   visibleIssues: LighthouseIssue[];
 }) {
+  const { t } = useLocale();
+  const categoryText = (key: string) =>
+    t(key, { category: categoryLabelLower });
   return (
     <PortalMenu
-      ariaLabel="Export Lighthouse issues"
+      ariaLabel={t("Export Lighthouse issues")}
       triggerClassName="btn btn-sm gap-1"
       triggerContent={
         <>
           <Download className="size-4" />
-          Export
+          {t("Export")}
           <ChevronDown className="size-3 opacity-60" />
         </>
       }
@@ -207,7 +207,7 @@ function ExportMenu({
       {(close) => (
         <>
           <li className="menu-title">
-            <span>Export to Sheets</span>
+            <span>{t("Export to Sheets")}</span>
           </li>
           <li>
             <button
@@ -218,7 +218,7 @@ function ExportMenu({
               }}
             >
               <Sheet className="size-4" />
-              Open in Sheets — {categoryLabelLower}
+              {categoryText("Open in Sheets — {category}")}
             </button>
           </li>
           <li>
@@ -230,11 +230,11 @@ function ExportMenu({
               }}
             >
               <Sheet className="size-4" />
-              Open in Sheets — all actionable
+              {t("Open in Sheets — all actionable")}
             </button>
           </li>
           <li className="menu-title">
-            <span>Copy</span>
+            <span>{t("Copy")}</span>
           </li>
           <li>
             <button
@@ -243,12 +243,12 @@ function ExportMenu({
                 close();
                 onCopy(
                   exportCurrentCategory,
-                  `Copied ${categoryLabelLower} issues`,
+                  categoryText("Copied {category} issues"),
                 );
               }}
             >
               <Copy className="size-4" />
-              Copy {categoryLabelLower} issues
+              {categoryText("Copy {category} issues")}
             </button>
           </li>
           <li>
@@ -256,11 +256,11 @@ function ExportMenu({
               disabled={isBusy}
               onClick={() => {
                 close();
-                onCopy({ mode: "issues" }, "Copied all actionable issues");
+                onCopy({ mode: "issues" }, t("Copied all actionable issues"));
               }}
             >
               <Copy className="size-4" />
-              Copy all actionable issues
+              {t("Copy all actionable issues")}
             </button>
           </li>
           <li>
@@ -268,15 +268,15 @@ function ExportMenu({
               disabled={isBusy}
               onClick={() => {
                 close();
-                onCopy({ mode: "full" }, "Copied saved Lighthouse payload");
+                onCopy({ mode: "full" }, t("Copied saved Lighthouse payload"));
               }}
             >
               <Copy className="size-4" />
-              Copy saved Lighthouse payload
+              {t("Copy saved Lighthouse payload")}
             </button>
           </li>
           <li className="menu-title">
-            <span>Download JSON</span>
+            <span>{t("Download JSON")}</span>
           </li>
           <li>
             <button
@@ -286,7 +286,7 @@ function ExportMenu({
                 onExport(exportCurrentCategory);
               }}
             >
-              Download {categoryLabelLower} issues
+              {categoryText("Download {category} issues")}
             </button>
           </li>
           <li>
@@ -297,7 +297,7 @@ function ExportMenu({
                 onExport({ mode: "issues" });
               }}
             >
-              Download all actionable issues
+              {t("Download all actionable issues")}
             </button>
           </li>
           <li>
@@ -308,11 +308,11 @@ function ExportMenu({
                 onExport({ mode: "full" });
               }}
             >
-              Download saved Lighthouse payload
+              {t("Download saved Lighthouse payload")}
             </button>
           </li>
           <li className="menu-title">
-            <span>Download CSV</span>
+            <span>{t("Download CSV")}</span>
           </li>
           <li>
             <button
@@ -322,7 +322,7 @@ function ExportMenu({
                 onExportCsv(visibleIssues, "current");
               }}
             >
-              Download {categoryLabelLower} issues
+              {categoryText("Download {category} issues")}
             </button>
           </li>
           <li>
@@ -333,7 +333,7 @@ function ExportMenu({
                 onExportCsv(allIssues, "all");
               }}
             >
-              Download all actionable issues
+              {t("Download all actionable issues")}
             </button>
           </li>
         </>
@@ -341,7 +341,6 @@ function ExportMenu({
     </PortalMenu>
   );
 }
-
 export function LighthouseIssueList({
   issues,
   isLoading,
@@ -351,13 +350,16 @@ export function LighthouseIssueList({
   isLoading: boolean;
   emptyMessage?: string;
 }) {
+  const { t } = useLocale();
   if (isLoading) {
-    return <p className="text-sm text-base-content/60">Loading issues...</p>;
+    return (
+      <p className="text-sm text-base-content/60">{t("Loading issues...")}</p>
+    );
   }
   if (!issues.length) {
     return (
       <p className="text-sm text-base-content/60">
-        {emptyMessage ?? "No actionable issues for this category."}
+        {t(emptyMessage ?? "No actionable issues for this category.")}
       </p>
     );
   }
@@ -374,13 +376,13 @@ export function LighthouseIssueList({
       <thead>
         <tr className="text-xs text-base-content/50 uppercase tracking-wide border-b border-base-300">
           <th />
-          <th className="font-medium">Severity</th>
-          <th className="font-medium">Issue</th>
-          <th className="font-medium hidden sm:table-cell">Category</th>
+          <th className="font-medium">{t("Severity")}</th>
+          <th className="font-medium">{t("Issue")}</th>
+          <th className="font-medium hidden sm:table-cell">{t("Category")}</th>
           <th className="font-medium hidden md:table-cell text-right">
-            Impact
+            {t("Impact")}
           </th>
-          <th className="font-medium text-right">Score</th>
+          <th className="font-medium text-right">{t("Score")}</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-base-300/60">

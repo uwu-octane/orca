@@ -37,6 +37,7 @@ import {
   type SearchPerformanceDevice,
   type SearchPerformanceTableDimension,
 } from "@/types/schemas/search-performance";
+import { useLocale } from "@/plugins/client/context";
 
 const RANGE_LABELS: Record<SearchPerformanceDateRange, string> = {
   last_7_days: "Last 7 days",
@@ -118,6 +119,7 @@ function tableQueryOptions(
 }
 
 export function SearchPerformancePage({ projectId }: { projectId: string }) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [range, setRange] =
     useState<SearchPerformanceDateRange>("last_28_days");
@@ -184,7 +186,7 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
       });
       exportDimensionRows(dimension, data.rows, report.range, target);
     } catch (error) {
-      toast.error(getStandardErrorMessage(error, "Export failed"));
+      toast.error(getStandardErrorMessage(error, t("Export failed")));
     }
   };
 
@@ -193,10 +195,13 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
       <div className="mx-auto max-w-7xl space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">Search Performance</h1>
+            <h1 className="text-2xl font-semibold">
+              {t("Search Performance")}
+            </h1>
             <p className="text-sm text-base-content/70">
-              See your site&apos;s clicks, impressions, CTR, and position from
-              Google Search Console.
+              {t(
+                "See your site's clicks, impressions, CTR, and position from Google Search Console.",
+              )}
             </p>
           </div>
           {report?.connected ? (
@@ -205,7 +210,7 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
               params={{ projectId }}
               className="link link-hover shrink-0 self-start text-sm font-medium text-base-content/60 transition-colors hover:text-base-content sm:mt-1"
             >
-              Change property
+              {t("Change property")}
             </Link>
           ) : null}
         </div>
@@ -231,17 +236,19 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                   <TabButton
                     active={tab === "striking"}
                     onClick={() => setTab("striking")}
-                    label={`Striking distance (${report.strikingDistance.length})`}
+                    label={t("Striking distance ({count})", {
+                      count: report.strikingDistance.length,
+                    })}
                   />
                   <TabButton
                     active={tab === "queries"}
                     onClick={() => setTab("queries")}
-                    label="Queries"
+                    label={t("Queries")}
                   />
                   <TabButton
                     active={tab === "pages"}
                     onClick={() => setTab("pages")}
-                    label="Pages"
+                    label={t("Pages")}
                   />
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -256,12 +263,12 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                         isDevice(event.target.value) ? event.target.value : ALL,
                       );
                     }}
-                    aria-label="Device filter"
+                    aria-label={t("Device filter")}
                   >
-                    <option value={ALL}>All devices</option>
+                    <option value={ALL}>{t("All devices")}</option>
                     {DEVICE_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
-                        {option.label}
+                        {t(option.label)}
                       </option>
                     ))}
                   </select>
@@ -269,9 +276,9 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                     className="select select-bordered select-sm w-36"
                     value={country}
                     onChange={(event) => setCountry(event.target.value)}
-                    aria-label="Country filter"
+                    aria-label={t("Country filter")}
                   >
-                    <option value={ALL}>All countries</option>
+                    <option value={ALL}>{t("All countries")}</option>
                     {report.countries.map((row) => (
                       <option key={row.key} value={row.key}>
                         {row.key.toUpperCase()}
@@ -286,11 +293,11 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                         setRange(event.target.value);
                       }
                     }}
-                    aria-label="Date range"
+                    aria-label={t("Date range")}
                   >
                     {RANGE_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
-                        {option.label}
+                        {t(option.label)}
                       </option>
                     ))}
                   </select>
@@ -298,12 +305,12 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                     buttonClassName="btn btn-ghost btn-sm gap-1"
                     actions={[
                       {
-                        label: "Export to Sheets",
+                        label: t("Export to Sheets"),
                         icon: <Sheet className="size-4" />,
                         onClick: () => void handleExport("sheets"),
                       },
                       {
-                        label: "Download CSV",
+                        label: t("Download CSV"),
                         icon: <Download className="size-4" />,
                         onClick: () => void handleExport("csv"),
                       },
@@ -319,7 +326,7 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                 />
               ) : tableQuery.isPending ? (
                 <div className="flex items-center gap-2 p-8 text-sm text-base-content/60">
-                  <Loader2 className="size-4 animate-spin" /> Loading…
+                  <Loader2 className="size-4 animate-spin" /> {t("Loading…")}
                 </div>
               ) : tableQuery.isError ? (
                 <div className="p-4">
@@ -334,7 +341,7 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                   <div className="p-4">
                     <DimensionTable
                       rows={tableRows}
-                      keyLabel={tab === "queries" ? "Query" : "Page"}
+                      keyLabel={t(tab === "queries" ? "Query" : "Page")}
                     />
                   </div>
                   <TablePagination
