@@ -12,11 +12,8 @@ import { captureClientEvent } from "@/client/lib/posthog";
 import { authClient } from "@/lib/auth-client";
 import { getSignInSearch, getVerifyEmailSearch } from "@/lib/auth-redirect";
 import { z } from "zod";
-
-const signInSchema = z.object({
-  email: z.string().trim().email("Enter a valid email address."),
-  password: z.string().min(1, "Enter your password."),
-});
+// FORK: locale plugin — auth strings translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export const Route = createFileRoute("/_auth/sign-in")({
   validateSearch: authRedirectSearchSchema,
@@ -24,6 +21,11 @@ export const Route = createFileRoute("/_auth/sign-in")({
 });
 
 function SignInPage() {
+  const { t } = useLocale();
+  const signInSchema = z.object({
+    email: z.string().trim().email(t("Enter a valid email address.")),
+    password: z.string().min(1, t("Enter your password.")),
+  });
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { redirectTo, oauthQuery, isHostedMode } = useAuthPageState(
@@ -79,14 +81,14 @@ function SignInPage() {
 
         formApi.setErrorMap({
           onSubmit: {
-            form: result.error.message || "We couldn't sign you in.",
+            form: result.error.message || t("We couldn't sign you in."),
             fields: {},
           },
         });
       } catch {
         formApi.setErrorMap({
           onSubmit: {
-            form: "Unable to sign in right now. Please try again.",
+            form: t("Unable to sign in right now. Please try again."),
             fields: {},
           },
         });
@@ -109,19 +111,20 @@ function SignInPage() {
 
       if (result.error) {
         setSocialError(
-          result.error.message || "Google sign in is not available right now.",
+          result.error.message ||
+            t("Google sign in is not available right now."),
         );
         setIsStartingGoogle(false);
       }
     } catch {
-      setSocialError("Google sign in is not available right now.");
+      setSocialError(t("Google sign in is not available right now."));
       setIsStartingGoogle(false);
     }
   }
 
   return (
     <AuthPageCard
-      title="Sign in"
+      title={t("Sign in")}
       footer={
         isHostedMode ? (
           <div
@@ -137,7 +140,7 @@ function SignInPage() {
                 search={getSignInSearch(redirectTo)}
                 className="text-base-content underline underline-offset-2 hover:text-base-content/80 transition-colors"
               >
-                Forgot password?
+                {t("Forgot password?")}
               </Link>
             ) : null}
             <Link
@@ -145,7 +148,7 @@ function SignInPage() {
               search={getSignInSearch(redirectTo)}
               className="text-base-content underline underline-offset-2 hover:text-base-content/80 transition-colors"
             >
-              Create account
+              {t("Create account")}
             </Link>
           </div>
         ) : null
@@ -154,7 +157,7 @@ function SignInPage() {
       {!showEmailForm ? (
         <>
           <AuthMethodChooser
-            googleLabel="Continue with Google"
+            googleLabel={t("Continue with Google")}
             disabled={!isHostedMode}
             isBusy={isStartingGoogle}
             onContinueWithGoogle={() => {
@@ -186,7 +189,7 @@ function SignInPage() {
                   <input
                     type="email"
                     className="input input-bordered w-full"
-                    placeholder="Email address..."
+                    placeholder={t("Email address...")}
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
                     autoComplete="email"
@@ -210,7 +213,7 @@ function SignInPage() {
                   <input
                     type="password"
                     className="input input-bordered w-full"
-                    placeholder="Password..."
+                    placeholder={t("Password...")}
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
                     autoComplete="current-password"
@@ -242,7 +245,7 @@ function SignInPage() {
                     className="btn btn-soft w-full"
                     disabled={!isHostedMode || isSubmitting}
                   >
-                    {isSubmitting ? "Signing in..." : "Sign in"}
+                    {isSubmitting ? t("Signing in...") : t("Sign in")}
                   </button>
                 </>
               );

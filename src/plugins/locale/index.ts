@@ -1,6 +1,7 @@
 import type { Context } from "cordis";
 import {
   readActiveLocale,
+  readLocalePreference,
   setLocalePreference,
   subscribeToLocale,
 } from "./store";
@@ -14,6 +15,7 @@ export { translate, type T } from "./t";
 /** Service exposed on the client plugin tree as `ctx.locale`. */
 export interface LocaleService {
   readonly active: LocaleId;
+  readonly preference: LocalePreference;
   t: T;
   subscribe(onChange: () => void): () => void;
   setPreference(preference: LocalePreference): void;
@@ -25,6 +27,9 @@ export function apply(ctx: Context): void {
   const service: LocaleService = {
     get active() {
       return readActiveLocale();
+    },
+    get preference() {
+      return readLocalePreference();
     },
     t: translate,
     subscribe: subscribeToLocale,

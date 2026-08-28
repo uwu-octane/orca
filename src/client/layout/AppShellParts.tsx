@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { AlertTriangle, ExternalLink } from "lucide-react";
 import { Sidebar } from "@/client/components/Sidebar";
 import { dataforseoHelpLinkOptions } from "@/client/navigation/items";
+// FORK: locale plugin — drawer and modal chrome translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 function SeoApiStatusBanners({
   shouldShowSeoApiWarning,
@@ -67,13 +69,14 @@ function MobileSidebarDrawer({
   projectId: string | null;
   onClose: () => void;
 }) {
+  const { t } = useLocale();
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 md:hidden">
       <button
         type="button"
-        aria-label="Close sidebar"
+        aria-label={t("Close sidebar")}
         className="absolute inset-0 bg-black/45"
         onClick={onClose}
       />
@@ -91,6 +94,7 @@ const MissingSeoSetupModal = React.forwardRef<
     onClose: () => void;
   }
 >(({ isOpen, onClose }, ref) => {
+  const { t } = useLocale();
   if (!isOpen) return null;
 
   return (
@@ -126,14 +130,14 @@ const MissingSeoSetupModal = React.forwardRef<
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button type="button" className="btn btn-ghost" onClick={onClose}>
-            Dismiss
+            {t("Dismiss")}
           </button>
           <Link
             {...dataforseoHelpLinkOptions}
             className="btn btn-primary"
             onClick={onClose}
           >
-            Open setup guide
+            {t("Open setup guide")}
             <ExternalLink className="size-4" />
           </Link>
         </div>

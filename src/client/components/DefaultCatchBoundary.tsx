@@ -9,8 +9,11 @@ import {
 import { AuthConfigErrorCard } from "@/client/components/AuthConfigErrorCard";
 import { captureClientError } from "@/client/lib/posthog";
 import { UnauthenticatedErrorCard } from "@/client/components/UnauthenticatedErrorCard";
+// FORK: locale plugin — error card copies translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
+  const { t } = useLocale();
   const router = useRouter();
   const isRoot = useMatch({
     strict: false,
@@ -20,7 +23,8 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
 
   const message = getStandardErrorMessage(
     error,
-    "Something went wrong. Please try again.",
+    t("Something went wrong. Please try again."),
+    t,
   );
   const errorCode = getErrorCode(error);
 

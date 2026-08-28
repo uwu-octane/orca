@@ -7,6 +7,10 @@ import { type ThemePreference, useThemePreference } from "@/client/lib/theme";
 import { authClient, useSession } from "@/lib/auth-client";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { version } from "../../../package.json";
+// FORK: locale plugin — page headings translate; Language section mounted
+// beside Appearance.
+import { useLocale } from "@/plugins/client/context";
+import { LanguageSettingsSection } from "@/plugins/locale/components/LanguageSettingsSection";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
@@ -23,6 +27,7 @@ const THEME_OPTIONS: {
 ];
 
 function SettingsPage() {
+  const { t } = useLocale();
   const isHosted = isHostedClientAuthMode();
   const { themePreference, setThemePreference } = useThemePreference();
   const { data: session, isPending: isSessionPending } = useSession();
@@ -51,17 +56,17 @@ function SettingsPage() {
   return (
     <div className="h-full overflow-auto bg-base-100 px-4 py-8 pb-24 md:px-6 md:py-12 md:pb-8">
       <div className="mx-auto max-w-3xl space-y-10">
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("Settings")}</h1>
 
         <section className="space-y-3">
           <h2 className="text-sm font-medium text-base-content/50">
-            Appearance
+            {t("Appearance")}
           </h2>
           <div className="flex items-center justify-between gap-6">
-            <span className="text-sm">Theme</span>
+            <span className="text-sm">{t("Theme")}</span>
             <div
               role="radiogroup"
-              aria-label="Theme preference"
+              aria-label={t("Theme")}
               className="flex gap-0.5 rounded-lg bg-base-200 p-0.5"
             >
               {THEME_OPTIONS.map((option) => {
@@ -74,7 +79,7 @@ function SettingsPage() {
                     type="button"
                     role="radio"
                     aria-checked={isActive}
-                    aria-label={option.label}
+                    aria-label={t(option.label)}
                     className={`flex cursor-pointer items-center justify-center rounded-md px-3 py-1.5 transition-colors ${
                       isActive
                         ? "bg-base-100 text-base-content shadow-sm"
@@ -90,13 +95,15 @@ function SettingsPage() {
           </div>
         </section>
 
+        <LanguageSettingsSection />
+
         {isHosted ? (
           <>
             <ApiKeySettings />
 
             <section className="space-y-3">
               <h2 className="text-sm font-medium text-base-content/50">
-                Analytics
+                {t("Analytics")}
               </h2>
               <div className="flex items-start justify-between gap-6">
                 <div>

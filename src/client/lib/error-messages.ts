@@ -1,3 +1,5 @@
+// FORK: locale plugin — callers may pass a translator; the {max} placeholder
+// keeps the audit-limit message composable across locales.
 import { FREE_MAX_AUDIT_PAGES } from "@/shared/audit-limits";
 import { isErrorCode, type ErrorCode } from "@/shared/error-codes";
 
@@ -13,7 +15,8 @@ const STANDARD_MESSAGES: Record<ErrorCode, string> = {
   NOT_FOUND: "The requested resource was not found.",
   AUDIT_CAPACITY_REACHED:
     "You've reached audit capacity for your account. Delete old audits from your projects to start a new one.",
-  AUDIT_PAGE_LIMIT_EXCEEDED: `Free plan audits are limited to ${FREE_MAX_AUDIT_PAGES} pages. Upgrade to run larger audits.`,
+  AUDIT_PAGE_LIMIT_EXCEEDED:
+    "Free plan audits are limited to {max} pages. Upgrade to run larger audits.",
   AUDIT_ALREADY_RUNNING:
     "You already have an audit running. Wait for it to finish or delete it before starting another.",
   VALIDATION_ERROR: "Please check your input and try again.",
@@ -45,16 +48,27 @@ function splitCodedMessage(
   return { code, detail: message.slice(separatorIndex + 2) };
 }
 
+type Translator = (key: string) => string;
+
+/** Standard messages carry a `{max}` placeholder for the audit page limit. */
+function render(message: string, t?: Translator): string {
+  const text = t ? t(message) : message;
+  return text.replaceAll("{max}", String(FREE_MAX_AUDIT_PAGES));
+}
+
 export function getStandardErrorMessage(
   error: unknown,
   fallback: string = STANDARD_MESSAGES.INTERNAL_ERROR,
+  t?: Translator,
 ): string {
-  if (!(error instanceof Error)) return fallback;
-  if (isErrorCode(error.message)) return STANDARD_MESSAGES[error.message];
+  if (!(error instanceof Error)) return render(fallback, t);
+  if (isErrorCode(error.message)) {
+    return render(STANDARD_MESSAGES[error.message], t);
+  }
   const coded = splitCodedMessage(error.message);
   if (coded) return coded.detail;
   if (error.message) return error.message;
-  return fallback;
+  return render(fallback, t);
 }
 
 export function getErrorCode(error: unknown): ErrorCode | null {

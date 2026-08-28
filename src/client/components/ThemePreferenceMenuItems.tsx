@@ -1,4 +1,6 @@
 import { Monitor, Moon, Sun } from "lucide-react";
+// FORK: locale plugin — menu title and option labels translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { type ThemePreference, useThemePreference } from "@/client/lib/theme";
 
 const THEME_OPTIONS: {
@@ -13,17 +15,18 @@ const THEME_OPTIONS: {
 
 export function ThemePreferenceMenuItems() {
   const { themePreference, setThemePreference } = useThemePreference();
+  const { t } = useLocale();
 
   return (
     <>
       <li className="menu-title pt-2">
-        <span>Theme</span>
+        <span>{t("Theme")}</span>
       </li>
 
       <li>
         <div
           role="radiogroup"
-          aria-label="Theme preference"
+          aria-label={t("Theme")}
           className="flex gap-0.5 rounded-lg bg-base-200 p-0.5"
         >
           {THEME_OPTIONS.map((option) => {
@@ -34,13 +37,13 @@ export function ThemePreferenceMenuItems() {
               <div
                 key={option.value}
                 className="tooltip tooltip-bottom flex flex-1 before:whitespace-nowrap"
-                data-tip={option.label}
+                data-tip={t(option.label)}
               >
                 <button
                   type="button"
                   role="radio"
                   aria-checked={isActive}
-                  aria-label={option.label}
+                  aria-label={t(option.label)}
                   className={`flex flex-1 cursor-pointer items-center justify-center rounded-md px-2.5 py-1.5 transition-colors ${
                     isActive
                       ? "bg-base-100 text-base-content shadow-sm"

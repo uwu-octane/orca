@@ -18,6 +18,9 @@ import {
 import { ProjectSwitcher } from "@/client/features/projects/ProjectSwitcher";
 import { SamSidebarPanel } from "@/client/features/sam/SamSidebarPanel";
 import { ThemePreferenceMenuItems } from "@/client/components/ThemePreferenceMenuItems";
+// FORK: locale plugin — nav labels and menu items translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
+import { LanguagePreferenceMenuItems } from "@/plugins/locale/components/LanguagePreferenceMenuItems";
 import { closeDropdown } from "@/client/lib/dropdown";
 import { signOutAndRedirect, useSession } from "@/lib/auth-client";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
@@ -55,6 +58,7 @@ function SidebarNavLink({
   onNavigate?: () => void;
   linkProps: LinkOptions;
 }) {
+  const { t } = useLocale();
   return (
     <Link
       onClick={onNavigate}
@@ -69,7 +73,7 @@ function SidebarNavLink({
             <div className="absolute left-0 top-1 bottom-1 w-[3px] rounded-r-full bg-primary" />
           ) : null}
           <Icon className="h-4 w-4 shrink-0" />
-          <span className="truncate">{label}</span>
+          <span className="truncate">{t(label)}</span>
         </>
       )}
     </Link>
@@ -77,6 +81,7 @@ function SidebarNavLink({
 }
 
 export function Sidebar({ projectId, onNavigate, onClose }: SidebarProps) {
+  const { t } = useLocale();
   const navGroups = [
     ...(projectId ? getProjectNavGroups(projectId) : []),
     connectNavGroup,
@@ -133,7 +138,7 @@ export function Sidebar({ projectId, onNavigate, onClose }: SidebarProps) {
             type="button"
             onClick={onClose}
             className="btn btn-ghost btn-sm btn-circle"
-            aria-label="Close sidebar"
+            aria-label={t("Close sidebar")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -210,6 +215,7 @@ function SidebarViewTab({
   active: boolean;
   onClick: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <button
       type="button"
@@ -219,12 +225,13 @@ function SidebarViewTab({
       className={`tab flex-1 gap-1.5 ${active ? "tab-active" : ""}`}
     >
       <Icon className="size-4" />
-      {label}
+      {t(label)}
     </button>
   );
 }
 
 function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useLocale();
   const { data: session } = useSession();
   const isHostedMode = isHostedClientAuthMode();
   const email = session?.user?.email;
@@ -249,7 +256,7 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
             type="button"
             tabIndex={0}
             className={`${navItemClass} w-full`}
-            aria-label="Open account menu"
+            aria-label={t("Open account menu")}
           >
             <User className="h-4 w-4 shrink-0" />
             <span className="truncate" data-ph-mask>
@@ -263,18 +270,19 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
             <li>
               <Link to="/settings" onClick={closeMenu}>
                 <Settings className="h-4 w-4" />
-                Settings
+                {t("Settings")}
               </Link>
             </li>
             {isHostedMode ? (
               <li>
                 <Link to={BILLING_ROUTE} onClick={closeMenu}>
                   <CreditCard className="h-4 w-4" />
-                  Billing
+                  {t("Billing")}
                 </Link>
               </li>
             ) : null}
             <ThemePreferenceMenuItems />
+            <LanguagePreferenceMenuItems />
             {isHostedMode ? (
               <>
                 <li
@@ -288,7 +296,7 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
                     onClick={() => signOutAndRedirect()}
                   >
                     <LogOut className="h-4 w-4" />
-                    Sign out
+                    {t("Sign out")}
                   </button>
                 </li>
               </>

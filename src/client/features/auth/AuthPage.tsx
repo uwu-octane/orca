@@ -4,6 +4,8 @@ import {
   getOAuthSignedQuery,
 } from "@/lib/auth-redirect";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
+// FORK: locale plugin — auth chrome translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export const authRedirectSearchSchema = z.object({
   redirect: z.string().optional(),
@@ -39,6 +41,7 @@ export function AuthMethodChooser({
   onContinueWithGoogle: () => void;
   onContinueWithEmail: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="space-y-3">
       <button
@@ -48,7 +51,7 @@ export function AuthMethodChooser({
         disabled={disabled || isBusy}
       >
         <GoogleLogo />
-        {isBusy ? "Opening Google..." : googleLabel}
+        {isBusy ? t("Opening Google...") : googleLabel}
       </button>
 
       <button
@@ -57,7 +60,7 @@ export function AuthMethodChooser({
         onClick={onContinueWithEmail}
         disabled={disabled || isBusy}
       >
-        {emailLabel}
+        {t(emailLabel)}
       </button>
     </div>
   );

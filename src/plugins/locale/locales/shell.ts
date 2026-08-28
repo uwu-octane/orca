@@ -48,13 +48,21 @@ export const zh = {
   // shared table chrome
   "Rows per page": "每页行数",
   "Page {page} of {totalPages}": "第 {page} / {totalPages} 页",
+  "Page {page}": "第 {page} 页",
   "Next page": "下一页",
   "Previous page": "上一页",
 
   // shell / modals
   "Close sidebar": "关闭侧边栏",
+  "Open account menu": "打开账户菜单",
   Dismiss: "忽略",
   "Open setup guide": "打开设置指南",
+  "Forgot password?": "忘记密码？",
+  "Create account": "创建账号",
+  "Continue with email": "使用邮箱继续",
+  "Opening Google...": "正在打开 Google…",
+  "Google sign in is not available right now.": "暂时无法使用 Google 登录。",
+  "Something went wrong. Please try again.": "出错了,请重试。",
 
   // auth pages (exact strings from _auth.* routes)
   "Sign in": "登录",
@@ -77,6 +85,8 @@ export const zh = {
     "额度已用完,请充值或升级套餐后继续。",
   "You do not have access to this resource.": "你没有访问此资源的权限。",
   "The requested resource was not found.": "请求的资源不存在。",
+  "Free plan audits are limited to {max} pages. Upgrade to run larger audits.":
+    "免费方案的审计上限为 {max} 页,升级套餐后可运行更大规模的审计。",
   "You've reached audit capacity for your account. Delete old audits from your projects to start a new one.":
     "账户的审计额度已达上限,请删除项目中的旧审计后再新建。",
   "You already have an audit running. Wait for it to finish or delete it before starting another.":
