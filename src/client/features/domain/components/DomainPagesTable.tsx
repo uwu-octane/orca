@@ -12,6 +12,8 @@ import {
   formatRounded,
   toPageSortMode,
 } from "@/client/features/domain/utils";
+// FORK: locale plugin — table copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type {
   DomainSortMode,
   PageRow,
@@ -35,12 +37,13 @@ function DomainPagesTableComponent({
   currentSortOrder,
   onSortClick,
 }: Props) {
+  const { t } = useLocale();
   const renderStarted = performance.now();
   const columns = useMemo<ColumnDef<PageRow>[]>(
     () => [
       pageColumnHelper.display({
         id: "page",
-        header: () => "Page",
+        header: () => t("Page"),
         cell: ({ row }) => (
           <ExternalUrlCell
             value={row.original.relativePath ?? row.original.page}
@@ -56,7 +59,7 @@ function DomainPagesTableComponent({
       pageColumnHelper.accessor("organicTraffic", {
         header: () => (
           <SortableHeader
-            label="Organic Traffic"
+            label={t("Organic Traffic")}
             isActive={toPageSortMode(sortMode) === "traffic"}
             order={currentSortOrder}
             onClick={() => onSortClick("traffic")}
@@ -67,7 +70,7 @@ function DomainPagesTableComponent({
       pageColumnHelper.accessor("keywords", {
         header: () => (
           <SortableHeader
-            label="Keywords"
+            label={t("Keywords")}
             isActive={toPageSortMode(sortMode) === "keywords"}
             order={currentSortOrder}
             onClick={() => onSortClick("volume")}
@@ -76,7 +79,7 @@ function DomainPagesTableComponent({
         cell: ({ getValue }) => formatNumber(getValue()),
       }),
     ],
-    [currentSortOrder, domain, onSortClick, sortMode],
+    [currentSortOrder, domain, onSortClick, sortMode, t],
   );
   // Memoized on purpose: a fresh slice every render defeats TanStack Table's
   // data-keyed memo, so _autoResetPageIndex fires each render and its setState
@@ -99,7 +102,7 @@ function DomainPagesTableComponent({
       className="table table-sm"
       empty={
         <div className="py-6 text-center text-base-content/60">
-          No pages match this search.
+          {t("No pages match this search.")}
         </div>
       }
     />

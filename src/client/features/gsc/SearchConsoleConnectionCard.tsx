@@ -161,7 +161,7 @@ export function SearchConsoleConnectionCard({
       {connectionQuery.isLoading ? (
         <div className="flex items-center gap-2 text-sm text-base-content/50">
           <span className="loading loading-spinner loading-sm" />
-          Checking…
+          {t("Checking…")}
         </div>
       ) : selfHostedNeedsSetup ? (
         <SelfHostedSetupWarning />
@@ -189,9 +189,9 @@ export function SearchConsoleConnectionCard({
           onReconnect={handleConnect}
           secondaryAction={
             connected
-              ? { label: "Cancel", onClick: () => setPicking(false) }
+              ? { label: t("Cancel"), onClick: () => setPicking(false) }
               : {
-                  label: "Disconnect",
+                  label: t("Disconnect"),
                   destructive: true,
                   disabled: disconnectMutation.isPending,
                   onClick: () => disconnectMutation.mutate(),
@@ -201,8 +201,9 @@ export function SearchConsoleConnectionCard({
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-base-content/70">
-            Connect GSC to see how your website is actually performing in Google
-            Search.
+            {t(
+              "Connect GSC to see how your website is actually performing in Google Search.",
+            )}
           </p>
           <button
             type="button"
@@ -210,7 +211,7 @@ export function SearchConsoleConnectionCard({
             className="inline-flex items-center gap-2.5 rounded-lg border border-base-300 bg-base-100 px-4 py-2.5 text-sm font-semibold text-base-content shadow-sm transition hover:bg-base-200 hover:shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             <GoogleGlyph className="size-[18px]" />
-            Connect with Google
+            {t("Connect with Google")}
           </button>
         </div>
       )}
@@ -235,6 +236,7 @@ function ConnectedState({
   onDisconnect: () => void;
   disconnecting: boolean;
 }) {
+  const { t } = useLocale();
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 rounded-lg border border-base-300 bg-base-200/40 p-3.5">
@@ -245,7 +247,7 @@ function ConnectedState({
           <p className="truncate font-mono text-sm">{siteUrl}</p>
           {connectedByEmail ? (
             <p className="truncate text-xs text-base-content/55">
-              Connected by {connectedByEmail}
+              {t("Connected by {email}", { email: connectedByEmail })}
             </p>
           ) : null}
         </div>
@@ -256,7 +258,7 @@ function ConnectedState({
           className="btn btn-ghost btn-sm"
           onClick={onChange}
         >
-          Change property
+          {t("Change property")}
         </button>
         <button
           type="button"
@@ -264,7 +266,7 @@ function ConnectedState({
           onClick={onDisconnect}
           disabled={disconnecting}
         >
-          Disconnect
+          {t("Disconnect")}
         </button>
       </div>
     </div>

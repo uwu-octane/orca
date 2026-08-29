@@ -13,6 +13,7 @@ function SeoApiStatusBanners({
   shouldShowSeoApiWarning: boolean;
   seoApiKeyStatusError: boolean;
 }) {
+  const { t } = useLocale();
   return (
     <>
       {shouldShowSeoApiWarning ? (
@@ -21,15 +22,16 @@ function SeoApiStatusBanners({
             <div className="alert alert-warning">
               <AlertTriangle className="size-4 shrink-0" />
               <span className="text-sm">
-                Setup needed: add your DataForSEO API key to use OpenSEO
-                features. See the quick steps on the{" "}
+                {t(
+                  "Setup needed: add your DataForSEO API key to use OpenSEO features. See the quick steps on the",
+                )}{" "}
                 <Link
                   {...dataforseoHelpLinkOptions}
                   className="link link-primary font-medium"
                 >
-                  help page
+                  {t("help page")}
                 </Link>
-                .
+                {t(".")}
               </span>
             </div>
           </div>
@@ -42,15 +44,16 @@ function SeoApiStatusBanners({
             <div className="alert alert-info">
               <AlertTriangle className="size-4 shrink-0" />
               <span className="text-sm">
-                We could not verify your DataForSEO setup. If features are not
-                working, check the setup steps on the{" "}
+                {t(
+                  "We could not verify your DataForSEO setup. If features are not working, check the setup steps on the",
+                )}{" "}
                 <Link
                   {...dataforseoHelpLinkOptions}
                   className="link link-primary font-medium"
                 >
-                  help page
+                  {t("help page")}
                 </Link>
-                .
+                {t(".")}
               </span>
             </div>
           </div>
@@ -117,13 +120,13 @@ const MissingSeoSetupModal = React.forwardRef<
               id="dataforseo-setup-title"
               className="text-lg font-semibold text-base-content"
             >
-              One quick setup step
+              {t("One quick setup step")}
             </h2>
             <p
               id="dataforseo-setup-description"
               className="text-sm text-base-content/75"
             >
-              Add your DataForSEO API key to start using OpenSEO.
+              {t("Add your DataForSEO API key to start using OpenSEO.")}
             </p>
           </div>
         </div>

@@ -49,10 +49,10 @@ export function BacklinksExportMenu({
         tabIndex={0}
         role="button"
         className={`btn btn-sm btn-ghost gap-1 ${rows.length === 0 ? "btn-disabled" : ""}`}
-        aria-label="Export backlinks table"
+        aria-label={t("Export backlinks table")}
       >
         <Download className="size-4" />
-        Export
+        {t("Export")}
         <ChevronDown className="size-3 opacity-60" />
       </div>
       <ul
@@ -71,7 +71,7 @@ export function BacklinksExportMenu({
             ) : (
               <Sheet className="size-4" />
             )}
-            Export to Sheets
+            {t("Export to Sheets")}
           </button>
         </li>
         <li>
@@ -88,7 +88,7 @@ export function BacklinksExportMenu({
             disabled={rows.length === 0}
           >
             <Download className="size-4" />
-            Export CSV
+            {t("Export CSV")}
           </button>
         </li>
       </ul>
@@ -105,14 +105,15 @@ export function BacklinksActionsMenu({
   loadRatings: (domains: string[]) => void | Promise<void>;
   ratableDomains: string[];
 }) {
+  const { t } = useLocale();
   return (
     <div className="dropdown dropdown-end">
       <div
         tabIndex={0}
         role="button"
         className="btn btn-sm btn-ghost btn-square"
-        aria-label="Backlinks table actions"
-        title="Backlinks table actions"
+        aria-label={t("Backlinks table actions")}
+        title={t("Backlinks table actions")}
       >
         <MoreHorizontal className="size-4" />
       </div>
@@ -126,14 +127,16 @@ export function BacklinksActionsMenu({
             type="button"
             onClick={() => void loadRatings(ratableDomains)}
             disabled={isLoadingRatings}
-            title="Look up Ahrefs Domain Rating for each domain in the table"
+            title={t(
+              "Look up Ahrefs Domain Rating for each domain in the table",
+            )}
           >
             {isLoadingRatings ? (
               <span className="loading loading-spinner loading-xs" />
             ) : (
               <Gauge className="size-4" />
             )}
-            Ahrefs DR
+            {t("Ahrefs DR")}
           </button>
         </li>
       </ul>

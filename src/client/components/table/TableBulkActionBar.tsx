@@ -1,5 +1,7 @@
 import { ChevronDown, Download, Loader2, X } from "lucide-react";
 import type { ReactNode } from "react";
+// FORK: locale plugin — bulk action bar chrome translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export function TableBulkActionBar({
   selectedCount,
@@ -14,6 +16,7 @@ export function TableBulkActionBar({
   onClear: () => void;
   placement?: "fixed" | "inline";
 }) {
+  const { t } = useLocale();
   if (selectedCount === 0) return null;
 
   const wrapperClass =
@@ -27,18 +30,22 @@ export function TableBulkActionBar({
 
   return (
     <div className={wrapperClass}>
-      <div role="toolbar" aria-label="Bulk actions" className={toolbarClass}>
+      <div
+        role="toolbar"
+        aria-label={t("Bulk actions")}
+        className={toolbarClass}
+      >
         <div className="flex items-center gap-2 border-r border-base-content/10 px-3 py-2 text-sm">
           <button
             type="button"
-            aria-label="Clear selection"
+            aria-label={t("Clear selection")}
             className="-ml-1 rounded p-1 text-base-content/55 hover:bg-base-content/10 hover:text-base-content"
             onClick={onClear}
           >
             <X className="size-3.5" />
           </button>
           <span className="font-medium tabular-nums">{selectedCount}</span>
-          <span className="text-base-content/60">{selectedLabel}</span>
+          <span className="text-base-content/60">{t(selectedLabel)}</span>
         </div>
         {actions}
       </div>
@@ -89,6 +96,7 @@ export function TableBulkExportMenu({
   }>;
   busy?: boolean;
 }) {
+  const { t } = useLocale();
   return (
     <div className="dropdown dropdown-top dropdown-end">
       <button
@@ -103,7 +111,7 @@ export function TableBulkExportMenu({
         ) : (
           <Download className="size-3.5" />
         )}
-        Export
+        {t("Export")}
         <ChevronDown className="size-3 opacity-60" />
       </button>
       <ul
@@ -142,11 +150,12 @@ export function TableExportMenu({
   buttonClassName?: string;
   menuClassName?: string;
 }) {
+  const { t } = useLocale();
   return (
     <div className="dropdown dropdown-end">
       <div tabIndex={0} role="button" className={buttonClassName}>
         <Download className="size-4" />
-        Export
+        {t("Export")}
         <ChevronDown className="size-3 opacity-60" />
       </div>
       <ul tabIndex={0} className={menuClassName}>

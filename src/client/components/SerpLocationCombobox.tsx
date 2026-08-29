@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Search } from "lucide-react";
+// FORK: locale plugin — SERP location picker copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { searchSerpLocations } from "@/serverFunctions/serp-locations";
 import { formatLocationLabel } from "@/shared/keyword-locations";
 import type { SerpLocationResult } from "@/server/lib/dataforseo/serp-locations";
@@ -27,6 +29,7 @@ export function SerpLocationCombobox({
   countryCode,
   placeholder = "Search cities...",
 }: Props) {
+  const { t } = useLocale();
   const [inputValue, setInputValue] = useState(
     value ? formatLocationLabel(value) : "",
   );
@@ -165,7 +168,7 @@ export function SerpLocationCombobox({
         <input
           type="text"
           className="grow min-w-0 bg-transparent outline-none placeholder:text-base-content/40"
-          placeholder={placeholder}
+          placeholder={t(placeholder)}
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
@@ -180,11 +183,13 @@ export function SerpLocationCombobox({
         <div className="absolute z-30 mt-1 w-full rounded-box border border-base-300 bg-base-100 shadow-lg p-1">
           {isError ? (
             <p className="px-3 py-2 text-sm text-error">
-              Unable to load locations
+              {t("Unable to load locations")}
             </p>
           ) : results.length === 0 ? (
             <p className="px-3 py-2 text-sm text-base-content/50">
-              No locations found for "{debouncedQuery.trim()}"
+              {t('No locations found for "{query}"', {
+                query: debouncedQuery.trim(),
+              })}
             </p>
           ) : (
             <ul

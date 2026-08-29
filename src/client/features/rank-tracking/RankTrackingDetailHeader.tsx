@@ -3,6 +3,8 @@ import { SegmentedToggle } from "@/client/components/SegmentedToggle";
 import { LOCATIONS } from "@/client/features/keywords/locations";
 import { devicesLabel, scheduleLabel } from "@/shared/rank-tracking";
 import { formatLocationLabel } from "@/shared/keyword-locations";
+// FORK: locale plugin — header copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type {
   ComparePeriod,
   RankTrackingConfig,
@@ -41,6 +43,7 @@ export function RankTrackingDetailHeader({
   onEdit: () => void;
   onToggleAddKeywords: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 px-4 pt-4 pb-3">
       <div>
@@ -49,12 +52,13 @@ export function RankTrackingDetailHeader({
           {config.locationName
             ? formatLocationLabel(config.locationName, 2)
             : (LOCATIONS[config.locationCode] ?? "US")}{" "}
-          &middot; {devicesLabel(config.devices)} &middot;{" "}
-          {scheduleLabel(config.scheduleInterval)}
+          &middot; {t(devicesLabel(config.devices))} &middot;{" "}
+          {t(scheduleLabel(config.scheduleInterval))}
           {run?.lastCheckedAt && (
             <>
               {" "}
-              &middot; Last: {new Date(run.lastCheckedAt).toLocaleDateString()}
+              &middot; {t("Last:")}{" "}
+              {new Date(run.lastCheckedAt).toLocaleDateString()}
             </>
           )}
           {costEstimate && costEstimate.keywordCount > 0 && (
@@ -69,12 +73,12 @@ export function RankTrackingDetailHeader({
               {
                 value: "desktop" as const,
                 icon: <Monitor className="size-3.5" />,
-                label: "Desktop",
+                label: t("Desktop"),
               },
               {
                 value: "mobile" as const,
                 icon: <Smartphone className="size-3.5" />,
-                label: "Mobile",
+                label: t("Mobile"),
               },
             ]}
             value={activeDevice}
@@ -83,29 +87,29 @@ export function RankTrackingDetailHeader({
         )}
         <select
           className="select select-bordered select-sm text-xs w-auto"
-          title="Comparison period"
+          title={t("Comparison period")}
           value={comparePeriod}
           onChange={(e) => {
             if (isComparePeriod(e.target.value))
               onComparePeriodChange(e.target.value);
           }}
         >
-          <option value="1d">vs yesterday</option>
-          <option value="7d">vs last week</option>
-          <option value="30d">vs last month</option>
-          <option value="90d">vs 90 days ago</option>
+          <option value="1d">{t("vs yesterday")}</option>
+          <option value="7d">{t("vs last week")}</option>
+          <option value="30d">{t("vs last month")}</option>
+          <option value="90d">{t("vs 90 days ago")}</option>
         </select>
         <div className="hidden sm:block h-6 w-px bg-base-300" />
         <button className="btn btn-sm gap-1" onClick={onEdit}>
           <Settings className="size-3.5" />
-          Configure
+          {t("Configure")}
         </button>
         <button
           className="btn btn-primary btn-sm gap-1"
           onClick={onToggleAddKeywords}
         >
           <Plus className="size-3.5" />
-          Add Keywords
+          {t("Add Keywords")}
         </button>
       </div>
     </div>

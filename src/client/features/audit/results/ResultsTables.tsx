@@ -15,6 +15,9 @@ import {
   extractPathname,
   LighthouseScoreBadge,
 } from "@/client/features/audit/shared";
+// FORK: locale plugin — table copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
+import type { T } from "@/plugins/locale";
 import type { AuditResultsData } from "@/client/features/audit/results/types";
 import {
   countActiveFilters,
@@ -45,6 +48,7 @@ export function PerformanceTable({
   lighthouse: AuditResultsData["lighthouse"];
   pages: AuditResultsData["pages"];
 }) {
+  const { t } = useLocale();
   const [filters, setFilters] = useState<PerformanceFilters>(
     EMPTY_PERFORMANCE_FILTERS,
   );
@@ -74,8 +78,8 @@ export function PerformanceTable({
     EMPTY_PERFORMANCE_FILTERS,
   );
   const columns = useMemo(
-    () => buildPerformanceColumns({ auditId, projectId }),
-    [auditId, projectId],
+    () => buildPerformanceColumns({ auditId, projectId, t }),
+    [auditId, projectId, t],
   );
   const table = useAppTable({
     data: filteredRows,
@@ -116,9 +120,11 @@ export function PerformanceTable({
 function buildPerformanceColumns({
   auditId,
   projectId,
+  t,
 }: {
   auditId: string;
   projectId: string;
+  t: T;
 }): ColumnDef<PerformanceRowData>[] {
   return [
     performanceColumnHelper.accessor("pagePath", {
@@ -130,27 +136,34 @@ function buildPerformanceColumns({
       meta: { cellClassName: "max-w-[180px] truncate" },
     }),
     performanceColumnHelper.accessor("strategy", {
-      header: ({ column }) => <SortableHeader column={column} label="Device" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} label={t("Device")} />
+      ),
       cell: ({ getValue }) => (
         <span className="capitalize text-xs">{getValue()}</span>
       ),
     }),
     performanceColumnHelper.display({
       id: "status",
-      header: ({ column }) => <SortableHeader column={column} label="Status" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} label={t("Status")} />
+      ),
       cell: ({ row }) => {
         const isFailed = isLighthouseFailure(row.original);
         const failureMessage =
-          row.original.errorMessage ?? "Lighthouse returned no category scores";
+          row.original.errorMessage ??
+          t("Lighthouse returned no category scores");
         return isFailed ? (
           <span
             className="badge badge-error badge-outline text-xs"
             title={failureMessage}
           >
-            failed
+            {t("failed")}
           </span>
         ) : (
-          <span className="badge badge-success badge-outline text-xs">ok</span>
+          <span className="badge badge-success badge-outline text-xs">
+            {t("ok")}
+          </span>
         );
       },
       enableSorting: true,
@@ -159,7 +172,9 @@ function buildPerformanceColumns({
         Number(isLighthouseFailure(right.original)),
     }),
     performanceColumnHelper.accessor("performanceScore", {
-      header: ({ column }) => <SortableHeader column={column} label="Perf" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} label={t("Perf")} />
+      ),
       cell: ({ getValue }) => <LighthouseScoreBadge score={getValue()} />,
       sortingFn: nullableNumberSort,
     }),
@@ -223,7 +238,7 @@ function buildPerformanceColumns({
     }),
     performanceColumnHelper.display({
       id: "issues",
-      header: () => "Issues",
+      header: () => t("Issues"),
       cell: ({ row }) =>
         row.original.r2Key && !isLighthouseFailure(row.original) ? (
           <Link
@@ -232,7 +247,7 @@ function buildPerformanceColumns({
             params={{ projectId, resultId: row.original.id }}
             search={{ auditId, category: "performance" }}
           >
-            View issues
+            {t("View issues")}
           </Link>
         ) : (
           <span className="text-xs text-base-content/40">-</span>
@@ -246,12 +261,13 @@ export function ExportDropdown({
 }: {
   onExport: (format: "csv" | "json" | "sheets") => void;
 }) {
+  const { t } = useLocale();
   return (
     <TableExportMenu
       buttonClassName="btn btn-sm btn-ghost gap-1"
       menuClassName="dropdown-content z-10 menu p-2 shadow-lg bg-base-100 border border-base-300 rounded-box w-52"
       actions={[
-        { label: "Export to Sheets", onClick: () => onExport("sheets") },
+        { label: t("Export to Sheets"), onClick: () => onExport("sheets") },
         { label: "CSV", onClick: () => onExport("csv") },
         { label: "JSON", onClick: () => onExport("json") },
       ]}

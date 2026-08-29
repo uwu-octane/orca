@@ -14,12 +14,15 @@ import {
   formatMonthLabel,
   formatTooltipValue,
 } from "./backlinksPageUtils";
+// FORK: locale plugin — chart copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export function BacklinksTrendChart({
   data,
 }: {
   data: BacklinksOverviewData["trends"];
 }) {
+  const { t } = useLocale();
   const { containerRef, chartWidth } = useChartWidth();
 
   if (data.length === 0) {
@@ -30,7 +33,7 @@ export function BacklinksTrendChart({
     <div
       ref={containerRef}
       className="h-56 min-w-0"
-      aria-label="Backlink trend chart"
+      aria-label={t("Backlink trend chart")}
     >
       {chartWidth > 0 ? (
         <LineChart
@@ -68,7 +71,7 @@ export function BacklinksTrendChart({
             stroke="#2563eb"
             strokeWidth={2}
             dot={false}
-            name="Backlinks"
+            name={t("Backlinks")}
           />
           <Line
             yAxisId="right"
@@ -77,7 +80,7 @@ export function BacklinksTrendChart({
             stroke="#14b8a6"
             strokeWidth={2}
             dot={false}
-            name="Referring domains"
+            name={t("Referring domains")}
           />
         </LineChart>
       ) : null}
@@ -90,6 +93,7 @@ export function BacklinksNewLostChart({
 }: {
   data: BacklinksOverviewData["newLostTrends"];
 }) {
+  const { t } = useLocale();
   const { containerRef, chartWidth } = useChartWidth();
 
   if (data.length === 0) {
@@ -100,7 +104,7 @@ export function BacklinksNewLostChart({
     <div
       ref={containerRef}
       className="h-56 min-w-0"
-      aria-label="New and lost backlinks chart"
+      aria-label={t("New and lost backlinks chart")}
     >
       {chartWidth > 0 ? (
         <LineChart
@@ -131,7 +135,7 @@ export function BacklinksNewLostChart({
             stroke="#ef4444"
             strokeWidth={2}
             dot={false}
-            name="Lost backlinks"
+            name={t("Lost backlinks")}
           />
           <Line
             type="monotone"
@@ -139,7 +143,7 @@ export function BacklinksNewLostChart({
             stroke="#16a34a"
             strokeWidth={2}
             dot={false}
-            name="New backlinks"
+            name={t("New backlinks")}
           />
         </LineChart>
       ) : null}
@@ -175,9 +179,10 @@ function useChartWidth() {
 }
 
 function EmptyChartState() {
+  const { t } = useLocale();
   return (
     <div className="flex h-56 items-center justify-center rounded-xl border border-dashed border-base-300 text-sm text-base-content/55">
-      Not enough historical data yet.
+      {t("Not enough historical data yet.")}
     </div>
   );
 }

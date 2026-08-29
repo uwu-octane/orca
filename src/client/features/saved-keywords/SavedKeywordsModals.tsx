@@ -1,5 +1,7 @@
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Modal } from "@/client/components/Modal";
+// FORK: locale plugin — modal copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export function RemoveSavedKeywordsError({ message }: { message: string }) {
   return (
@@ -21,14 +23,19 @@ export function DeleteSavedKeywordsModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <Modal onClose={onClose} labelledBy="delete-keywords-title">
       <h3 id="delete-keywords-title" className="text-lg font-semibold">
-        Delete keywords?
+        {t("Delete keywords?")}
       </h3>
       <p className="text-sm text-base-content/70">
-        This will permanently delete {selectedCount} saved keyword
-        {selectedCount !== 1 ? "s" : ""}.
+        {t(
+          selectedCount === 1
+            ? "This will permanently delete {count} saved keyword."
+            : "This will permanently delete {count} saved keywords.",
+          { count: selectedCount },
+        )}
       </p>
       <div className="flex justify-end gap-2">
         <button
@@ -36,7 +43,7 @@ export function DeleteSavedKeywordsModal({
           className="btn btn-ghost btn-sm"
           onClick={onClose}
         >
-          Cancel
+          {t("Cancel")}
         </button>
         <button
           type="button"
@@ -45,8 +52,12 @@ export function DeleteSavedKeywordsModal({
           disabled={isPending}
         >
           {isPending ? <Loader2 className="size-3 animate-spin" /> : null}
-          Delete {selectedCount} keyword
-          {selectedCount !== 1 ? "s" : ""}
+          {t(
+            selectedCount === 1
+              ? "Delete {count} keyword"
+              : "Delete {count} keywords",
+            { count: selectedCount },
+          )}
         </button>
       </div>
     </Modal>

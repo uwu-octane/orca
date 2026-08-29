@@ -153,7 +153,7 @@ function SignUpPage() {
 
   return (
     <AuthPageCard
-      title="Create your account"
+      title={t("Create your account")}
       footer={
         isHostedMode ? (
           showEmailForm ? (
@@ -165,40 +165,40 @@ function SignUpPage() {
                 google.clearError();
               }}
             >
-              Back to signup
+              {t("Back to signup")}
             </button>
           ) : (
             <div className="space-y-4">
               <p className="text-sm leading-relaxed text-base-content/60">
-                By signing up, you agree to our{" "}
+                {t("By signing up, you agree to our")}{" "}
                 <a
                   href="https://openseo.so/terms-and-conditions"
                   target="_blank"
                   rel="noreferrer"
                   className="text-base-content underline underline-offset-2 hover:text-base-content/80 transition-colors"
                 >
-                  Terms
+                  {t("Terms")}
                 </a>{" "}
-                and{" "}
+                {t("and")}{" "}
                 <a
                   href="https://openseo.so/privacy"
                   target="_blank"
                   rel="noreferrer"
                   className="text-base-content underline underline-offset-2 hover:text-base-content/80 transition-colors"
                 >
-                  Privacy Policy
+                  {t("Privacy Policy")}
                 </a>
-                .
+                {t(".")}
               </p>
 
               <p className="text-sm text-base-content/50">
-                Already have an account?{" "}
+                {t("Already have an account?")}{" "}
                 <Link
                   to="/sign-in"
                   search={getSignInSearch(redirectTo)}
                   className="text-base-content underline underline-offset-2 hover:text-base-content/80 transition-colors"
                 >
-                  Sign in
+                  {t("Sign in")}
                 </Link>
               </p>
             </div>
@@ -209,7 +209,7 @@ function SignUpPage() {
       {!showEmailForm ? (
         <>
           <AuthMethodChooser
-            googleLabel="Continue with Google"
+            googleLabel={t("Continue with Google")}
             disabled={!isHostedMode}
             isBusy={google.isStarting}
             onContinueWithGoogle={() => {
@@ -241,7 +241,7 @@ function SignUpPage() {
                   <input
                     type="text"
                     className="input input-bordered w-full"
-                    placeholder="Name (optional)..."
+                    placeholder={t("Name (optional)...")}
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
                     autoComplete="name"
@@ -264,7 +264,7 @@ function SignUpPage() {
                   <input
                     type="email"
                     className="input input-bordered w-full"
-                    placeholder="Email address..."
+                    placeholder={t("Email address...")}
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
                     autoComplete="email"
@@ -288,7 +288,7 @@ function SignUpPage() {
                   <input
                     type="password"
                     className="input input-bordered w-full"
-                    placeholder="Password..."
+                    placeholder={t("Password...")}
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
                     autoComplete="new-password"
@@ -314,7 +314,7 @@ function SignUpPage() {
                   <input
                     type="password"
                     className="input input-bordered w-full"
-                    placeholder="Confirm password..."
+                    placeholder={t("Confirm password...")}
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
                     autoComplete="new-password"
@@ -359,7 +359,9 @@ function SignUpPage() {
                       (isTurnstileEnabled && !captcha.hasToken)
                     }
                   >
-                    {isSubmitting ? "Creating account..." : "Create account"}
+                    {isSubmitting
+                      ? t("Creating account...")
+                      : t("Create account")}
                   </button>
                 </>
               );

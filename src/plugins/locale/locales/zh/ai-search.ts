@@ -121,4 +121,56 @@ export const aiSearchZh = {
   "Mentions share across {platforms} · bars relative to the leader.":
     "{platforms} 的提及次数占比,柱状条相对于最高值显示。",
   and: "和",
+  "Mention trend (last 12 months)": "提及趋势(最近 12 个月)",
+  "AI mention data is temporarily unavailable for {target}. Please try again shortly.":
+    "关于 {target} 的 AI 提及数据暂时不可用,请稍后重试。",
+  "No AI mentions found for {target}.": "未找到关于 {target} 的 AI 提及。",
+  "Note:": "注意:",
+  "was unavailable": "不可用",
+  "were unavailable": "不可用",
+  "some mentions may be missing.": "部分提及可能缺失。",
+  Mentions: "提及次数",
+  "just now": "刚刚",
+  "{count}m ago": "{count} 分钟前",
+  "{count}h ago": "{count} 小时前",
+  "{count}d ago": "{count} 天前",
+  "Estimated count of AI answers where the searched brand or domain appeared in the answer text or cited sources.":
+    "预计的 AI 回答数量,其中回答文本或引用来源中出现了搜索的品牌或域名。",
+  "Estimated monthly search demand for prompts where the searched brand or domain appears in AI answers. This is prompt demand, not mention count.":
+    "搜索的品牌或域名出现在 AI 回答中的提示词预计每月搜索需求。这是提示词需求,不是提及次数。",
+  "DataForSEO indexes ChatGPT mentions for US English only — country selection is not available for this platform.":
+    "DataForSEO 仅收录美国英语的 ChatGPT 提及,此平台无法选择国家/地区。",
+  unavailable: "不可用",
+  "AI search providers report mentions per domain, not per page. This number covers the whole domain — the cited pages below are limited to your scope.":
+    "AI 搜索提供商按域名而非页面报告提及次数。此数字覆盖整个域名——下方引用的页面限于你的范围。",
+  "Model returned an empty response.": "模型返回了空响应。",
+  "Model Thinking": "模型思考",
+  "Read more": "阅读更多",
+  mentions: "次提及",
+  "Cited sources": "引用来源",
+  "Cited pages within {target}. Prompt examples come from the fetched sample.":
+    "范围内被引用的页面:{target}。提示词示例来自获取的样本。",
+  "Pages cited alongside {target} in AI answers. Prompt examples come from the fetched sample.":
+    "与 {target} 一同被 AI 回答引用的页面。提示词示例来自获取的样本。",
+  "Fetched sample of prompts whose AI answer cited a page within {target}.":
+    "AI 回答引用了 {target} 范围内页面的提示词样本。",
+  "Fetched sample of prompts whose AI answer cited {target} in its text or sources.":
+    "AI 回答在文本或来源中引用了 {target} 的提示词样本。",
+  "None of this domain's top cited pages fall under {target}. Broaden the scope to see domain-level citations.":
+    "该域名下被引用最多的页面都不在 {target} 范围内。扩大范围以查看域名级别的引用。",
+  "No sampled prompts cited a page under {target}. Broaden the scope to see domain-level prompts.":
+    "没有采样的提示词引用 {target} 范围内的页面。扩大范围以查看域名级提示词。",
+  "Add competitors (comma-separated)": "添加竞争对手(用逗号分隔)",
+  "Looking up...": "查询中…",
+  "Look up": "查询",
+  "Add up to 5 competitor brands or domains to see your Share of Voice.":
+    "最多可添加 5 个竞争对手品牌或域名,以查看你的品牌声量占比。",
+  "Est.": "预计",
+  "plus ~{cost} to compare competitors": "另加约 ${cost} 用于比较竞争对手",
+  "Remove from history": "从历史记录中移除",
+  "{count} recent": "最近 {count} 次",
+  "{count} recent {noun}": "最近 {count} 次{noun}",
+  "{count} recent {noun}s": "最近 {count} 次{noun}",
+  lookup: "查询",
+  prompt: "提示词",
 } satisfies Record<string, string>;

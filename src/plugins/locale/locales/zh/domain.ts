@@ -36,8 +36,6 @@ export const domainZh = {
   "Please enter a domain": "请输入域名",
   "Enter a valid domain like example.com": "请输入有效域名,例如 example.com",
   "URLs with embedded credentials are not supported": "不支持内嵌凭据的 URL",
-  "Add a path to use Subfolder (e.g. example.com/blog)":
-    "请添加路径以使用子目录(例如 example.com/blog)",
   "Include Page Terms": "包含页面词",
   "Exclude Page Terms": "排除页面词",
   "audit, checker, template": "审计、检查器、模板",
@@ -50,4 +48,18 @@ export const domainZh = {
   "Score (KD)": "得分 (KD)",
   Rank: "排名",
   Keywords: "关键词",
+  "No keywords match this search.": "没有关键词符合此搜索。",
+  "No pages match this search.": "没有页面符合此搜索。",
+  "Enter a domain to get started": "输入域名即可开始",
+  "Select keywords to save": "选择要保存的关键词",
+  "Cost per click in USD.": "每次点击费用(USD)。",
+  "Organic ranking difficulty (0-100): higher means harder to reach Google's top 10.":
+    "自然排名难度(0-100):分数越高,越难进入 Google 前 10 名。",
+  "Copy data (JSON)": "复制数据 (JSON)",
+  "Download Excel": "下载 Excel",
+  "Saved filters exceed this scope's {max}-condition limit and were not applied. Open Filters to trim them.":
+    "已保存的筛选条件超出此范围 {max} 个条件的上限,因此未应用。请打开“筛选”进行调整。",
+  Page: "页面",
+  "Organic Traffic": "自然流量",
+  keywords: "关键词",
 } satisfies Record<string, string>;

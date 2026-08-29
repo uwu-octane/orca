@@ -15,6 +15,8 @@ import { DifficultyBadge } from "@/client/features/domain/components/DifficultyB
 import { SortableHeader } from "@/client/features/domain/components/SortableHeader";
 import { useDomainRenderDebug } from "@/client/features/domain/domainDebug";
 import { formatNumber, formatRounded } from "@/client/features/domain/utils";
+// FORK: locale plugin — table copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type {
   DomainSortMode,
   KeywordRow,
@@ -44,6 +46,7 @@ function DomainKeywordsTableComponent({
   onSortClick,
   onToggleKeyword,
 }: Props) {
+  const { t } = useLocale();
   const renderStarted = performance.now();
   const selectAnchorRef = useSelectionAnchor();
   const rowSelection = useMemo<RowSelectionState>(
@@ -57,7 +60,7 @@ function DomainKeywordsTableComponent({
     () => [
       makeSelectionColumn<KeywordRow>(selectAnchorRef),
       keywordColumnHelper.accessor("keyword", {
-        header: () => "Keyword",
+        header: () => t("Keyword"),
         cell: ({ getValue }) => (
           <span className="font-medium">{getValue()}</span>
         ),
@@ -65,7 +68,7 @@ function DomainKeywordsTableComponent({
       keywordColumnHelper.accessor("position", {
         header: () => (
           <SortableHeader
-            label="Rank"
+            label={t("Rank")}
             isActive={sortMode === "rank"}
             order={currentSortOrder}
             onClick={() => onSortClick("rank")}
@@ -76,7 +79,7 @@ function DomainKeywordsTableComponent({
       keywordColumnHelper.accessor("searchVolume", {
         header: () => (
           <SortableHeader
-            label="Volume"
+            label={t("Volume")}
             isActive={sortMode === "volume"}
             order={currentSortOrder}
             onClick={() => onSortClick("volume")}
@@ -87,7 +90,7 @@ function DomainKeywordsTableComponent({
       keywordColumnHelper.accessor("traffic", {
         header: () => (
           <SortableHeader
-            label="Traffic"
+            label={t("Traffic")}
             isActive={sortMode === "traffic"}
             order={currentSortOrder}
             onClick={() => onSortClick("traffic")}
@@ -98,8 +101,8 @@ function DomainKeywordsTableComponent({
       keywordColumnHelper.accessor("cpc", {
         header: () => (
           <SortableHeader
-            label="CPC"
-            helpText="Cost per click in USD."
+            label={t("CPC")}
+            helpText={t("Cost per click in USD.")}
             isActive={sortMode === "cpc"}
             order={currentSortOrder}
             onClick={() => onSortClick("cpc")}
@@ -112,7 +115,7 @@ function DomainKeywordsTableComponent({
       }),
       keywordColumnHelper.display({
         id: "url",
-        header: () => "URL",
+        header: () => t("URL"),
         cell: ({ row }) => (
           <ExternalUrlCell
             value={row.original.relativeUrl ?? row.original.url}
@@ -127,8 +130,10 @@ function DomainKeywordsTableComponent({
       keywordColumnHelper.accessor("keywordDifficulty", {
         header: () => (
           <SortableHeader
-            label="Score"
-            helpText="Organic ranking difficulty (0-100): higher means harder to reach Google's top 10."
+            label={t("Score")}
+            helpText={t(
+              "Organic ranking difficulty (0-100): higher means harder to reach Google's top 10.",
+            )}
             isActive={sortMode === "score"}
             order={currentSortOrder}
             onClick={() => onSortClick("score")}
@@ -137,7 +142,7 @@ function DomainKeywordsTableComponent({
         cell: ({ getValue }) => <DifficultyBadge value={getValue()} />,
       }),
     ],
-    [currentSortOrder, domain, onSortClick, selectAnchorRef, sortMode],
+    [currentSortOrder, domain, onSortClick, selectAnchorRef, sortMode, t],
   );
   const table = useAppTable({
     data: rows,
@@ -171,8 +176,8 @@ function DomainKeywordsTableComponent({
     <div className="overflow-x-auto">
       <div className="mb-2 text-xs text-base-content/60">
         {selectedKeywords.size > 0
-          ? `${selectedKeywords.size} selected`
-          : "Select keywords to save"}
+          ? t("{count} selected", { count: selectedKeywords.size })
+          : t("Select keywords to save")}
       </div>
       <AppDataTable
         table={table}
@@ -180,7 +185,7 @@ function DomainKeywordsTableComponent({
         wrapperClassName=""
         empty={
           <div className="py-6 text-center text-base-content/60">
-            No keywords match this search.
+            {t("No keywords match this search.")}
           </div>
         }
       />

@@ -83,13 +83,18 @@ function ForgotPasswordPage() {
 
           return (
             <AuthPageCard
-              title={isSuccess ? "Check your email" : "Forgot password"}
+              title={isSuccess ? t("Check your email") : t("Forgot password")}
               helperText={
                 isSuccess
-                  ? `If an account exists for ${submittedEmail}, we sent a reset link.`
+                  ? t(
+                      "If an account exists for {email}, we sent a reset link.",
+                      { email: submittedEmail },
+                    )
                   : isHostedMode
-                    ? "Enter your email and we'll send you a password reset link."
-                    : "Password reset isn't available right now."
+                    ? t(
+                        "Enter your email and we'll send you a password reset link.",
+                      )
+                    : t("Password reset isn't available right now.")
               }
               footer={
                 <p className="text-sm">
@@ -98,7 +103,7 @@ function ForgotPasswordPage() {
                     search={getSignInSearch(redirectTo)}
                     className="text-base-content/50 hover:text-base-content transition-colors"
                   >
-                    Back to sign in
+                    {t("Back to sign in")}
                   </Link>
                 </p>
               }
@@ -106,8 +111,9 @@ function ForgotPasswordPage() {
               {isSuccess ? (
                 <div className="alert alert-success">
                   <span>
-                    If an account exists for that email, you'll receive password
-                    reset instructions shortly.
+                    {t(
+                      "If an account exists for that email, you'll receive password reset instructions shortly.",
+                    )}
                   </span>
                 </div>
               ) : (
@@ -127,7 +133,7 @@ function ForgotPasswordPage() {
                           <input
                             type="email"
                             className="input input-bordered w-full"
-                            placeholder="Email address..."
+                            placeholder={t("Email address...")}
                             value={field.state.value}
                             onChange={(event) =>
                               field.handleChange(event.target.value)
@@ -151,7 +157,9 @@ function ForgotPasswordPage() {
                     className="btn btn-soft w-full"
                     disabled={!isHostedMode || isSubmitting}
                   >
-                    {isSubmitting ? "Sending reset link..." : "Send reset link"}
+                    {isSubmitting
+                      ? t("Sending reset link...")
+                      : t("Send reset link")}
                   </button>
                 </form>
               )}

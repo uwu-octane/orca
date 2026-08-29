@@ -61,7 +61,6 @@ export const shellZh = {
   "Create account": "创建账号",
   "Continue with email": "使用邮箱继续",
   "Opening Google...": "正在打开 Google…",
-  "Google sign in is not available right now.": "暂时无法使用 Google 登录。",
   "Something went wrong. Please try again.": "出错了,请重试。",
 
   // auth pages (exact strings from _auth.* routes)
@@ -104,4 +103,49 @@ export const shellZh = {
   "This request conflicts with existing data.": "请求与现有数据冲突。",
   "An unexpected error occurred. Please check server logs and try again.":
     "发生未知错误,请查看服务器日志后重试。",
+
+  // app shell (src/client/layout/AppShell.tsx, AppShellParts.tsx)
+  "Toggle sidebar": "切换侧边栏",
+  "One quick setup step": "一个快速设置步骤",
+  "Add your DataForSEO API key to start using OpenSEO.":
+    "添加你的 DataForSEO API 密钥即可开始使用 OpenSEO。",
+  "Setup needed: add your DataForSEO API key to use OpenSEO features. See the quick steps on the":
+    "需要设置:添加 DataForSEO API 密钥即可使用 OpenSEO 功能。前往",
+  "We could not verify your DataForSEO setup. If features are not working, check the setup steps on the":
+    "无法验证你的 DataForSEO 设置。如果功能无法使用,请查看",
+  "help page": "帮助页面",
+  ".": "。",
+
+  // chat message actions (src/client/components/chat/ChatMessage.tsx)
+  "Save & resend": "保存并重新发送",
+  "Copy message": "复制消息",
+  Copy: "复制",
+  "Edit message": "编辑消息",
+  "Edit and resend": "编辑并重新发送",
+  "Undo from this message": "从这条消息撤销",
+  "Undo — remove this message and everything after it":
+    "撤销 — 移除这条消息及其后的所有内容",
+  "Thinking…": "思考中…",
+  "Thought process": "思考过程",
+  "Activating {skill}": "正在启动 {skill}",
+  "Skill: {skill}": "技能:{skill}",
+
+  // table chrome (src/client/components/table/**)
+  Close: "关闭",
+  "Open a new Google Sheet and paste to fill it.":
+    "打开一个新的 Google 表格,粘贴即可填充。",
+  "Open new Google Sheet": "打开新的 Google 表格",
+  "Copied {count} row to your clipboard": "已将 {count} 行复制到剪贴板",
+  "Copied {count} rows to your clipboard": "已将 {count} 行复制到剪贴板",
+  "Bulk actions": "批量操作",
+  "Clear selection": "清除选择",
+  selected: "已选择",
+  Export: "导出",
+  "Select all rows": "全选所有行",
+  "Select row": "选择行",
+
+  // location pickers
+  "Select country": "选择国家/地区",
+  "Search countries": "搜索国家/地区",
+  "No countries match “{query}”": "没有匹配 “{query}” 的国家/地区",
 } satisfies Record<string, string>;

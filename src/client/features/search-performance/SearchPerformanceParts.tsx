@@ -164,30 +164,34 @@ function positionDelta(current: number, previous: number): Delta {
 }
 
 export function TotalsCards({ report }: { report: Report }) {
+  const { t } = useLocale();
   const { totals, prevTotals, range } = report;
-  const deltaTitle = `vs ${range.prevStartDate} to ${range.prevEndDate}`;
+  const deltaTitle = t("vs {start} to {end}", {
+    start: range.prevStartDate,
+    end: range.prevEndDate,
+  });
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <TotalCard
-        label="Clicks"
+        label={t("Clicks")}
         value={formatCount(totals.clicks)}
         delta={percentDelta(totals.clicks, prevTotals.clicks)}
         deltaTitle={deltaTitle}
       />
       <TotalCard
-        label="Impressions"
+        label={t("Impressions")}
         value={formatCount(totals.impressions)}
         delta={percentDelta(totals.impressions, prevTotals.impressions)}
         deltaTitle={deltaTitle}
       />
       <TotalCard
-        label="CTR"
+        label={t("CTR")}
         value={formatCtr(totals.ctr)}
         delta={percentDelta(totals.ctr, prevTotals.ctr)}
         deltaTitle={deltaTitle}
       />
       <TotalCard
-        label="Avg position"
+        label={t("Avg position")}
         value={formatPosition(totals.position)}
         delta={positionDelta(totals.position, prevTotals.position)}
         deltaTitle={deltaTitle}
@@ -234,6 +238,7 @@ export function DimensionTable({
   rows: SearchPerformanceTableRow[];
   keyLabel: string;
 }) {
+  const { t } = useLocale();
   const columns = useMemo(() => buildDimensionColumns(keyLabel), [keyLabel]);
   const table = useAppTable({
     data: rows,
@@ -248,7 +253,9 @@ export function DimensionTable({
       wrapperClassName="overflow-x-auto"
       empty={
         <p className="p-6 text-sm text-base-content/60">
-          No data for this period yet. Search Console data trails by a few days.
+          {t(
+            "No data for this period yet. Search Console data trails by a few days.",
+          )}
         </p>
       }
     />
@@ -342,9 +349,9 @@ export function StrikingDistanceTable({
   if (rows.length === 0) {
     return (
       <p className="p-6 text-sm text-base-content/60">
-        No striking-distance queries in this period. These are queries ranking
-        at positions 5 to 20, where an improvement is most likely to move
-        traffic.
+        {t(
+          "No striking-distance queries in this period. These are queries ranking at positions 5 to 20, where an improvement is most likely to move traffic.",
+        )}
       </p>
     );
   }
@@ -353,8 +360,9 @@ export function StrikingDistanceTable({
     <>
       <div className="p-4">
         <p className="mb-3 text-sm text-base-content/60">
-          Queries ranking at positions 5 to 20, sorted by impressions. Improve
-          the listed page to move them into the top results.
+          {t(
+            "Queries ranking at positions 5 to 20, sorted by impressions. Improve the listed page to move them into the top results.",
+          )}
         </p>
         <AppDataTable
           table={table}
@@ -374,7 +382,7 @@ export function StrikingDistanceTable({
       />
       <TableBulkActionBar
         selectedCount={selectedQueries.length}
-        selectedLabel={selectedQueries.length === 1 ? "query" : "queries"}
+        selectedLabel={t(selectedQueries.length === 1 ? "query" : "queries")}
         onClear={() => setRowSelection({})}
         actions={
           <div className="flex items-center gap-1 px-1.5">
@@ -382,7 +390,7 @@ export function StrikingDistanceTable({
               icon={<Copy className="size-3.5" />}
               onClick={() => void copyKeywords()}
             >
-              Copy keywords
+              {t("Copy keywords")}
             </TableBulkActionButton>
             <TableBulkActionButton
               icon={
@@ -395,7 +403,7 @@ export function StrikingDistanceTable({
               onClick={() => save.mutate(selectedQueries)}
               disabled={save.isPending}
             >
-              Save as keywords
+              {t("Save as keywords")}
             </TableBulkActionButton>
           </div>
         }

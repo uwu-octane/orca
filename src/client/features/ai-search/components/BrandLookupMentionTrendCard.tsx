@@ -10,12 +10,15 @@ import {
 } from "recharts";
 import { formatCount } from "@/client/features/ai-search/platformLabels";
 import type { BrandLookupResult } from "@/types/schemas/ai-search";
+// FORK: locale plugin — trend card copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 type Props = {
   result: BrandLookupResult;
 };
 
 export function BrandLookupMentionTrendCard({ result }: Props) {
+  const { t } = useLocale();
   const chartData = useMemo(
     () =>
       result.monthlyVolume.map((entry) => ({
@@ -28,7 +31,7 @@ export function BrandLookupMentionTrendCard({ result }: Props) {
   if (chartData.length === 0) {
     return (
       <div className="flex h-56 items-center justify-center text-sm text-base-content/60">
-        Not enough historical data yet.
+        {t("Not enough historical data yet.")}
       </div>
     );
   }
@@ -83,12 +86,13 @@ function MentionTooltip({
   payload?: Array<{ value: number }>;
   label?: string;
 }) {
+  const { t } = useLocale();
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-md border border-base-300 bg-base-100 px-3 py-2 shadow-sm">
       <p className="text-xs text-base-content/60">{label}</p>
       <p className="text-sm font-medium tabular-nums">
-        {formatCount(payload[0].value)} mentions
+        {formatCount(payload[0].value)} {t("mentions")}
       </p>
     </div>
   );

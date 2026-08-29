@@ -109,4 +109,84 @@ export const rankTrackingZh = {
   "Not in top {depth}": "未进入前 {depth} 名",
   Close: "关闭",
   "Copied to clipboard": "已复制到剪贴板",
+  "View position history": "查看排名历史",
+  "SERP Features": "SERP 功能",
+  "The search term being tracked in Google": "正在 Google 中追踪的搜索词",
+  "Estimated monthly search volume from Google": "Google 预估月搜索量",
+  "Keyword difficulty score (0-100) — higher means harder to rank":
+    "关键词难度分数(0-100)——分数越高,排名越难",
+  "Average cost per click in Google Ads (USD)":
+    "Google Ads 平均每次点击费用(USD)",
+  "Current Google ranking position, showing change from the comparison period":
+    "当前 Google 排名,显示与比较期的变化",
+  "The page on your site that ranks for this keyword":
+    "你的网站中为此关键词排名的页面",
+  "Special result features appearing on the search results page (e.g. AI Overview, People Also Ask)":
+    "搜索结果页上的特殊结果功能(例如 AI Overview、People Also Ask)",
+  "Estimated monthly searches in {location} from Google Ads":
+    "来自 Google Ads 的 {location} 预估月搜索量",
+  "Sort by {label}": "按 {label} 排序",
+  "Local volume": "本地搜索量",
+  "The search term this domain ranks for": "此域名排名所用的搜索词",
+  "Current Google ranking position": "当前 Google 排名",
+  "Monthly search volume": "月搜索量",
+  "Estimated monthly organic traffic": "预估月自然流量",
+  "Comparison period": "比较期",
+  "Add Keywords": "添加关键词",
+  "vs yesterday": "与昨天相比",
+  "vs last week": "与上周相比",
+  "vs last month": "与上个月相比",
+  "vs 90 days ago": "与 90 天前相比",
+  "Remove keywords?": "要删除这些关键词吗？",
+  "This will stop tracking {count} keyword. Historical ranking data is preserved but won't appear in the table.":
+    "这将停止追踪 {count} 个关键词。历史排名数据会保留,但不会再显示在表格中。",
+  "This will stop tracking {count} keywords. Historical ranking data is preserved but won't appear in the table.":
+    "这将停止追踪 {count} 个关键词。历史排名数据会保留,但不会再显示在表格中。",
+  "Remove {count} keyword": "删除 {count} 个关键词",
+  "Remove {count} keywords": "删除 {count} 个关键词",
+  'No rank data yet. Click "Check Now" to run your first check.':
+    "暂无排名数据。点击“立即检查”运行你的第一次检查。",
+  "No keywords match your search.": "没有关键词符合你的搜索。",
+  "{count} of {total} keywords": "共 {total} 个关键词中的 {count} 个",
+  "Back to domains": "返回域名列表",
+  "This run may be unresponsive and will be cleaned up automatically.":
+    "此运行可能无响应,系统将自动清理。",
+  "Last scheduled check was skipped due to insufficient credits. Top up your balance to resume automatic tracking.":
+    "上次计划检查因额度不足被跳过。请充值以恢复自动追踪。",
+  "{count} keyword added": "已添加 {count} 个关键词",
+  "{count} keywords added": "已添加 {count} 个关键词",
+  "Enter keywords, one per line": "输入关键词,每行一个",
+  "More actions": "更多操作",
+  "Check rankings": "检查排名",
+  "Running...": "运行中...",
+  "Refreshing...": "刷新中...",
+  "Fetch current Google positions": "获取当前 Google 排名",
+  "Volume, difficulty & CPC — not rankings": "搜索量、难度与 CPC,不含排名",
+  "Copy keywords": "复制关键词",
+  "Preparing...": "准备中...",
+  "Getting rankings for {count} keyword...":
+    "正在获取 {count} 个关键词的排名...",
+  "Getting rankings for {count} keywords...":
+    "正在获取 {count} 个关键词的排名...",
+  "Add keywords manually": "手动添加关键词",
+  "Finding your top keywords...": "正在查找你的热门关键词...",
+  "Couldn't fetch keywords": "无法获取关键词",
+  "No rankings found": "未找到排名",
+  "Choose keywords to track": "选择要追踪的关键词",
+  "Ranked-keyword suggestions aren't available for this country. Continue and add the keywords you want to track manually.":
+    "此国家/地区暂不提供排名关键词推荐。请继续并手动添加要追踪的关键词。",
+  "We couldn't find any keywords {domain} currently ranks for. You can add keywords manually.":
+    "我们找不到 {domain} 当前排名的任何关键词。你可以手动添加关键词。",
+  "We found {count} keywords {domain} ranks for.":
+    "我们找到 {domain} 排名的 {count} 个关键词。",
+  "{count} of {total} selected": "已选择 {count} / {total} 个",
+  Skip: "跳过",
+  Remove: "删除",
+  Add: "添加",
+  "Save Keyword": "保存关键词",
+  Latest: "最新",
+  History: "历史",
+  "This usually takes a few seconds": "通常只需要几秒钟",
+  "{count} keywords": "{count} 个关键词",
+  Manual: "手动",
 } satisfies Record<string, string>;

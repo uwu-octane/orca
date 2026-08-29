@@ -80,7 +80,7 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
             type="text"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Acme Inc."
+            placeholder={t("Acme Inc.")}
             maxLength={120}
             autoFocus
             className="input input-bordered w-full"

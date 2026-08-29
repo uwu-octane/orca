@@ -70,4 +70,55 @@ export const projectsZh = {
   "Nothing logged yet. Agents record paid research here as they run it.":
     "还没有记录。代理执行付费研究时会在这里记录。",
   "Delete log entry from {date}": "删除 {date} 的日志条目",
+
+  // project switcher (src/client/features/projects/ProjectSwitcher.tsx)
+  "Switch project": "切换项目",
+  "Select project": "选择项目",
+  "Project settings": "项目设置",
+  "Find project…": "查找项目…",
+  "Filter projects": "筛选项目",
+  "Manage projects": "管理项目",
+  "No projects match “{query}”": "没有匹配 “{query}” 的项目",
+
+  // project settings tabs (src/routes/_project/p/$projectId/settings.tsx)
+  Context: "上下文",
+  Integrations: "集成",
+
+  // create-project modal example name
+  "Acme Inc.": "某某公司",
+
+  // project context — competitors (src/client/features/projects/project-context/CompetitorsSection.tsx)
+  Competitors: "竞争对手",
+  "The sites you measure yourself against.": "你用来衡量自己表现的网站。",
+  "Add competitor": "添加竞争对手",
+  "No competitors yet. Add the sites you compete with, or ask SAM to find them from your rankings and save them here.":
+    "还没有竞争对手。添加你与之竞争的网站,或让 SAM 从你的排名中找出它们并保存。",
+  "Competitor domain": "竞争对手域名",
+  "Name (optional)": "名称(可选)",
+  "Competitor name": "竞争对手名称",
+  "Why they matter — e.g. wins every comparison keyword (optional)":
+    "为什么重要——例如赢得所有对比关键词(可选)",
+  "Competitor notes": "竞争对手备注",
+  "Edit {domain}": "编辑 {domain}",
+  "Remove {domain}": "移除 {domain}",
+
+  // project context — key pages (src/client/features/projects/project-context/KeyPagesSection.tsx)
+  "Key pages": "关键页面",
+  "A shortlist of the pages that carry the site — not an inventory.":
+    "承载网站的重要页面清单——不是完整目录。",
+  "Add page": "添加页面",
+  "No key pages yet. Add the handful that has to rank, or let an agent propose them from your last site audit.":
+    "还没有关键页面。添加必须获得排名的少量页面,或让代理从你最近一次的站点审计中推荐。",
+  "Page URL": "页面 URL",
+  "Page role": "页面角色",
+  "Target topic (optional)": "目标主题(可选)",
+  "Target topic": "目标主题",
+  "Notes (optional)": "备注(可选)",
+  "Page notes": "页面备注",
+  "Hub page": "枢纽页面",
+  "Supporting page": "支撑页面",
+  "Money page": "盈利页面",
+  "Target: {topic}": "目标:{topic}",
+  "Edit {url}": "编辑 {url}",
+  "Remove {url}": "移除 {url}",
 } satisfies Record<string, string>;

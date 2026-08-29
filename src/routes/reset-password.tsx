@@ -13,6 +13,9 @@ import {
   HOSTED_PASSWORD_MAX_LENGTH,
   HOSTED_PASSWORD_MIN_LENGTH,
 } from "@/lib/auth-options";
+// FORK: locale plugin — reset password copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
+import type { T } from "@/plugins/locale";
 import { z } from "zod";
 
 const resetPasswordSchema = z
@@ -44,65 +47,76 @@ export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
 });
 
-function getResetPasswordErrorMessage(error: string | undefined) {
+function getResetPasswordErrorMessage(error: string | undefined, t: T) {
   switch ((error ?? "").toLowerCase()) {
     case "invalid_token":
-      return "This reset link is no longer valid. Request a new one to keep going.";
+      return t(
+        "This reset link is no longer valid. Request a new one to keep going.",
+      );
     case "token_expired":
-      return "This reset link has expired. Request a new one to keep going.";
+      return t("This reset link has expired. Request a new one to keep going.");
     default:
       return error
-        ? "This reset link can't be used anymore. Request a new one and try again."
+        ? t(
+            "This reset link can't be used anymore. Request a new one and try again.",
+          )
         : null;
   }
 }
 
-function getResetPasswordPageCopy({
-  isHostedMode,
-  isComplete,
-  routeError,
-  hasToken,
-}: {
-  isHostedMode: boolean;
-  isComplete: boolean;
-  routeError: string | null;
-  hasToken: boolean;
-}) {
+function getResetPasswordPageCopy(
+  {
+    isHostedMode,
+    isComplete,
+    routeError,
+    hasToken,
+  }: {
+    isHostedMode: boolean;
+    isComplete: boolean;
+    routeError: string | null;
+    hasToken: boolean;
+  },
+  t: T,
+) {
   if (!isHostedMode) {
     return {
-      title: "Reset password",
-      helperText: "Password reset isn't available right now.",
+      title: t("Reset password"),
+      helperText: t("Password reset isn't available right now."),
     };
   }
 
   if (isComplete) {
     return {
-      title: "Password updated",
-      helperText:
+      title: t("Password updated"),
+      helperText: t(
         "Your password has been updated. Sign in with your new password.",
+      ),
     };
   }
 
   if (routeError || !hasToken) {
     return {
-      title: "Reset link expired",
+      title: t("Reset link expired"),
       helperText:
         routeError ||
-        "This reset link is no longer valid. Request a new one to keep going.",
+        t(
+          "This reset link is no longer valid. Request a new one to keep going.",
+        ),
     };
   }
 
   return {
-    title: "Reset password",
-    helperText: "Choose a new password for your account.",
+    title: t("Reset password"),
+    helperText: t("Choose a new password for your account."),
   };
 }
 
 function ResetPasswordPage() {
+  const { t } = useLocale();
   const search = Route.useSearch();
   const redirectTo = normalizeAuthRedirect(search.redirect);
   const isHostedMode = isHostedClientAuthMode();
-  const routeError = getResetPasswordErrorMessage(search.error);
+  const routeError = getResetPasswordErrorMessage(search.error, t);
   const token = typeof search.token === "string" ? search.token : null;
   const form = useForm({
     defaultValues: {
@@ -116,7 +130,9 @@ function ResetPasswordPage() {
       if (!token) {
         formApi.setErrorMap({
           onSubmit: {
-            form: "This reset link is no longer valid. Request a new one and try again.",
+            form: t(
+              "This reset link is no longer valid. Request a new one and try again.",
+            ),
             fields: {},
           },
         });
@@ -132,7 +148,9 @@ function ResetPasswordPage() {
         if (result.error) {
           formApi.setErrorMap({
             onSubmit: {
-              form: "This reset link is no longer valid. Request a new one and try again.",
+              form: t(
+                "This reset link is no longer valid. Request a new one and try again.",
+              ),
               fields: {},
             },
           });
@@ -141,7 +159,9 @@ function ResetPasswordPage() {
       } catch {
         formApi.setErrorMap({
           onSubmit: {
-            form: "We couldn't update your password right now. Please try again.",
+            form: t(
+              "We couldn't update your password right now. Please try again.",
+            ),
             fields: {},
           },
         });
@@ -160,12 +180,15 @@ function ResetPasswordPage() {
       >
         {({ isComplete, submitError, isSubmitting }) => {
           const errorMessage = getFormError(submitError);
-          const pageCopy = getResetPasswordPageCopy({
-            isHostedMode,
-            isComplete,
-            routeError,
-            hasToken: !!token,
-          });
+          const pageCopy = getResetPasswordPageCopy(
+            {
+              isHostedMode,
+              isComplete,
+              routeError,
+              hasToken: !!token,
+            },
+            t,
+          );
 
           return (
             <AuthPageCard
@@ -178,7 +201,7 @@ function ResetPasswordPage() {
                     search={getSignInSearch(redirectTo)}
                     className="text-base-content/50 hover:text-base-content transition-colors"
                   >
-                    Sign in
+                    {t("Sign in")}
                   </Link>
                 </p>
               }
@@ -192,7 +215,7 @@ function ResetPasswordPage() {
                   }
                   className="btn btn-soft w-full"
                 >
-                  Continue to sign in
+                  {t("Continue to sign in")}
                 </a>
               ) : routeError || !token ? (
                 <Link
@@ -200,7 +223,7 @@ function ResetPasswordPage() {
                   search={getSignInSearch(redirectTo)}
                   className="btn btn-soft w-full"
                 >
-                  Request a new reset link
+                  {t("Request a new reset link")}
                 </Link>
               ) : (
                 <form
@@ -219,7 +242,7 @@ function ResetPasswordPage() {
                           <input
                             type="password"
                             className="input input-bordered w-full"
-                            placeholder="New password..."
+                            placeholder={t("New password...")}
                             value={field.state.value}
                             onChange={(event) =>
                               field.handleChange(event.target.value)
@@ -246,7 +269,7 @@ function ResetPasswordPage() {
                           <input
                             type="password"
                             className="input input-bordered w-full"
-                            placeholder="Confirm new password..."
+                            placeholder={t("Confirm new password...")}
                             value={field.state.value}
                             onChange={(event) =>
                               field.handleChange(event.target.value)
@@ -271,7 +294,9 @@ function ResetPasswordPage() {
                     className="btn btn-soft w-full"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Updating password..." : "Update password"}
+                    {isSubmitting
+                      ? t("Updating password...")
+                      : t("Update password")}
                   </button>
                 </form>
               )}

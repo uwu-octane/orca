@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Clock, Globe, History, Search, X } from "lucide-react";
 import { LOCATIONS } from "@/client/features/keywords/utils";
+// FORK: locale plugin — empty-state copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type { KeywordResearchControllerState } from "./types";
 
 type Props = {
@@ -23,6 +25,7 @@ function NoResultsState({
 }: {
   controller: KeywordResearchControllerState;
 }) {
+  const { t } = useLocale();
   const { lastSearchKeyword, lastSearchLocationCode } = controller;
 
   return (
@@ -31,18 +34,17 @@ function NoResultsState({
         <Globe className="size-10 mx-auto text-base-content/40" />
         <div className="space-y-2">
           <p className="text-lg font-semibold text-base-content">
-            Not enough keyword data for this query yet
+            {t("Not enough keyword data for this query yet")}
           </p>
           <p className="text-sm text-base-content/70">
-            We could not find keyword opportunities for
-            <span className="font-medium text-base-content">
-              {` "${lastSearchKeyword}" `}
-            </span>
-            in
-            <span className="font-medium text-base-content">
-              {` ${LOCATIONS[lastSearchLocationCode] || "this location"}`}
-            </span>
-            .
+            {t(
+              "We could not find keyword opportunities for {keyword} in {location}.",
+              {
+                keyword: `"${lastSearchKeyword}"`,
+                location:
+                  LOCATIONS[lastSearchLocationCode] || t("this location"),
+              },
+            )}
           </p>
         </div>
       </div>
@@ -57,6 +59,7 @@ function SearchHistoryState({
   controller: KeywordResearchControllerState;
   projectId: string;
 }) {
+  const { t } = useLocale();
   const { history, historyLoaded, removeHistoryItem } = controller;
 
   if (!historyLoaded) {
@@ -71,8 +74,12 @@ function SearchHistoryState({
             <div className="flex items-center gap-2">
               <History className="size-4 text-base-content/45" />
               <span className="text-sm text-base-content/60">
-                {history.length} recent search
-                {history.length !== 1 ? "es" : ""}
+                {t(
+                  history.length === 1
+                    ? "{count} recent search"
+                    : "{count} recent searches",
+                  { count: history.length },
+                )}
               </span>
             </div>
           </div>
@@ -126,11 +133,12 @@ function SearchHistoryState({
         <section className="rounded-2xl border border-dashed border-base-300 bg-base-100/70 p-6 text-center text-base-content/50 space-y-3">
           <Search className="size-10 mx-auto opacity-40" />
           <p className="text-lg font-medium text-base-content/80">
-            Enter a keyword to get started
+            {t("Enter a keyword to get started")}
           </p>
           <p className="text-sm max-w-md mx-auto">
-            Search for any keyword to see volume, difficulty, CPC, and related
-            keyword ideas.
+            {t(
+              "Search for any keyword to see volume, difficulty, CPC, and related keyword ideas.",
+            )}
           </p>
         </section>
       )}

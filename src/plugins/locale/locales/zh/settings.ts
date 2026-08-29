@@ -23,4 +23,11 @@ export const settingsZh = {
   "API key copied": "API 密钥已复制",
   "Creating…": "创建中…",
   "Claude Code on laptop": "笔记本电脑上的 Claude Code",
+
+  // analytics opt-out + self-hosted about section
+  "Help improve OpenSEO": "帮助改进 OpenSEO",
+  "Share analytics and usage data.": "分享分析和使用数据。",
+  "Enable product analytics": "启用产品分析",
+  About: "关于",
+  Version: "版本",
 } satisfies Record<string, string>;

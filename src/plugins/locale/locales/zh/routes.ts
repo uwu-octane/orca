@@ -185,7 +185,6 @@ export const routesZh = {
   Email: "邮箱",
   "We couldn't verify your billing status right now. Please try again.":
     "目前无法验证你的账单状态,请重试。",
-  "Couldn't start the checkout. Please try again.": "无法开始结账,请重试。",
   "Upgrade your plan": "升级你的套餐",
   "Welcome to OpenSEO, {name}!": "欢迎使用 OpenSEO,{name}！",
   "Welcome to OpenSEO!": "欢迎使用 OpenSEO！",
@@ -235,4 +234,55 @@ export const routesZh = {
   failed: "失败",
   "Crawled Pages ({count})": "已抓取页面({count})",
   Updated: "更新时间",
+
+  // Project settings route
+  "Domain configuration not found.": "未找到域名配置。",
+
+  // Auth routes (reset / forgot / verify / sign-up)
+  "Reset password": "重置密码",
+  "Password updated": "密码已更新",
+  "Your password has been updated. Sign in with your new password.":
+    "密码已更新,请使用新密码登录。",
+  "Reset link expired": "重置链接已过期",
+  "Choose a new password for your account.": "为你的账号设置一个新密码。",
+  "This reset link is no longer valid. Request a new one to keep going.":
+    "此重置链接已失效,请重新请求一个以继续。",
+  "This reset link has expired. Request a new one to keep going.":
+    "此重置链接已过期,请重新请求一个以继续。",
+  "This reset link can't be used anymore. Request a new one and try again.":
+    "此重置链接已无法使用,请重新请求一个并重试。",
+  "This reset link is no longer valid. Request a new one and try again.":
+    "此重置链接已失效,请重新请求一个并重试。",
+  "We couldn't update your password right now. Please try again.":
+    "目前无法更新你的密码,请重试。",
+  "Continue to sign in": "继续登录",
+  "Request a new reset link": "请求新的重置链接",
+  "New password...": "新密码…",
+  "Confirm new password...": "确认新密码…",
+  "Update password": "更新密码",
+  "Updating password...": "正在更新密码…",
+  "Check your email": "查看你的邮箱",
+  "Forgot password": "忘记密码",
+  "If an account exists for {email}, we sent a reset link.":
+    "如果 {email} 对应的账号存在,我们已发送重置链接。",
+  "Enter your email and we'll send you a password reset link.":
+    "输入你的邮箱,我们会发送密码重置链接。",
+  "Password reset isn't available right now.": "目前无法重置密码。",
+  "If an account exists for that email, you'll receive password reset instructions shortly.":
+    "如果该邮箱对应的账号存在,你很快就会收到密码重置说明。",
+  "Back to sign in": "返回登录",
+  "Sending reset link...": "正在发送重置链接…",
+  "Send reset link": "发送重置链接",
+  "Sending email...": "正在发送邮件…",
+  "Resend email": "重新发送邮件",
+  "Create your account": "创建你的账号",
+  "Back to signup": "返回注册",
+  "By signing up, you agree to our": "注册即表示你同意我们的",
+  Terms: "条款",
+  and: "和",
+  "Privacy Policy": "隐私政策",
+  "Already have an account?": "已有账号？",
+  "Name (optional)...": "姓名(可选)…",
+  "Confirm password...": "确认密码…",
+  "Creating account...": "创建账号中…",
 } satisfies Record<string, string>;

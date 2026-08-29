@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { TableExportMenu } from "@/client/components/table/TableBulkActionBar";
 import { TableLoadingRows } from "@/client/features/domain/components/TableLoadingRows";
+// FORK: locale plugin — toolbar copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 type DomainTableExportAction = {
   label: string;
@@ -38,17 +40,18 @@ export function DomainTableTabSurface({
   children,
   pagination,
 }: Props) {
+  const { t } = useLocale();
   return (
     <>
       <div className="flex items-center gap-2 px-4 py-2 border-b border-base-300">
         <button
           className={`btn btn-ghost btn-sm gap-1.5 ${showFilters ? "btn-active" : ""}`}
           onClick={onToggleFilters}
-          title="Toggle filters"
+          title={t("Toggle filters")}
           type="button"
         >
           <SlidersHorizontal className="size-3.5" />
-          Filters
+          {t("Filters")}
           {activeFilterCount > 0 ? (
             <span className="badge badge-xs badge-primary border-0 text-primary-content">
               {activeFilterCount}

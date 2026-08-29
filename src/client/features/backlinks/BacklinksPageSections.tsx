@@ -19,6 +19,8 @@ import type { BacklinksDomainExpansion } from "./useBacklinksDomainExpansion";
 import type { BacklinksFiltersState } from "./useBacklinksFilters";
 import { useAhrefsDomainRatings } from "./useAhrefsDomainRatings";
 import { TablePagination } from "@/client/components/table/TablePagination";
+// FORK: locale plugin — tab and toolbar copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import {
   BACKLINKS_PAGE_SIZES,
   type BacklinksTab,
@@ -81,6 +83,7 @@ export function BacklinksResultsCard({
   onTabChange: (tab: BacklinksSearchState["tab"]) => void;
   onViewChange: (view: "all" | undefined) => void;
 }) {
+  const { t } = useLocale();
   const {
     ratings: domainRatings,
     isLoading: isLoadingRatings,
@@ -128,7 +131,7 @@ export function BacklinksResultsCard({
             ))}
           </div>
           <p className="max-w-xl text-sm text-base-content/60">
-            {TAB_DESCRIPTIONS[activeTab]}
+            {t(TAB_DESCRIPTIONS[activeTab])}
           </p>
         </div>
 
@@ -153,10 +156,10 @@ export function BacklinksResultsCard({
         <button
           className={`btn btn-ghost btn-sm gap-1.5 ${filters.showFilters ? "btn-active" : ""}`}
           onClick={() => filters.setShowFilters((current) => !current)}
-          title="Toggle table filters"
+          title={t("Toggle table filters")}
         >
           <SlidersHorizontal className="size-3.5" />
-          Filters
+          {t("Filters")}
           {activeFilterCount > 0 ? (
             <span className="badge badge-xs badge-primary border-0 text-primary-content">
               {activeFilterCount}
@@ -166,7 +169,7 @@ export function BacklinksResultsCard({
         {activeTab === "backlinks" ? (
           <div
             role="tablist"
-            aria-label="Backlinks view"
+            aria-label={t("Backlinks view")}
             className="ml-auto tabs tabs-border tabs-xs w-fit"
           >
             <button
@@ -174,20 +177,22 @@ export function BacklinksResultsCard({
               role="tab"
               aria-selected={view !== "all"}
               className={`tab ${view !== "all" ? "tab-active" : ""}`}
-              title="Show each referring domain's strongest link; expand a row for the rest"
+              title={t(
+                "Show each referring domain's strongest link; expand a row for the rest",
+              )}
               onClick={() => onViewChange(undefined)}
             >
-              One per domain
+              {t("One per domain")}
             </button>
             <button
               type="button"
               role="tab"
               aria-selected={view === "all"}
               className={`tab ${view === "all" ? "tab-active" : ""}`}
-              title="List every individual backlink"
+              title={t("List every individual backlink")}
               onClick={() => onViewChange("all")}
             >
-              All links
+              {t("All links")}
             </button>
           </div>
         ) : null}
@@ -293,6 +298,7 @@ function TabLink({
   onSelect: (tab: BacklinksSearchState["tab"]) => void;
   tab: BacklinksSearchState["tab"];
 }) {
+  const { t } = useLocale();
   const isActive = activeTab === tab;
 
   return (
@@ -303,15 +309,16 @@ function TabLink({
       className={`tab ${isActive ? "tab-active" : ""}`}
       onClick={() => onSelect(tab)}
     >
-      {label}
+      {t(label)}
     </button>
   );
 }
 
 function TabLoadingState({ label }: { label: string }) {
+  const { t } = useLocale();
   return (
     <div className="space-y-3 py-2">
-      <p className="text-sm text-base-content/60">{label}...</p>
+      <p className="text-sm text-base-content/60">{t(label)}...</p>
       <div className="skeleton h-10 w-full" />
       <div className="skeleton h-10 w-full" />
       <div className="skeleton h-10 w-full" />

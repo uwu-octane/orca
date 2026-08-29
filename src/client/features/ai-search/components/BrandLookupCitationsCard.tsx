@@ -169,7 +169,7 @@ export function CitationTabsCard({
             className={`tab ${queriesActive ? "tab-active" : ""}`}
             onClick={() => setActiveTab("queries")}
           >
-            Queries
+            {t("Queries")}
           </button>
           <button
             type="button"
@@ -178,7 +178,7 @@ export function CitationTabsCard({
             className={`tab ${pagesActive ? "tab-active" : ""}`}
             onClick={() => setActiveTab("pages")}
           >
-            Cited sources
+            {t("Cited sources")}
           </button>
         </div>
 
@@ -189,7 +189,7 @@ export function CitationTabsCard({
             className={`btn btn-ghost btn-sm gap-1.5 ${canExport ? "" : "btn-disabled"}`}
           >
             <Download className="size-3.5" />
-            Export
+            {t("Export")}
             <ChevronDown className="size-3.5" />
           </div>
           <ul
@@ -225,10 +225,10 @@ export function CitationTabsCard({
           type="button"
           className={`btn btn-ghost btn-sm gap-1.5 ${filters.showFilters ? "btn-active" : ""}`}
           onClick={() => filters.setShowFilters((current) => !current)}
-          title="Toggle table filters"
+          title={t("Toggle table filters")}
         >
           <SlidersHorizontal className="size-3.5" />
-          Filters
+          {t("Filters")}
           {currentFilterCount > 0 ? (
             <span className="badge badge-xs badge-primary border-0 text-primary-content">
               {currentFilterCount}
@@ -239,25 +239,19 @@ export function CitationTabsCard({
 
       <div className="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-2 text-xs text-base-content/60">
         <span>
-          {activeTab === "pages" ? (
-            <>
-              {isUrlScoped ? "Cited pages within " : "Pages cited alongside "}
-              <strong className="text-base-content/80">
-                {result.resolvedTarget}
-              </strong>
-              {isUrlScoped ? "." : " in AI answers."} Prompt examples come from
-              the fetched sample.
-            </>
-          ) : (
-            <>
-              Fetched sample of prompts whose AI answer cited{" "}
-              {isUrlScoped ? "a page within " : null}
-              <strong className="text-base-content/80">
-                {result.resolvedTarget}
-              </strong>
-              {isUrlScoped ? "." : " in its text or sources."}
-            </>
-          )}
+          {activeTab === "pages"
+            ? t(
+                isUrlScoped
+                  ? "Cited pages within {target}. Prompt examples come from the fetched sample."
+                  : "Pages cited alongside {target} in AI answers. Prompt examples come from the fetched sample.",
+                { target: result.resolvedTarget },
+              )
+            : t(
+                isUrlScoped
+                  ? "Fetched sample of prompts whose AI answer cited a page within {target}."
+                  : "Fetched sample of prompts whose AI answer cited {target} in its text or sources.",
+                { target: result.resolvedTarget },
+              )}
         </span>
         {captionPlatform ? (
           <span className="inline-flex shrink-0 items-center gap-1.5 text-base-content/70">
@@ -281,7 +275,10 @@ export function CitationTabsCard({
           // citations exist for that section.
           emptyMessage={
             isUrlScoped
-              ? `None of this domain's top cited pages fall under ${result.resolvedTarget}. Broaden the scope to see domain-level citations.`
+              ? t(
+                  "None of this domain's top cited pages fall under {target}. Broaden the scope to see domain-level citations.",
+                  { target: result.resolvedTarget },
+                )
               : undefined
           }
         />
@@ -290,7 +287,10 @@ export function CitationTabsCard({
           table={queriesTable}
           emptyMessage={
             isUrlScoped
-              ? `No sampled prompts cited a page under ${result.resolvedTarget}. Broaden the scope to see domain-level prompts.`
+              ? t(
+                  "No sampled prompts cited a page under {target}. Broaden the scope to see domain-level prompts.",
+                  { target: result.resolvedTarget },
+                )
               : undefined
           }
         />

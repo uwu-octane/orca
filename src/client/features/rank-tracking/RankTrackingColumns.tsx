@@ -13,6 +13,9 @@ import {
   VolumeCell,
 } from "./RankTrackingTableParts";
 import type { SelectionAnchor } from "@/client/components/table/tableSelection";
+import type { T } from "@/plugins/locale";
+// FORK: locale plugin — column headers and tooltips translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 const HEADER_TOOLTIPS: Record<string, string> = {
   keyword: "The search term being tracked in Google",
@@ -42,16 +45,17 @@ export function SortableHeader({
   tooltip?: string;
 }) {
   const sorted = column.getIsSorted();
+  const { t } = useLocale();
   return (
     <button
       type="button"
       className="inline-flex items-center gap-1 text-xs uppercase tracking-wide font-medium text-base-content/60 transition-colors hover:text-base-content"
       onClick={column.getToggleSortingHandler()}
-      title={tooltip ?? HEADER_TOOLTIPS[id]}
-      aria-label={`Sort by ${label}`}
+      title={t(tooltip ?? HEADER_TOOLTIPS[id])}
+      aria-label={t("Sort by {label}", { label: t(label) })}
       aria-pressed={!!sorted}
     >
-      {label}
+      {t(label)}
       {sorted === "asc" ? (
         <ArrowUp className="size-3 shrink-0" />
       ) : sorted === "desc" ? (
@@ -64,18 +68,23 @@ export function SortableHeader({
 // Local configs fetch volume scoped to the tracked city, so the header must
 // say which number the user is looking at — national volume can overstate
 // local demand by orders of magnitude.
-function makeVolumeColumn(locationLabel?: string): ColumnDef<RankTrackingRow> {
+function makeVolumeColumn(
+  locationLabel: string | undefined,
+  t: T,
+): ColumnDef<RankTrackingRow> {
   return {
     id: "volume",
     accessorFn: (row) => row.searchVolume ?? undefined,
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label={locationLabel ? "Local volume" : "Volume"}
+        label={locationLabel ? t("Local volume") : t("Volume")}
         id="volume"
         tooltip={
           locationLabel
-            ? `Estimated monthly searches in ${locationLabel} from Google Ads`
+            ? t("Estimated monthly searches in {location} from Google Ads", {
+                location: locationLabel,
+              })
             : undefined
         }
       />
@@ -114,6 +123,7 @@ const cpcColumn: ColumnDef<RankTrackingRow> = {
 
 function makeKeywordColumn(
   onKeywordClick: (row: RankTrackingRow) => void,
+  t: T,
 ): ColumnDef<RankTrackingRow> {
   return {
     id: "keyword",
@@ -126,7 +136,7 @@ function makeKeywordColumn(
         type="button"
         className="font-medium text-left link link-hover decoration-dotted underline-offset-2"
         onClick={() => onKeywordClick(row.original)}
-        title="View position history"
+        title={t("View position history")}
       >
         {row.original.keyword}
       </button>
@@ -155,6 +165,7 @@ function makeDeviceColumn(
 function makeUrlColumn(
   device: "desktop" | "mobile",
   domain: string,
+  t: T,
 ): ColumnDef<RankTrackingRow> {
   return {
     id: device === "desktop" ? "desktopUrl" : "mobileUrl",
@@ -162,7 +173,7 @@ function makeUrlColumn(
     header: () => (
       <span
         className="text-xs uppercase tracking-wide font-medium text-base-content/60 cursor-help"
-        title={HEADER_TOOLTIPS.url}
+        title={t(HEADER_TOOLTIPS.url)}
       >
         URL
       </span>
@@ -176,6 +187,7 @@ function makeUrlColumn(
 
 function makeSerpColumn(
   device: "desktop" | "mobile",
+  t: T,
 ): ColumnDef<RankTrackingRow> {
   return {
     id: device === "desktop" ? "desktopSerp" : "mobileSerp",
@@ -183,9 +195,9 @@ function makeSerpColumn(
     header: () => (
       <span
         className="text-xs uppercase tracking-wide font-medium text-base-content/60 cursor-help"
-        title={HEADER_TOOLTIPS.serp}
+        title={t(HEADER_TOOLTIPS.serp)}
       >
-        SERP Features
+        {t("SERP Features")}
       </span>
     ),
     cell: ({ row }) => {
@@ -212,28 +224,29 @@ export function useRankTrackingColumns(options: {
     onKeywordClick,
     locationName,
   } = options;
+  const { t } = useLocale();
   const locationLabel = locationName
     ? formatLocationLabel(locationName, 2)
     : undefined;
   return useMemo(() => {
     const cols: ColumnDef<RankTrackingRow>[] = [
       makeSelectionColumn<RankTrackingRow>(selectAnchorRef),
-      makeKeywordColumn(onKeywordClick),
+      makeKeywordColumn(onKeywordClick, t),
     ];
     if (showDesktop) {
       cols.push(makeDeviceColumn("desktop"));
-      cols.push(makeUrlColumn("desktop", domain));
+      cols.push(makeUrlColumn("desktop", domain, t));
     }
     if (showMobile) {
       cols.push(makeDeviceColumn("mobile"));
-      cols.push(makeUrlColumn("mobile", domain));
+      cols.push(makeUrlColumn("mobile", domain, t));
     }
-    cols.push(makeVolumeColumn(locationLabel), kdColumn, cpcColumn);
+    cols.push(makeVolumeColumn(locationLabel, t), kdColumn, cpcColumn);
     if (showDesktop) {
-      cols.push(makeSerpColumn("desktop"));
+      cols.push(makeSerpColumn("desktop", t));
     }
     if (showMobile) {
-      cols.push(makeSerpColumn("mobile"));
+      cols.push(makeSerpColumn("mobile", t));
     }
     return cols;
   }, [
@@ -243,5 +256,6 @@ export function useRankTrackingColumns(options: {
     selectAnchorRef,
     onKeywordClick,
     locationLabel,
+    t,
   ]);
 }

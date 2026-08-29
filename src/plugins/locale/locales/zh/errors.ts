@@ -88,7 +88,6 @@ export const errorsZh = {
   "Couldn't start the checkout. Please try again.": "无法开始结算,请重试。",
   "Please sign in to access your OpenSEO workspace.":
     "请登录以访问你的 OpenSEO 工作区。",
-  "Please enter a URL.": "请输入 URL。",
   "Copied data": "已复制数据",
   "Please complete the captcha to continue.": "请先完成验证码。",
   "Unable to create account right now. Please try again.":
@@ -135,4 +134,21 @@ export const errorsZh = {
     "Search Console 尚未配置,请设置 GOOGLE_CLIENT_ID、GOOGLE_CLIENT_SECRET 和 BETTER_AUTH_SECRET。",
   "Google Analytics is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and BETTER_AUTH_SECRET.":
     "Google Analytics 尚未配置,请设置 GOOGLE_CLIENT_ID、GOOGLE_CLIENT_SECRET 和 BETTER_AUTH_SECRET。",
+
+  // auth config error card (src/client/components/AuthConfigErrorCard.tsx)
+  "Authentication setup required": "需要完成认证设置",
+  "Hosted mode requires": "托管模式需要",
+  "(32+ characters),": "(32+ 字符),",
+  ", and Google OAuth credentials on the deployment.":
+    ",以及部署环境中的 Google OAuth 凭据。",
+  "Cloudflare Access mode requires": "Cloudflare Access 模式需要",
+  "(a full https URL) and": "(完整的 https URL) 和",
+  "set on the deployment, with an Access application protecting this hostname.":
+    "需在部署环境中设置,并有一个 Access 应用保护此主机名。",
+  "Try Again": "重试",
+  "Open Setup Guide": "打开设置指南",
+
+  // SERP location combobox (src/client/components/SerpLocationCombobox.tsx)
+  "Unable to load locations": "无法加载地点",
+  'No locations found for "{query}"': "没有找到与 “{query}” 匹配的地点",
 } satisfies Record<string, string>;

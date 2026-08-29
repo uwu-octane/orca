@@ -282,17 +282,17 @@ export function KeywordsTab({
               onClick={handleSaveKeywords}
               disabled={!canSaveKeywords}
             >
-              Save Keywords
+              {t("Save Keywords")}
             </TableBulkActionButton>
             <TableBulkExportMenu
               actions={[
                 {
-                  label: "Export to Sheets",
+                  label: t("Export to Sheets"),
                   icon: <Sheet className="size-4" />,
                   onClick: handleExportSelectionToSheets,
                 },
                 {
-                  label: "Download CSV",
+                  label: t("Download CSV"),
                   icon: <Download className="size-4" />,
                   onClick: handleDownloadSelectionCsv,
                 },
@@ -305,8 +305,10 @@ export function KeywordsTab({
       {filtersOverBudget ? (
         <div className="alert alert-warning mb-3">
           <span>
-            Saved filters exceed this scope&apos;s {maxConditions}-condition
-            limit and were not applied. Open Filters to trim them.
+            {t(
+              "Saved filters exceed this scope's {max}-condition limit and were not applied. Open Filters to trim them.",
+              { max: maxConditions },
+            )}
           </span>
         </div>
       ) : null}
@@ -315,29 +317,29 @@ export function KeywordsTab({
         showFilters={showFilters}
         onToggleFilters={() => setShowFilters((prev) => !prev)}
         activeFilterCount={activeFilterCount}
-        countLabel="keywords"
+        countLabel={t("keywords")}
         totalCount={totalCount}
         fallbackCount={rows.length}
         isLoading={isLoading}
         showTableLoading={showTableLoading}
         exportActions={[
           {
-            label: "Export to Sheets",
+            label: t("Export to Sheets"),
             icon: <Sheet className="size-4" />,
             onClick: handleExportToSheets,
           },
           {
-            label: "Copy data (JSON)",
+            label: t("Copy data (JSON)"),
             icon: <Copy className="size-4" />,
             onClick: handleCopy,
           },
           {
-            label: "Download CSV",
+            label: t("Download CSV"),
             icon: <Download className="size-4" />,
             onClick: () => handleDownload("csv"),
           },
           {
-            label: "Download Excel",
+            label: t("Download Excel"),
             icon: <FileSpreadsheet className="size-4" />,
             onClick: () => handleDownload("xls"),
           },

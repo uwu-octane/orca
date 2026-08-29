@@ -1,5 +1,7 @@
 import { Settings, User } from "lucide-react";
 import { ThemePreferenceMenuItems } from "@/client/components/ThemePreferenceMenuItems";
+// FORK: locale plugin — account menu copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { signOutAndRedirect } from "@/lib/auth-client";
 
 // Account dropdown shared by the onboarding wizard and the onboarding chat so a
@@ -10,6 +12,7 @@ export function OnboardingAccountMenu({
 }: {
   email: string | undefined;
 }) {
+  const { t } = useLocale();
   if (!email) return null;
 
   const handleSignOut = () => signOutAndRedirect();
@@ -21,7 +24,7 @@ export function OnboardingAccountMenu({
           type="button"
           tabIndex={0}
           className="btn btn-ghost btn-circle"
-          aria-label="Open account menu"
+          aria-label={t("Open account menu")}
         >
           <User className="h-5 w-5" />
         </button>
@@ -37,13 +40,13 @@ export function OnboardingAccountMenu({
           <li>
             <a href="/settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
-              Settings
+              {t("Settings")}
             </a>
           </li>
           <ThemePreferenceMenuItems />
           <li>
             <button type="button" onClick={handleSignOut}>
-              Sign out
+              {t("Sign out")}
             </button>
           </li>
         </ul>

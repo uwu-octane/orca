@@ -11,6 +11,8 @@ import {
   YAxis,
 } from "recharts";
 import type { MonthlySearch } from "@/types/keywords";
+// FORK: locale plugin — chart aria copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { formatCompactNumber } from "../utils";
 import { FloatingTooltip, useFloatingTooltip } from "./FloatingTooltip";
 
@@ -60,6 +62,7 @@ export function HeaderHelpLabel({
 }
 
 export function AreaTrendChart({ trend }: { trend: MonthlySearch[] }) {
+  const { t } = useLocale();
   const sorted = sortBy(trend, (item) => item.year * 100 + item.month);
   const last12 = sorted.slice(-12);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -110,7 +113,7 @@ export function AreaTrendChart({ trend }: { trend: MonthlySearch[] }) {
     <div
       ref={containerRef}
       className="w-full h-[210px] min-w-0"
-      aria-label="Search trend chart"
+      aria-label={t("Search trend chart")}
     >
       {chartWidth > 0 ? (
         <AreaChart
@@ -167,7 +170,7 @@ export function AreaTrendChart({ trend }: { trend: MonthlySearch[] }) {
           <Area
             type="monotone"
             dataKey="searchVolume"
-            name="Search volume"
+            name={t("Search volume")}
             stroke="var(--color-primary)"
             strokeWidth={2}
             fill="url(#trendGrad)"

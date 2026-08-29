@@ -40,7 +40,7 @@ export function AddKeywordsPanel({
       <textarea
         className="textarea textarea-bordered textarea-sm flex-1"
         rows={3}
-        placeholder="Enter keywords, one per line"
+        placeholder={t("Enter keywords, one per line")}
         value={keywordInput}
         onChange={(e) => setKeywordInput(e.target.value)}
       />
@@ -65,10 +65,10 @@ export function AddKeywordsPanel({
           disabled={isPending || !keywordInput.trim()}
         >
           {isPending && <Loader2 className="size-3 animate-spin" />}
-          Add
+          {t("Add")}
         </button>
         <button className="btn btn-ghost btn-sm" onClick={onCancel}>
-          Cancel
+          {t("Cancel")}
         </button>
       </div>
     </div>

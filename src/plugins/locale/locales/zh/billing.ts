@@ -11,4 +11,13 @@ export const billingZh = {
   "Local SEO": "本地 SEO",
   Onboarding: "入门引导",
   "SAM Agent": "SAM Agent",
+  "You've used all your credits.": "你的额度已用完。",
+  "to continue using OpenSEO.": "即可继续使用 OpenSEO。",
+  "You're running low on credits.": "你的额度即将用完。",
+  "to keep using OpenSEO.": "即可继续使用 OpenSEO。",
+  "We hope you're enjoying OpenSEO!": "希望你喜欢 OpenSEO!",
+  or: "或",
+  "reach out with questions": "如有问题,请联系我们",
+  "Buy more credits": "购买更多额度",
+  "Upgrade anytime": "随时升级",
 } satisfies Record<string, string>;

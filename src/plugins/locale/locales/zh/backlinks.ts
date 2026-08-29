@@ -85,4 +85,33 @@ export const backlinksZh = {
   "Ahrefs Domain Rating (0-100) for this referring domain.":
     "此引用域名的 Ahrefs Domain Rating (0-100)。",
   "No referring domains match this filter.": "没有引用域名符合此筛选条件。",
+  "Enter a domain or URL to get started": "输入域名或 URL 即可开始",
+  "One per domain": "每个域名一条",
+  "Backlinks view": "反链视图",
+  "Show each referring domain's strongest link; expand a row for the rest":
+    "显示每个引用域名最强的一条链接;展开某行可查看其余链接",
+  "All links": "全部链接",
+  "List every individual backlink": "列出每一条反链",
+  "Not enough historical data yet.": "暂无足够的历史数据。",
+  "Backlink trend chart": "反链趋势图",
+  "New and lost backlinks chart": "新增与丢失反链图",
+  "Export backlinks table": "导出反链表格",
+  "Backlinks table actions": "反链表格操作",
+  "Look up Ahrefs Domain Rating for each domain in the table":
+    "查询表格中每个域名的 Ahrefs Domain Rating",
+  "{count} recent search": "最近 {count} 次搜索",
+  "{count} recent searches": "最近 {count} 次搜索",
+  "Enter a domain or URL to analyze.": "请输入要分析的域名或 URL。",
+  "Loading backlinks": "正在加载反链",
+  "Loading referring domains": "正在加载引用域名",
+  "Loading top pages": "正在加载热门页面",
+  "Referring domains": "引用域名",
+  "Lost backlinks": "丢失的反链",
+  "New backlinks": "新增的反链",
+  "See the individual links pointing to your target, including source page, anchor text, and link quality signals.":
+    "查看指向目标的具体链接,包括来源页面、锚文本和链接质量信号。",
+  "View the unique domains linking to your target, grouped at the site level instead of by individual link.":
+    "查看链接到目标的唯一域名,按站点级别而非单条链接分组。",
+  "See which pages on the target site attract the most backlinks and referring domains.":
+    "查看目标网站上吸引最多反链和引用域名的页面。",
 } satisfies Record<string, string>;

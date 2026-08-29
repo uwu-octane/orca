@@ -66,6 +66,7 @@ export function CodeBlock({
   code: string;
   onCopy?: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="flex items-stretch overflow-hidden rounded-md border border-base-300 bg-base-100">
       <pre className="min-w-0 flex-1 overflow-x-auto p-3 text-xs leading-relaxed text-base-content">
@@ -74,7 +75,7 @@ export function CodeBlock({
       <div className="flex shrink-0 items-start border-l border-base-300 p-1.5">
         <CopyButton
           value={code}
-          successMessage="Copied to clipboard"
+          successMessage={t("Copied to clipboard")}
           iconOnly
           onCopy={onCopy}
         />
@@ -118,7 +119,7 @@ export function CopyButton({
       <button
         type="button"
         onClick={handleCopy}
-        aria-label="Copy"
+        aria-label={t("Copy")}
         className="flex size-7 items-center justify-center rounded-md text-base-content/60 transition-colors hover:bg-base-200 hover:text-base-content"
       >
         {copied ? (
@@ -141,7 +142,7 @@ export function CopyButton({
       ) : (
         <Copy className="size-3" />
       )}
-      Copy
+      {t("Copy")}
     </button>
   );
 }

@@ -13,6 +13,9 @@ import {
   parseResearchTarget,
 } from "@/shared/researchScope";
 import type { BacklinksSearchState } from "./backlinksPageTypes";
+// FORK: locale plugin — search copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
+import type { T } from "@/plugins/locale";
 
 type SearchDraft = Pick<BacklinksSearchState, "target" | "scope">;
 
@@ -20,6 +23,7 @@ function getBacklinksValidationErrors(
   value: SearchDraft,
   shouldValidateUntouchedField: boolean,
   validateFormat = false,
+  t: T,
 ) {
   if (!value.target.trim()) {
     if (!shouldValidateUntouchedField) {
@@ -28,7 +32,7 @@ function getBacklinksValidationErrors(
 
     return createFormValidationErrors({
       fields: {
-        target: "Enter a domain or URL to analyze.",
+        target: t("Enter a domain or URL to analyze."),
       },
     });
   }
@@ -54,6 +58,7 @@ export function BacklinksSearchCard({
   initialValues: SearchDraft;
   onSubmit: (values: SearchDraft) => void;
 }) {
+  const { t } = useLocale();
   const [userSelectedScope, setUserSelectedScope] = useState(false);
   const form = useForm({
     defaultValues: initialValues,
@@ -62,8 +67,11 @@ export function BacklinksSearchCard({
         getBacklinksValidationErrors(
           value,
           shouldValidateFieldOnChange(formApi, "target"),
+          false,
+          t,
         ),
-      onSubmit: ({ value }) => getBacklinksValidationErrors(value, true, true),
+      onSubmit: ({ value }) =>
+        getBacklinksValidationErrors(value, true, true, t),
     },
     onSubmit: ({ value }) => {
       onSubmit({ ...value, target: value.target.trim() });
@@ -97,7 +105,7 @@ export function BacklinksSearchCard({
                     >
                       <Search className="size-4 text-base-content/60" />
                       <input
-                        placeholder="Enter a domain or URL"
+                        placeholder={t("Enter a domain or URL")}
                         value={field.state.value}
                         onChange={(event) => {
                           const nextTarget = event.target.value;
@@ -134,7 +142,7 @@ export function BacklinksSearchCard({
                     className="btn btn-primary shrink-0 px-6"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Loading..." : "Search"}
+                    {isSubmitting ? t("Loading...") : t("Search")}
                   </button>
                 )}
               </form.Subscribe>

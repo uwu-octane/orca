@@ -44,4 +44,11 @@ export const savedKeywordsZh = {
     "将从选中的关键词中移除 {count} 个标签。",
   Cancel: "取消",
   Apply: "应用",
+  "Delete keywords?": "删除关键词？",
+  "This will permanently delete {count} saved keyword.":
+    "这将永久删除 {count} 个已保存的关键词。",
+  "This will permanently delete {count} saved keywords.":
+    "这将永久删除 {count} 个已保存的关键词。",
+  "Delete {count} keyword": "删除 {count} 个关键词",
+  "Delete {count} keywords": "删除 {count} 个关键词",
 } satisfies Record<string, string>;

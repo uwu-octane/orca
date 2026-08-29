@@ -50,14 +50,17 @@ export function ResultsView({
           <ShieldAlert className="mt-0.5 size-4 shrink-0 text-warning" />
           <p>
             <span className="font-medium">
-              We were blocked on {blockedCount}{" "}
-              {blockedCount === 1 ? "page" : "pages"}.
+              {t(
+                blockedCount === 1
+                  ? "We were blocked on {count} page."
+                  : "We were blocked on {count} pages.",
+                { count: blockedCount },
+              )}
             </span>{" "}
             <span className="text-base-content/70">
-              The site's bot protection challenged our crawler, so those pages
-              couldn't be audited. We don't have a workaround for this yet.
-              Desktop crawlers run from your own machine and usually get past
-              it: try{" "}
+              {t(
+                "The site's bot protection challenged our crawler, so those pages couldn't be audited. We don't have a workaround for this yet. Desktop crawlers run from your own machine and usually get past it: try ",
+              )}
               <a
                 className="link link-primary"
                 href="https://github.com/PhialsBasement/LibreCrawl"
@@ -65,8 +68,8 @@ export function ResultsView({
                 rel="noreferrer"
               >
                 LibreCrawl
-              </a>{" "}
-              (free, open source) or{" "}
+              </a>
+              {t(" (free, open source) or ")}
               <a
                 className="link link-primary"
                 href="https://www.screamingfrog.co.uk/seo-spider/"
@@ -74,8 +77,8 @@ export function ResultsView({
                 rel="noreferrer"
               >
                 Screaming Frog
-              </a>{" "}
-              (free up to 500 URLs).
+              </a>
+              {t(" (free up to 500 URLs).")}
             </span>
           </p>
         </div>
@@ -194,14 +197,15 @@ function ResultsHeader({
   onTabChange: (tab: ResultsTab) => void;
   onExport: (format: "csv" | "json" | "sheets") => void;
 }) {
+  const { t } = useLocale();
   const tabs: Array<{ tab: ResultsTab; label: string }> = [
-    { tab: "issues", label: `Issues (${issueCount})` },
-    { tab: "pages", label: `Pages (${pageCount})` },
+    { tab: "issues", label: t("Issues ({count})", { count: issueCount }) },
+    { tab: "pages", label: t("Pages ({count})", { count: pageCount }) },
     ...(hasPerformanceTab
       ? [
           {
             tab: "performance" as const,
-            label: `Performance (${lighthouseCount})`,
+            label: t("Performance ({count})", { count: lighthouseCount }),
           },
         ]
       : []),
@@ -258,6 +262,7 @@ function StatsStrip({
     avgAccessibility: number | null;
   };
 }) {
+  const { t } = useLocale();
   const severityCounts = useMemo(() => {
     const counts = { critical: 0, warning: 0, info: 0 };
     for (const issue of issues) {
@@ -267,9 +272,9 @@ function StatsStrip({
   }, [issues]);
 
   const items: StatItem[] = [
-    { label: "Pages crawled", value: String(pagesCrawled) },
+    { label: t("Pages crawled"), value: String(pagesCrawled) },
     {
-      label: "Issues found",
+      label: t("Issues found"),
       value: String(issues.length),
       valueClass: issues.length === 0 ? "text-success" : "",
       sub: issues.length > 0 && (
@@ -283,14 +288,14 @@ function StatsStrip({
         </span>
       ),
     },
-    { label: "Avg response", value: `${averageResponseMs}ms` },
+    { label: t("Avg response"), value: `${averageResponseMs}ms` },
   ];
 
   if (totalLighthouse > 0) {
     items.push(
-      { label: "Lighthouse tests", value: String(totalLighthouse) },
+      { label: t("Lighthouse tests"), value: String(totalLighthouse) },
       {
-        label: "Avg Lighthouse perf",
+        label: t("Avg Lighthouse perf"),
         value:
           lighthouseSummary.avgPerformance == null
             ? "-"
@@ -298,7 +303,7 @@ function StatsStrip({
         valueClass: scoreClass(lighthouseSummary.avgPerformance),
       },
       {
-        label: "Avg Lighthouse SEO",
+        label: t("Avg Lighthouse SEO"),
         value:
           lighthouseSummary.avgSeo == null
             ? "-"
@@ -306,7 +311,7 @@ function StatsStrip({
         valueClass: scoreClass(lighthouseSummary.avgSeo),
       },
       {
-        label: "Avg Lighthouse a11y",
+        label: t("Avg Lighthouse a11y"),
         value:
           lighthouseSummary.avgAccessibility == null
             ? "-"
@@ -314,7 +319,7 @@ function StatsStrip({
         valueClass: scoreClass(lighthouseSummary.avgAccessibility),
       },
       {
-        label: "Lighthouse failures",
+        label: t("Lighthouse failures"),
         value: String(lighthouseSummary.failed),
         valueClass:
           lighthouseSummary.failed > 0 ? "text-error" : "text-success",

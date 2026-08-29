@@ -61,4 +61,16 @@ export const keywordsZh = {
   "No SERP details available for this keyword yet.":
     "暂时没有此关键词的 SERP 详情。",
   "Try clicking another keyword to load data.": "请点击其他关键词来加载数据。",
+  "Not enough keyword data for this query yet":
+    "这个查询还没有足够的关键词数据",
+  "We could not find keyword opportunities for {keyword} in {location}.":
+    "我们未能为 {keyword} 在 {location} 找到关键词机会。",
+  "this location": "此位置",
+  "Enter a keyword to get started": "输入关键词开始使用",
+  "Search for any keyword to see volume, difficulty, CPC, and related keyword ideas.":
+    "搜索任意关键词,查看搜索量、难度、CPC 和相关关键词创意。",
+  Intent: "意图",
+  "No keywords match your current filters.": "没有关键词符合你当前的筛选条件。",
+  "Search trend chart": "搜索趋势图",
+  "Search volume": "搜索量",
 } satisfies Record<string, string>;

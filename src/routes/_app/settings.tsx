@@ -107,9 +107,9 @@ function SettingsPage() {
               </h2>
               <div className="flex items-start justify-between gap-6">
                 <div>
-                  <p className="text-sm">Help improve OpenSEO</p>
+                  <p className="text-sm">{t("Help improve OpenSEO")}</p>
                   <p className="mt-1 text-sm text-base-content/60">
-                    Share analytics and usage data.
+                    {t("Share analytics and usage data.")}
                   </p>
                 </div>
                 <input
@@ -120,16 +120,18 @@ function SettingsPage() {
                   onChange={(event) => {
                     void updateAnalyticsPreference(event.currentTarget.checked);
                   }}
-                  aria-label="Enable product analytics"
+                  aria-label={t("Enable product analytics")}
                 />
               </div>
             </section>
           </>
         ) : (
           <section className="space-y-3">
-            <h2 className="text-sm font-medium text-base-content/50">About</h2>
+            <h2 className="text-sm font-medium text-base-content/50">
+              {t("About")}
+            </h2>
             <div className="flex items-center justify-between gap-6">
-              <span className="text-sm">Version</span>
+              <span className="text-sm">{t("Version")}</span>
               <span className="font-mono text-sm text-base-content/60">
                 v{version}
               </span>

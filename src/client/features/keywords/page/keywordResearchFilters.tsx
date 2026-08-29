@@ -4,6 +4,8 @@ import {
   toggleIntentFilter,
 } from "@/client/features/keywords/keywordResearchTypes";
 import { INTENT_LABELS } from "@/client/features/keywords/components/IntentBadge";
+// FORK: locale plugin — filter panel copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type { KeywordResearchControllerState } from "./types";
 
 export function FilterIntentSelect({
@@ -11,6 +13,7 @@ export function FilterIntentSelect({
 }: {
   form: KeywordResearchControllerState["filtersForm"];
 }) {
+  const { t } = useLocale();
   return (
     <div
       role="group"
@@ -21,7 +24,7 @@ export function FilterIntentSelect({
         id="keyword-intent-filter-label"
         className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60"
       >
-        Intent
+        {t("Intent")}
       </p>
       <form.Field name="intents">
         {(field) => {
@@ -101,6 +104,7 @@ export function FilterRangeInputs({
   maxName: "maxVol" | "maxCpc" | "maxKd";
   step?: string;
 }) {
+  const { t } = useLocale();
   return (
     <div className="rounded-lg border border-base-300 bg-base-100 p-2.5 space-y-2">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
@@ -110,13 +114,13 @@ export function FilterRangeInputs({
         <CompactRangeInput
           form={form}
           name={minName}
-          placeholder="Min"
+          placeholder={t("Min")}
           step={step}
         />
         <CompactRangeInput
           form={form}
           name={maxName}
-          placeholder="Max"
+          placeholder={t("Max")}
           step={step}
         />
       </div>
@@ -158,14 +162,15 @@ export function EmptyFilterResults({
   activeFilterCount: number;
   resetFilters: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="h-full flex flex-col items-center justify-center text-center px-4 text-base-content/50 gap-3">
       <p className="text-sm font-medium">
-        No keywords match your current filters.
+        {t("No keywords match your current filters.")}
       </p>
       {activeFilterCount > 0 ? (
         <button className="btn btn-ghost btn-sm" onClick={resetFilters}>
-          Clear filters
+          {t("Clear filters")}
         </button>
       ) : null}
     </div>

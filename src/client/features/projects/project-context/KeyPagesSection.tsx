@@ -1,5 +1,7 @@
 import * as React from "react";
 import { Pencil, Plus } from "lucide-react";
+// FORK: locale plugin — key page copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import {
   KEY_PAGE_ROLES,
   type KeyPageRole,
@@ -31,6 +33,7 @@ export function KeyPagesSection({
   projectId: string;
   keyPages: ContextKeyPage[];
 }) {
+  const { t } = useLocale();
   const update = useContextUpdate(projectId);
   const [adding, setAdding] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
@@ -66,8 +69,10 @@ export function KeyPagesSection({
   return (
     <section className="space-y-3">
       <SectionHeader
-        title="Key pages"
-        hint="A shortlist of the pages that carry the site — not an inventory."
+        title={t("Key pages")}
+        hint={t(
+          "A shortlist of the pages that carry the site — not an inventory.",
+        )}
         action={
           <button
             type="button"
@@ -75,7 +80,7 @@ export function KeyPagesSection({
             onClick={() => setAdding(true)}
           >
             <Plus className="size-3.5" />
-            Add page
+            {t("Add page")}
           </button>
         }
       />
@@ -93,8 +98,9 @@ export function KeyPagesSection({
       {keyPages.length === 0 ? (
         adding ? null : (
           <EmptyState>
-            No key pages yet. Add the handful that has to rank, or let an agent
-            propose them from your last site audit.
+            {t(
+              "No key pages yet. Add the handful that has to rank, or let an agent propose them from your last site audit.",
+            )}
           </EmptyState>
         )
       ) : (
@@ -120,12 +126,12 @@ export function KeyPagesSection({
                       {page.url}
                     </span>
                     <span className="badge badge-ghost badge-sm shrink-0">
-                      {ROLE_LABELS[page.role]}
+                      {t(ROLE_LABELS[page.role])}
                     </span>
                   </div>
                   {page.topic ? (
                     <p className="text-sm text-base-content/70">
-                      Target: {page.topic}
+                      {t("Target: {topic}", { topic: page.topic })}
                     </p>
                   ) : null}
                   {page.notes ? (
@@ -137,13 +143,13 @@ export function KeyPagesSection({
                   <button
                     type="button"
                     className="btn btn-ghost btn-xs"
-                    aria-label={`Edit ${page.url}`}
+                    aria-label={t("Edit {url}", { url: page.url })}
                     onClick={() => setEditingId(page.id)}
                   >
                     <Pencil className="size-3.5" />
                   </button>
                   <ConfirmDeleteButton
-                    label={`Remove ${page.url}`}
+                    label={t("Remove {url}", { url: page.url })}
                     pending={update.isPending}
                     onConfirm={() =>
                       update.mutate([{ removeKeyPages: [page.url] }])
@@ -177,6 +183,7 @@ function KeyPageForm({
   onCancel: () => void;
   onSave: (draft: KeyPageDraft) => void;
 }) {
+  const { t } = useLocale();
   const [draft, setDraft] = React.useState<KeyPageDraft>({
     url: initial?.url ?? "",
     role: initial?.role ?? "other",
@@ -201,7 +208,7 @@ function KeyPageForm({
         placeholder="example.com/pricing"
         maxLength={2048}
         className="input input-bordered input-sm w-full"
-        aria-label="Page URL"
+        aria-label={t("Page URL")}
       />
       <div className="grid gap-2 sm:grid-cols-2">
         <select
@@ -215,11 +222,11 @@ function KeyPageForm({
             })
           }
           className="select select-bordered select-sm w-full"
-          aria-label="Page role"
+          aria-label={t("Page role")}
         >
           {KEY_PAGE_ROLES.map((role) => (
             <option key={role} value={role}>
-              {ROLE_LABELS[role]}
+              {t(ROLE_LABELS[role])}
             </option>
           ))}
         </select>
@@ -229,20 +236,20 @@ function KeyPageForm({
           onChange={(event) =>
             setDraft({ ...draft, topic: event.target.value })
           }
-          placeholder="Target topic (optional)"
+          placeholder={t("Target topic (optional)")}
           maxLength={200}
           className="input input-bordered input-sm w-full"
-          aria-label="Target topic"
+          aria-label={t("Target topic")}
         />
       </div>
       <input
         type="text"
         value={draft.notes}
         onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
-        placeholder="Notes (optional)"
+        placeholder={t("Notes (optional)")}
         maxLength={500}
         className="input input-bordered input-sm w-full"
-        aria-label="Page notes"
+        aria-label={t("Page notes")}
       />
       <FormActions
         pending={pending}

@@ -10,6 +10,8 @@ import {
   Undo2,
 } from "lucide-react";
 import { Markdown } from "@/client/components/Markdown";
+// FORK: locale plugin — chat message chrome translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 // Shared rendering for the chat agents (onboarding + SAM). The chats differ
 // only in which tools are available and how tool names become labels
@@ -72,12 +74,13 @@ function messageText(message: UIMessage): string {
 }
 
 function CopyButton({ message }: { message: UIMessage }) {
+  const { t } = useLocale();
   const [copied, setCopied] = useState(false);
   return (
     <button
       type="button"
-      aria-label="Copy message"
-      title="Copy"
+      aria-label={t("Copy message")}
+      title={t("Copy")}
       className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-base-content"
       onClick={() => {
         void navigator.clipboard.writeText(messageText(message));
@@ -102,6 +105,7 @@ function MessageActions({
   onUndo?: () => void;
   onStartEdit?: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <div
       className={`flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 ${
@@ -112,8 +116,8 @@ function MessageActions({
       {onStartEdit ? (
         <button
           type="button"
-          aria-label="Edit message"
-          title="Edit and resend"
+          aria-label={t("Edit message")}
+          title={t("Edit and resend")}
           className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-base-content"
           onClick={onStartEdit}
         >
@@ -123,8 +127,8 @@ function MessageActions({
       {onUndo ? (
         <button
           type="button"
-          aria-label="Undo from this message"
-          title="Undo — remove this message and everything after it"
+          aria-label={t("Undo from this message")}
+          title={t("Undo — remove this message and everything after it")}
           className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-base-content"
           onClick={onUndo}
         >
@@ -145,6 +149,7 @@ function ReasoningBlock({
   part: Extract<UIMessage["parts"][number], { type: "reasoning" }>;
   live: boolean;
 }) {
+  const { t } = useLocale();
   const [expanded, setExpanded] = useState(false);
   // Persisted parts can keep a stale state:"streaming" (interrupted or
   // multi-segment turns), so only trust it while the message is actually
@@ -164,7 +169,7 @@ function ReasoningBlock({
             className={`size-3 transition-transform ${expanded ? "rotate-90" : ""}`}
           />
         )}
-        <span>{isStreaming ? "Thinking…" : "Thought process"}</span>
+        <span>{isStreaming ? t("Thinking…") : t("Thought process")}</span>
       </button>
       {expanded ? (
         <div className="mt-1.5 whitespace-pre-wrap border-l-2 border-base-300 pl-3 text-xs text-base-content/50">
@@ -186,11 +191,16 @@ function ToolBadge({
   live: boolean;
   resolveToolLabel: ResolveToolLabel;
 }) {
+  const { t } = useLocale();
   const labels = resolveToolLabel(part.type);
   if (!labels) return null;
   const skillName = skillNameFromPart(part);
-  const runningText = skillName ? `Activating ${skillName}` : labels.running;
-  const doneText = skillName ? `Skill: ${skillName}` : labels.done;
+  const runningText = skillName
+    ? t("Activating {skill}", { skill: skillName })
+    : labels.running;
+  const doneText = skillName
+    ? t("Skill: {skill}", { skill: skillName })
+    : labels.done;
   const state = "state" in part ? part.state : undefined;
   const isDone = state === "output-available";
   // A "running" part in a message that is no longer being generated never
@@ -241,6 +251,7 @@ export function ChatMessage({
   onUndo?: () => void;
   onEdit?: (newText: string) => void;
 }) {
+  const { t } = useLocale();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
 
@@ -273,14 +284,14 @@ export function ChatMessage({
               className="btn btn-ghost btn-xs"
               onClick={() => setEditing(false)}
             >
-              Cancel
+              {t("Cancel")}
             </button>
             <button
               type="button"
               className="btn btn-primary btn-xs"
               onClick={submit}
             >
-              Save & resend
+              {t("Save & resend")}
             </button>
           </div>
         </div>

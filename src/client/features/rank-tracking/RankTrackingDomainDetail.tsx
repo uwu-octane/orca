@@ -143,7 +143,10 @@ export function RankTrackingDomainDetail({
     setShowAddKeywords(false);
     captureClientEvent("rank_tracking:keywords_add");
     toast.success(
-      `${result.added} keyword${result.added !== 1 ? "s" : ""} added`,
+      t(
+        result.added === 1 ? "{count} keyword added" : "{count} keywords added",
+        { count: result.added },
+      ),
     );
     if (!result.checkTriggered && result.added > 0) {
       toast.info(t("Use 'Check Now' to check these keywords"));
@@ -196,15 +199,16 @@ export function RankTrackingDomainDetail({
         onClick={onBack}
       >
         <ArrowLeft className="size-3" />
-        Back to domains
+        {t("Back to domains")}
       </button>
 
       {config.lastSkipReason === "insufficient_credits" && (
         <div className="alert alert-warning text-sm py-2">
           <AlertTriangle className="size-4" />
           <span>
-            Last scheduled check was skipped due to insufficient credits. Top up
-            your balance to resume automatic tracking.
+            {t(
+              "Last scheduled check was skipped due to insufficient credits. Top up your balance to resume automatic tracking.",
+            )}
           </span>
         </div>
       )}
@@ -213,7 +217,9 @@ export function RankTrackingDomainDetail({
         <div className="alert alert-warning text-sm py-2">
           <AlertTriangle className="size-4" />
           <span>
-            This run may be unresponsive and will be cleaned up automatically.
+            {t(
+              "This run may be unresponsive and will be cleaned up automatically.",
+            )}
           </span>
         </div>
       )}
