@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import { toast } from "sonner";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { buildCsv, type CsvValue, downloadCsv } from "@/client/lib/csv";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { captureClientEvent } from "@/client/lib/posthog";
@@ -99,10 +101,11 @@ export function useSaveAndExportActions(params: SaveExportActionParams) {
     saveKeywordsMutate,
     setShowSaveDialog,
   } = params;
+  const { t } = useLocale();
 
   const handleSaveKeywords = () => {
     if (selectedRows.size === 0) {
-      toast.error("Select at least one keyword first");
+      toast.error(t("Select at least one keyword first"));
       return;
     }
     setShowSaveDialog(true);
@@ -134,11 +137,13 @@ export function useSaveAndExportActions(params: SaveExportActionParams) {
             source_feature: "keyword_research",
             keyword_count: selectedRows.size,
           });
-          toast.success(`Saved ${selectedRows.size} keywords`);
+          toast.success(
+            t("Saved {count} keywords", { count: selectedRows.size }),
+          );
           setShowSaveDialog(false);
         },
         onError: (error: unknown) => {
-          toast.error(getStandardErrorMessage(error, "Save failed."));
+          toast.error(getStandardErrorMessage(error, t("Save failed."), t));
         },
       },
     );
@@ -151,7 +156,7 @@ export function useSaveAndExportActions(params: SaveExportActionParams) {
 
   const exportCsv = () => {
     if (sheetsExportRows.length === 0) {
-      toast.error("No data to export");
+      toast.error(t("No data to export"));
       return;
     }
     downloadKeywordResearchCsv(sheetsExportRows);

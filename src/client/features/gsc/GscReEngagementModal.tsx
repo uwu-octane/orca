@@ -8,6 +8,8 @@ import { captureClientEvent } from "@/client/lib/posthog";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { getGscGrantStatus } from "@/serverFunctions/gsc";
 import { dismissGscNudge } from "@/serverFunctions/onboarding";
+// FORK: locale plugin — modal copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 /**
  * One-time re-engagement prompt nudging users who finished onboarding *before*
@@ -27,6 +29,7 @@ export function GscReEngagementModal({
   suppressed: boolean;
 }) {
   const hosted = isHostedClientAuthMode();
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [closed, setClosed] = React.useState(false);
   const shownRef = React.useRef(false);
@@ -92,7 +95,7 @@ export function GscReEngagementModal({
     const callbackURL = projectId
       ? `${window.location.origin}/p/${projectId}/settings/integrations`
       : window.location.href;
-    void startGoogleLink("gsc", callbackURL);
+    void startGoogleLink("gsc", callbackURL, t);
   }
 
   return (

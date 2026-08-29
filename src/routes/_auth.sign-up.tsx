@@ -15,6 +15,8 @@ import {
 import { getFieldError, getFormError } from "@/client/lib/forms";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { authClient } from "@/lib/auth-client";
+// FORK: locale plugin — auth copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { getSignInSearch, getVerifyEmailSearch } from "@/lib/auth-redirect";
 import {
   HOSTED_PASSWORD_MAX_LENGTH,
@@ -49,6 +51,7 @@ export const Route = createFileRoute("/_auth/sign-up")({
 });
 
 function SignUpPage() {
+  const { t } = useLocale();
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { redirectTo, isHostedMode } = useAuthPageState(search.redirect);
@@ -75,7 +78,7 @@ function SignUpPage() {
       if (isTurnstileEnabled && !captchaToken) {
         formApi.setErrorMap({
           onSubmit: {
-            form: "Please complete the captcha to continue.",
+            form: t("Please complete the captcha to continue."),
             fields: {},
           },
         });
@@ -121,7 +124,7 @@ function SignUpPage() {
           if (isTurnstileEnabled) captcha.reset();
           formApi.setErrorMap({
             onSubmit: {
-              form: result.error.message || "Unable to create account.",
+              form: result.error.message || t("Unable to create account."),
               fields: {},
             },
           });
@@ -140,7 +143,7 @@ function SignUpPage() {
         if (isTurnstileEnabled) captcha.reset();
         formApi.setErrorMap({
           onSubmit: {
-            form: "Unable to create account right now. Please try again.",
+            form: t("Unable to create account right now. Please try again."),
             fields: {},
           },
         });
@@ -378,6 +381,7 @@ function useGoogleSignUp({
 }) {
   const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLocale();
 
   const start = async () => {
     setError(null);
@@ -396,12 +400,13 @@ function useGoogleSignUp({
 
       if (result.error) {
         setError(
-          result.error.message || "Google sign up is not available right now.",
+          result.error.message ||
+            t("Google sign up is not available right now."),
         );
         setIsStarting(false);
       }
     } catch {
-      setError("Google sign up is not available right now.");
+      setError(t("Google sign up is not available right now."));
       setIsStarting(false);
     }
   };

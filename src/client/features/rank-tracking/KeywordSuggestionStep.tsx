@@ -11,6 +11,8 @@ import { getDomainKeywordSuggestions } from "@/serverFunctions/domain";
 import { addTrackingKeywords } from "@/serverFunctions/rank-tracking";
 import { isLabsLocationCode } from "@/client/features/keywords/locations";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import {
   AppDataTable,
   makeSelectionColumn,
@@ -142,6 +144,7 @@ export function KeywordSuggestionStep({
   onDone,
   onClose,
 }: Props) {
+  const { t } = useLocale();
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [hasInitialized, setHasInitialized] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([
@@ -210,11 +213,15 @@ export function KeywordSuggestionStep({
     mutationFn: (keywords: string[]) =>
       addTrackingKeywords({ data: { projectId, configId, keywords } }),
     onSuccess: (result) => {
-      toast.success(`Added ${result.added} keywords for tracking`);
+      toast.success(
+        t("Added {count} keywords for tracking", { count: result.added }),
+      );
       onDone(configId);
     },
     onError: (error) => {
-      toast.error(getStandardErrorMessage(error, "Failed to add keywords"));
+      toast.error(
+        getStandardErrorMessage(error, t("Failed to add keywords"), t),
+      );
     },
   });
 

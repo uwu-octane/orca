@@ -1,4 +1,5 @@
 import { shellZh } from "./shell";
+import { errorsZh } from "./errors";
 import { dashboardZh } from "./dashboard";
 import { domainZh } from "./domain";
 import { auditZh } from "./audit";
@@ -30,6 +31,7 @@ import { settingsZh } from "./settings";
  */
 export const zh = {
   ...shellZh,
+  ...errorsZh,
   ...dashboardZh,
   ...domainZh,
   ...auditZh,

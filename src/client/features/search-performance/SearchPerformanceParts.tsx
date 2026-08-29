@@ -30,6 +30,9 @@ import {
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
 import { captureClientEvent } from "@/client/lib/posthog";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
+import type { T } from "@/plugins/locale";
 import {
   SEARCH_PERFORMANCE_PAGE_SIZES,
   type SearchPerformanceTableDimension,
@@ -81,7 +84,7 @@ function dimensionExportTable(
   };
 }
 
-function runExport(table: ExportTable, target: ExportTarget): void {
+function runExport(table: ExportTable, target: ExportTarget, t?: T): void {
   if (target === "csv") {
     downloadCsv(table.filename, buildCsv(table.headers, table.rows));
     captureClientEvent("data:export", {
@@ -94,11 +97,16 @@ function runExport(table: ExportTable, target: ExportTarget): void {
     headers: table.headers,
     rows: table.rows,
     feature: "search_performance",
+    t,
   });
 }
 
-export function exportStriking(report: Report, target: ExportTarget): void {
-  runExport(strikingExportTable(report), target);
+export function exportStriking(
+  report: Report,
+  target: ExportTarget,
+  t?: T,
+): void {
+  runExport(strikingExportTable(report), target, t);
 }
 
 /** Export the full queries/pages dataset (fetched separately, not the visible
@@ -108,9 +116,10 @@ export function exportDimensionRows(
   rows: SearchPerformanceTableRow[],
   range: Report["range"],
   target: ExportTarget,
+  t?: T,
 ): void {
   const stamp = `${range.startDate}-to-${range.endDate}`;
-  runExport(dimensionExportTable(dimension, rows, stamp), target);
+  runExport(dimensionExportTable(dimension, rows, stamp), target, t);
 }
 
 export function TabButton({
@@ -253,6 +262,7 @@ export function StrikingDistanceTable({
   projectId: string;
   rows: Report["strikingDistance"];
 }) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const anchorRef = useSelectionAnchor();
   const [rowSelection, setRowSelection] = useState({});
@@ -289,10 +299,15 @@ export function StrikingDistanceTable({
         .join("\n");
       await navigator.clipboard.writeText(text);
       toast.success(
-        `Copied ${selectedQueries.length} ${selectedQueries.length === 1 ? "keyword" : "keywords"}`,
+        t(
+          selectedQueries.length === 1
+            ? "Copied {count} keyword"
+            : "Copied {count} keywords",
+          { count: selectedQueries.length },
+        ),
       );
     } catch {
-      toast.error("Couldn't copy to clipboard");
+      toast.error(t("Couldn't copy to clipboard"));
     }
   };
 
@@ -308,12 +323,19 @@ export function StrikingDistanceTable({
         queryKey: ["savedKeywords", projectId],
       });
       toast.success(
-        `Saved ${keywords.length} ${keywords.length === 1 ? "keyword" : "keywords"}`,
+        t(
+          keywords.length === 1
+            ? "Saved {count} keyword"
+            : "Saved {count} keywords",
+          { count: keywords.length },
+        ),
       );
       setRowSelection({});
     },
     onError: (error) => {
-      toast.error(getStandardErrorMessage(error, "Could not save keywords"));
+      toast.error(
+        getStandardErrorMessage(error, t("Could not save keywords"), t),
+      );
     },
   });
 

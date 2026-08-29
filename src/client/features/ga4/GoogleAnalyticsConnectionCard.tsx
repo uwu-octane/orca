@@ -108,7 +108,8 @@ export function GoogleAnalyticsConnectionCard({
     onError: (error) =>
       toast.error(getStandardErrorMessage(error, undefined, t)),
   });
-  const handleConnect = () => void startGoogleLink("ga4", window.location.href);
+  const handleConnect = () =>
+    void startGoogleLink("ga4", window.location.href, t);
 
   return (
     <>

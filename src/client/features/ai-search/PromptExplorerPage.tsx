@@ -186,7 +186,7 @@ function PromptExplorerPageInner({
   };
 
   const errorMessage = exploreQuery.isError
-    ? getStandardErrorMessage(exploreQuery.error)
+    ? getStandardErrorMessage(exploreQuery.error, undefined, t)
     : null;
   const isLoading = hasActivePrompt && exploreQuery.isPending;
   const resultData = hasActivePrompt ? exploreQuery.data : undefined;

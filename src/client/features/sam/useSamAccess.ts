@@ -2,6 +2,8 @@ import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
+// FORK: locale plugin — error copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { getSamAccessSetupStatus } from "@/serverFunctions/samAccess";
 
 type SamAccess = {
@@ -16,6 +18,7 @@ type SamAccess = {
 };
 
 export function useSamAccess(projectId: string): SamAccess {
+  const { t } = useLocale();
   // Hosted deployments always have OPENROUTER_API_KEY provisioned (the server
   // function short-circuits to enabled), so skip the round-trip entirely.
   const isHosted = isHostedClientAuthMode();
@@ -51,7 +54,8 @@ export function useSamAccess(projectId: string): SamAccess {
       (error
         ? getStandardErrorMessage(
             error,
-            "Could not load AI agent setup status.",
+            t("Could not load AI agent setup status."),
+            t,
           )
         : null),
     isRefetching,

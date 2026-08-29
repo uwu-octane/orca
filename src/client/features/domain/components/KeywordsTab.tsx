@@ -34,6 +34,8 @@ import { keywordsToTable } from "@/client/features/domain/utils";
 import type { DomainOverviewRouteState } from "@/client/features/domain/domainRouteState";
 import { buildCsv, downloadCsv } from "@/client/lib/csv";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { captureClientEvent } from "@/client/lib/posthog";
 import {
   MAX_DATAFORSEO_FILTER_CONDITIONS,
@@ -94,6 +96,7 @@ export function KeywordsTab({
   onPageChange,
   onPageSizeChange,
 }: Props) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(
     new Set(),
@@ -180,6 +183,7 @@ export function KeywordsTab({
       save: saveMutation.mutate,
       projectId,
       locationCode: routeState.sentLocationCode,
+      t,
     });
   }, [
     projectId,
@@ -187,6 +191,7 @@ export function KeywordsTab({
     rows,
     saveMutation.mutate,
     selectedKeywords,
+    t,
   ]);
 
   const applyFilters = useCallback(
@@ -224,13 +229,14 @@ export function KeywordsTab({
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(JSON.stringify(rows, null, 2));
-    toast.success("Copied data");
+    toast.success(t("Copied data"));
   };
   const handleExportToSheets = () => {
     void exportTableToSheets({
       headers: exportTable.headers,
       rows: exportTable.rows,
       feature: "domain_overview",
+      t,
     });
   };
   const handleDownload = (extension: "csv" | "xls") => {

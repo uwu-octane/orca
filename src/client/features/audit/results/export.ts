@@ -3,6 +3,8 @@ import { getIssueDescriptor } from "@/shared/audit-issues";
 import { buildCsv, type CsvValue, downloadCsv } from "@/client/lib/csv";
 import { downloadFile } from "@/client/lib/download";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
+// FORK: locale plugin — module-level functions; callers pass the translator in.
+import type { T } from "@/plugins/locale";
 
 const ISSUES_HEADERS = ["Severity", "Issue", "URL", "Details", "How To Fix"];
 
@@ -22,6 +24,7 @@ function issuesRows(issues: AuditResultsData["issues"]): CsvValue[][] {
 export function exportIssues(
   issues: AuditResultsData["issues"],
   format: "csv" | "json" | "sheets",
+  t?: T,
 ) {
   if (format === "json") {
     const rows = issues.map((issue) => {
@@ -50,6 +53,7 @@ export function exportIssues(
       headers: ISSUES_HEADERS,
       rows: issuesRows(issues),
       feature: "audit_issues",
+      t,
     });
     return;
   }
@@ -116,6 +120,7 @@ function performanceRows(
 export function exportPages(
   pages: AuditResultsData["pages"],
   format: "csv" | "json" | "sheets",
+  t?: T,
 ) {
   if (format === "json") {
     const rows = pages.map((page) => ({
@@ -141,6 +146,7 @@ export function exportPages(
       headers: PAGES_HEADERS,
       rows: pagesRows(pages),
       feature: "audit_pages",
+      t,
     });
     return;
   }
@@ -152,6 +158,7 @@ export function exportPerformance(
   lighthouse: AuditResultsData["lighthouse"],
   pages: AuditResultsData["pages"],
   format: "csv" | "json" | "sheets",
+  t?: T,
 ) {
   if (format === "json") {
     const rows = lighthouse.map((result) => {
@@ -183,6 +190,7 @@ export function exportPerformance(
       headers: PERFORMANCE_HEADERS,
       rows,
       feature: "audit_performance",
+      t,
     });
     return;
   }

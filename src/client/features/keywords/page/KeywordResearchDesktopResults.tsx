@@ -161,6 +161,7 @@ function DesktopTableCard({ controller }: Props) {
       headers: KEYWORD_RESEARCH_HEADERS,
       rows: sheetsExportRows,
       feature: "keyword_research",
+      t,
     });
   };
   const handleExportSelectionToSheets = () => {
@@ -168,6 +169,7 @@ function DesktopTableCard({ controller }: Props) {
       headers: KEYWORD_RESEARCH_HEADERS,
       rows: selectedExportRows,
       feature: "keyword_research",
+      t,
     });
   };
   const handleExportSelectionCsv = () => {

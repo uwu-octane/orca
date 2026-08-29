@@ -42,12 +42,12 @@ function SettingsPage() {
         analyticsOptedOut: !enabled,
       });
       if (result.error) {
-        toast.error("We couldn't update your analytics setting.");
+        toast.error(t("We couldn't update your analytics setting."));
       } else {
-        toast.success(enabled ? "Analytics enabled" : "Analytics disabled");
+        toast.success(t(enabled ? "Analytics enabled" : "Analytics disabled"));
       }
     } catch {
-      toast.error("We couldn't update your analytics setting.");
+      toast.error(t("We couldn't update your analytics setting."));
     } finally {
       setIsSaving(false);
     }

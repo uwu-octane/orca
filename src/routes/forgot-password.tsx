@@ -7,6 +7,8 @@ import {
 } from "@/client/features/auth/AuthPage";
 import { getFieldError, getFormError } from "@/client/lib/forms";
 import { authClient } from "@/lib/auth-client";
+// FORK: locale plugin — auth copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { getSignInSearch, normalizeAuthRedirect } from "@/lib/auth-redirect";
 import { z } from "zod";
@@ -21,6 +23,7 @@ export const Route = createFileRoute("/forgot-password")({
 });
 
 function ForgotPasswordPage() {
+  const { t } = useLocale();
   const search = Route.useSearch();
   const redirectTo = normalizeAuthRedirect(search.redirect);
   const isHostedMode = isHostedClientAuthMode();
@@ -45,7 +48,8 @@ function ForgotPasswordPage() {
         if (result.error) {
           formApi.setErrorMap({
             onSubmit: {
-              form: result.error.message || "We couldn't send the reset email.",
+              form:
+                result.error.message || t("We couldn't send the reset email."),
               fields: {},
             },
           });
@@ -54,7 +58,9 @@ function ForgotPasswordPage() {
       } catch {
         formApi.setErrorMap({
           onSubmit: {
-            form: "We couldn't send the reset email right now. Please try again.",
+            form: t(
+              "We couldn't send the reset email right now. Please try again.",
+            ),
             fields: {},
           },
         });

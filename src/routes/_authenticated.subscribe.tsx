@@ -206,6 +206,7 @@ function SubscribePage() {
         getStandardErrorMessage(
           err,
           t("Couldn't start the checkout. Please try again."),
+          t,
         ),
       );
       setIsAttaching(false);

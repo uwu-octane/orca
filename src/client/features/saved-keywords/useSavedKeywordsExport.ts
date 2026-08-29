@@ -5,6 +5,8 @@ import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { exportSavedKeywords } from "@/serverFunctions/keywords";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type { SavedKeywordRow } from "@/types/keywords";
 import type { ExportSavedKeywordsInput } from "@/types/schemas/keywords";
 import type { AppliedSavedKeywordsFilters } from "./savedKeywordsFilterTypes";
@@ -20,6 +22,7 @@ export function useSavedKeywordsExport(params: {
   sort: ExportSavedKeywordsInput["sort"];
   order: ExportSavedKeywordsInput["order"];
 }) {
+  const { t } = useLocale();
   const [exporting, setExporting] = useState<"csv" | "sheets" | null>(null);
   const [exportingSelection, setExportingSelection] = useState<
     "csv" | "sheets" | null
@@ -53,7 +56,7 @@ export function useSavedKeywordsExport(params: {
     try {
       const rows = await loadFilteredRows();
       if (rows.length === 0) {
-        toast.error("No keywords to export");
+        toast.error(t("No keywords to export"));
         return;
       }
       downloadKeywordCsv(rows);
@@ -62,7 +65,7 @@ export function useSavedKeywordsExport(params: {
         result_count: rows.length,
       });
     } catch (error) {
-      toast.error(getStandardErrorMessage(error, "Could not export CSV"));
+      toast.error(getStandardErrorMessage(error, t("Could not export CSV"), t));
     } finally {
       setExporting(null);
     }
@@ -76,9 +79,12 @@ export function useSavedKeywordsExport(params: {
         headers: SAVED_KEYWORD_EXPORT_HEADERS,
         rows: rows.map(savedKeywordExportRow),
         feature: "saved_keywords",
+        t,
       });
     } catch (error) {
-      toast.error(getStandardErrorMessage(error, "Could not export to Sheets"));
+      toast.error(
+        getStandardErrorMessage(error, t("Could not export to Sheets"), t),
+      );
     } finally {
       setExporting(null);
     }
@@ -107,9 +113,12 @@ export function useSavedKeywordsExport(params: {
         headers: SAVED_KEYWORD_EXPORT_HEADERS,
         rows: selectedRows.map(savedKeywordExportRow),
         feature: "saved_keywords",
+        t,
       });
     } catch (error) {
-      toast.error(getStandardErrorMessage(error, "Could not export to Sheets"));
+      toast.error(
+        getStandardErrorMessage(error, t("Could not export to Sheets"), t),
+      );
     } finally {
       setExportingSelection(null);
     }

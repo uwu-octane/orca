@@ -180,7 +180,7 @@ export function SitePicker({
         <button
           type="button"
           className="btn btn-ghost btn-sm"
-          onClick={() => void startGoogleLink("gsc", window.location.href)}
+          onClick={() => void startGoogleLink("gsc", window.location.href, t)}
         >
           {t("Connect another Google account")}
         </button>

@@ -13,6 +13,8 @@ import {
   type GscSiteSelection,
 } from "@/client/features/gsc/SitePicker";
 import { startGoogleLink } from "@/client/features/integrations/startGoogleLink";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import {
   disconnectGsc,
   getGscConnection,
@@ -28,6 +30,7 @@ export function SearchConsoleConnectionCard({
   projectId: string;
 }) {
   const hosted = isHostedClientAuthMode();
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [picking, setPicking] = React.useState(false);
   const [selection, setSelection] = React.useState<GscSiteSelection | null>(
@@ -86,7 +89,7 @@ export function SearchConsoleConnectionCard({
       setGscSite({ data: { projectId, ...selected } }),
     onSuccess: () => {
       captureClientEvent("gsc:property_select");
-      toast.success("Search Console connected");
+      toast.success(t("Search Console connected"));
       setPicking(false);
       void queryClient.invalidateQueries({ queryKey: connectionKey });
       void queryClient.invalidateQueries({ queryKey: GRANT_STATUS_KEY });
@@ -107,13 +110,14 @@ export function SearchConsoleConnectionCard({
         queryKey: ["dashboardGscReport", projectId],
       });
     },
-    onError: (error) => toast.error(getStandardErrorMessage(error)),
+    onError: (error) =>
+      toast.error(getStandardErrorMessage(error, undefined, t)),
   });
 
   const disconnectMutation = useMutation({
     mutationFn: () => disconnectGsc({ data: { projectId } }),
     onSuccess: () => {
-      toast.success("Search Console disconnected");
+      toast.success(t("Search Console disconnected"));
       setPicking(false);
       setSelection(null);
       void queryClient.invalidateQueries({ queryKey: connectionKey });
@@ -133,10 +137,12 @@ export function SearchConsoleConnectionCard({
         queryKey: ["dashboardGscReport", projectId],
       });
     },
-    onError: (error) => toast.error(getStandardErrorMessage(error)),
+    onError: (error) =>
+      toast.error(getStandardErrorMessage(error, undefined, t)),
   });
 
-  const handleConnect = () => void startGoogleLink("gsc", window.location.href);
+  const handleConnect = () =>
+    void startGoogleLink("gsc", window.location.href, t);
 
   return (
     <IntegrationConnectionCard

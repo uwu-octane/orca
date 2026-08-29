@@ -18,6 +18,8 @@ import { captureClientEvent } from "@/client/lib/posthog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { removeTrackingKeywords } from "@/serverFunctions/rank-tracking";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type { RankTrackingRow } from "@/types/schemas/rank-tracking";
 import { useRankTrackingColumns } from "./RankTrackingColumns";
 import { buildRankTrackingExport } from "./RankTrackingTableParts";
@@ -54,6 +56,7 @@ export function RankTrackingTable({
   locationName?: string | null;
   serpDepth: number;
 }) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [showConfirm, setShowConfirm] = useState(false);
   const [trendTarget, setTrendTarget] = useState<KeywordTrendTarget | null>(
@@ -105,6 +108,7 @@ export function RankTrackingTable({
       headers,
       rows: exportRows,
       feature: "rank_tracking",
+      t,
     });
   };
 
@@ -139,11 +143,18 @@ export function RankTrackingTable({
         queryKey: ["rankTrackingCostEstimate", projectId, configId],
       });
       toast.success(
-        `${result.removed} keyword${result.removed !== 1 ? "s" : ""} removed`,
+        t(
+          result.removed === 1
+            ? "{count} keyword removed"
+            : "{count} keywords removed",
+          { count: result.removed },
+        ),
       );
     },
     onError: (error) => {
-      toast.error(getStandardErrorMessage(error, "Failed to remove keywords"));
+      toast.error(
+        getStandardErrorMessage(error, t("Failed to remove keywords"), t),
+      );
     },
   });
 

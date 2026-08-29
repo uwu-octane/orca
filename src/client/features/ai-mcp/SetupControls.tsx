@@ -1,6 +1,8 @@
 import { Check, ChevronDown, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+// FORK: locale plugin — copy feedback toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export function Collapsible({
   id,
@@ -93,10 +95,11 @@ export function CopyButton({
   onCopy?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const { t } = useLocale();
 
   const handleCopy = async () => {
     if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
-      toast.error("Clipboard not available");
+      toast.error(t("Clipboard not available"));
       return;
     }
     try {
@@ -106,7 +109,7 @@ export function CopyButton({
       setTimeout(() => setCopied(false), 2000);
       onCopy?.();
     } catch {
-      toast.error("Could not copy to clipboard");
+      toast.error(t("Could not copy to clipboard"));
     }
   };
 

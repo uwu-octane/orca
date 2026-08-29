@@ -261,7 +261,7 @@ function BrandLookupPageInner({
   const isLoading = hasActiveQuery && lookupQuery.isPending;
   const errorMessage =
     hasActiveQuery && lookupQuery.isError
-      ? getStandardErrorMessage(lookupQuery.error)
+      ? getStandardErrorMessage(lookupQuery.error, undefined, t)
       : null;
   const resultData = hasActiveQuery ? lookupQuery.data : undefined;
   const bullets = BRAND_LOOKUP_BULLETS.map((bullet) => ({

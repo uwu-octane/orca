@@ -58,7 +58,7 @@ export function ApiKeySettings() {
       void queryClient.invalidateQueries({ queryKey: ["apiKeys"] });
     },
     onError: (error) => {
-      toast.error(getStandardErrorMessage(error));
+      toast.error(getStandardErrorMessage(error, undefined, t));
     },
   });
 
@@ -71,11 +71,11 @@ export function ApiKeySettings() {
     },
     onSuccess: () => {
       captureClientEvent("mcp:api_key_revoked");
-      toast.success("API key revoked");
+      toast.success(t("API key revoked"));
       void queryClient.invalidateQueries({ queryKey: ["apiKeys"] });
     },
     onError: (error) => {
-      toast.error(getStandardErrorMessage(error));
+      toast.error(getStandardErrorMessage(error, undefined, t));
     },
   });
 

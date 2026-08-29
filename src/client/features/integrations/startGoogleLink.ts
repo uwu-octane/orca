@@ -1,5 +1,8 @@
 import { toast } from "sonner";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+// FORK: locale plugin — module-level function, so callers pass the
+// translator in (see DefaultCatchBoundary for the same pattern).
+import type { T } from "@/plugins/locale";
 import { authClient } from "@/lib/auth-client";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { startSelfHostedGa4Link } from "@/serverFunctions/ga4";
@@ -28,6 +31,7 @@ const googleProviders = {
 export async function startGoogleLink(
   provider: "gsc" | "ga4",
   callbackURL: string,
+  t?: T,
 ): Promise<void> {
   try {
     const config = googleProviders[provider];
@@ -42,11 +46,16 @@ export async function startGoogleLink(
       callbackURL,
     });
     if (res.error) {
-      toast.error(res.error.message ?? "Could not start Google sign-in");
+      // The better-auth message is server-provided (open set); translate the
+      // fallback only.
+      const fallback = t
+        ? t("Could not start Google sign-in")
+        : "Could not start Google sign-in";
+      toast.error(res.error.message ?? fallback);
       return;
     }
     if (res.data?.url) window.location.href = res.data.url;
   } catch (error) {
-    toast.error(getStandardErrorMessage(error));
+    toast.error(getStandardErrorMessage(error, undefined, t));
   }
 }

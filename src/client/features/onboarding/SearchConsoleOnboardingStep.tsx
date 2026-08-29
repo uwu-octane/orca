@@ -164,7 +164,7 @@ function GscConnect({ projectId }: { projectId: string }) {
 
   const handleConnect = () => {
     captureClientEvent("onboarding:gsc_connect_clicked");
-    void startGoogleLink("gsc", window.location.href);
+    void startGoogleLink("gsc", window.location.href, t);
   };
 
   if (connectionQuery.isLoading) return <Checking />;

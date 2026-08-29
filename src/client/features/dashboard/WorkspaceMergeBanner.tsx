@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import {
   getWorkspaceMergeStatus,
@@ -12,6 +14,7 @@ import {
 // visibility (AUTH_MODE is a runtime var there); hosted builds skip the query
 // entirely since the mode is known at build time.
 export function WorkspaceMergeBanner() {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
 
   const statusQuery = useQuery({
@@ -24,7 +27,12 @@ export function WorkspaceMergeBanner() {
     mutationFn: () => mergeLegacyWorkspaces(),
     onSuccess: ({ mergedWorkspaces }) => {
       toast.success(
-        `Migrated ${mergedWorkspaces} workspace${mergedWorkspaces === 1 ? "" : "s"} into the shared workspace.`,
+        t(
+          mergedWorkspaces === 1
+            ? "Migrated {count} workspace into the shared workspace."
+            : "Migrated {count} workspaces into the shared workspace.",
+          { count: mergedWorkspaces },
+        ),
       );
       // The merge changes projects, connections, and the banner's own status —
       // refetch everything rather than enumerating keys.
@@ -34,7 +42,8 @@ export function WorkspaceMergeBanner() {
       toast.error(
         getStandardErrorMessage(
           error,
-          "Couldn't migrate the workspaces. Try again.",
+          t("Couldn't migrate the workspaces. Try again."),
+          t,
         ),
       ),
   });

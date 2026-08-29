@@ -178,15 +178,15 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
     if (!report?.connected) return;
     try {
       if (tab === "striking") {
-        exportStriking(report, target);
+        exportStriking(report, target, t);
         return;
       }
       const data = await exportSearchPerformanceTable({
         data: { projectId, dimension, ...filterInput },
       });
-      exportDimensionRows(dimension, data.rows, report.range, target);
+      exportDimensionRows(dimension, data.rows, report.range, target, t);
     } catch (error) {
-      toast.error(getStandardErrorMessage(error, t("Export failed")));
+      toast.error(getStandardErrorMessage(error, t("Export failed"), t));
     }
   };
 
@@ -220,7 +220,7 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
         ) : reportQuery.isError ? (
           <div className="alert alert-error">
             <span className="text-sm">
-              {getStandardErrorMessage(reportQuery.error)}
+              {getStandardErrorMessage(reportQuery.error, undefined, t)}
             </span>
           </div>
         ) : !report?.connected ? (
@@ -332,7 +332,7 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                 <div className="p-4">
                   <div className="alert alert-error">
                     <span className="text-sm">
-                      {getStandardErrorMessage(tableQuery.error)}
+                      {getStandardErrorMessage(tableQuery.error, undefined, t)}
                     </span>
                   </div>
                 </div>

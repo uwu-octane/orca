@@ -32,6 +32,8 @@ export const lighthouseZh = {
   "No actionable issues for this category.": "此类别没有可操作的问题。",
   "This audit was saved without issue-level Lighthouse details. Re-run the audit to populate this screen.":
     "此审计保存时没有保留 Lighthouse 问题详情。请重新运行审计以生成本页数据。",
+  "This Lighthouse run was stored before issue details were preserved. Re-run the audit to see category counts and issue cards.":
+    "此 Lighthouse 运行保存在保留问题详情之前。请重新运行审计以查看类别计数和问题卡片。",
   Severity: "严重程度",
   Issue: "问题",
   Category: "类别",

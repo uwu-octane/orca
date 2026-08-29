@@ -1,6 +1,8 @@
 import { toast } from "sonner";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { captureClientEvent } from "@/client/lib/posthog";
+// FORK: locale plugin — module-level function; callers pass the translator in.
+import type { T } from "@/plugins/locale";
 import type { KeywordRow } from "@/client/features/domain/types";
 
 type SaveMutation = (payload: {
@@ -26,7 +28,9 @@ export function saveSelectedKeywords({
   save,
   projectId,
   locationCode,
+  t,
 }: {
+  t?: T;
   selectedKeywords: Set<string>;
   filteredKeywords: KeywordRow[];
   save: (payload: Parameters<SaveMutation>[0], opts?: SaveOptions) => void;
@@ -34,7 +38,11 @@ export function saveSelectedKeywords({
   locationCode?: number;
 }) {
   if (selectedKeywords.size === 0) {
-    toast.error("Select at least one keyword first");
+    toast.error(
+      t
+        ? t("Select at least one keyword first")
+        : "Select at least one keyword first",
+    );
     return;
   }
 
@@ -59,10 +67,20 @@ export function saveSelectedKeywords({
           source_feature: "domain_overview",
           keyword_count: selectedKeywords.size,
         });
-        toast.success(`Saved ${selectedKeywords.size} keywords`);
+        toast.success(
+          t
+            ? t("Saved {count} keywords", { count: selectedKeywords.size })
+            : `Saved ${selectedKeywords.size} keywords`,
+        );
       },
       onError: (error: unknown) => {
-        toast.error(getStandardErrorMessage(error, "Save failed."));
+        toast.error(
+          getStandardErrorMessage(
+            error,
+            t ? t("Save failed.") : "Save failed.",
+            t,
+          ),
+        );
       },
     },
   );

@@ -3,6 +3,8 @@ import { type SortingState } from "@tanstack/react-table";
 import { ChevronDown, Download, Sheet, SlidersHorizontal } from "lucide-react";
 import { useAppTable } from "@/client/components/table/AppDataTable";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
+// FORK: locale plugin — export toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import {
   buildBrandLookupExport,
   downloadBrandLookupCsv,
@@ -45,6 +47,7 @@ export function CitationTabsCard({
   projectId: string;
 }) {
   const [activeTab, setActiveTab] = useState<CitationTab>("queries");
+  const { t } = useLocale();
   const [pagesSort, setPagesSort] = useState<SortingState>(DEFAULT_PAGES_SORT);
   const [queriesSort, setQueriesSort] =
     useState<SortingState>(DEFAULT_QUERIES_SORT);
@@ -138,6 +141,7 @@ export function CitationTabsCard({
       headers: exportTable.headers,
       rows: exportTable.rows,
       feature: `brand_lookup_${activeTab}`,
+      t,
     });
     closeExportMenu();
   };

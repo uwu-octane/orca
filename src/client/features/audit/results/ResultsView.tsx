@@ -16,6 +16,8 @@ import {
   ExportDropdown,
   PerformanceTable,
 } from "@/client/features/audit/results/ResultsTables";
+// FORK: locale plugin — export toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 type ResultsTab = "issues" | "pages" | "performance";
 
@@ -30,6 +32,7 @@ export function ResultsView({
   tab: string;
   onTabChange: (tab: ResultsTab) => void;
 }) {
+  const { t } = useLocale();
   const { audit, pages, lighthouse, issues } = data;
   const hasPerformanceTab = lighthouse.length > 0;
   const activeTab =
@@ -97,14 +100,14 @@ export function ResultsView({
             onTabChange={onTabChange}
             onExport={(format) => {
               if (activeTab === "performance") {
-                exportPerformance(lighthouse, pages, format);
+                exportPerformance(lighthouse, pages, format, t);
                 return;
               }
               if (activeTab === "issues") {
-                exportIssues(issues, format);
+                exportIssues(issues, format, t);
                 return;
               }
-              exportPages(pages, format);
+              exportPages(pages, format, t);
             }}
           />
 

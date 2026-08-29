@@ -94,7 +94,7 @@ export function Ga4PropertyPicker({
         <div className="flex flex-wrap items-center gap-1">
           <GoogleConnectButton
             label={t("Reconnect with Google")}
-            onClick={() => void startGoogleLink("ga4", window.location.href)}
+            onClick={() => void startGoogleLink("ga4", window.location.href, t)}
           />
           {secondaryAction ? (
             <SecondaryActionButton action={secondaryAction} />
@@ -190,7 +190,7 @@ export function Ga4PropertyPicker({
         <button
           type="button"
           className="btn btn-ghost btn-sm"
-          onClick={() => void startGoogleLink("ga4", window.location.href)}
+          onClick={() => void startGoogleLink("ga4", window.location.href, t)}
         >
           {t("Connect another Google account")}
         </button>

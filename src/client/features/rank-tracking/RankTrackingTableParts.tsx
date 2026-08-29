@@ -1,5 +1,6 @@
 // FORK: locale plugin — display formatting follows the active locale.
 import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
+import type { T } from "@/plugins/locale";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { buildCsv, downloadCsv } from "@/client/lib/csv";
@@ -237,7 +238,8 @@ export function exportRankTrackingToSheets(
   sorted: RankTrackingRow[],
   showDesktop: boolean,
   showMobile: boolean,
-  locationName?: string | null,
+  locationName: string | null | undefined,
+  t?: T,
 ) {
   const { headers, rows } = buildRankTrackingExport(
     sorted,
@@ -245,18 +247,20 @@ export function exportRankTrackingToSheets(
     showMobile,
     locationName,
   );
-  void exportTableToSheets({ headers, rows, feature: "rank_tracking" });
+  void exportTableToSheets({ headers, rows, feature: "rank_tracking", t });
 }
 
-export function exportRankTrackingCsv(
-  sorted: RankTrackingRow[],
-  showDesktop: boolean,
-  showMobile: boolean,
-  domain: string,
-  locationName?: string | null,
-) {
+export function exportRankTrackingCsv(opts: {
+  sorted: RankTrackingRow[];
+  showDesktop: boolean;
+  showMobile: boolean;
+  domain: string;
+  locationName?: string | null;
+  t?: T;
+}) {
+  const { sorted, showDesktop, showMobile, domain, locationName, t } = opts;
   if (sorted.length === 0) {
-    toast.error("No data to export");
+    toast.error(t ? t("No data to export") : "No data to export");
     return;
   }
   const { headers, rows } = buildRankTrackingExport(

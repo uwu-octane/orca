@@ -66,7 +66,9 @@ export function getStandardErrorMessage(
     return render(STANDARD_MESSAGES[error.message], t);
   }
   const coded = splitCodedMessage(error.message);
-  if (coded) return coded.detail;
+  // FORK: locale plugin — the detail is a dictionary key (English source), so
+  // it translates like any other message; unknown details pass through.
+  if (coded) return render(coded.detail, t);
   if (error.message) return error.message;
   return render(fallback, t);
 }

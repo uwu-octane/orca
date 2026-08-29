@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import type { CsvValue } from "@/client/lib/csv";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
+// FORK: locale plugin — export toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type { BacklinksSearchState } from "./backlinksPageTypes";
 import { exportBacklinksTabCsv } from "./export";
 
@@ -23,6 +25,7 @@ export function BacklinksExportMenu({
   rows: CsvValue[][];
 }) {
   const [isExportingSheets, setIsExportingSheets] = useState(false);
+  const { t } = useLocale();
   const canExport = rows.length > 0 && !isExportingSheets;
 
   const handleExportToSheets = async () => {
@@ -33,6 +36,7 @@ export function BacklinksExportMenu({
         headers,
         rows,
         feature: `backlinks_${activeTab}`,
+        t,
       });
     } finally {
       setIsExportingSheets(false);
