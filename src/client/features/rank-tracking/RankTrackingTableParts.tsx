@@ -1,6 +1,7 @@
 // FORK: locale plugin — display formatting follows the active locale.
 import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
 import type { T } from "@/plugins/locale";
+import { useLocale } from "@/plugins/client/context";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { buildCsv, downloadCsv } from "@/client/lib/csv";
@@ -38,6 +39,7 @@ const FEATURE_TOOLTIPS: Record<string, string> = {
 };
 
 export function SerpFeatureTags({ features }: { features: string[] }) {
+  const { t } = useLocale();
   const notable = features.filter((f) => f in FEATURE_SHORT_LABELS);
   if (notable.length === 0) return null;
   return (
@@ -46,10 +48,10 @@ export function SerpFeatureTags({ features }: { features: string[] }) {
         <span
           key={f}
           className="badge badge-xs gap-0.5 cursor-help bg-base-300 border-0 text-base-content/70"
-          title={FEATURE_TOOLTIPS[f] ?? f}
+          title={t(FEATURE_TOOLTIPS[f] ?? f)}
         >
           {f === "ai_overview" && <Sparkles className="size-2.5" />}
-          {FEATURE_SHORT_LABELS[f]}
+          {t(FEATURE_SHORT_LABELS[f])}
         </span>
       ))}
     </div>

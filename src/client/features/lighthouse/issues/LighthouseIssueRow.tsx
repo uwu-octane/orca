@@ -6,9 +6,12 @@ import {
   Info,
   TriangleAlert,
 } from "lucide-react";
+// FORK: locale plugin — issue copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type { LighthouseIssue } from "./types";
 
 export function LighthouseIssueRow({ issue }: { issue: LighthouseIssue }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const hasDetails = !!(issue.description || issue.items.length > 0);
 
@@ -30,7 +33,7 @@ export function LighthouseIssueRow({ issue }: { issue: LighthouseIssue }) {
             className={`badge badge-sm border ${severityBadgeClass(issue.severity)} gap-1`}
           >
             {severityIcon(issue.severity)}
-            {issue.severity}
+            {t(issue.severity)}
           </span>
         </td>
         <td className="py-3 pr-3">
@@ -44,7 +47,9 @@ export function LighthouseIssueRow({ issue }: { issue: LighthouseIssue }) {
           </div>
         </td>
         <td className="py-3 pr-3 hidden sm:table-cell">
-          <span className="text-xs text-base-content/50">{issue.category}</span>
+          <span className="text-xs text-base-content/50">
+            {t(issue.category)}
+          </span>
         </td>
         <td className="py-3 pr-3 hidden md:table-cell text-right">
           {issue.impactMs != null || issue.impactBytes != null ? (
@@ -75,7 +80,9 @@ export function LighthouseIssueRow({ issue }: { issue: LighthouseIssue }) {
               {issue.items.length > 0 ? (
                 <details className="text-sm">
                   <summary className="cursor-pointer font-medium text-base-content/60 text-xs">
-                    Affected items ({issue.items.length})
+                    {t("Affected items ({count})", {
+                      count: issue.items.length,
+                    })}
                   </summary>
                   <div className="mt-2 space-y-1.5">
                     {issue.items.map((item, itemIndex) => (

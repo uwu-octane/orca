@@ -125,7 +125,7 @@ function BrandHeader({ result }: { result: BrandLookupResult }) {
           {result.resolvedTarget}
         </h2>
         <span className="badge badge-ghost badge-sm">
-          {result.detectedTargetType}
+          {t(result.detectedTargetType)}
         </span>
         {result.scope ? (
           <span className="badge badge-ghost badge-sm">

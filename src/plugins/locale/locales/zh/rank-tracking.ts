@@ -189,4 +189,28 @@ export const rankTrackingZh = {
   "This usually takes a few seconds": "通常只需要几秒钟",
   "{count} keywords": "{count} 个关键词",
   Manual: "手动",
+
+  // SERP feature tags (src/client/features/rank-tracking/RankTrackingTableParts.tsx)
+  FS: "FS",
+  PAA: "PAA",
+  AI: "AI",
+  KP: "KP",
+  Video: "视频",
+  Img: "Img",
+  Shop: "购物",
+  News: "新闻",
+  "Featured Snippet — highlighted answer box at top of results":
+    "精选摘要——搜索结果顶部的突出答案框",
+  "People Also Ask — expandable related questions":
+    "其他人还问了什么——可展开的相关问题",
+  "AI Overview — AI-generated summary at top of search":
+    "AI 概览——搜索结果顶部的 AI 生成摘要",
+  "Local Pack — map with local business listings":
+    "本地包——带有本地商家列表的地图",
+  "Knowledge Panel — info box about an entity":
+    "知识面板——关于某个实体的信息框",
+  "Video — video results shown in the SERP": "视频——SERP 中展示的视频结果",
+  "Images — image results shown in the SERP": "图片——SERP 中展示的图片结果",
+  "Shopping — product listings with prices": "购物——带价格的产品列表",
+  "Top Stories — news articles carousel": "头条新闻——新闻文章轮播",
 } satisfies Record<string, string>;

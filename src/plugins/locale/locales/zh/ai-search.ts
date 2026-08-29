@@ -173,4 +173,8 @@ export const aiSearchZh = {
   "{count} recent {noun}s": "最近 {count} 次{noun}",
   lookup: "查询",
   prompt: "提示词",
+
+  // Brand lookup target type (src/client/features/ai-search/components/BrandLookupResults.tsx)
+  domain: "域名",
+  keyword: "关键词",
 } satisfies Record<string, string>;

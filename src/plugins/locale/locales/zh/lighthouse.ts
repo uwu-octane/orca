@@ -39,4 +39,14 @@ export const lighthouseZh = {
   Category: "类别",
   Impact: "影响",
   Score: "得分",
+
+  // Issue row values (src/client/features/lighthouse/issues/LighthouseIssueRow.tsx)
+  critical: "严重",
+  warning: "警告",
+  info: "信息",
+  performance: "性能",
+  accessibility: "无障碍",
+  "best-practices": "最佳实践",
+  seo: "SEO",
+  "Affected items ({count})": "受影响项目 ({count})",
 } satisfies Record<string, string>;

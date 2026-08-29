@@ -168,7 +168,7 @@ function IssueRow({ group }: { group: IssueGroup }) {
           className={`size-2 shrink-0 rounded-full ${SEVERITY_DOT[group.severity]}`}
         />
         <span className="text-sm font-medium flex-1 min-w-0 truncate">
-          {group.title}
+          {t(group.title)}
         </span>
         <span className="text-xs tabular-nums text-base-content/50 shrink-0">
           {t("{count} {unit}", {
@@ -187,13 +187,13 @@ function IssueRow({ group }: { group: IssueGroup }) {
         <div className="pl-9 pr-4 pb-4 pt-0.5 space-y-3">
           {group.explanation && (
             <p className="text-sm text-base-content/70 max-w-prose">
-              {group.explanation}
+              {t(group.explanation)}
             </p>
           )}
           {group.howToFix && (
             <p className="text-sm max-w-prose">
               <span className="font-medium">{t("How to fix:")}</span>{" "}
-              <span className="text-base-content/80">{group.howToFix}</span>
+              <span className="text-base-content/80">{t(group.howToFix)}</span>
             </p>
           )}
           <AffectedUrlList issues={group.issues} />
