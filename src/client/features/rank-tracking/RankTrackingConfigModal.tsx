@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useLocale } from "@/plugins/client/context";
 import { toast } from "sonner";
 import { Info, Loader2, X } from "lucide-react";
 import { Modal } from "@/client/components/Modal";
@@ -36,6 +37,7 @@ export function RankTrackingConfigModal({
   onSaved,
   onConfigCreated,
 }: Props) {
+  const { t } = useLocale();
   const projectMarket = useProjectMarket(projectId);
 
   if (!existingConfig && !projectMarket) {
@@ -46,7 +48,7 @@ export function RankTrackingConfigModal({
         labelledBy="rank-config-modal-title"
       >
         <h2 id="rank-config-modal-title" className="sr-only">
-          Add Domain
+          {t("Add Domain")}
         </h2>
         <div className="flex min-h-40 items-center justify-center">
           <Loader2 className="size-5 animate-spin text-base-content/50" />
@@ -75,6 +77,7 @@ function RankTrackingConfigModalContent({
   onSaved,
   onConfigCreated,
 }: Props & { initialMarket: ProjectMarket }) {
+  const { t } = useLocale();
   const isEdit = !!existingConfig;
   const [step, setStep] = useState<"config" | "keywords">("config");
   const [domain, setDomain] = useState(existingConfig?.domain ?? "");
@@ -128,16 +131,16 @@ function RankTrackingConfigModalContent({
     e.preventDefault();
     if (isPending) return;
     if (!domain.trim()) {
-      toast.error("Please enter a domain");
+      toast.error(t("Please enter a domain"));
       return;
     }
     if (targetingMode === "local" && !locationName) {
-      toast.error("Please select a city or region for local targeting");
+      toast.error(t("Please select a city or region for local targeting"));
       return;
     }
     const parsedDomain = domainField.safeParse(domain);
     if (!parsedDomain.success) {
-      toast.error("Please enter a valid domain");
+      toast.error(t("Please enter a valid domain"));
       return;
     }
     setDomain(parsedDomain.data);
@@ -187,7 +190,7 @@ function RankTrackingConfigModalContent({
     >
       <div className="flex items-center justify-between">
         <h2 id="rank-config-modal-title" className="text-lg font-semibold">
-          {isEdit ? "Edit Domain Config" : "Add Domain"}
+          {isEdit ? t("Edit Domain Config") : t("Add Domain")}
         </h2>
         <button className="btn btn-ghost btn-sm btn-square" onClick={onClose}>
           <X className="size-4" />
@@ -197,7 +200,7 @@ function RankTrackingConfigModalContent({
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="form-control">
           <label className="label">
-            <span className="label-text font-medium">Target Domain</span>
+            <span className="label-text font-medium">{t("Target Domain")}</span>
           </label>
           <input
             type="text"
@@ -211,7 +214,7 @@ function RankTrackingConfigModalContent({
 
         <div className="form-control">
           <label className="label">
-            <span className="label-text font-medium">Country</span>
+            <span className="label-text font-medium">{t("Country")}</span>
           </label>
           <LocationSelect
             value={locationCode}
@@ -234,7 +237,7 @@ function RankTrackingConfigModalContent({
 
         <div className="form-control">
           <label className="label">
-            <span className="label-text font-medium">Language</span>
+            <span className="label-text font-medium">{t("Language")}</span>
           </label>
           <select
             className="select select-bordered w-full"
@@ -248,14 +251,15 @@ function RankTrackingConfigModalContent({
             ))}
           </select>
           <div className="mt-1.5 text-xs text-base-content/50">
-            Defaults to the country's language. Any language can be tracked in
-            any country — pick the one your customers search in.
+            {t(
+              "Defaults to the country's language. Any language can be tracked in any country — pick the one your customers search in.",
+            )}
           </div>
         </div>
 
         <div className="form-control">
           <label className="label">
-            <span className="label-text font-medium">Devices</span>
+            <span className="label-text font-medium">{t("Devices")}</span>
           </label>
           <select
             className="select select-bordered w-full"
@@ -271,19 +275,20 @@ function RankTrackingConfigModalContent({
               }
             }}
           >
-            <option value="both">Desktop + Mobile</option>
-            <option value="desktop">Desktop only</option>
-            <option value="mobile">Mobile only</option>
+            <option value="both">{t("Desktop + Mobile")}</option>
+            <option value="desktop">{t("Desktop only")}</option>
+            <option value="mobile">{t("Mobile only")}</option>
           </select>
           <div className="mt-1.5 text-xs text-base-content/50">
-            Most Google searches come from mobile, but select this based on your
-            customer.
+            {t(
+              "Most Google searches come from mobile, but select this based on your customer.",
+            )}
           </div>
           {devices === "both" && (
             <div className="mt-1.5 flex items-start gap-1.5 text-xs text-info">
               <Info className="size-3.5 shrink-0 mt-0.5" />
               <span>
-                Tracking both devices uses 2x credits per keyword check
+                {t("Tracking both devices uses 2x credits per keyword check")}
               </span>
             </div>
           )}
@@ -291,7 +296,7 @@ function RankTrackingConfigModalContent({
 
         <div className="form-control">
           <label className="label">
-            <span className="label-text font-medium">Schedule</span>
+            <span className="label-text font-medium">{t("Schedule")}</span>
           </label>
           <select
             className="select select-bordered w-full"
@@ -308,22 +313,22 @@ function RankTrackingConfigModalContent({
               }
             }}
           >
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly (end of month)</option>
-            <option value="manual">Manual only</option>
+            <option value="daily">{t("Daily")}</option>
+            <option value="weekly">{t("Weekly")}</option>
+            <option value="monthly">{t("Monthly (end of month)")}</option>
+            <option value="manual">{t("Manual only")}</option>
           </select>
           {schedule === "daily" && (
             <div className="mt-1.5 flex items-start gap-1.5 text-xs text-warning">
               <Info className="size-3.5 shrink-0 mt-0.5" />
-              <span>Daily checks use 7x more credits than weekly</span>
+              <span>{t("Daily checks use 7x more credits than weekly")}</span>
             </div>
           )}
         </div>
 
         <div className="form-control">
           <label className="label">
-            <span className="label-text font-medium">Search Depth</span>
+            <span className="label-text font-medium">{t("Search Depth")}</span>
           </label>
           <select
             className="select select-bordered w-full"
@@ -332,13 +337,17 @@ function RankTrackingConfigModalContent({
           >
             {Array.from({ length: 10 }, (_, i) => i + 1).map((pages) => (
               <option key={pages} value={pages}>
-                {pages} {pages === 1 ? "page" : "pages"} (top {pages * 10}{" "}
-                results)
+                {t(
+                  pages === 1
+                    ? "{count} page (top {top} results)"
+                    : "{count} pages (top {top} results)",
+                  { count: pages, top: pages * 10 },
+                )}
               </option>
             ))}
           </select>
           <div className="mt-1.5 text-xs text-base-content/50">
-            10 pages is ~8x more expensive than 1 page
+            {t("10 pages is ~8x more expensive than 1 page")}
           </div>
         </div>
 
@@ -359,15 +368,15 @@ function RankTrackingConfigModalContent({
                 <span className="font-mono font-semibold text-base-content">
                   ~${costPerKeyword.toFixed(4)}
                 </span>{" "}
-                per keyword per check
+                {t("per keyword per check")}
               </div>
               {schedule !== "manual" && (
                 <div>
-                  50 keywords would cost{" "}
+                  {t("50 keywords would cost")}{" "}
                   <span className="font-mono font-semibold text-base-content">
                     ~${(costPerKeyword * 50 * checksPerMonth).toFixed(2)}
                   </span>
-                  /month
+                  {t("/month")}
                 </div>
               )}
             </div>
@@ -380,7 +389,7 @@ function RankTrackingConfigModalContent({
             className="btn btn-ghost btn-sm"
             onClick={onClose}
           >
-            Cancel
+            {t("Cancel")}
           </button>
           <button
             type="submit"
@@ -388,7 +397,7 @@ function RankTrackingConfigModalContent({
             disabled={isPending || !domain.trim()}
           >
             {isPending && <Loader2 className="size-3.5 animate-spin" />}
-            {isEdit ? "Save Changes" : "Add Domain"}
+            {isEdit ? t("Save Changes") : t("Add Domain")}
           </button>
         </div>
       </form>

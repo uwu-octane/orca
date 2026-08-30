@@ -1,3 +1,7 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
+import type { T } from "@/plugins/locale";
+import { useLocale } from "@/plugins/client/context";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { buildCsv, downloadCsv } from "@/client/lib/csv";
@@ -35,6 +39,7 @@ const FEATURE_TOOLTIPS: Record<string, string> = {
 };
 
 export function SerpFeatureTags({ features }: { features: string[] }) {
+  const { t } = useLocale();
   const notable = features.filter((f) => f in FEATURE_SHORT_LABELS);
   if (notable.length === 0) return null;
   return (
@@ -43,10 +48,10 @@ export function SerpFeatureTags({ features }: { features: string[] }) {
         <span
           key={f}
           className="badge badge-xs gap-0.5 cursor-help bg-base-300 border-0 text-base-content/70"
-          title={FEATURE_TOOLTIPS[f] ?? f}
+          title={t(FEATURE_TOOLTIPS[f] ?? f)}
         >
           {f === "ai_overview" && <Sparkles className="size-2.5" />}
-          {FEATURE_SHORT_LABELS[f]}
+          {t(FEATURE_SHORT_LABELS[f])}
         </span>
       ))}
     </div>
@@ -129,10 +134,13 @@ export function DeviceUrlCell({
   );
 }
 
-const compactFormatter = new Intl.NumberFormat("en-US", {
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
+const compactFormatter = new Intl.NumberFormat(
+  getIntlLocale(readActiveLocale()),
+  {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  },
+);
 
 export function VolumeCell({ value }: { value: number | null }) {
   if (value == null) return <span className="text-base-content/40">-</span>;
@@ -232,7 +240,8 @@ export function exportRankTrackingToSheets(
   sorted: RankTrackingRow[],
   showDesktop: boolean,
   showMobile: boolean,
-  locationName?: string | null,
+  locationName: string | null | undefined,
+  t?: T,
 ) {
   const { headers, rows } = buildRankTrackingExport(
     sorted,
@@ -240,18 +249,20 @@ export function exportRankTrackingToSheets(
     showMobile,
     locationName,
   );
-  void exportTableToSheets({ headers, rows, feature: "rank_tracking" });
+  void exportTableToSheets({ headers, rows, feature: "rank_tracking", t });
 }
 
-export function exportRankTrackingCsv(
-  sorted: RankTrackingRow[],
-  showDesktop: boolean,
-  showMobile: boolean,
-  domain: string,
-  locationName?: string | null,
-) {
+export function exportRankTrackingCsv(opts: {
+  sorted: RankTrackingRow[];
+  showDesktop: boolean;
+  showMobile: boolean;
+  domain: string;
+  locationName?: string | null;
+  t?: T;
+}) {
+  const { sorted, showDesktop, showMobile, domain, locationName, t } = opts;
   if (sorted.length === 0) {
-    toast.error("No data to export");
+    toast.error(t ? t("No data to export") : "No data to export");
     return;
   }
   const { headers, rows } = buildRankTrackingExport(

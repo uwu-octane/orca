@@ -6,9 +6,12 @@ import {
   deleteSavedKeywordTag,
   updateSavedKeywordTag,
 } from "@/serverFunctions/keywords";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type { TagColorKey } from "@/shared/tag-colors";
 
 export function useTagManage(projectId: string) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [busyTagIds, setBusyTagIds] = useState<Set<string>>(new Set());
 
@@ -40,9 +43,9 @@ export function useTagManage(projectId: string) {
         },
       });
       await invalidate();
-      toast.success("Tag updated");
+      toast.success(t("Tag updated"));
     } catch (error) {
-      toast.error(getStandardErrorMessage(error, "Could not update tag"));
+      toast.error(getStandardErrorMessage(error, t("Could not update tag"), t));
     } finally {
       markBusy(input.tagId, false);
     }
@@ -53,13 +56,14 @@ export function useTagManage(projectId: string) {
     try {
       await deleteSavedKeywordTag({ data: { projectId, tagId } });
       await invalidate();
-      toast.success("Tag deleted");
+      toast.success(t("Tag deleted"));
       return true;
     } catch (error) {
       toast.error(
         getStandardErrorMessage(
           error,
-          "Could not delete tag. Detach it from all keywords and try again.",
+          t("Could not delete tag. Detach it from all keywords and try again."),
+          t,
         ),
       );
       return false;

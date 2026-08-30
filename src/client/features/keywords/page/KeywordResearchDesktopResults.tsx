@@ -37,6 +37,7 @@ import {
   TableBulkActionButton,
   TableBulkExportMenu,
 } from "@/client/components/table/TableBulkActionBar";
+import { useLocale } from "@/plugins/client/context";
 
 const MONTH_SHORT_LABELS = [
   "Jan",
@@ -87,6 +88,7 @@ export function KeywordResearchDesktopResults({ controller }: Props) {
 }
 
 function DesktopKeywordPanel({ controller }: Props) {
+  const { t } = useLocale();
   const {
     lastResultSource,
     lastUsedFallback,
@@ -101,13 +103,17 @@ function DesktopKeywordPanel({ controller }: Props) {
           className="rounded-lg border border-warning/40 bg-warning/15 px-3 py-2 text-sm text-base-content"
           role="status"
         >
-          No exact match for{" "}
-          <span className="font-medium">"{searchedKeyword}"</span>. Showing
-          closest related keywords instead.
+          {t(
+            'No exact match for "{keyword}". Showing closest related keywords instead.',
+            {
+              keyword: searchedKeyword,
+            },
+          )}
           {lastUsedFallback ? (
             <span className="text-base-content/75">
-              {" "}
-              Source: {lastResultSource} fallback.
+              {t("Source: {source} fallback.", {
+                source: lastResultSource,
+              })}
             </span>
           ) : null}
         </div>
@@ -121,6 +127,7 @@ function DesktopKeywordPanel({ controller }: Props) {
 }
 
 function DesktopTableCard({ controller }: Props) {
+  const { t } = useLocale();
   const {
     activeFilterCount,
     filteredRows,
@@ -134,10 +141,16 @@ function DesktopTableCard({ controller }: Props) {
 
   const keywordCountLabel =
     selectedRows.size > 0
-      ? `${selectedRows.size} of ${filteredRows.length} selected`
+      ? t("{selected} of {total} selected", {
+          selected: selectedRows.size,
+          total: filteredRows.length,
+        })
       : activeFilterCount > 0
-        ? `Showing ${filteredRows.length} of ${rows.length} keywords`
-        : `Showing ${filteredRows.length} keywords`;
+        ? t("Showing {filtered} of {total} keywords", {
+            filtered: filteredRows.length,
+            total: rows.length,
+          })
+        : t("Showing {count} keywords", { count: filteredRows.length });
 
   const canExport = filteredRows.length > 0;
   const selectedExportRows = filteredRows
@@ -148,6 +161,7 @@ function DesktopTableCard({ controller }: Props) {
       headers: KEYWORD_RESEARCH_HEADERS,
       rows: sheetsExportRows,
       feature: "keyword_research",
+      t,
     });
   };
   const handleExportSelectionToSheets = () => {
@@ -155,6 +169,7 @@ function DesktopTableCard({ controller }: Props) {
       headers: KEYWORD_RESEARCH_HEADERS,
       rows: selectedExportRows,
       feature: "keyword_research",
+      t,
     });
   };
   const handleExportSelectionCsv = () => {
@@ -172,10 +187,10 @@ function DesktopTableCard({ controller }: Props) {
         <button
           className={`btn btn-ghost btn-sm gap-1.5 ${showFilters ? "btn-active" : ""}`}
           onClick={() => controller.setShowFilters((current) => !current)}
-          title="Toggle table filters"
+          title={t("Toggle table filters")}
         >
           <SlidersHorizontal className="size-3.5" />
-          Filters
+          {t("Filters")}
           {activeFilterCount > 0 ? (
             <span className="badge badge-xs badge-primary border-0 text-primary-content">
               {activeFilterCount}
@@ -193,7 +208,7 @@ function DesktopTableCard({ controller }: Props) {
             className={`btn btn-ghost btn-sm gap-1 ${!canExport ? "btn-disabled" : ""}`}
           >
             <Download className="size-3.5" />
-            <span className="hidden lg:inline">Export</span>
+            <span className="hidden lg:inline">{t("Export")}</span>
             <ChevronDown className="size-3 opacity-60" />
           </div>
           <ul
@@ -203,13 +218,13 @@ function DesktopTableCard({ controller }: Props) {
             <li>
               <button onClick={handleExportToSheets} disabled={!canExport}>
                 <Sheet className="size-4" />
-                Export to Sheets
+                {t("Export to Sheets")}
               </button>
             </li>
             <li>
               <button onClick={controller.exportCsv} disabled={!canExport}>
                 <FileDown className="size-4" />
-                Export CSV
+                {t("Export CSV")}
               </button>
             </li>
           </ul>
@@ -225,17 +240,17 @@ function DesktopTableCard({ controller }: Props) {
               icon={<Save className="size-3.5" />}
               onClick={controller.handleSaveKeywords}
             >
-              Save Keywords
+              {t("Save Keywords")}
             </TableBulkActionButton>
             <TableBulkExportMenu
               actions={[
                 {
-                  label: "Export to Sheets",
+                  label: t("Export to Sheets"),
                   icon: <Sheet className="size-4" />,
                   onClick: handleExportSelectionToSheets,
                 },
                 {
-                  label: "Export CSV",
+                  label: t("Export CSV"),
                   icon: <FileDown className="size-4" />,
                   onClick: handleExportSelectionCsv,
                 },
@@ -272,16 +287,17 @@ function DesktopTableCard({ controller }: Props) {
 }
 
 function DesktopFilters({ controller }: Props) {
+  const { t } = useLocale();
   const { activeFilterCount, filtersForm } = controller;
 
   return (
     <div className="shrink-0 border-b border-base-300 bg-gradient-to-b from-base-100 to-base-200/30 px-4 py-3 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold">Refine table results</p>
+          <p className="text-sm font-semibold">{t("Refine table results")}</p>
           {activeFilterCount > 0 ? (
             <span className="badge badge-xs badge-primary border-0 text-primary-content">
-              {activeFilterCount} active
+              {t("{count} active", { count: activeFilterCount })}
             </span>
           ) : null}
         </div>
@@ -291,7 +307,7 @@ function DesktopFilters({ controller }: Props) {
           disabled={activeFilterCount === 0}
         >
           <RotateCcw className="size-3" />
-          Clear all
+          {t("Clear all")}
         </button>
       </div>
 
@@ -299,34 +315,34 @@ function DesktopFilters({ controller }: Props) {
         <FilterTextInput
           form={filtersForm}
           name="include"
-          label="Include Terms"
-          placeholder="audit, checker, template"
+          label={t("Include Terms")}
+          placeholder={t("audit, checker, template")}
         />
         <FilterTextInput
           form={filtersForm}
           name="exclude"
-          label="Exclude Terms"
-          placeholder="jobs, salary, course"
+          label={t("Exclude Terms")}
+          placeholder={t("jobs, salary, course")}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-3">
         <FilterRangeInputs
           form={filtersForm}
-          title="Search Volume"
+          title={t("Search Volume")}
           minName="minVol"
           maxName="maxVol"
         />
         <FilterRangeInputs
           form={filtersForm}
-          title="CPC (USD)"
+          title={t("CPC (USD)")}
           minName="minCpc"
           maxName="maxCpc"
           step="0.01"
         />
         <FilterRangeInputs
           form={filtersForm}
-          title="Difficulty"
+          title={t("Difficulty")}
           minName="minKd"
           maxName="maxKd"
         />
@@ -338,17 +354,18 @@ function DesktopFilters({ controller }: Props) {
 }
 
 function DesktopSerpPanel({ controller }: Props) {
+  const { t } = useLocale();
   const { overviewKeyword } = controller;
   const trendRangeLabel = overviewKeyword
     ? formatTrendRangeLabel(overviewKeyword.trend)
-    : "Last 12 available months";
+    : t("Last 12 available months");
 
   return (
     <div className="order-1 xl:order-2 flex flex-col min-w-0 gap-2 xl:basis-2/5 xl:overflow-y-auto">
       {overviewKeyword && overviewKeyword.trend.length > 0 ? (
         <div className="shrink-0 overflow-hidden border border-base-300 rounded-xl bg-base-100 px-4 py-3">
           <h4 className="text-sm font-semibold mb-1">
-            Search Trends{" "}
+            {t("Search Trends")}{" "}
             <span className="font-normal text-base-content/50">
               {trendRangeLabel}
             </span>
@@ -361,7 +378,7 @@ function DesktopSerpPanel({ controller }: Props) {
         <div className="shrink-0 px-4 py-3 border-b border-base-300">
           <h3 className="text-sm font-semibold flex items-center gap-1.5">
             <Globe className="size-3.5" />
-            SERP Analysis
+            {t("SERP Analysis")}
             {controller.activeSerpKeyword ? (
               <span className="font-normal text-base-content/50 truncate">
                 : {controller.activeSerpKeyword}

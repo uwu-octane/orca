@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { AlertTriangle, ExternalLink } from "lucide-react";
 import { Sidebar } from "@/client/components/Sidebar";
 import { dataforseoHelpLinkOptions } from "@/client/navigation/items";
+// FORK: locale plugin — drawer and modal chrome translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 function SeoApiStatusBanners({
   shouldShowSeoApiWarning,
@@ -11,6 +13,7 @@ function SeoApiStatusBanners({
   shouldShowSeoApiWarning: boolean;
   seoApiKeyStatusError: boolean;
 }) {
+  const { t } = useLocale();
   return (
     <>
       {shouldShowSeoApiWarning ? (
@@ -19,15 +22,16 @@ function SeoApiStatusBanners({
             <div className="alert alert-warning">
               <AlertTriangle className="size-4 shrink-0" />
               <span className="text-sm">
-                Setup needed: add your DataForSEO API key to use OpenSEO
-                features. See the quick steps on the{" "}
+                {t(
+                  "Setup needed: add your DataForSEO API key to use OpenSEO features. See the quick steps on the",
+                )}{" "}
                 <Link
                   {...dataforseoHelpLinkOptions}
                   className="link link-primary font-medium"
                 >
-                  help page
+                  {t("help page")}
                 </Link>
-                .
+                {t(".")}
               </span>
             </div>
           </div>
@@ -40,15 +44,16 @@ function SeoApiStatusBanners({
             <div className="alert alert-info">
               <AlertTriangle className="size-4 shrink-0" />
               <span className="text-sm">
-                We could not verify your DataForSEO setup. If features are not
-                working, check the setup steps on the{" "}
+                {t(
+                  "We could not verify your DataForSEO setup. If features are not working, check the setup steps on the",
+                )}{" "}
                 <Link
                   {...dataforseoHelpLinkOptions}
                   className="link link-primary font-medium"
                 >
-                  help page
+                  {t("help page")}
                 </Link>
-                .
+                {t(".")}
               </span>
             </div>
           </div>
@@ -67,13 +72,14 @@ function MobileSidebarDrawer({
   projectId: string | null;
   onClose: () => void;
 }) {
+  const { t } = useLocale();
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 md:hidden">
       <button
         type="button"
-        aria-label="Close sidebar"
+        aria-label={t("Close sidebar")}
         className="absolute inset-0 bg-black/45"
         onClick={onClose}
       />
@@ -91,6 +97,7 @@ const MissingSeoSetupModal = React.forwardRef<
     onClose: () => void;
   }
 >(({ isOpen, onClose }, ref) => {
+  const { t } = useLocale();
   if (!isOpen) return null;
 
   return (
@@ -113,27 +120,27 @@ const MissingSeoSetupModal = React.forwardRef<
               id="dataforseo-setup-title"
               className="text-lg font-semibold text-base-content"
             >
-              One quick setup step
+              {t("One quick setup step")}
             </h2>
             <p
               id="dataforseo-setup-description"
               className="text-sm text-base-content/75"
             >
-              Add your DataForSEO API key to start using OpenSEO.
+              {t("Add your DataForSEO API key to start using OpenSEO.")}
             </p>
           </div>
         </div>
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button type="button" className="btn btn-ghost" onClick={onClose}>
-            Dismiss
+            {t("Dismiss")}
           </button>
           <Link
             {...dataforseoHelpLinkOptions}
             className="btn btn-primary"
             onClick={onClose}
           >
-            Open setup guide
+            {t("Open setup guide")}
             <ExternalLink className="size-4" />
           </Link>
         </div>

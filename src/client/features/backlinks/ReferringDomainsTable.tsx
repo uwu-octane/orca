@@ -1,6 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import type { OnChangeFn, SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
+import { useLocale } from "@/plugins/client/context";
 import { SafeExternalLink } from "@/client/components/SafeExternalLink";
 import {
   AppDataTable,
@@ -26,7 +27,7 @@ const baseColumns = [
   columnHelper.accessor("domain", {
     id: "domain" satisfies ReferringDomainsSortField,
     header: ({ column }) => (
-      <SortableHeader
+      <LocalizedSortableHeader
         column={column}
         label="Domain"
         helpText="The referring site linking to your target."
@@ -47,7 +48,7 @@ const baseColumns = [
   columnHelper.accessor("backlinks", {
     id: "backlinks" satisfies ReferringDomainsSortField,
     header: ({ column }) => (
-      <SortableHeader
+      <LocalizedSortableHeader
         column={column}
         label="Backlinks"
         helpText="Total backlinks found from this domain."
@@ -59,7 +60,7 @@ const baseColumns = [
   columnHelper.accessor("referringPages", {
     id: "referringPages" satisfies ReferringDomainsSortField,
     header: ({ column }) => (
-      <SortableHeader
+      <LocalizedSortableHeader
         column={column}
         label="Referring Pages"
         helpText="Unique pages on this domain that link to your target."
@@ -71,7 +72,7 @@ const baseColumns = [
   columnHelper.accessor("rank", {
     id: "rank" satisfies ReferringDomainsSortField,
     header: ({ column }) => (
-      <SortableHeader
+      <LocalizedSortableHeader
         column={column}
         label="Rank"
         helpText="Authority score for the referring domain."
@@ -83,7 +84,7 @@ const baseColumns = [
   columnHelper.accessor("spamScore", {
     id: "spamScore" satisfies ReferringDomainsSortField,
     header: ({ column }) => (
-      <SortableHeader
+      <LocalizedSortableHeader
         column={column}
         label="Spam"
         helpText="Spam risk score for this referring domain."
@@ -95,7 +96,7 @@ const baseColumns = [
   columnHelper.accessor("firstSeen", {
     id: "firstSeen" satisfies ReferringDomainsSortField,
     header: ({ column }) => (
-      <SortableHeader
+      <LocalizedSortableHeader
         column={column}
         label="First Seen"
         helpText="When this domain was first discovered linking to your target."
@@ -107,20 +108,13 @@ const baseColumns = [
   columnHelper.accessor("brokenBacklinks", {
     id: "brokenBacklinks" satisfies ReferringDomainsSortField,
     header: ({ column }) => (
-      <SortableHeader
+      <LocalizedSortableHeader
         column={column}
         label="Issues"
         helpText="Broken link and broken page counts tied to this domain."
       />
     ),
-    cell: ({ row }) => (
-      <div className="text-sm">
-        <div>Broken links: {formatNumber(row.original.brokenBacklinks)}</div>
-        <div className="text-base-content/55">
-          Broken pages: {formatNumber(row.original.brokenPages)}
-        </div>
-      </div>
-    ),
+    cell: ({ row }) => <BrokenLinksCell row={row.original} />,
     sortDescFirst: true,
   }),
 ];
@@ -138,7 +132,7 @@ function buildReferringDomainColumns(domainRatings: DomainRatings | null) {
   const drColumn = columnHelper.display({
     id: "ahrefsDr",
     header: () => (
-      <HeaderHelpLabel
+      <LocalizedHelpLabel
         label="Ahrefs DR"
         helpText="Ahrefs Domain Rating (0-100) for this referring domain."
       />
@@ -177,6 +171,7 @@ export function ReferringDomainsTable({
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
 }) {
+  const { t } = useLocale();
   const columns = useMemo(
     () => buildReferringDomainColumns(domainRatings),
     [domainRatings],
@@ -191,7 +186,9 @@ export function ReferringDomainsTable({
   });
 
   if (rows.length === 0) {
-    return <EmptyTableState label="No referring domains match this filter." />;
+    return (
+      <EmptyTableState label={t("No referring domains match this filter.")} />
+    );
   }
 
   return (
@@ -201,5 +198,47 @@ export function ReferringDomainsTable({
         columnId === "domain" ? "font-medium break-all" : undefined
       }
     />
+  );
+}
+
+function BrokenLinksCell({ row }: { row: ReferringDomainRow }) {
+  const { t } = useLocale();
+  return (
+    <div className="text-sm">
+      <div>
+        {t("Broken links: {count}", {
+          count: formatNumber(row.brokenBacklinks),
+        })}
+      </div>
+      <div className="text-base-content/55">
+        {t("Broken pages: {count}", { count: formatNumber(row.brokenPages) })}
+      </div>
+    </div>
+  );
+}
+
+function LocalizedHelpLabel({
+  label,
+  helpText,
+}: {
+  label: string;
+  helpText: string;
+}) {
+  const { t } = useLocale();
+  return <HeaderHelpLabel label={t(label)} helpText={t(helpText)} />;
+}
+
+function LocalizedSortableHeader({
+  column,
+  label,
+  helpText,
+}: {
+  column: Parameters<typeof SortableHeader>[0]["column"];
+  label: string;
+  helpText: string;
+}) {
+  const { t } = useLocale();
+  return (
+    <SortableHeader column={column} label={t(label)} helpText={t(helpText)} />
   );
 }

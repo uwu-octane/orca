@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Archive, Loader2, Plus, X } from "lucide-react";
+import { useLocale } from "@/plugins/client/context";
 import { archiveSamSession, createSamSession } from "@/serverFunctions/sam";
 import {
   invalidateSamSessions,
@@ -14,6 +15,7 @@ const BETA_NOTICE_DISMISSED_KEY = "sam-beta-notice-dismissed";
 // tab. Dismissible per browser; localStorage is read in an effect so SSR and
 // the first client render stay identical (same pattern as AppShell).
 function BetaNotice() {
+  const { t } = useLocale();
   const [dismissed, setDismissed] = useState(true);
   useEffect(() => {
     setDismissed(localStorage.getItem(BETA_NOTICE_DISMISSED_KEY) === "1");
@@ -23,10 +25,10 @@ function BetaNotice() {
   return (
     <div className="mx-2 mb-2 rounded-lg border border-base-300 bg-base-100 p-3">
       <div className="flex items-center justify-between">
-        <span className="badge badge-primary badge-sm">Beta</span>
+        <span className="badge badge-primary badge-sm">{t("Beta")}</span>
         <button
           type="button"
-          aria-label="Dismiss"
+          aria-label={t("Dismiss")}
           className="btn btn-ghost btn-xs btn-square text-base-content/40"
           onClick={() => {
             localStorage.setItem(BETA_NOTICE_DISMISSED_KEY, "1");
@@ -37,11 +39,12 @@ function BetaNotice() {
         </button>
       </div>
       <p className="mt-1.5 text-xs text-base-content/70">
-        For more powerful AI workflows, use the OpenSEO MCP with your own agent
-        like Claude Code or Hermes.
+        {t(
+          "For more powerful AI workflows, use the OpenSEO MCP with your own agent like Claude Code or Hermes.",
+        )}
       </p>
       <Link to="/ai" className="link link-primary mt-1.5 inline-block text-xs">
-        Set up the MCP →
+        {t("Set up the MCP →")}
       </Link>
     </div>
   );
@@ -73,6 +76,7 @@ export function SamSidebarPanel({
   projectId: string;
   onNavigate?: () => void;
 }) {
+  const { t } = useLocale();
   const navigate = useNavigate();
   const location = useLocation();
   const activeSessionId = (location.search as { s?: string }).s;
@@ -124,7 +128,7 @@ export function SamSidebarPanel({
           ) : (
             <Plus className="size-4" />
           )}
-          New chat
+          {t("New chat")}
         </button>
       </div>
 
@@ -135,7 +139,7 @@ export function SamSidebarPanel({
           </div>
         ) : sessions.length === 0 ? (
           <p className="px-2 py-6 text-center text-xs text-base-content/50">
-            No chats yet. Start a new one.
+            {t("No chats yet. Start a new one.")}
           </p>
         ) : (
           sessions.map((session) => {
@@ -159,7 +163,7 @@ export function SamSidebarPanel({
                 </span>
                 <button
                   type="button"
-                  aria-label="Archive chat"
+                  aria-label={t("Archive chat")}
                   className="btn btn-ghost btn-xs btn-square hidden group-hover:inline-flex"
                   disabled={archiveSession.isPending}
                   onClick={() => archiveSession.mutate(session.id)}

@@ -1,3 +1,6 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
+import { useLocale } from "@/plugins/client/context";
 import { useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import type { RankPositionMatrixCell } from "@/serverFunctions/rank-tracking";
@@ -16,6 +19,7 @@ export function RankTrackingHistoryMatrix({
   isLoading: boolean;
   keywords: { trackingKeywordId: string; keyword: string }[];
 }) {
+  const { t } = useLocale();
   const { runs, cellByKeyword } = useMemo(() => buildMatrix(cells), [cells]);
 
   if (isLoading) {
@@ -29,7 +33,7 @@ export function RankTrackingHistoryMatrix({
   if (runs.length === 0 || keywords.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-base-300 p-10 text-center text-sm text-base-content/55">
-        No history yet. Run a check to start building the timeline.
+        {t("No history yet. Run a check to start building the timeline.")}
       </div>
     );
   }
@@ -41,7 +45,9 @@ export function RankTrackingHistoryMatrix({
           <tr>
             {/* Unconstrained keyword column absorbs the slack when only a few
                 check columns exist, so sparse history doesn't stretch oddly. */}
-            <th className="sticky left-0 z-10 bg-base-100 w-full">Keyword</th>
+            <th className="sticky left-0 z-10 bg-base-100 w-full">
+              {t("Keyword")}
+            </th>
             {runs.map((r) => (
               <th
                 key={r.runId}
@@ -138,7 +144,7 @@ function buildMatrix(cells: RankPositionMatrixCell[]): {
 }
 
 function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString("en-US", {
+  return new Date(value).toLocaleDateString(getIntlLocale(readActiveLocale()), {
     month: "short",
     day: "numeric",
   });

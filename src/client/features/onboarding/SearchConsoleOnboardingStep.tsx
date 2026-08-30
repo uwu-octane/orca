@@ -19,6 +19,7 @@ import {
   setGscSite,
 } from "@/serverFunctions/gsc";
 import { getProjects, setProjectMarket } from "@/serverFunctions/projects";
+import { useLocale } from "@/plugins/client/context";
 
 const GRANT_STATUS_KEY = ["gscGrantStatus"];
 
@@ -29,6 +30,7 @@ const GRANT_STATUS_KEY = ["gscGrantStatus"];
  * place.
  */
 export function SearchConsoleOnboardingStep() {
+  const { t } = useLocale();
   const projectsQuery = useQuery({
     queryKey: ["projects"],
     queryFn: () => getProjects(),
@@ -39,19 +41,22 @@ export function SearchConsoleOnboardingStep() {
     <div className="space-y-8">
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">
-          Connect with Google Search Console now?
+          {t("Connect with Google Search Console now?")}
         </h2>
 
         {project ? <GscConnect projectId={project.id} /> : <Checking />}
 
         <p className="hidden sm:block text-xs leading-relaxed text-base-content/55">
-          For now, Search Console data flows through the OpenSEO MCP. We're
-          building it into the OpenSEO app soon too.
+          {t(
+            "For now, Search Console data flows through the OpenSEO MCP. We're building it into the OpenSEO app soon too.",
+          )}
         </p>
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Choose country &amp; language</h2>
+        <h2 className="text-lg font-semibold">
+          {t("Choose country & language")}
+        </h2>
         {project ? <DefaultMarketPicker project={project} /> : <Checking />}
       </div>
     </div>
@@ -69,6 +74,7 @@ function DefaultMarketPicker({
 }: {
   project: { id: string; locationCode: number; languageCode: string };
 }) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [market, setMarket] = React.useState<ProjectMarket>({
     locationCode: project.locationCode,
@@ -79,7 +85,8 @@ function DefaultMarketPicker({
     mutationFn: (next: ProjectMarket) =>
       setProjectMarket({ data: { projectId: project.id, ...next } }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] }),
-    onError: (error) => toast.error(getStandardErrorMessage(error)),
+    onError: (error) =>
+      toast.error(getStandardErrorMessage(error, undefined, t)),
   });
 
   const handleChange = (next: ProjectMarket) => {
@@ -95,8 +102,9 @@ function DefaultMarketPicker({
         hideLanguageOnMobile
       />
       <p className="hidden sm:block text-xs leading-relaxed text-base-content/55">
-        We'll use this country and language for keyword, SERP, and domain data
-        unless you pick a different one. You can change it in project settings.
+        {t(
+          "We'll use this country and language for keyword, SERP, and domain data unless you pick a different one. You can change it in project settings.",
+        )}
       </p>
     </div>
   );
@@ -104,6 +112,7 @@ function DefaultMarketPicker({
 
 /** Connect + pick-a-property flow, scoped to a known project. */
 function GscConnect({ projectId }: { projectId: string }) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [selection, setSelection] = React.useState<GscSiteSelection | null>(
     null,
@@ -149,12 +158,13 @@ function GscConnect({ projectId }: { projectId: string }) {
       captureClientEvent("gsc:property_select");
       void queryClient.invalidateQueries({ queryKey: connectionKey });
     },
-    onError: (error) => toast.error(getStandardErrorMessage(error)),
+    onError: (error) =>
+      toast.error(getStandardErrorMessage(error, undefined, t)),
   });
 
   const handleConnect = () => {
     captureClientEvent("onboarding:gsc_connect_clicked");
-    void startGoogleLink("gsc", window.location.href);
+    void startGoogleLink("gsc", window.location.href, t);
   };
 
   if (connectionQuery.isLoading) return <Checking />;
@@ -170,7 +180,9 @@ function GscConnect({ projectId }: { projectId: string }) {
           <Check className="size-3.5" />
         </span>
         <span className="text-base-content/80">
-          Connected to <span className="font-mono">{connection?.siteUrl}</span>.
+          {t("Connected to {siteUrl}.", {
+            siteUrl: connection?.siteUrl ?? "",
+          })}
         </span>
       </div>
     );
@@ -199,16 +211,17 @@ function GscConnect({ projectId }: { projectId: string }) {
       className="inline-flex items-center gap-2.5 rounded-lg border border-base-300 bg-base-100 px-4 py-2.5 text-sm font-semibold text-base-content shadow-sm transition hover:bg-base-200 hover:shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
     >
       <GoogleGlyph className="size-[18px]" />
-      Connect with Google
+      {t("Connect with Google")}
     </button>
   );
 }
 
 function Checking() {
+  const { t } = useLocale();
   return (
     <div className="flex items-center gap-2 text-sm text-base-content/50">
       <span className="loading loading-spinner loading-sm" />
-      Checking…
+      {t("Checking…")}
     </div>
   );
 }

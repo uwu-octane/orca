@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Search } from "lucide-react";
+// FORK: locale plugin — country picker copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { LOCATION_OPTIONS } from "@/shared/keyword-locations";
 
 type LocationOption = (typeof LOCATION_OPTIONS)[number];
@@ -32,6 +34,7 @@ export function LocationSelect({
   options = LOCATION_OPTIONS,
   className = "w-full",
 }: Props) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -112,7 +115,9 @@ export function LocationSelect({
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
       >
-        <span className="truncate">{selected?.label ?? "Select country"}</span>
+        <span className="truncate">
+          {selected?.label ?? t("Select country")}
+        </span>
       </button>
 
       {open ? (
@@ -123,7 +128,7 @@ export function LocationSelect({
               ref={inputRef}
               type="text"
               className="grow min-w-0 bg-transparent text-sm outline-none placeholder:text-base-content/40"
-              placeholder="Search countries"
+              placeholder={t("Search countries")}
               value={query}
               onChange={(event) => {
                 setQuery(event.target.value);
@@ -140,7 +145,9 @@ export function LocationSelect({
           >
             {filtered.length === 0 ? (
               <li className="w-full break-all px-3 py-2 text-sm text-base-content/50">
-                No countries match “{query.trim()}”
+                {t("No countries match “{query}”", {
+                  query: query.trim(),
+                })}
               </li>
             ) : (
               filtered.map((option, index) => {

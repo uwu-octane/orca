@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { ChevronRight } from "lucide-react";
 import { SortableHeader } from "@/client/components/table/SortableHeader";
 import { HeaderHelpLabel } from "@/client/features/keywords/components";
+import { useLocale } from "@/plugins/client/context";
 import { BacklinksSourceLink } from "./BacklinksPageLinks";
 import type { BacklinksRow } from "./backlinksPageTypes";
 import type { BacklinksRowsSortField } from "@/types/schemas/backlinks";
@@ -28,22 +29,25 @@ export type BacklinksDisplayRow =
   | { kind: "status"; domain: string; status: "loading" | "error" | "empty" };
 
 function BacklinkFlags({ row }: { row: BacklinksRow }) {
+  const { t } = useLocale();
   return (
     <div className="flex flex-wrap gap-1">
       {row.isLost ? (
-        <span className="badge badge-sm badge-error badge-outline">Lost</span>
+        <span className="badge badge-sm badge-error badge-outline">
+          {t("Lost")}
+        </span>
       ) : null}
       {row.isBroken ? (
         <span className="badge badge-sm badge-warning badge-outline">
-          Broken
+          {t("Broken")}
         </span>
       ) : null}
       {row.isDofollow === false ? (
-        <span className="badge badge-sm badge-outline">Nofollow</span>
+        <span className="badge badge-sm badge-outline">{t("Nofollow")}</span>
       ) : null}
       {row.linksCount != null && row.linksCount > 1 ? (
         <span className="badge badge-sm badge-outline min-w-fit whitespace-nowrap">
-          {row.linksCount} links
+          {t("{count} links", { count: row.linksCount })}
         </span>
       ) : null}
     </div>
@@ -51,19 +55,20 @@ function BacklinkFlags({ row }: { row: BacklinksRow }) {
 }
 
 function StatusCell({ status }: { status: "loading" | "error" | "empty" }) {
+  const { t } = useLocale();
   if (status === "loading") {
     return (
       <span className="flex items-center gap-2 pl-6 text-sm text-base-content/60">
         <span className="loading loading-spinner loading-xs" />
-        Loading links…
+        {t("Loading links…")}
       </span>
     );
   }
   return (
     <span className="pl-6 text-sm text-base-content/60">
       {status === "error"
-        ? "Couldn't load this domain's links."
-        : "No other links from this domain."}
+        ? t("Couldn't load this domain's links.")
+        : t("No other links from this domain.")}
     </span>
   );
 }
@@ -75,6 +80,7 @@ function SourceCell({
   displayRow: BacklinksDisplayRow;
   onToggleDomain?: (domain: string) => void;
 }) {
+  const { t } = useLocale();
   if (displayRow.kind === "status") {
     return <StatusCell status={displayRow.status} />;
   }
@@ -99,7 +105,12 @@ function SourceCell({
         <button
           type="button"
           className="btn btn-ghost btn-xs btn-square shrink-0 -ml-1"
-          aria-label={`${expanded ? "Hide" : "Show"} all links from ${domainLabel}`}
+          aria-label={t(
+            expanded
+              ? "Hide all links from {domain}"
+              : "Show all links from {domain}",
+            { domain: domainLabel },
+          )}
           aria-expanded={expanded}
           onClick={() => onToggleDomain(row.domainFrom ?? "")}
         >
@@ -126,6 +137,32 @@ function linkCell(
     row.original.kind === "link" ? render(row.original.row) : null;
 }
 
+function AnchorCell({ row }: { row: BacklinksRow }) {
+  const { t } = useLocale();
+  return (
+    <div className="space-y-0.5 break-words">
+      <span className="text-sm">{row.anchor || t("No anchor text")}</span>
+      {row.itemType ? (
+        <div className="text-xs text-base-content/55">{row.itemType}</div>
+      ) : null}
+    </div>
+  );
+}
+
+function FirstSeenCell({ row }: { row: BacklinksRow }) {
+  const { t } = useLocale();
+  return (
+    <div className="whitespace-nowrap text-sm">
+      <div>{formatCompactDate(row.firstSeen)}</div>
+      {row.lastSeen ? (
+        <div className="text-xs text-base-content/55">
+          {t("Last {date}", { date: formatCompactDate(row.lastSeen) })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function buildBaseColumns(
   onToggleDomain?: (domain: string) => void,
 ): ColumnDef<BacklinksDisplayRow>[] {
@@ -137,7 +174,7 @@ function buildBaseColumns(
       id: "source",
       enableSorting: false,
       header: () => (
-        <HeaderHelpLabel label="Source" helpText="Page linking to you" />
+        <LocalizedHelpLabel label="Source" helpText="Page linking to you" />
       ),
       size: 250,
       minSize: 180,
@@ -149,7 +186,10 @@ function buildBaseColumns(
       id: "target",
       enableSorting: false,
       header: () => (
-        <HeaderHelpLabel label="Target" helpText="Destination on your site" />
+        <LocalizedHelpLabel
+          label="Target"
+          helpText="Destination on your site"
+        />
       ),
       size: 220,
       minSize: 150,
@@ -167,24 +207,20 @@ function buildBaseColumns(
       id: "anchor",
       enableSorting: false,
       header: () => (
-        <HeaderHelpLabel label="Anchor" helpText="Text or format of the link" />
+        <LocalizedHelpLabel
+          label="Anchor"
+          helpText="Text or format of the link"
+        />
       ),
       size: 150,
       minSize: 100,
-      cell: linkCell((row) => (
-        <div className="space-y-0.5 break-words">
-          <span className="text-sm">{row.anchor || "No anchor text"}</span>
-          {row.itemType ? (
-            <div className="text-xs text-base-content/55">{row.itemType}</div>
-          ) : null}
-        </div>
-      )),
+      cell: linkCell((row) => <AnchorCell row={row} />),
     },
     {
       id: "flags",
       enableSorting: false,
       header: () => (
-        <HeaderHelpLabel
+        <LocalizedHelpLabel
           label="Flags"
           helpText="Special backlink attributes, such as lost, broken, nofollow, or multiple links from the same source."
         />
@@ -198,7 +234,7 @@ function buildBaseColumns(
       accessorFn: (displayRow) =>
         displayRow.kind === "link" ? displayRow.row.rank : null,
       header: ({ column }) => (
-        <SortableHeader
+        <LocalizedSortableHeader
           column={column}
           label="Link"
           helpText="Authority of the linking page"
@@ -219,7 +255,7 @@ function buildBaseColumns(
       accessorFn: (displayRow) =>
         displayRow.kind === "link" ? displayRow.row.domainFromRank : null,
       header: ({ column }) => (
-        <SortableHeader
+        <LocalizedSortableHeader
           column={column}
           label="DA"
           helpText="Authority of the linking domain"
@@ -240,7 +276,7 @@ function buildBaseColumns(
       accessorFn: (displayRow) =>
         displayRow.kind === "link" ? displayRow.row.spamScore : null,
       header: ({ column }) => (
-        <SortableHeader
+        <LocalizedSortableHeader
           column={column}
           label="Spam"
           helpText="Estimated spam risk for this backlink. Higher scores are more likely to be manipulative or low quality."
@@ -264,7 +300,7 @@ function buildBaseColumns(
       accessorFn: (displayRow) =>
         displayRow.kind === "link" ? displayRow.row.firstSeen : null,
       header: ({ column }) => (
-        <SortableHeader
+        <LocalizedSortableHeader
           column={column}
           label="First Seen"
           helpText="When this link was first discovered by the crawler"
@@ -273,16 +309,7 @@ function buildBaseColumns(
       size: 110,
       minSize: 80,
       sortDescFirst: true,
-      cell: linkCell((row) => (
-        <div className="whitespace-nowrap text-sm">
-          <div>{formatCompactDate(row.firstSeen)}</div>
-          {row.lastSeen ? (
-            <div className="text-xs text-base-content/55">
-              Last {formatCompactDate(row.lastSeen)}
-            </div>
-          ) : null}
-        </div>
-      )),
+      cell: linkCell((row) => <FirstSeenCell row={row} />),
     },
   ];
 }
@@ -306,7 +333,7 @@ export function buildBacklinksColumns(
     enableSorting: false,
     header: () => (
       <span className="flex w-full justify-end">
-        <HeaderHelpLabel
+        <LocalizedHelpLabel
           label="Ahrefs DR"
           helpText="Ahrefs Domain Rating (0-100) for the linking domain."
         />
@@ -332,4 +359,37 @@ export function buildBacklinksColumns(
     drColumn,
     ...baseColumns.slice(insertAt),
   ];
+}
+
+function LocalizedHelpLabel({
+  label,
+  helpText,
+}: {
+  label: string;
+  helpText: string;
+}) {
+  const { t } = useLocale();
+  return <HeaderHelpLabel label={t(label)} helpText={t(helpText)} />;
+}
+
+function LocalizedSortableHeader({
+  column,
+  label,
+  helpText,
+  align,
+}: {
+  column: Parameters<typeof SortableHeader>[0]["column"];
+  label: string;
+  helpText: string;
+  align?: "left" | "right";
+}) {
+  const { t } = useLocale();
+  return (
+    <SortableHeader
+      column={column}
+      label={t(label)}
+      helpText={t(helpText)}
+      align={align}
+    />
+  );
 }

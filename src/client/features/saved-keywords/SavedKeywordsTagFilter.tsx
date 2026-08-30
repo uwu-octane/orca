@@ -7,6 +7,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocale } from "@/plugins/client/context";
 import {
   resolveTagColor,
   tagDotClass,
@@ -37,6 +38,7 @@ export function SavedKeywordsTagFilter({
   onDeleteTag: (tagId: string) => void;
   busyTagIds: Set<string>;
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [managingTagId, setManagingTagId] = useState<string | null>(null);
@@ -93,7 +95,7 @@ export function SavedKeywordsTagFilter({
         onClick={() => setOpen((v) => !v)}
       >
         <TagIcon className="size-3.5 opacity-70" />
-        <span className="font-medium">Tags</span>
+        <span className="font-medium">{t("Tags")}</span>
         {hasSelection ? (
           <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-content">
             {selectedTags.length}
@@ -112,7 +114,7 @@ export function SavedKeywordsTagFilter({
               selected
               onClick={() => onToggleTagFilter(tag.id)}
               trailing={<X className="size-3 opacity-70" />}
-              title="Remove filter"
+              title={t("Remove filter")}
             />
           ))}
           <button
@@ -120,7 +122,7 @@ export function SavedKeywordsTagFilter({
             className="text-xs text-base-content/60 underline-offset-2 hover:text-base-content hover:underline"
             onClick={onClearSelection}
           >
-            Clear
+            {t("Clear")}
           </button>
         </div>
       ) : null}
@@ -181,6 +183,7 @@ function TagFilterPopover({
   onDeleteTag: (tagId: string) => void;
   onClearSelection: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="absolute right-0 top-full z-20 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-base-300 bg-base-100 shadow-2xl">
       <div className="border-b border-base-300 p-2">
@@ -190,7 +193,7 @@ function TagFilterPopover({
             autoFocus
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Search tags…"
+            placeholder={t("Search tags…")}
             className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-base-content/40"
           />
           {query ? (
@@ -209,8 +212,8 @@ function TagFilterPopover({
         {filteredTags.length === 0 ? (
           <div className="px-3 py-6 text-center text-xs text-base-content/55">
             {availableTags.length === 0
-              ? "No tags yet. Add tags from a selection of keywords."
-              : "No tags match that search."}
+              ? t("No tags yet. Add tags from a selection of keywords.")
+              : t("No tags match that search.")}
           </div>
         ) : null}
 
@@ -232,14 +235,14 @@ function TagFilterPopover({
       {selectedTagIds.length > 0 ? (
         <div className="flex items-center justify-between border-t border-base-300 px-2 py-1.5 text-xs">
           <span className="text-base-content/55">
-            {selectedTagIds.length} selected
+            {t("{count} selected", { count: selectedTagIds.length })}
           </span>
           <button
             type="button"
             className="rounded px-2 py-1 text-base-content/70 hover:bg-base-200"
             onClick={onClearSelection}
           >
-            Clear all
+            {t("Clear all")}
           </button>
         </div>
       ) : null}
@@ -266,6 +269,7 @@ function TagFilterRow({
   onUpdate: (input: { name?: string; color?: TagColorKey | null }) => void;
   onDelete: () => void;
 }) {
+  const { t } = useLocale();
   const color = resolveTagColor(tag);
   return (
     <div>
@@ -298,7 +302,7 @@ function TagFilterRow({
             isManaging ? "bg-base-300 text-base-content" : ""
           }`}
           onClick={() => onStartManaging(isManaging ? null : tag.id)}
-          aria-label={`Manage ${tag.name}`}
+          aria-label={t("Manage {tag}", { tag: tag.name })}
         >
           <MoreHorizontal className="size-3.5" />
         </button>

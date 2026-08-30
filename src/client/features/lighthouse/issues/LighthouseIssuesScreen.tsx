@@ -7,6 +7,8 @@ import {
 } from "@/serverFunctions/lighthouse";
 import { downloadFile } from "@/client/lib/download";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+// FORK: locale plugin — toasts/errors translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
 import type { CategoryTab, ExportPayload, LighthouseIssue } from "./types";
 import { categoryLabel, issuesToCsv, issuesToTable } from "./utils";
@@ -29,6 +31,7 @@ type LighthouseIssuesScreenProps = {
 export function LighthouseIssuesScreen(props: LighthouseIssuesScreenProps) {
   const { projectId, resultId, category, backLabel, onBack, onCategoryChange } =
     props;
+  const { t } = useLocale();
 
   const issuesQuery = useQuery({
     queryKey: ["auditLighthouseIssues", projectId, resultId],
@@ -72,12 +75,15 @@ export function LighthouseIssuesScreen(props: LighthouseIssuesScreenProps) {
 
   const issuesErrorMessage = getStandardErrorMessage(
     issuesQuery.error,
-    "Failed to load Lighthouse issues.",
+    t("Failed to load Lighthouse issues."),
+    t,
   );
   const showsLegacyPayloadNotice =
     issuesQuery.data != null && !issuesQuery.data.hasIssueDetails;
   const emptyMessage = showsLegacyPayloadNotice
-    ? "This audit was saved without issue-level Lighthouse details. Re-run the audit to populate this screen."
+    ? t(
+        "This audit was saved without issue-level Lighthouse details. Re-run the audit to populate this screen.",
+      )
     : undefined;
 
   return (
@@ -106,9 +112,9 @@ export function LighthouseIssuesScreen(props: LighthouseIssuesScreenProps) {
               <div className="alert alert-warning">
                 <TriangleAlert className="size-4" />
                 <span>
-                  This Lighthouse run was stored before issue details were
-                  preserved. Re-run the audit to see category counts and issue
-                  cards.
+                  {t(
+                    "This Lighthouse run was stored before issue details were preserved. Re-run the audit to see category counts and issue cards.",
+                  )}
                 </span>
               </div>
             ) : null}
@@ -155,6 +161,7 @@ function useLighthouseIssuesActions({
     ) => Promise<{ filename: string; content: string }>;
   };
 }) {
+  const { t } = useLocale();
   const visibleIssues =
     category === "all"
       ? allIssues
@@ -167,11 +174,13 @@ function useLighthouseIssuesActions({
     try {
       const exported = await exportMutation.mutateAsync(data);
       downloadFile(exported.content, exported.filename, "application/json");
-      toast.success("Download started");
+      toast.success(t("Download started"));
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to export payload";
-      toast.error(message);
+      toast.error(
+        error instanceof Error
+          ? getStandardErrorMessage(error, t("Failed to export payload"), t)
+          : t("Failed to export payload"),
+      );
     }
   };
 
@@ -181,7 +190,7 @@ function useLighthouseIssuesActions({
   ) => {
     const filename = `lighthouse-${variant}-${category}-issues.csv`;
     downloadFile(issuesToCsv(rows), filename, "text/csv");
-    toast.success("CSV download started");
+    toast.success(t("CSV download started"));
   };
 
   const runExportSheets = (
@@ -193,6 +202,7 @@ function useLighthouseIssuesActions({
       headers: table.headers,
       rows: table.rows,
       feature: `lighthouse_issues_${variant}`,
+      t,
     });
   };
 
@@ -202,9 +212,11 @@ function useLighthouseIssuesActions({
       await navigator.clipboard.writeText(exported.content);
       toast.success(toastMessage);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to copy payload";
-      toast.error(message);
+      toast.error(
+        error instanceof Error
+          ? getStandardErrorMessage(error, t("Failed to copy payload"), t)
+          : t("Failed to copy payload"),
+      );
     }
   };
 

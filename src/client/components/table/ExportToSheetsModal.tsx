@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { useLocation } from "@tanstack/react-router";
 import { Check, ExternalLink, X } from "lucide-react";
 import { Modal } from "@/client/components/Modal";
+// FORK: locale plugin — export modal copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import {
   closeExportToSheetsModal,
   openGoogleSheetsTab,
@@ -9,6 +11,7 @@ import {
 } from "@/client/lib/exportToSheets";
 
 export function ExportToSheetsModal() {
+  const { t } = useLocale();
   const state = useExportToSheetsModalState();
   // Close any stale modal when the user navigates away mid-flow. Deps must
   // be `[pathname]` only — adding `isOpen` would close the modal the instant
@@ -39,21 +42,26 @@ export function ExportToSheetsModal() {
             <Check className="size-4" />
           </span>
           <h3 id="export-to-sheets-title" className="text-base font-semibold">
-            Copied {rowCount} row{rowCount === 1 ? "" : "s"} to your clipboard
+            {t(
+              rowCount === 1
+                ? "Copied {count} row to your clipboard"
+                : "Copied {count} rows to your clipboard",
+              { count: rowCount },
+            )}
           </h3>
         </div>
         <button
           type="button"
           className="btn btn-ghost btn-xs btn-square"
           onClick={closeExportToSheetsModal}
-          aria-label="Close"
+          aria-label={t("Close")}
         >
           <X className="size-4" />
         </button>
       </div>
 
       <p className="text-sm text-base-content/75">
-        Open a new Google Sheet and paste to fill it.
+        {t("Open a new Google Sheet and paste to fill it.")}
       </p>
 
       <div className="flex justify-end">
@@ -62,7 +70,7 @@ export function ExportToSheetsModal() {
           className="btn btn-primary btn-sm gap-1.5"
           onClick={handleOpenSheet}
         >
-          Open new Google Sheet
+          {t("Open new Google Sheet")}
           <ExternalLink className="size-3.5" />
         </button>
       </div>

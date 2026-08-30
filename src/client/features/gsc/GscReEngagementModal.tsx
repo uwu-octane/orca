@@ -8,6 +8,8 @@ import { captureClientEvent } from "@/client/lib/posthog";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { getGscGrantStatus } from "@/serverFunctions/gsc";
 import { dismissGscNudge } from "@/serverFunctions/onboarding";
+// FORK: locale plugin — modal copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 /**
  * One-time re-engagement prompt nudging users who finished onboarding *before*
@@ -27,6 +29,7 @@ export function GscReEngagementModal({
   suppressed: boolean;
 }) {
   const hosted = isHostedClientAuthMode();
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [closed, setClosed] = React.useState(false);
   const shownRef = React.useRef(false);
@@ -92,7 +95,7 @@ export function GscReEngagementModal({
     const callbackURL = projectId
       ? `${window.location.origin}/p/${projectId}/settings/integrations`
       : window.location.href;
-    void startGoogleLink("gsc", callbackURL);
+    void startGoogleLink("gsc", callbackURL, t);
   }
 
   return (
@@ -103,17 +106,18 @@ export function GscReEngagementModal({
     >
       <div className="space-y-1">
         <h2 id="gsc-nudge-title" className="text-lg font-semibold">
-          New: Connect Google Search Console
+          {t("New: Connect Google Search Console")}
         </h2>
         <p className="text-sm text-base-content/70">
-          Bring your real clicks, impressions, and rankings into OpenSEO and
-          query them from Claude or Codex over MCP. It never uses credits.
+          {t(
+            "Bring your real clicks, impressions, and rankings into OpenSEO and query them from Claude or Codex over MCP. It never uses credits.",
+          )}
         </p>
       </div>
 
       <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <button type="button" className="btn btn-ghost" onClick={handleDismiss}>
-          Maybe later
+          {t("Maybe later")}
         </button>
         <button
           type="button"
@@ -121,7 +125,7 @@ export function GscReEngagementModal({
           className="inline-flex items-center justify-center gap-2.5 rounded-lg border border-base-300 bg-base-100 px-4 py-2.5 text-sm font-semibold text-base-content shadow-sm transition hover:bg-base-200 hover:shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           <GoogleGlyph className="size-[18px]" />
-          Connect with Google
+          {t("Connect with Google")}
         </button>
       </div>
     </Modal>

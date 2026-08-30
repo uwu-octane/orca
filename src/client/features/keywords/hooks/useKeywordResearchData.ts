@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { captureClientEvent } from "@/client/lib/posthog";
+// FORK: locale plugin — error copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { LOCATIONS } from "@/client/features/keywords/utils";
 import { parseKeywordInput } from "@/client/features/keywords/state/keywordControllerActions";
 import { researchKeywords } from "@/serverFunctions/keywords";
@@ -102,6 +104,7 @@ export function useKeywordResearchData(
     projectId,
     resultLimit,
   } = input;
+  const { t } = useLocale();
   const request = useMemo<KeywordResearchRequest | null>(
     () =>
       buildKeywordResearchRequest({
@@ -168,7 +171,7 @@ export function useKeywordResearchData(
   const rows = hasSearched ? (researchQuery.data?.rows ?? []) : [];
   const researchError =
     hasSearched && researchQuery.isError
-      ? getStandardErrorMessage(researchQuery.error, "Research failed.")
+      ? getStandardErrorMessage(researchQuery.error, t("Research failed."), t)
       : null;
 
   return {

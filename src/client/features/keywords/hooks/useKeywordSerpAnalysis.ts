@@ -2,11 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { getSerpAnalysis } from "@/serverFunctions/keywords";
+// FORK: locale plugin — error copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export function useKeywordSerpAnalysis(
   projectId: string,
   locationCode: number | undefined,
 ) {
+  const { t } = useLocale();
   const [serpKeyword, setSerpKeyword] = useState<string | null>(null);
   const [serpPage, setSerpPage] = useState(0);
   const SERP_PAGE_SIZE = 10;
@@ -29,7 +32,11 @@ export function useKeywordSerpAnalysis(
     serpKeyword ?? serpQuery.data?.requestedKeyword ?? null;
   const serpLoading = !!serpKeyword && serpQuery.isLoading;
   const serpError = serpQuery.isError
-    ? getStandardErrorMessage(serpQuery.error, "Failed to load SERP data.")
+    ? getStandardErrorMessage(
+        serpQuery.error,
+        t("Failed to load SERP data."),
+        t,
+      )
     : null;
 
   return {

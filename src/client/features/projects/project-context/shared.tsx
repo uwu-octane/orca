@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { updateProjectContext } from "@/serverFunctions/projectContext";
 import type { getProjectContext } from "@/serverFunctions/projectContext";
 import type {
@@ -24,6 +26,7 @@ export function projectContextQueryKey(projectId: string) {
  * stands after the patch, which becomes the new cache entry — no refetch.
  */
 export function useContextUpdate(projectId: string) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const queryKey = projectContextQueryKey(projectId);
 
@@ -35,10 +38,12 @@ export function useContextUpdate(projectId: string) {
     onMutate: () => queryClient.cancelQueries({ queryKey }),
     onSuccess: (context) => {
       queryClient.setQueryData(queryKey, context);
-      toast.success("Project context updated");
+      toast.success(t("Project context updated"));
     },
     onError: (error) =>
-      toast.error(getStandardErrorMessage(error, "Couldn't save your changes")),
+      toast.error(
+        getStandardErrorMessage(error, t("Couldn't save your changes"), t),
+      ),
     // The page instantiates this mutation per section, so two concurrent
     // patches can settle out of order and the slower (earlier-snapshotted)
     // response can land in the cache last; a settle-time refetch converges

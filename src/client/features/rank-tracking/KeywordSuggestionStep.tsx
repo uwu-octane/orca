@@ -11,6 +11,8 @@ import { getDomainKeywordSuggestions } from "@/serverFunctions/domain";
 import { addTrackingKeywords } from "@/serverFunctions/rank-tracking";
 import { isLabsLocationCode } from "@/client/features/keywords/locations";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import {
   AppDataTable,
   makeSelectionColumn,
@@ -142,6 +144,7 @@ export function KeywordSuggestionStep({
   onDone,
   onClose,
 }: Props) {
+  const { t } = useLocale();
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [hasInitialized, setHasInitialized] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([
@@ -210,11 +213,15 @@ export function KeywordSuggestionStep({
     mutationFn: (keywords: string[]) =>
       addTrackingKeywords({ data: { projectId, configId, keywords } }),
     onSuccess: (result) => {
-      toast.success(`Added ${result.added} keywords for tracking`);
+      toast.success(
+        t("Added {count} keywords for tracking", { count: result.added }),
+      );
       onDone(configId);
     },
     onError: (error) => {
-      toast.error(getStandardErrorMessage(error, "Failed to add keywords"));
+      toast.error(
+        getStandardErrorMessage(error, t("Failed to add keywords"), t),
+      );
     },
   });
 
@@ -241,14 +248,15 @@ export function KeywordSuggestionStep({
   if (!labsSupported) {
     return (
       <>
-        {sectionHeader("Add keywords manually")}
+        {sectionHeader(t("Add keywords manually"))}
         <div className="flex flex-col items-center justify-center gap-3 py-16">
           <p className="text-xs text-base-content/50">
-            Ranked-keyword suggestions aren't available for this country.
-            Continue and add the keywords you want to track manually.
+            {t(
+              "Ranked-keyword suggestions aren't available for this country. Continue and add the keywords you want to track manually.",
+            )}
           </p>
           <button className="btn btn-primary btn-sm mt-2" onClick={onClose}>
-            Continue
+            {t("Continue")}
           </button>
         </div>
       </>
@@ -259,11 +267,11 @@ export function KeywordSuggestionStep({
   if (suggestionsQuery.isLoading) {
     return (
       <>
-        {sectionHeader("Finding your top keywords...")}
+        {sectionHeader(t("Finding your top keywords..."))}
         <div className="flex flex-col items-center justify-center gap-3 py-16">
           <Loader2 className="size-8 animate-spin text-primary" />
           <p className="text-xs text-base-content/50">
-            This usually takes a few seconds
+            {t("This usually takes a few seconds")}
           </p>
         </div>
       </>
@@ -274,15 +282,15 @@ export function KeywordSuggestionStep({
   if (suggestionsQuery.isError) {
     return (
       <>
-        {sectionHeader("Couldn't fetch keywords")}
+        {sectionHeader(t("Couldn't fetch keywords"))}
         <div className="flex flex-col items-center justify-center gap-3 py-16">
           <AlertCircle className="size-8 text-error" />
           <p className="text-xs text-base-content/50">
-            You can skip this step and add keywords manually later.
+            {t("You can skip this step and add keywords manually later.")}
           </p>
           <div className="flex gap-2 mt-2">
             <button className="btn btn-primary btn-sm" onClick={onClose}>
-              Skip
+              {t("Skip")}
             </button>
           </div>
         </div>
@@ -294,14 +302,16 @@ export function KeywordSuggestionStep({
   if (data.length === 0) {
     return (
       <>
-        {sectionHeader("No rankings found")}
+        {sectionHeader(t("No rankings found"))}
         <div className="flex flex-col items-center justify-center gap-3 py-16">
           <p className="text-xs text-base-content/50">
-            We couldn't find any keywords {domain} currently ranks for. You can
-            add keywords manually.
+            {t(
+              "We couldn't find any keywords {domain} currently ranks for. You can add keywords manually.",
+              { domain },
+            )}
           </p>
           <button className="btn btn-primary btn-sm mt-2" onClick={onClose}>
-            Skip
+            {t("Skip")}
           </button>
         </div>
       </>
@@ -311,10 +321,13 @@ export function KeywordSuggestionStep({
   // Data loaded
   return (
     <div className="flex flex-col gap-3">
-      {sectionHeader("Choose keywords to track")}
+      {sectionHeader(t("Choose keywords to track"))}
       <div className="flex items-center justify-between">
         <p className="text-sm text-base-content/60">
-          We found {data.length} keywords {domain} ranks for.
+          {t("We found {count} keywords {domain} ranks for.", {
+            count: data.length,
+            domain,
+          })}
         </p>
       </div>
 
@@ -337,11 +350,14 @@ export function KeywordSuggestionStep({
 
       <div className="flex items-center justify-between gap-3 pt-1">
         <p className="text-xs text-base-content/60">
-          {selectedCount} of {data.length} selected
+          {t("{count} of {total} selected", {
+            count: selectedCount,
+            total: data.length,
+          })}
         </p>
         <div className="flex items-center gap-2">
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            Skip
+            {t("Skip")}
           </button>
           <button
             type="button"
@@ -352,7 +368,7 @@ export function KeywordSuggestionStep({
             {addMutation.isPending && (
               <Loader2 className="size-3.5 animate-spin" />
             )}
-            Save Keyword{selectedCount !== 1 ? "s" : ""}
+            {t(selectedCount !== 1 ? "Save Keywords" : "Save Keyword")}
           </button>
         </div>
       </div>

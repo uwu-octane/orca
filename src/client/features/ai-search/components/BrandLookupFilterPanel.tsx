@@ -2,6 +2,7 @@ import { RotateCcw } from "lucide-react";
 import type { CitationTab } from "@/client/features/ai-search/brandLookupFilterTypes";
 import { formatPlatformLabel } from "@/client/features/ai-search/platformLabels";
 import type { BrandLookupFiltersState } from "@/client/features/ai-search/useBrandLookupFilters";
+import { useLocale } from "@/plugins/client/context";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyForm = { Field: React.ComponentType<any> };
@@ -17,10 +18,12 @@ function FilterTextInput({
   label: string;
   placeholder: string;
 }) {
+  const { t } = useLocale();
+
   return (
     <label className="form-control gap-1.5">
       <span className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-        {label}
+        {t(label)}
       </span>
       <form.Field name={name}>
         {(field: {
@@ -50,14 +53,16 @@ function FilterRangeInputs({
   minName: string;
   maxName: string;
 }) {
+  const { t } = useLocale();
+
   return (
     <div className="rounded-lg border border-base-300 bg-base-100 p-2.5 space-y-2">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-        {title}
+        {t(title)}
       </p>
       <div className="grid grid-cols-2 gap-2">
-        <CompactRangeInput form={form} name={minName} placeholder="Min" />
-        <CompactRangeInput form={form} name={maxName} placeholder="Max" />
+        <CompactRangeInput form={form} name={minName} placeholder={t("Min")} />
+        <CompactRangeInput form={form} name={maxName} placeholder={t("Max")} />
       </div>
     </div>
   );
@@ -91,10 +96,12 @@ function CompactRangeInput({
 }
 
 function PlatformToggle({ form }: { form: AnyForm }) {
+  const { t } = useLocale();
+
   return (
     <div className="space-y-1.5">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-        Platform
+        {t("Platform")}
       </p>
       <form.Field name="platform">
         {(field: {
@@ -109,7 +116,7 @@ function PlatformToggle({ form }: { form: AnyForm }) {
                 className={`btn btn-xs ${field.state.value === value ? "btn-soft" : "btn-ghost"}`}
                 onClick={() => field.handleChange(value)}
               >
-                {value === "" ? "All" : formatPlatformLabel(value)}
+                {value === "" ? t("All") : formatPlatformLabel(value)}
               </button>
             ))}
           </div>
@@ -200,16 +207,17 @@ export function BrandLookupFilterPanel({
   activeTab: CitationTab;
   filters: BrandLookupFiltersState;
 }) {
+  const { t } = useLocale();
   const current = filters[activeTab];
 
   return (
     <div className="shrink-0 border-b border-base-300 bg-gradient-to-b from-base-100 to-base-200/30 px-4 py-3 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold">Refine results</p>
+          <p className="text-sm font-semibold">{t("Refine results")}</p>
           {current.activeFilterCount > 0 ? (
             <span className="badge badge-xs badge-primary border-0 text-primary-content">
-              {current.activeFilterCount} active
+              {t("{count} active", { count: current.activeFilterCount })}
             </span>
           ) : null}
         </div>
@@ -220,7 +228,7 @@ export function BrandLookupFilterPanel({
           disabled={current.activeFilterCount === 0}
         >
           <RotateCcw className="size-3" />
-          Clear all
+          {t("Clear all")}
         </button>
       </div>
 

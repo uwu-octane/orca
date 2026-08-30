@@ -28,6 +28,8 @@ import {
 } from "./backlinksFilterTypes";
 import type { BacklinksFiltersState } from "./useBacklinksFilters";
 import { toScopeSearchParam } from "@/shared/researchScope";
+// FORK: locale plugin — error copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 type UseBacklinksPageDataArgs = {
   projectId: string;
@@ -42,13 +44,16 @@ const BACKLINKS_QUERY_STALE_TIME_MS = 5 * 60 * 1000;
 function getBacklinksErrorMessage(
   error: unknown,
   fallback: string,
+  t?: (key: string) => string,
 ): string | null {
   if (!error) return null;
   if (getErrorCode(error) === "VALIDATION_ERROR") {
-    return "Enter a valid domain or page URL.";
+    return t
+      ? t("Enter a valid domain or page URL.")
+      : "Enter a valid domain or page URL.";
   }
 
-  return getStandardErrorMessage(error, fallback);
+  return getStandardErrorMessage(error, fallback, t);
 }
 
 /**
@@ -74,6 +79,7 @@ export function useBacklinksPageData({
   searchState,
   filters,
 }: UseBacklinksPageDataArgs) {
+  const { t } = useLocale();
   const searchCardInitialValues = useMemo(
     () => ({
       target: searchState.target,
@@ -198,7 +204,8 @@ export function useBacklinksPageData({
 
   const overviewErrorMessage = getBacklinksErrorMessage(
     overviewQuery.error,
-    "Could not load backlinks data.",
+    t("Could not load backlinks data."),
+    t,
   );
   const activeTabQuery =
     tab === "backlinks"
@@ -208,7 +215,8 @@ export function useBacklinksPageData({
         : topPagesQuery;
   const activeTabErrorMessage = getBacklinksErrorMessage(
     activeTabQuery.error,
-    "Could not load this tab.",
+    t("Could not load this tab."),
+    t,
   );
 
   return {

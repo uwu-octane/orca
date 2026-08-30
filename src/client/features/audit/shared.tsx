@@ -1,3 +1,5 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
 import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 
 export const SUPPORT_EMAIL = "ben@openseo.so";
@@ -19,15 +21,18 @@ export function extractHostname(url: string): string {
 }
 
 export function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return new Date(dateStr).toLocaleDateString(
+    getIntlLocale(readActiveLocale()),
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    },
+  );
 }
 
 export function formatStartedAt(dateStr: string): string {
-  return new Date(dateStr).toLocaleString("en-US", {
+  return new Date(dateStr).toLocaleString(getIntlLocale(readActiveLocale()), {
     month: "short",
     day: "numeric",
     hour: "numeric",

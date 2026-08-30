@@ -10,6 +10,8 @@ import {
   formatPosition,
 } from "@/client/features/search-performance/SearchPerformanceColumns";
 import { getSearchPerformanceReport } from "@/serverFunctions/searchPerformance";
+// FORK: locale plugin — dashboard card copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import {
   CardShell,
   EmptyCardBody,
@@ -37,6 +39,7 @@ export function GscCard({
   projectId: string;
   connected: boolean;
 }) {
+  const { t } = useLocale();
   const reportQuery = useQuery({
     queryKey: ["dashboardGscReport", projectId],
     queryFn: () =>
@@ -60,15 +63,15 @@ export function GscCard({
 
   return (
     <CardShell
-      title="Search performance"
-      stamp="Google Search Console · last 28 days"
+      title={t("Search performance")}
+      stamp={t("Google Search Console · last 28 days")}
       action={
         <Link
           to="/p/$projectId/search-performance"
           params={{ projectId }}
           className={moreDetailsClass}
         >
-          More details
+          {t("More details")}
         </Link>
       }
     >
@@ -80,12 +83,12 @@ export function GscCard({
         </div>
       ) : reportQuery.isError ? (
         <p className="text-sm text-base-content/60">
-          Couldn&rsquo;t load Search Console data. Try again shortly.
+          {t("Couldn't load Search Console data. Try again shortly.")}
         </p>
       ) : report?.connected ? (
         <div className="grid grid-cols-2 gap-3">
           <Stat
-            label="Clicks"
+            label={t("Clicks")}
             value={formatCount(report.totals.clicks)}
             sub={
               <PercentDelta
@@ -95,7 +98,7 @@ export function GscCard({
             }
           />
           <Stat
-            label="Impressions"
+            label={t("Impressions")}
             value={formatCount(report.totals.impressions)}
             sub={
               <PercentDelta
@@ -104,9 +107,9 @@ export function GscCard({
               />
             }
           />
-          <Stat label="CTR" value={formatCtr(report.totals.ctr)} />
+          <Stat label={t("CTR")} value={formatCtr(report.totals.ctr)} />
           <Stat
-            label="Avg position"
+            label={t("Avg position")}
             value={formatPosition(report.totals.position)}
           />
         </div>
@@ -122,18 +125,21 @@ export function AuditHealthCard({
   projectId: string;
   audit: DashboardAuditSummary | null;
 }) {
+  const { t } = useLocale();
   if (!audit) {
     return (
-      <CardShell title="Site audit">
+      <CardShell title={t("Site audit")}>
         <EmptyCardBody
-          message="Crawl your site for broken links, missing tags and indexability problems."
+          message={t(
+            "Crawl your site for broken links, missing tags and indexability problems.",
+          )}
           cta={
             <Link
               to="/p/$projectId/audit"
               params={{ projectId }}
               className="btn btn-primary btn-sm"
             >
-              Run an audit
+              {t("Run an audit")}
             </Link>
           }
         />
@@ -143,28 +149,31 @@ export function AuditHealthCard({
 
   return (
     <CardShell
-      title="Site audit"
-      stamp={`Site audit · ${
+      title={t("Site audit")}
+      stamp={
         audit.status === "completed"
-          ? `crawled ${audit.pagesCrawled} pages · ${formatDay(audit.startedAt)}`
+          ? t("Site audit · crawled {count} pages · {date}", {
+              count: audit.pagesCrawled,
+              date: formatDay(audit.startedAt),
+            })
           : audit.status === "running"
-            ? "crawl in progress"
-            : "last crawl failed"
-      }`}
+            ? t("crawl in progress")
+            : t("last crawl failed")
+      }
       action={
         <Link
           to="/p/$projectId/audit"
           params={{ projectId }}
           className={moreDetailsClass}
         >
-          More details
+          {t("More details")}
         </Link>
       }
     >
       {audit.topIssues.length === 0 ? (
         <div className="flex items-center gap-2 text-sm text-base-content/70">
           <Check className="size-4 text-success" />
-          No issues found — your site looks healthy.
+          {t("No issues found — your site looks healthy.")}
         </div>
       ) : (
         <ul className="space-y-2">
@@ -188,14 +197,22 @@ export function AuditHealthCard({
                 </span>
               </span>
               <span className="shrink-0 tabular-nums text-base-content/60">
-                {issue.count} {issue.count === 1 ? "page" : "pages"}
+                {t(issue.count === 1 ? "{count} page" : "{count} pages", {
+                  count: issue.count,
+                })}
               </span>
             </li>
           ))}
           {audit.totalIssueTypes > audit.topIssues.length ? (
             <li className="text-xs text-base-content/50">
-              + {audit.totalIssueTypes - audit.topIssues.length} more issue
-              {audit.totalIssueTypes - audit.topIssues.length === 1 ? "" : "s"}
+              {t(
+                audit.totalIssueTypes - audit.topIssues.length === 1
+                  ? "+ {count} more issue"
+                  : "+ {count} more issues",
+                {
+                  count: audit.totalIssueTypes - audit.topIssues.length,
+                },
+              )}
             </li>
           ) : null}
         </ul>
@@ -213,9 +230,13 @@ export function BacklinkPulseCard({
   backlinks: DashboardBacklinkSummary | null;
   refreshing: boolean;
 }) {
+  const { t } = useLocale();
   if (!backlinks && refreshing) {
     return (
-      <CardShell title="Backlink pulse" stamp="Taking your first snapshot…">
+      <CardShell
+        title={t("Backlink pulse")}
+        stamp={t("Taking your first snapshot…")}
+      >
         <div className="grid grid-cols-2 gap-3" aria-busy>
           {Array.from({ length: 4 }, (_, i) => (
             <div key={i} className="skeleton h-20" />
@@ -227,9 +248,9 @@ export function BacklinkPulseCard({
 
   if (!backlinks) {
     return (
-      <CardShell title="Backlink pulse">
+      <CardShell title={t("Backlink pulse")}>
         <p className="text-sm text-base-content/60">
-          We&rsquo;ll snapshot who links to your domain — nothing to set up.
+          {t("We'll snapshot who links to your domain — nothing to set up.")}
         </p>
       </CardShell>
     );
@@ -237,10 +258,13 @@ export function BacklinkPulseCard({
 
   return (
     <CardShell
-      title="Backlink pulse"
-      stamp={`Backlinks · snapshot ${formatDay(backlinks.capturedAt)}${
-        refreshing ? " · refreshing…" : ""
-      }`}
+      title={t("Backlink pulse")}
+      stamp={t(
+        refreshing
+          ? "Backlinks · snapshot {date} · refreshing…"
+          : "Backlinks · snapshot {date}",
+        { date: formatDay(backlinks.capturedAt) },
+      )}
       action={
         <Link
           to="/p/$projectId/backlinks"
@@ -248,13 +272,13 @@ export function BacklinkPulseCard({
           search={{ target: backlinks.domain, scope: "domain" }}
           className={moreDetailsClass}
         >
-          More details
+          {t("More details")}
         </Link>
       }
     >
       <div className="grid grid-cols-2 gap-3">
         <Stat
-          label="Ref. domains"
+          label={t("Ref. domains")}
           value={
             backlinks.referringDomains === null
               ? "—"
@@ -262,7 +286,7 @@ export function BacklinkPulseCard({
           }
         />
         <Stat
-          label="Backlinks"
+          label={t("Backlinks")}
           value={
             backlinks.backlinks === null
               ? "—"
@@ -270,7 +294,7 @@ export function BacklinkPulseCard({
           }
         />
         <Stat
-          label="New links"
+          label={t("New links")}
           value={`▲ ${newLost(backlinks.newBacklinks)}`}
           tone={
             backlinks.newBacklinks && backlinks.newBacklinks > 0
@@ -279,7 +303,7 @@ export function BacklinkPulseCard({
           }
         />
         <Stat
-          label="Lost links"
+          label={t("Lost links")}
           value={`▼ ${newLost(backlinks.lostBacklinks)}`}
           tone={
             backlinks.lostBacklinks && backlinks.lostBacklinks > 0

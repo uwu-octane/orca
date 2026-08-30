@@ -1,5 +1,6 @@
 import { GoogleGlyph } from "@/client/features/gsc/GoogleGlyph";
 import { startGoogleLink } from "@/client/features/integrations/startGoogleLink";
+import { useLocale } from "@/plugins/client/context";
 
 type PropertyOption = {
   propertyId: string;
@@ -49,11 +50,13 @@ export function Ga4PropertyPicker({
   onRetry: () => void;
   secondaryAction?: SecondaryAction;
 }) {
+  const { t } = useLocale();
+
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-sm text-base-content/50">
         <span className="loading loading-spinner loading-sm" />
-        Loading properties…
+        {t("Loading properties…")}
       </div>
     );
   }
@@ -61,7 +64,7 @@ export function Ga4PropertyPicker({
     return (
       <div className="space-y-3">
         <p className="text-sm text-error">
-          Couldn&rsquo;t load your Google Analytics properties.
+          {t("Couldn't load your Google Analytics properties.")}
         </p>
         <div className="flex flex-wrap items-center gap-1">
           <button
@@ -69,7 +72,7 @@ export function Ga4PropertyPicker({
             className="btn btn-ghost btn-sm"
             onClick={onRetry}
           >
-            Try again
+            {t("Try again")}
           </button>
           {secondaryAction ? (
             <SecondaryActionButton action={secondaryAction} />
@@ -86,12 +89,12 @@ export function Ga4PropertyPicker({
     return (
       <div className="space-y-3">
         <p className="text-sm text-error">
-          Connection expired. Reconnect to continue.
+          {t("Connection expired. Reconnect to continue.")}
         </p>
         <div className="flex flex-wrap items-center gap-1">
           <GoogleConnectButton
-            label="Reconnect with Google"
-            onClick={() => void startGoogleLink("ga4", window.location.href)}
+            label={t("Reconnect with Google")}
+            onClick={() => void startGoogleLink("ga4", window.location.href, t)}
           />
           {secondaryAction ? (
             <SecondaryActionButton action={secondaryAction} />
@@ -125,13 +128,14 @@ export function Ga4PropertyPicker({
     <div className="space-y-4">
       {hasUnavailableAccounts ? (
         <p className="text-sm text-warning">
-          Some properties couldn&rsquo;t be loaded. Check that the Analytics
-          Admin API is enabled and that this Google account has property access.
+          {t(
+            "Some properties couldn't be loaded. Check that the Analytics Admin API is enabled and that this Google account has property access.",
+          )}
         </p>
       ) : null}
       <label className="block">
         <span className="mb-1.5 block text-sm font-medium text-base-content/80">
-          Property
+          {t("Property")}
         </span>
         <select
           className="select select-bordered w-full max-w-md"
@@ -142,15 +146,15 @@ export function Ga4PropertyPicker({
           }}
         >
           <option value="" disabled>
-            Select a property…
+            {t("Select a property…")}
           </option>
           {usableAccounts.map((account) => (
             <optgroup
               key={account.accountId}
-              label={account.email ?? "Google account"}
+              label={account.email ?? t("Google account")}
             >
               {account.properties.length === 0 ? (
-                <option disabled>No properties</option>
+                <option disabled>{t("No properties")}</option>
               ) : (
                 account.properties.map((property) => {
                   const index = options.findIndex(
@@ -171,7 +175,7 @@ export function Ga4PropertyPicker({
       </label>
       {options.length === 0 && !hasUnavailableAccounts ? (
         <p className="text-sm text-base-content/60">
-          No Google Analytics properties are available for this account.
+          {t("No Google Analytics properties are available for this account.")}
         </p>
       ) : null}
       <div className="flex flex-wrap items-center gap-1">
@@ -181,14 +185,14 @@ export function Ga4PropertyPicker({
           onClick={onSave}
           disabled={selectedIndex < 0 || saving}
         >
-          {saving ? "Saving…" : "Save property"}
+          {saving ? t("Saving…") : t("Save property")}
         </button>
         <button
           type="button"
           className="btn btn-ghost btn-sm"
-          onClick={() => void startGoogleLink("ga4", window.location.href)}
+          onClick={() => void startGoogleLink("ga4", window.location.href, t)}
         >
-          Connect another Google account
+          {t("Connect another Google account")}
         </button>
         {secondaryAction ? (
           <SecondaryActionButton action={secondaryAction} />
@@ -199,6 +203,8 @@ export function Ga4PropertyPicker({
 }
 
 function SecondaryActionButton({ action }: { action: SecondaryAction }) {
+  const { t } = useLocale();
+
   return (
     <button
       type="button"
@@ -209,7 +215,7 @@ function SecondaryActionButton({ action }: { action: SecondaryAction }) {
       onClick={action.onClick}
       disabled={action.disabled}
     >
-      {action.label}
+      {t(action.label)}
     </button>
   );
 }

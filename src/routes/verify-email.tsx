@@ -13,6 +13,9 @@ import {
   isHostedClientAuthMode,
 } from "@/lib/auth-mode";
 import { getSignInSearch, normalizeAuthRedirect } from "@/lib/auth-redirect";
+// FORK: locale plugin — page copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
+import type { T } from "@/plugins/locale";
 import { z } from "zod";
 
 const verificationIssueSchema = z
@@ -29,17 +32,24 @@ export const Route = createFileRoute("/verify-email")({
   component: VerifyEmailPage,
 });
 
-function getVerificationErrorMessage(error: string | undefined) {
+function getVerificationErrorMessage(
+  error: string | undefined,
+  t: T,
+): string | null {
   switch ((error ?? "").toLowerCase()) {
     case "invalid_token":
-      return "This link is no longer valid. Request a new email to keep going.";
+      return t(
+        "This link is no longer valid. Request a new email to keep going.",
+      );
     case "token_expired":
-      return "This link has expired. Request a new email to keep going.";
+      return t("This link has expired. Request a new email to keep going.");
     case "user_not_found":
-      return "We couldn't find this account anymore. Try creating it again.";
+      return t("We couldn't find this account anymore. Try creating it again.");
     default:
       return error
-        ? "We couldn't confirm this email. Request a new email and try again."
+        ? t(
+            "We couldn't confirm this email. Request a new email and try again.",
+          )
         : null;
   }
 }
@@ -50,38 +60,40 @@ function getVerifyEmailPageCopy({
   isPending,
   isRedirecting,
   email,
+  t,
 }: {
   isHostedMode: boolean;
   errorMessage: string | null;
   isPending: boolean;
   isRedirecting: boolean;
   email: string | undefined;
+  t: T;
 }) {
   if (!isHostedMode) {
     return {
-      title: "Verify email",
-      helperText: "Email confirmation isn't available right now.",
+      title: t("Verify email"),
+      helperText: t("Email confirmation isn't available right now."),
     };
   }
 
   if (errorMessage) {
     return {
-      title: "We couldn't confirm your email",
+      title: t("We couldn't confirm your email"),
       helperText: errorMessage,
     };
   }
 
   if (isRedirecting) {
     return {
-      title: "Email confirmed",
-      helperText: "You're all set. Taking you to your account now.",
+      title: t("Email confirmed"),
+      helperText: t("You're all set. Taking you to your account now."),
     };
   }
 
   if (isPending) {
     return {
-      title: "Verify email",
-      helperText: "Checking your email confirmation.",
+      title: t("Verify email"),
+      helperText: t("Checking your email confirmation."),
     };
   }
 
@@ -90,20 +102,21 @@ function getVerifyEmailPageCopy({
   // unverified hosted user would be bounced straight back by the verification
   // gate.
   return {
-    title: "Verify your email",
+    title: t("Verify your email"),
     helperText: email
-      ? `Click the link we sent to ${email} to verify your email.`
-      : "Check your inbox for the link to verify your email.",
+      ? t("Click the link we sent to {email} to verify your email.", { email })
+      : t("Check your inbox for the link to verify your email."),
   };
 }
 
 function VerifyEmailPage() {
+  const { t } = useLocale();
   const search = Route.useSearch();
   const redirectTo = normalizeAuthRedirect(search.redirect);
   const isHostedMode = isHostedClientAuthMode();
   const { data: session, isPending } = useSession();
   const bypassEmailVerification = isEmailVerificationBypassed();
-  const errorMessage = getVerificationErrorMessage(search.error);
+  const errorMessage = getVerificationErrorMessage(search.error, t);
   const verificationIssueType = search.error
     ? verificationIssueSchema.parse(search.error)
     : null;
@@ -120,6 +133,7 @@ function VerifyEmailPage() {
     isPending,
     isRedirecting,
     email,
+    t,
   });
 
   useEffect(() => {
@@ -172,14 +186,16 @@ function VerifyEmailPage() {
         callbackURL: callbackURL.toString(),
       });
       if (result.error) {
-        toast.error(result.error.message || "We couldn't send another email.");
+        toast.error(
+          result.error.message || t("We couldn't send another email."),
+        );
         return;
       }
       captureClientEvent("auth:verification_resend");
-      toast.success("A new email is on the way.");
+      toast.success(t("A new email is on the way."));
     } catch {
       toast.error(
-        "We couldn't send another email right now. Please try again.",
+        t("We couldn't send another email right now. Please try again."),
       );
     } finally {
       setIsResending(false);
@@ -198,7 +214,7 @@ function VerifyEmailPage() {
               search={getSignInSearch(redirectTo)}
               className="text-base-content/50 hover:text-base-content transition-colors"
             >
-              Back to sign in
+              {t("Back to sign in")}
             </Link>
           </p>
         }
@@ -213,7 +229,7 @@ function VerifyEmailPage() {
               search={getSignInSearch(redirectTo)}
               className="btn btn-soft w-full"
             >
-              Back to sign in
+              {t("Back to sign in")}
             </Link>
           </div>
         ) : isPending || isRedirecting ? (
@@ -227,7 +243,7 @@ function VerifyEmailPage() {
             onClick={() => void handleResend()}
             disabled={isResending}
           >
-            {isResending ? "Sending email..." : "Resend email"}
+            {isResending ? t("Sending email...") : t("Resend email")}
           </button>
         ) : null}
       </AuthPageCard>

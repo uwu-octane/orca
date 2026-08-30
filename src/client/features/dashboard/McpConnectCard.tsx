@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CopyButton } from "@/client/features/ai-mcp/SetupControls";
 import { captureClientEvent } from "@/client/lib/posthog";
+// FORK: locale plugin — MCP card copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type { DashboardActivation } from "@/server/features/dashboard/services/DashboardService";
 import { dismissDashboardMcpCard } from "@/serverFunctions/dashboard";
 
@@ -25,6 +27,7 @@ export function McpConnectCard({
   projectId: string;
   activation: DashboardActivation;
 }) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const dismissMutation = useMutation({
     mutationFn: () => dismissDashboardMcpCard({ data: { projectId } }),
@@ -44,12 +47,12 @@ export function McpConnectCard({
     <div className="overflow-hidden rounded-xl border border-base-300 bg-base-100 shadow-sm">
       <div className="flex items-center justify-between gap-4 px-5 py-4">
         <h2 className="text-base font-semibold leading-tight">
-          Connect your AI agent
+          {t("Connect your AI agent")}
         </h2>
         <div className="flex items-center gap-2">
           {connected ? (
             <span className="badge badge-success badge-outline badge-sm">
-              Connected
+              {t("Connected")}
             </span>
           ) : null}
           <button
@@ -61,7 +64,7 @@ export function McpConnectCard({
               dismissMutation.mutate();
             }}
           >
-            I already connected
+            {t("I already connected")}
           </button>
         </div>
       </div>
@@ -69,7 +72,7 @@ export function McpConnectCard({
         {connected ? (
           <>
             <p className="text-sm text-base-content/70">
-              Your agent is connected. Try asking it:
+              {t("Your agent is connected. Try asking it:")}
             </p>
             <ul className="space-y-2">
               {firstPrompts(activation.domain).map((prompt) => (
@@ -82,7 +85,7 @@ export function McpConnectCard({
                   </span>
                   <CopyButton
                     value={prompt}
-                    successMessage="Prompt copied"
+                    successMessage={t("Prompt copied")}
                     iconOnly
                     onCopy={() =>
                       captureClientEvent("dashboard:mcp_prompt_copy")
@@ -92,23 +95,24 @@ export function McpConnectCard({
               ))}
             </ul>
             <p className="text-xs text-base-content/50">
-              Waiting for your first call — this card disappears once your agent
-              talks to OpenSEO.
+              {t(
+                "Waiting for your first call — this card disappears once your agent talks to OpenSEO.",
+              )}
             </p>
           </>
         ) : (
           <>
             <div className="space-y-2 text-sm text-base-content/70">
               <p>
-                OpenSEO is designed to give your AI agent the data it needs to
-                build a great SEO strategy and help you execute it.
+                {t(
+                  "OpenSEO is designed to give your AI agent the data it needs to build a great SEO strategy and help you execute it.",
+                )}
               </p>
+              <p>{t("This way you aren't limited on “AI credits”.")}</p>
               <p>
-                This way you aren&rsquo;t limited on &ldquo;AI credits&rdquo;.
-              </p>
-              <p>
-                You can work with your agent to figure out what automations make
-                sense for you and it can help you write content too.
+                {t(
+                  "You can work with your agent to figure out what automations make sense for you and it can help you write content too.",
+                )}
               </p>
             </div>
             <Link
@@ -116,7 +120,7 @@ export function McpConnectCard({
               className="link link-primary text-sm font-medium"
               onClick={() => captureClientEvent("dashboard:mcp_setup_open")}
             >
-              Set up in AI &amp; MCP →
+              {t("Set up in AI & MCP")} →
             </Link>
           </>
         )}

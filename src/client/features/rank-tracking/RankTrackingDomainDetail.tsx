@@ -9,6 +9,8 @@ import {
 } from "@/serverFunctions/rank-tracking";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
+// FORK: locale plugin — export feedback translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { getCustomerPlanStatus } from "@/client/features/billing/plan-detection";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { FreePlanAlert } from "./FreePlanAlert";
@@ -68,6 +70,7 @@ export function RankTrackingDomainDetail({
   onBack: () => void;
   onEdit: () => void;
 }) {
+  const { t } = useLocale();
   const { data: session } = useSession();
   const customerQuery = useCustomer({
     queryOptions: { enabled: Boolean(session?.user?.id) },
@@ -140,10 +143,13 @@ export function RankTrackingDomainDetail({
     setShowAddKeywords(false);
     captureClientEvent("rank_tracking:keywords_add");
     toast.success(
-      `${result.added} keyword${result.added !== 1 ? "s" : ""} added`,
+      t(
+        result.added === 1 ? "{count} keyword added" : "{count} keywords added",
+        { count: result.added },
+      ),
     );
     if (!result.checkTriggered && result.added > 0) {
-      toast.info("Use 'Check Now' to check these keywords");
+      toast.info(t("Use 'Check Now' to check these keywords"));
     }
   };
 
@@ -193,15 +199,16 @@ export function RankTrackingDomainDetail({
         onClick={onBack}
       >
         <ArrowLeft className="size-3" />
-        Back to domains
+        {t("Back to domains")}
       </button>
 
       {config.lastSkipReason === "insufficient_credits" && (
         <div className="alert alert-warning text-sm py-2">
           <AlertTriangle className="size-4" />
           <span>
-            Last scheduled check was skipped due to insufficient credits. Top up
-            your balance to resume automatic tracking.
+            {t(
+              "Last scheduled check was skipped due to insufficient credits. Top up your balance to resume automatic tracking.",
+            )}
           </span>
         </div>
       )}
@@ -210,7 +217,9 @@ export function RankTrackingDomainDetail({
         <div className="alert alert-warning text-sm py-2">
           <AlertTriangle className="size-4" />
           <span>
-            This run may be unresponsive and will be cleaned up automatically.
+            {t(
+              "This run may be unresponsive and will be cleaned up automatically.",
+            )}
           </span>
         </div>
       )}
@@ -265,13 +274,14 @@ export function RankTrackingDomainDetail({
           onViewModeChange={setViewMode}
           historyAvailable={historyAvailable}
           onExport={() =>
-            exportRankTrackingCsv(
-              filtered,
+            exportRankTrackingCsv({
+              sorted: filtered,
               showDesktop,
               showMobile,
-              config.domain,
-              config.locationName,
-            )
+              domain: config.domain,
+              locationName: config.locationName,
+              t,
+            })
           }
           onExportToSheets={() =>
             exportRankTrackingToSheets(
@@ -279,13 +289,14 @@ export function RankTrackingDomainDetail({
               showDesktop,
               showMobile,
               config.locationName,
+              t,
             )
           }
           onCopyKeywords={() => {
             void navigator.clipboard.writeText(
               filtered.map((r) => r.keyword).join("\n"),
             );
-            toast.success("Keywords copied to clipboard");
+            toast.success(t("Keywords copied to clipboard"));
           }}
           onCheckNow={() => {
             const count = costEstimate?.keywordCount ?? rows?.length ?? 0;

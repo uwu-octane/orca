@@ -10,6 +10,8 @@ import {
 import { useStickToBottom } from "@/client/components/chat/useStickToBottom";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+// FORK: locale plugin — error copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { buildCheckoutSuccessUrl } from "@/client/features/billing/checkout-url";
 import { AUTUMN_PAID_PLAN_ID } from "@/shared/billing";
 import { FREE_ONBOARDING_QUESTION_LIMIT } from "@/shared/onboardingChat";
@@ -82,6 +84,7 @@ export function OnboardingChatConversation({
   projectId: string;
   domain: string;
 }) {
+  const { t } = useLocale();
   // The conversation lives in a Durable Object (Agents SDK), keyed by projectId,
   // so history persists across reloads. The WebSocket connection is authorized
   // in the Worker (src/server.ts) before it reaches the DO; billing gates come
@@ -131,7 +134,8 @@ export function OnboardingChatConversation({
       setCheckoutError(
         getStandardErrorMessage(
           checkoutErr,
-          "We couldn't start checkout. Please refresh and try again.",
+          t("We couldn't start checkout. Please refresh and try again."),
+          t,
         ),
       );
       setIsStartingCheckout(false);

@@ -1,3 +1,6 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { useLocale } from "@/plugins/client/context";
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
 import { useAggregateEvents } from "autumn-js/react";
 import { useEffect, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
@@ -13,6 +16,7 @@ const BILLING_USAGE_FEATURE_IDS: string[] = [
 ];
 
 export function BillingUsageChart() {
+  const { t } = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const [chartWidth, setChartWidth] = useState(0);
 
@@ -49,8 +53,10 @@ export function BillingUsageChart() {
   return (
     <div className="rounded-lg border border-base-300 bg-base-100 p-4 space-y-3">
       <div className="flex items-baseline justify-between gap-4">
-        <span className="font-semibold">Usage</span>
-        <span className="text-xs text-base-content/50">Last 30 days</span>
+        <span className="font-semibold">{t("Usage")}</span>
+        <span className="text-xs text-base-content/50">
+          {t("Last 30 days")}
+        </span>
       </div>
 
       <div className="text-2xl font-semibold tabular-nums">
@@ -61,7 +67,7 @@ export function BillingUsageChart() {
         {eventsQuery.isLoading ? null : chartData.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <span className="text-sm text-base-content/40">
-              No usage recorded yet
+              {t("No usage recorded yet")}
             </span>
           </div>
         ) : chartWidth > 0 ? (
@@ -123,7 +129,7 @@ function UsageTooltip({
   return (
     <div className="rounded-md border border-base-300 bg-base-100 px-3 py-2 shadow-sm">
       <p className="text-xs text-base-content/60">
-        {new Date(label).toLocaleDateString("en-US", {
+        {new Date(label).toLocaleDateString(getIntlLocale(readActiveLocale()), {
           month: "short",
           day: "numeric",
         })}
@@ -136,10 +142,13 @@ function UsageTooltip({
 }
 
 function formatShortDate(timestamp: number) {
-  return new Date(timestamp).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+  return new Date(timestamp).toLocaleDateString(
+    getIntlLocale(readActiveLocale()),
+    {
+      month: "short",
+      day: "numeric",
+    },
+  );
 }
 
 function formatUsdAxis(value: number) {

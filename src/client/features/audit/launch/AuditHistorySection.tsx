@@ -3,6 +3,7 @@ import { ScanSearch, Trash2 } from "lucide-react";
 import type { getAuditHistory } from "@/serverFunctions/audit";
 import { PortalMenu } from "@/client/components/PortalMenu";
 import { formatDate, StatusBadge } from "@/client/features/audit/shared";
+import { useLocale } from "@/plugins/client/context";
 
 export function AuditHistorySection({
   projectId,
@@ -15,12 +16,13 @@ export function AuditHistorySection({
   isLoading: boolean;
   onDelete: (auditId: string) => void;
 }) {
+  const { t } = useLocale();
   if (history.length === 0 && !isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
         <div className="text-center text-base-content/40 space-y-3">
           <ScanSearch className="size-12 mx-auto opacity-30" />
-          <p className="text-lg font-medium">No audits yet</p>
+          <p className="text-lg font-medium">{t("No audits yet")}</p>
         </div>
       </div>
     );
@@ -31,16 +33,16 @@ export function AuditHistorySection({
   return (
     <div className="card bg-base-100 border border-base-300">
       <div className="card-body gap-3">
-        <h2 className="card-title text-base">Previous Audits</h2>
+        <h2 className="card-title text-base">{t("Previous Audits")}</h2>
         <div className="overflow-x-auto">
           <table className="table table-sm">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>URL</th>
-                <th>Status</th>
-                <th>Pages</th>
-                <th>Lighthouse</th>
+                <th>{t("Date")}</th>
+                <th>{t("URL")}</th>
+                <th>{t("Status")}</th>
+                <th>{t("Pages")}</th>
+                <th>{t("Lighthouse")}</th>
                 <th></th>
               </tr>
             </thead>
@@ -57,7 +59,9 @@ export function AuditHistorySection({
                   <td>{audit.pagesTotal || audit.pagesCrawled}</td>
                   <td>
                     {audit.ranLighthouse ? (
-                      <span className="badge badge-ghost badge-xs">Yes</span>
+                      <span className="badge badge-ghost badge-xs">
+                        {t("Yes")}
+                      </span>
                     ) : null}
                   </td>
                   <td>
@@ -86,6 +90,7 @@ function HistoryActions({
   auditId: string;
   onDelete: (auditId: string) => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="flex items-center justify-end gap-2 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
       <Link
@@ -94,9 +99,9 @@ function HistoryActions({
         search={{ auditId, tab: "pages" }}
         className="btn btn-primary btn-xs"
       >
-        View
+        {t("View")}
       </Link>
-      <PortalMenu ariaLabel="Audit actions">
+      <PortalMenu ariaLabel={t("Audit actions")}>
         {(close) => (
           <li>
             <button
@@ -107,7 +112,7 @@ function HistoryActions({
               }}
             >
               <Trash2 className="size-3.5" />
-              Delete audit
+              {t("Delete audit")}
             </button>
           </li>
         )}

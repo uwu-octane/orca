@@ -1,3 +1,6 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
+import { useLocale } from "@/plugins/client/context";
 import { useMemo, useState } from "react";
 import { Copy, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -48,6 +51,7 @@ export function KeywordTrendModal({
   serpDepth: number;
   onClose: () => void;
 }) {
+  const { t } = useLocale();
   const [sinceDays, setSinceDays] = useState(730);
 
   const { data: history, isLoading } = useQuery({
@@ -87,7 +91,7 @@ export function KeywordTrendModal({
 
   const series: TrendSeries[] = devices.map((device) => ({
     dataKey: device,
-    name: DEVICE_STYLE[device].label,
+    name: t(DEVICE_STYLE[device].label),
     color: DEVICE_STYLE[device].color,
     strokeDasharray: "4 3",
   }));
@@ -123,7 +127,7 @@ export function KeywordTrendModal({
   const handleCopy = () => {
     const headers = ["Date", "Device", "Position", "Change vs previous"];
     void navigator.clipboard.writeText(buildCsv(headers, exportRows()));
-    toast.success("Copied to clipboard");
+    toast.success(t("Copied to clipboard"));
     captureClientEvent("rank_tracking:keyword_trend_copy");
   };
 
@@ -152,7 +156,7 @@ export function KeywordTrendModal({
             {locationName
               ? formatLocationLabel(locationName, 2)
               : (LOCATIONS[locationCode] ?? "US")}{" "}
-            &middot; Position over time
+            &middot; {t("Position over time")}
           </p>
         </div>
         <TrendRangeToggle value={sinceDays} onChange={setSinceDays} />
@@ -184,14 +188,14 @@ export function KeywordTrendModal({
           <div className="flex items-center justify-end gap-2">
             <button className="btn btn-ghost btn-xs gap-1" onClick={handleCopy}>
               <Copy className="size-3.5" />
-              Copy
+              {t("Copy")}
             </button>
             <button
               className="btn btn-ghost btn-xs gap-1"
               onClick={handleExport}
             >
               <Download className="size-3.5" />
-              Export CSV
+              {t("Export CSV")}
             </button>
           </div>
 
@@ -199,10 +203,10 @@ export function KeywordTrendModal({
             <table className="table table-sm">
               <thead className="sticky top-0 bg-base-100">
                 <tr>
-                  <th>Date</th>
-                  {devices.length > 1 && <th>Device</th>}
-                  <th>Position</th>
-                  <th>Δ vs previous check</th>
+                  <th>{t("Date")}</th>
+                  {devices.length > 1 && <th>{t("Device")}</th>}
+                  <th>{t("Position")}</th>
+                  <th>{t("Δ vs previous check")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -226,7 +230,7 @@ export function KeywordTrendModal({
                       <td>
                         {r.position === null ? (
                           <span className="text-base-content/40 text-xs">
-                            Not in top {serpDepth}
+                            {t("Not in top {depth}", { depth: serpDepth })}
                           </span>
                         ) : (
                           <span className="font-mono text-sm">
@@ -270,7 +274,7 @@ export function KeywordTrendModal({
 
       <div className="flex justify-end">
         <button className="btn btn-ghost btn-sm" onClick={onClose}>
-          Close
+          {t("Close")}
         </button>
       </div>
     </Modal>
@@ -278,11 +282,16 @@ export function KeywordTrendModal({
 }
 
 function EmptyState({ count }: { count: number }) {
+  const { t } = useLocale();
   return (
     <div className="rounded-lg border border-dashed border-base-300 p-10 text-center text-sm text-base-content/60">
       {count === 0
-        ? "No history yet — run a check to start tracking position over time."
-        : "Only 1 check so far — the trend chart fills in after the next check."}
+        ? t(
+            "No history yet — run a check to start tracking position over time.",
+          )
+        : t(
+            "Only 1 check so far — the trend chart fills in after the next check.",
+          )}
     </div>
   );
 }
@@ -298,10 +307,11 @@ function ChartTooltip({
   serpDepth: number;
   bottomBandKeys: Set<string>;
 }) {
+  const { t } = useLocale();
   return (
     <div className="rounded-md border border-base-300 bg-base-100 px-3 py-2 shadow-sm space-y-0.5">
       <p className="text-xs text-base-content/60">
-        {new Date(label).toLocaleDateString("en-US", {
+        {new Date(label).toLocaleDateString(getIntlLocale(readActiveLocale()), {
           month: "short",
           day: "numeric",
           year: "numeric",
@@ -310,7 +320,7 @@ function ChartTooltip({
       {entries.map((e) => {
         const device =
           e.dataKey === "desktop" || e.dataKey === "mobile"
-            ? DEVICE_STYLE[e.dataKey].label
+            ? t(DEVICE_STYLE[e.dataKey].label)
             : String(e.dataKey ?? "");
         const inBottomBand = bottomBandKeys.has(`${label}:${e.dataKey}`);
         return (
@@ -318,7 +328,7 @@ function ChartTooltip({
             {device}:{" "}
             {inBottomBand ? (
               <span className="text-base-content/60">
-                Not in top {serpDepth}
+                {t("Not in top {depth}", { depth: serpDepth })}
               </span>
             ) : (
               e.value

@@ -12,6 +12,7 @@ import {
   getBillingUsageEvents,
   type BillingUsageEvent,
 } from "@/serverFunctions/billing";
+import { useLocale } from "@/plugins/client/context";
 
 const BILLING_USAGE_FEATURE_IDS: string[] = [
   AUTUMN_SEO_DATA_BALANCE_FEATURE_ID,
@@ -134,6 +135,7 @@ export function getBillingFeatureBreakdownRows(
 }
 
 export function BillingFeatureBreakdown() {
+  const { t } = useLocale();
   const eventsQuery = useQuery({
     queryKey: ["billing", "usage-events", BILLING_USAGE_FEATURE_IDS, "30d"],
     queryFn: () => getBillingUsageEvents({ data: getLast30DayUsageRange() }),
@@ -146,8 +148,10 @@ export function BillingFeatureBreakdown() {
   return (
     <div className="rounded-lg border border-base-300 bg-base-100 p-4 space-y-3">
       <div className="flex items-baseline justify-between gap-4">
-        <span className="font-semibold">Usage by feature</span>
-        <span className="text-xs text-base-content/50">Last 30 days</span>
+        <span className="font-semibold">{t("Usage by feature")}</span>
+        <span className="text-xs text-base-content/50">
+          {t("Last 30 days")}
+        </span>
       </div>
 
       {eventsQuery.isLoading ? (
@@ -158,14 +162,14 @@ export function BillingFeatureBreakdown() {
         </div>
       ) : rows.length === 0 ? (
         <div className="text-sm text-base-content/40">
-          No usage recorded yet
+          {t("No usage recorded yet")}
         </div>
       ) : (
         <ul className="space-y-2.5">
           {rows.map((row) => (
             <li key={row.label} className="space-y-1">
               <div className="flex items-baseline justify-between gap-4 text-sm">
-                <span>{row.label}</span>
+                <span>{t(row.label)}</span>
                 <span className="tabular-nums text-base-content/70">
                   ${row.usd.toFixed(2)}
                 </span>

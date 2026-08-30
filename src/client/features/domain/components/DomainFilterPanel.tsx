@@ -16,6 +16,7 @@ import {
   useDomainRenderDebug,
 } from "@/client/features/domain/domainDebug";
 import { MAX_DATAFORSEO_FILTER_CONDITIONS } from "@/types/schemas/domain";
+import { useLocale } from "@/plugins/client/context";
 
 type FilterValues = Record<string, string>;
 
@@ -64,6 +65,7 @@ export function DomainFilterPanel<TValues extends FilterValues>({
   onClear,
   renderExtra,
 }: Props<TValues>) {
+  const { t } = useLocale();
   const appliedKey = useMemo(
     () => fields.map((key) => appliedFilters[key]).join("|"),
     [appliedFilters, fields],
@@ -148,15 +150,15 @@ export function DomainFilterPanel<TValues extends FilterValues>({
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold">Refine table results</p>
+          <p className="text-sm font-semibold">{t("Refine table results")}</p>
           {activeFilterCount > 0 ? (
             <span className="badge badge-xs badge-primary border-0 text-primary-content">
-              {activeFilterCount} active
+              {t("{count} active", { count: activeFilterCount })}
             </span>
           ) : null}
           {meta.dirtyCount > 0 ? (
             <span className="badge badge-xs badge-warning border-0">
-              {meta.dirtyCount} unapplied
+              {t("{count} unapplied", { count: meta.dirtyCount })}
             </span>
           ) : null}
         </div>
@@ -167,7 +169,7 @@ export function DomainFilterPanel<TValues extends FilterValues>({
           disabled={activeFilterCount === 0 && !meta.isDirty}
         >
           <RotateCcw className="size-3" />
-          Clear all
+          {t("Clear all")}
         </button>
       </div>
 
@@ -175,8 +177,8 @@ export function DomainFilterPanel<TValues extends FilterValues>({
         {textFields.map((field) => (
           <FilterTextInput
             key={String(field.key)}
-            label={field.label}
-            placeholder={field.placeholder}
+            label={t(field.label)}
+            placeholder={t(field.placeholder)}
             value={draftFilters[field.key]}
             onChange={(value) => handleValueChange(field.key, value)}
           />
@@ -185,17 +187,17 @@ export function DomainFilterPanel<TValues extends FilterValues>({
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {rangeFields.map((field) => (
-          <FilterRangeGroup key={String(field.minKey)} title={field.title}>
+          <FilterRangeGroup key={String(field.minKey)} title={t(field.title)}>
             <FilterNumberInput
               value={draftFilters[field.minKey]}
               onChange={(value) => handleValueChange(field.minKey, value)}
-              placeholder="Min"
+              placeholder={t("Min")}
               step={field.step}
             />
             <FilterNumberInput
               value={draftFilters[field.maxKey]}
               onChange={(value) => handleValueChange(field.maxKey, value)}
-              placeholder="Max"
+              placeholder={t("Max")}
               step={field.step}
             />
           </FilterRangeGroup>
@@ -208,14 +210,19 @@ export function DomainFilterPanel<TValues extends FilterValues>({
         <div className="alert alert-warning py-2 text-xs">
           <AlertTriangle className="size-4 shrink-0" />
           <span>
-            Too many filter conditions ({meta.conditionCount} of {maxConditions}{" "}
-            max). Remove some terms or ranges before applying.
+            {t(
+              "Too many filter conditions ({count} of {max} max). Remove some terms or ranges before applying.",
+              { count: meta.conditionCount, max: maxConditions },
+            )}
           </span>
         </div>
       ) : null}
       <div className="flex items-center justify-between gap-2 pt-1">
         <span className="text-xs text-base-content/50 tabular-nums">
-          {meta.conditionCount} / {maxConditions} conditions
+          {t("{count} / {max} conditions", {
+            count: meta.conditionCount,
+            max: maxConditions,
+          })}
         </span>
         <div className="flex items-center gap-2">
           <button
@@ -224,7 +231,7 @@ export function DomainFilterPanel<TValues extends FilterValues>({
             onClick={cancelFilterEdits}
             disabled={!meta.isDirty}
           >
-            Cancel
+            {t("Cancel")}
           </button>
           <button
             type="button"
@@ -233,11 +240,14 @@ export function DomainFilterPanel<TValues extends FilterValues>({
             disabled={!meta.isDirty || meta.overLimit}
             title={
               meta.overLimit
-                ? `This scope leaves room for at most ${maxConditions} filter conditions per request`
+                ? t(
+                    "This scope leaves room for at most {max} filter conditions per request",
+                    { max: maxConditions },
+                  )
                 : undefined
             }
           >
-            Apply filters
+            {t("Apply filters")}
             {meta.isDirty ? (
               <span className="badge badge-xs ml-1 border-0 bg-primary-content/20">
                 {meta.dirtyCount}

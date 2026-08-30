@@ -33,6 +33,8 @@ import { useSavedKeywordsFilters } from "@/client/features/saved-keywords/useSav
 import { useTagManage } from "@/client/features/saved-keywords/useTagManage";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { captureClientEvent } from "@/client/lib/posthog";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import {
   getSavedKeywords,
   refreshSavedKeywordMetrics,
@@ -48,6 +50,7 @@ export const Route = createFileRoute("/_project/p/$projectId/saved")({
 const FILTER_DEBOUNCE_MS = 350;
 
 function SavedKeywordsPage() {
+  const { t } = useLocale();
   const { projectId } = Route.useParams();
   const queryClient = useQueryClient();
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
@@ -158,11 +161,16 @@ function SavedKeywordsPage() {
         count: result.deletedCount,
       });
       toast.success(
-        `${result.deletedCount} keyword${result.deletedCount !== 1 ? "s" : ""} removed`,
+        t(
+          result.deletedCount === 1
+            ? "{count} keyword removed"
+            : "{count} keywords removed",
+          { count: result.deletedCount },
+        ),
       );
     },
     onError: (error) => {
-      setRemoveError(getStandardErrorMessage(error, "Remove failed."));
+      setRemoveError(getStandardErrorMessage(error, t("Remove failed."), t));
     },
   });
 
@@ -185,11 +193,18 @@ function SavedKeywordsPage() {
       setShowTagModal(false);
       void invalidateSavedKeywords();
       toast.success(
-        `Updated tags for ${result.taggedCount} keyword${result.taggedCount !== 1 ? "s" : ""}`,
+        t(
+          result.taggedCount === 1
+            ? "Updated tags for {count} keyword"
+            : "Updated tags for {count} keywords",
+          { count: result.taggedCount },
+        ),
       );
     },
     onError: (error) => {
-      toast.error(getStandardErrorMessage(error, "Could not update tags"));
+      toast.error(
+        getStandardErrorMessage(error, t("Could not update tags"), t),
+      );
     },
   });
 
@@ -198,12 +213,17 @@ function SavedKeywordsPage() {
     onSuccess: (result) => {
       void invalidateSavedKeywords();
       toast.success(
-        `Updated stats for ${result.updated} keyword${result.updated !== 1 ? "s" : ""}`,
+        t(
+          result.updated === 1
+            ? "Updated stats for {count} keyword"
+            : "Updated stats for {count} keywords",
+          { count: result.updated },
+        ),
       );
     },
     onError: (error) => {
       toast.error(
-        getStandardErrorMessage(error, "Could not update keyword stats."),
+        getStandardErrorMessage(error, t("Could not update keyword stats."), t),
       );
     },
   });
@@ -315,7 +335,12 @@ function SavedKeywordsPage() {
               selectedRows.map((row) => row.keyword).join("\n"),
             );
             toast.success(
-              `${selectedCount} keyword${selectedCount !== 1 ? "s" : ""} copied`,
+              t(
+                selectedCount === 1
+                  ? "Copied {count} keyword"
+                  : "Copied {count} keywords",
+                { count: selectedCount },
+              ),
             );
           }}
           onOpenTags={() => setShowTagModal(true)}

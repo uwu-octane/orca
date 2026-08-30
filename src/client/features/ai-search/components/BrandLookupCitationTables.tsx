@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import { createColumnHelper, type Table } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, Sparkles } from "lucide-react";
@@ -13,6 +13,7 @@ import {
 } from "@/client/features/ai-search/platformLabels";
 import { formatUrlForDisplay } from "@/client/components/table/url";
 import type { BrandLookupResult } from "@/types/schemas/ai-search";
+import { useLocale } from "@/plugins/client/context";
 
 type TopPageRow = BrandLookupResult["topPages"][number];
 type TopQueryRow = BrandLookupResult["topQueries"][number];
@@ -26,12 +27,17 @@ function HeaderWithHelp({
   label: string;
   helpText: string;
 }) {
+  const { t } = useLocale();
+
   return (
     <span className="uppercase tracking-wider">
-      <HeaderHelpLabel label={label} helpText={helpText} />
+      <HeaderHelpLabel label={t(label)} helpText={t(helpText)} />
     </span>
   );
 }
+
+// prettier-ignore
+function LocalizedSortableHeader(props: ComponentProps<typeof SortableHeader>) { const { t } = useLocale(); return <SortableHeader {...props} label={t(props.label)} helpText={props.helpText ? t(props.helpText) : undefined} />; }
 
 const PLATFORM_HELP =
   "Which AI surface produced the answer — ChatGPT or Google AI Overview.";
@@ -85,6 +91,7 @@ function PageUrlCell({
   row: TopPageRow;
   targetDomain: string | null;
 }) {
+  const { t } = useLocale();
   const path = urlPath(row.url);
   const isOwn =
     targetDomain != null &&
@@ -103,7 +110,9 @@ function PageUrlCell({
           {row.domain ?? formatUrlForDisplay(row.url)}
         </span>
         {isOwn ? (
-          <span className="badge badge-primary badge-xs border-0">You</span>
+          <span className="badge badge-primary badge-xs border-0">
+            {t("You")}
+          </span>
         ) : null}
         <ExternalLink className="size-3 shrink-0 text-base-content/40" />
       </span>
@@ -131,6 +140,7 @@ function KeywordsCell({
   brand: string;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const { t } = useLocale();
 
   if (keywords.length === 0) {
     return <span className="text-base-content/40">—</span>;
@@ -149,16 +159,16 @@ function KeywordsCell({
               params={{ projectId }}
               search={{ q: keyword.question, hb: brand || undefined }}
               className="group/kw inline-flex items-baseline gap-2 text-xs"
-              title="Run this prompt in Prompt Explorer"
+              title={t("Run this prompt in Prompt Explorer")}
             >
               <span className="text-base-content/80 group-hover/kw:underline">
                 {keyword.question}
               </span>
               <span
                 className="shrink-0 tabular-nums text-base-content/40"
-                title="Prompt volume in the fetched sample"
+                title={t("Prompt volume in the fetched sample")}
               >
-                {formatCount(keyword.aiSearchVolume)} vol.
+                {formatCount(keyword.aiSearchVolume)} {t("vol.")}
               </span>
             </Link>
           </li>
@@ -170,10 +180,49 @@ function KeywordsCell({
           onClick={() => setExpanded((current) => !current)}
           className="text-xs text-base-content/50 hover:text-base-content"
         >
-          {expanded ? "Show less" : `+${remaining} more`}
+          {expanded ? t("Show less") : t("+{count} more", { count: remaining })}
         </button>
       ) : null}
     </div>
+  );
+}
+
+function QueryCell({ row }: { row: TopQueryRow }) {
+  const { t } = useLocale();
+  return (
+    <>
+      <p className="break-words font-medium">{row.question}</p>
+      {row.brandsMentioned.length > 0 ? (
+        <p className="mt-0.5 text-xs text-base-content/50">
+          {t("Brands:")} {row.brandsMentioned.slice(0, 5).join(", ")}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+function PromptActionCell({
+  question,
+  projectId,
+  brand,
+}: {
+  question: string;
+  projectId: string;
+  brand: string;
+}) {
+  const { t } = useLocale();
+  const actionLabel = t("Run this prompt in Prompt Explorer");
+  return (
+    <Link
+      to="/p/$projectId/prompt-explorer"
+      params={{ projectId }}
+      search={{ q: question, hb: brand || undefined }}
+      aria-label={actionLabel}
+      className="btn btn-ghost btn-xs gap-1 tooltip tooltip-left opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
+      data-tip={actionLabel}
+    >
+      <Sparkles className="size-3.5" />
+    </Link>
   );
 }
 
@@ -236,7 +285,7 @@ export function buildTopPagesColumns({
     pagesHelper.accessor("capturedVolume", {
       id: "capturedVolume",
       header: ({ column }) => (
-        <SortableHeader
+        <LocalizedSortableHeader
           column={column}
           label="Source vol."
           helpText="Estimated monthly prompt demand DataForSEO reports for this cited source, across prompts where the searched brand or domain appears."
@@ -271,16 +320,7 @@ export function buildTopQueriesColumns({
         />
       ),
       enableSorting: false,
-      cell: ({ row }) => (
-        <>
-          <p className="break-words font-medium">{row.original.question}</p>
-          {row.original.brandsMentioned.length > 0 ? (
-            <p className="mt-0.5 text-xs text-base-content/50">
-              Brands: {row.original.brandsMentioned.slice(0, 5).join(", ")}
-            </p>
-          ) : null}
-        </>
-      ),
+      cell: ({ row }) => <QueryCell row={row.original} />,
     }),
     ...(showPlatform
       ? [
@@ -297,7 +337,7 @@ export function buildTopQueriesColumns({
     queriesHelper.accessor("aiSearchVolume", {
       id: "aiSearchVolume",
       header: ({ column }) => (
-        <SortableHeader
+        <LocalizedSortableHeader
           column={column}
           label="AI search vol."
           helpText="Estimated monthly search demand for this prompt's topic. This is prompt demand, not the number of brand mentions."
@@ -312,23 +352,14 @@ export function buildTopQueriesColumns({
     }),
     queriesHelper.display({
       id: "action",
-      header: () => <span className="sr-only">Actions</span>,
+      header: () => <span className="sr-only">{useLocale().t("Actions")}</span>,
       meta: { cellClassName: "w-px whitespace-nowrap text-right align-top" },
       cell: ({ row }) => (
-        <span
-          className="tooltip tooltip-left opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
-          data-tip="Run this prompt in Prompt Explorer"
-        >
-          <Link
-            to="/p/$projectId/prompt-explorer"
-            params={{ projectId }}
-            search={{ q: row.original.question, hb: brand || undefined }}
-            className="btn btn-ghost btn-xs gap-1"
-            aria-label="Run this prompt in Prompt Explorer"
-          >
-            <Sparkles className="size-3.5" />
-          </Link>
-        </span>
+        <PromptActionCell
+          question={row.original.question}
+          projectId={projectId}
+          brand={brand}
+        />
       ),
     }),
   ];
@@ -341,10 +372,11 @@ export function TopPagesTable({
   table: Table<TopPageRow>;
   emptyMessage?: string;
 }) {
+  const { t } = useLocale();
   if (table.getRowModel().rows.length === 0) {
     return (
       <p className="p-6 text-center text-sm text-base-content/60">
-        {emptyMessage}
+        {t(emptyMessage)}
       </p>
     );
   }
@@ -359,10 +391,11 @@ export function TopQueriesTable({
   table: Table<TopQueryRow>;
   emptyMessage?: string;
 }) {
+  const { t } = useLocale();
   if (table.getRowModel().rows.length === 0) {
     return (
       <p className="p-6 text-center text-sm text-base-content/60">
-        {emptyMessage}
+        {t(emptyMessage)}
       </p>
     );
   }

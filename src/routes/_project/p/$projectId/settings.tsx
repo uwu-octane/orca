@@ -1,6 +1,8 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
+// FORK: locale plugin — project settings copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { getProjects } from "@/serverFunctions/projects";
 
 export const Route = createFileRoute("/_project/p/$projectId/settings")({
@@ -14,6 +16,7 @@ const tabs = [
 ];
 
 function ProjectSettingsLayout() {
+  const { t } = useLocale();
   const { projectId } = Route.useParams();
   const projectsQuery = useQuery({
     queryKey: ["projects"],
@@ -30,11 +33,11 @@ function ProjectSettingsLayout() {
             className="inline-flex items-center gap-1 text-sm text-base-content/60 transition-colors hover:text-base-content"
           >
             <ChevronLeft className="size-4" />
-            Projects
+            {t("Projects")}
           </Link>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              Project settings
+              {t("Project settings")}
             </h1>
             <p className="text-sm text-base-content/60">
               {project?.name ?? " "}
@@ -55,7 +58,7 @@ function ProjectSettingsLayout() {
                 }}
                 inactiveProps={{ "aria-selected": false }}
               >
-                {tab.label}
+                {t(tab.label)}
               </Link>
             ))}
           </div>

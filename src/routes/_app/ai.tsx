@@ -9,6 +9,7 @@ import {
   Collapsible,
   CopyButton,
 } from "@/client/features/ai-mcp/SetupControls";
+import { useLocale } from "@/plugins/client/context";
 
 const DISCORD_URL = "https://discord.gg/c9uGs3cFXr";
 const SUPPORT_EMAIL = "ben@openseo.so";
@@ -43,6 +44,7 @@ export const Route = createFileRoute("/_app/ai")({
 });
 
 function AiPage() {
+  const { t } = useLocale();
   const mcpUrl =
     typeof window === "undefined"
       ? "https://app.openseo.so/mcp"
@@ -51,25 +53,27 @@ function AiPage() {
   return (
     <div className="h-full overflow-auto bg-base-100 px-4 py-12 md:px-6 md:py-16 pb-24 md:pb-12">
       <div className="mx-auto max-w-3xl">
-        <h1 className="text-2xl font-semibold">AI & MCP</h1>
+        <h1 className="text-2xl font-semibold">{t("AI & MCP")}</h1>
         <p className="mt-2 text-sm text-base-content/70 leading-relaxed">
-          Connect your AI agent to OpenSEO. Run keyword research, SERP analysis,
-          domain lookups, and backlink reviews from your editor or chat.
+          {t(
+            "Connect your AI agent to OpenSEO. Run keyword research, SERP analysis, domain lookups, and backlink reviews from your editor or chat.",
+          )}
         </p>
 
         {getAuthMode(import.meta.env.AUTH_MODE) === "cloudflare_access" ? (
           <div className="alert alert-warning mt-6 text-sm" role="alert">
             <ShieldAlert className="size-4 shrink-0" />
             <span>
-              This instance is behind Cloudflare Access. MCP clients cannot
-              connect until Managed OAuth is enabled on your Access application.{" "}
+              {t(
+                "This instance is behind Cloudflare Access. MCP clients cannot connect until Managed OAuth is enabled on your Access application.",
+              )}{" "}
               <a
                 href="https://openseo.so/docs/self-hosting/cloudflare#connect-the-mcp-server-through-cloudflare-access"
                 target="_blank"
                 rel="noreferrer"
                 className="link font-medium"
               >
-                Setup guide
+                {t("Setup guide")}
               </a>
             </span>
           </div>
@@ -79,11 +83,11 @@ function AiPage() {
           <div className="rounded-lg border border-base-300 bg-base-200 px-4 py-3.5">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-medium uppercase tracking-wide text-base-content/50">
-                MCP server URL
+                {t("MCP server URL")}
               </p>
               <CopyButton
                 value={mcpUrl}
-                successMessage="MCP URL copied"
+                successMessage={t("MCP URL copied")}
                 onCopy={() => captureClientEvent("mcp:setup_url_copy")}
               />
             </div>
@@ -92,35 +96,35 @@ function AiPage() {
             </code>
           </div>
           <p className="mt-2.5 text-xs text-base-content/55 leading-relaxed">
-            Paste this into any MCP client. This URL points at the OpenSEO
-            instance you are using now, whether hosted, self-hosted, or local.
-            Sign in with OpenSEO when prompted.
+            {t(
+              "Paste this into any MCP client. This URL points at the OpenSEO instance you are using now, whether hosted, self-hosted, or local. Sign in with OpenSEO when prompted.",
+            )}
           </p>
           {isHostedClientAuthMode() ? (
             <p className="mt-2 text-xs text-base-content/55">
-              For headless or CI setups, use an API key from{" "}
+              {t("For headless or CI setups, use an API key from")}{" "}
               <Link className="link link-primary" to="/settings">
-                Settings
+                {t("Settings")}
               </Link>{" "}
-              instead of the OAuth login.
+              {t("instead of the OAuth login.")}
             </p>
           ) : null}
         </section>
 
         <section className="mt-10">
-          <h2 className="text-base font-semibold">Setup guides</h2>
+          <h2 className="text-base font-semibold">{t("Setup guides")}</h2>
           <p className="mt-1.5 text-sm text-base-content/70">
-            Pick your agent.
+            {t("Pick your agent.")}
           </p>
           <div className="mt-4 divide-y divide-base-300 overflow-hidden rounded-lg border border-base-300 bg-base-200">
             <Collapsible
               id="claude-code"
               title="Claude Code"
-              subtitle="Add with the CLI"
+              subtitle={t("Add with the CLI")}
               icon={<ClaudeIcon className="size-5" />}
             >
               <p className="text-sm text-base-content/70">
-                Run this in your terminal:
+                {t("Run this in your terminal:")}
               </p>
               <CodeBlock
                 code={`claude mcp add --transport http --scope user openseo ${mcpUrl}`}
@@ -131,55 +135,59 @@ function AiPage() {
                 }
               />
               <p className="text-sm text-base-content/70">
-                Approve the login when prompted.
+                {t("Approve the login when prompted.")}
               </p>
             </Collapsible>
 
             <Collapsible
               id="claude-desktop"
               title="Claude Desktop"
-              subtitle="Add a custom connector"
+              subtitle={t("Add a custom connector")}
               icon={<ClaudeIcon className="size-5" />}
             >
               <ol className="ml-5 list-decimal space-y-1.5 text-sm text-base-content/70 leading-relaxed">
                 <li>
-                  Open <span className="text-base-content">Settings</span> →{" "}
-                  <span className="text-base-content">Connectors</span>.
+                  {t("Open")}{" "}
+                  <span className="text-base-content">{t("Settings")}</span> →{" "}
+                  <span className="text-base-content">{t("Connectors")}</span>.
                 </li>
                 <li>
-                  Click{" "}
+                  {t("Click")}{" "}
                   <span className="font-medium text-base-content">
-                    Add custom connector
+                    {t("Add custom connector")}
                   </span>
                   .
                 </li>
-                <li>Paste the MCP URL above and click Add.</li>
-                <li>Approve the OpenSEO login when prompted.</li>
+                <li>{t("Paste the MCP URL above and click Add.")}</li>
+                <li>{t("Approve the OpenSEO login when prompted.")}</li>
                 <li>
-                  Optional: after OpenSEO connects, click{" "}
+                  {t("Optional: after OpenSEO connects, click")}{" "}
                   <span className="font-medium text-base-content">
-                    Configure
+                    {t("Configure")}
                   </span>
-                  , then choose{" "}
+                  , {t("then choose")}{" "}
                   <span className="font-medium text-base-content">
-                    Always Approved
+                    {t("Always Approved")}
                   </span>
-                  , except for any tools you want Claude to ask before using.
+                  ,{" "}
+                  {t(
+                    "except for any tools you want Claude to ask before using.",
+                  )}
                 </li>
               </ol>
               <p className="text-xs text-base-content/55 leading-relaxed">
-                Requires a Claude Pro, Max, Team, or Enterprise plan.
+                {t("Requires a Claude Pro, Max, Team, or Enterprise plan.")}
               </p>
             </Collapsible>
 
             <Collapsible
               id="codex"
               title="Codex"
-              subtitle="Add with the CLI"
+              subtitle={t("Add with the CLI")}
               icon={<CodexIcon className="size-5" />}
             >
               <p className="text-sm text-base-content/70">
-                Run this in your terminal:
+                {t("Run this in your terminal:")}
               </p>
               <CodeBlock
                 code={`codex mcp add openseo --url ${mcpUrl}`}
@@ -190,92 +198,93 @@ function AiPage() {
                 }
               />
               <p className="text-sm text-base-content/70">
-                Approve the login when prompted.
+                {t("Approve the login when prompted.")}
               </p>
             </Collapsible>
 
             <Collapsible
               id="codex-desktop"
               title="Codex Desktop"
-              subtitle="Settings → Integrations & MCP"
+              subtitle={t("Settings → Integrations & MCP")}
               icon={<CodexIcon className="size-5" />}
             >
               <ol className="ml-5 list-decimal space-y-1.5 text-sm text-base-content/70 leading-relaxed">
                 <li>
-                  Open{" "}
+                  {t("Open")}{" "}
                   <span className="text-base-content">
-                    Settings → Integrations & MCP
+                    {t("Settings → Integrations & MCP")}
                   </span>
                   .
                 </li>
                 <li>
-                  Click{" "}
+                  {t("Click")}{" "}
                   <span className="font-medium text-base-content">
-                    Add your own
+                    {t("Add your own")}
                   </span>
                   .
                 </li>
-                <li>Paste the MCP URL above.</li>
-                <li>Approve the OpenSEO login when prompted.</li>
+                <li>{t("Paste the MCP URL above.")}</li>
+                <li>{t("Approve the OpenSEO login when prompted.")}</li>
               </ol>
             </Collapsible>
           </div>
         </section>
 
         <section className="mt-12">
-          <h2 className="text-base font-semibold">OpenSEO Skills</h2>
+          <h2 className="text-base font-semibold">{t("OpenSEO Skills")}</h2>
           <p className="mt-1.5 text-sm text-base-content/70 leading-relaxed">
-            Skills give Codex and Claude Code reusable SEO workflows that can
-            call your OpenSEO MCP tools when live SERP, keyword, backlink, or
-            domain data is needed.
+            {t(
+              "Skills give Codex and Claude Code reusable SEO workflows that can call your OpenSEO MCP tools when live SERP, keyword, backlink, or domain data is needed.",
+            )}
           </p>
           <div className="mt-4 divide-y divide-base-300 overflow-hidden rounded-lg border border-base-300 bg-base-200">
             <Collapsible
               id="skills-add"
-              title="Install with skills add"
-              subtitle="Recommended cross-agent installer"
+              title={t("Install with skills add")}
+              subtitle={t("Recommended cross-agent installer")}
             >
               <CodeBlock code={SKILLS_INSTALL} />
               <p className="text-sm text-base-content/70">
-                You can also auto-accept each OpenSEO skill:
+                {t("You can also auto-accept each OpenSEO skill:")}
               </p>
               <CodeBlock code={ALL_SKILLS_INSTALL} />
             </Collapsible>
             <Collapsible
               id="claude-code-skills"
-              title="Install for Claude Code"
-              subtitle="Target Claude Code only"
+              title={t("Install for Claude Code")}
+              subtitle={t("Target Claude Code only")}
               icon={<ClaudeIcon className="size-5" />}
             >
               <CodeBlock code={CLAUDE_CODE_SKILLS_INSTALL} />
             </Collapsible>
             <Collapsible
               id="codex-skills"
-              title="Install for Codex"
-              subtitle="Target OpenAI Codex only"
+              title={t("Install for Codex")}
+              subtitle={t("Target OpenAI Codex only")}
               icon={<CodexIcon className="size-5" />}
             >
               <CodeBlock code={CODEX_SKILLS_INSTALL} />
             </Collapsible>
             <Collapsible
               id="manual-skills"
-              title="Manual GitHub install"
-              subtitle="Clone the repo and copy the skills"
+              title={t("Manual GitHub install")}
+              subtitle={t("Clone the repo and copy the skills")}
             >
               <CodeBlock code={SKILLS_MANUAL_INSTALL} />
             </Collapsible>
           </div>
           <div className="mt-5">
             <p className="text-sm text-base-content/70 leading-relaxed">
-              Start with{" "}
+              {t("Start with")}{" "}
               <span className="font-mono text-base-content">
                 /seo-project-setup
               </span>
-              . It will ask about your project and save your goals, positioning,
-              and competitors to your project context.
+              {t(
+                ". It will ask about your project and save your goals, positioning, and competitors to your project context.",
+              )}
             </p>
             <p className="mt-4 text-xs font-medium uppercase tracking-wide text-base-content/50">
-              Available skills
+              {t("Available skills")}
             </p>
             <ul className="mt-2 grid gap-1.5 text-sm text-base-content/70 sm:grid-cols-2">
               {SKILL_NAMES.map((skill) => (
@@ -289,18 +298,20 @@ function AiPage() {
         </section>
 
         <section className="mt-12">
-          <h2 className="text-base font-semibold">Available tools</h2>
+          <h2 className="text-base font-semibold">{t("Available tools")}</h2>
           <div className="mt-5">
             <AvailableTools />
           </div>
         </section>
 
         <section className="mt-12">
-          <h2 className="text-base font-semibold">Sam: AI SEO teammate</h2>
+          <h2 className="text-base font-semibold">
+            {t("Sam: AI SEO teammate")}
+          </h2>
           <p className="mt-1.5 text-sm text-base-content/70 leading-relaxed">
-            Sam is an experimental content workflow for Claude Code and other
-            coding agents. It combines keyword research, source discovery,
-            drafting, and QA.
+            {t(
+              "Sam is an experimental content workflow for Claude Code and other coding agents. It combines keyword research, source discovery, drafting, and QA.",
+            )}
           </p>
           <a
             href={SAM_GITHUB_URL}
@@ -308,13 +319,13 @@ function AiPage() {
             rel="noreferrer"
             className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-base-content transition-colors hover:text-base-content/60"
           >
-            View Sam on GitHub
+            {t("View Sam on GitHub")}
             <ArrowUpRight className="size-3.5" />
           </a>
         </section>
 
         <section className="mt-12">
-          <h2 className="text-base font-semibold">Roadmap</h2>
+          <h2 className="text-base font-semibold">{t("Roadmap")}</h2>
           <ul className="mt-4 space-y-3">
             {[
               {
@@ -334,10 +345,10 @@ function AiPage() {
                 </span>
                 <span className="text-base-content/70">
                   <span className="font-medium text-base-content">
-                    {item.title}
+                    {t(item.title)}
                   </span>
                   <br />
-                  {item.description}
+                  {t(item.description)}
                 </span>
               </li>
             ))}
@@ -345,7 +356,7 @@ function AiPage() {
         </section>
 
         <p className="mt-12 text-xs text-base-content/55 leading-relaxed">
-          Have feedback? Reach out on{" "}
+          {t("Have feedback? Reach out on")}{" "}
           <a
             className="link link-primary"
             href={DISCORD_URL}
@@ -354,7 +365,7 @@ function AiPage() {
           >
             Discord
           </a>{" "}
-          or email{" "}
+          {t("or email")}{" "}
           <a className="link link-primary" href={`mailto:${SUPPORT_EMAIL}`}>
             {SUPPORT_EMAIL}
           </a>

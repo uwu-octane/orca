@@ -6,6 +6,7 @@ import {
   type IssueSeverity,
 } from "@/shared/audit-issues";
 import type { AuditResultsData } from "@/client/features/audit/results/types";
+import { useLocale } from "@/plugins/client/context";
 
 type AuditIssueRow = AuditResultsData["issues"][number];
 
@@ -76,6 +77,7 @@ function groupIssues(issues: AuditIssueRow[]): IssueGroup[] {
 }
 
 export function IssuesView({ issues }: { issues: AuditIssueRow[] }) {
+  const { t } = useLocale();
   const groups = useMemo(() => groupIssues(issues), [issues]);
 
   const sections = useMemo(
@@ -92,10 +94,11 @@ export function IssuesView({ issues }: { issues: AuditIssueRow[] }) {
   if (issues.length === 0) {
     return (
       <div className="py-10 text-center text-base-content/60">
-        <p className="font-medium">No issues recorded for this audit.</p>
+        <p className="font-medium">{t("No issues recorded for this audit.")}</p>
         <p className="text-sm mt-1">
-          Either the site is in great shape, or this audit ran before issue
-          checks existed — run a new audit to get the full report.
+          {t(
+            "Either the site is in great shape, or this audit ran before issue checks existed — run a new audit to get the full report.",
+          )}
         </p>
       </div>
     );
@@ -115,6 +118,7 @@ function IssueSection({
 }: {
   section: { severity: IssueSeverity; groups: IssueGroup[] };
 }) {
+  const { t } = useLocale();
   const issueCount = section.groups.reduce(
     (sum, group) => sum + group.issues.length,
     0,
@@ -127,7 +131,7 @@ function IssueSection({
           className={`size-1.5 rounded-full ${SEVERITY_DOT[section.severity]}`}
         />
         <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/60">
-          {SEVERITY_LABEL[section.severity]}
+          {t(SEVERITY_LABEL[section.severity])}
         </span>
         <span className="text-[11px] tabular-nums text-base-content/40">
           {issueCount}
@@ -143,6 +147,7 @@ function IssueSection({
 }
 
 function IssueRow({ group }: { group: IssueGroup }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
 
   return (
@@ -163,10 +168,13 @@ function IssueRow({ group }: { group: IssueGroup }) {
           className={`size-2 shrink-0 rounded-full ${SEVERITY_DOT[group.severity]}`}
         />
         <span className="text-sm font-medium flex-1 min-w-0 truncate">
-          {group.title}
+          {t(group.title)}
         </span>
         <span className="text-xs tabular-nums text-base-content/50 shrink-0">
-          {group.issues.length} {group.issues.length === 1 ? "page" : "pages"}
+          {t("{count} {unit}", {
+            count: group.issues.length,
+            unit: t(group.issues.length === 1 ? "page" : "pages"),
+          })}
         </span>
         <ChevronRight
           className={`size-4 shrink-0 text-base-content/40 transition-transform ${
@@ -179,13 +187,13 @@ function IssueRow({ group }: { group: IssueGroup }) {
         <div className="pl-9 pr-4 pb-4 pt-0.5 space-y-3">
           {group.explanation && (
             <p className="text-sm text-base-content/70 max-w-prose">
-              {group.explanation}
+              {t(group.explanation)}
             </p>
           )}
           {group.howToFix && (
             <p className="text-sm max-w-prose">
-              <span className="font-medium">How to fix: </span>
-              <span className="text-base-content/80">{group.howToFix}</span>
+              <span className="font-medium">{t("How to fix:")}</span>{" "}
+              <span className="text-base-content/80">{t(group.howToFix)}</span>
             </p>
           )}
           <AffectedUrlList issues={group.issues} />
@@ -196,6 +204,7 @@ function IssueRow({ group }: { group: IssueGroup }) {
 }
 
 function AffectedUrlList({ issues }: { issues: AuditIssueRow[] }) {
+  const { t } = useLocale();
   const rendered = issues.slice(0, MAX_RENDERED_URLS);
   const remaining = issues.length - rendered.length;
 
@@ -220,7 +229,9 @@ function AffectedUrlList({ issues }: { issues: AuditIssueRow[] }) {
       ))}
       {remaining > 0 && (
         <div className="px-3 py-2 text-xs text-base-content/50">
-          …and {remaining} more — export the issues CSV for the full list.
+          {t("…and {count} more — export the issues CSV for the full list.", {
+            count: remaining,
+          })}
         </div>
       )}
     </div>

@@ -8,6 +8,7 @@ import { LABS_LOCATION_OPTIONS } from "@/client/features/keywords/locations";
 import { LocationSelect } from "@/client/components/LocationSelect";
 import { ResearchScopeSelect } from "@/client/components/ResearchScopeSelect";
 import type { ResearchScope } from "@/shared/researchScope";
+import { useLocale } from "@/plugins/client/context";
 
 type Props = {
   controlsForm: DomainOverviewControlsForm;
@@ -28,6 +29,7 @@ export function DomainSearchCard({
   onSortChange,
   onLocationChange,
 }: Props) {
+  const { t } = useLocale();
   return (
     <div className="card bg-base-100 border border-base-300">
       <div className="card-body gap-4">
@@ -46,7 +48,7 @@ export function DomainSearchCard({
                   <Search className="size-4 text-base-content/60" />
                   <input
                     className="grow min-w-0"
-                    placeholder="Enter a domain or URL"
+                    placeholder={t("Enter a domain or URL")}
                     value={field.state.value}
                     onChange={(event) => {
                       field.handleChange(event.target.value);
@@ -100,11 +102,11 @@ export function DomainSearchCard({
                   onSortChange(next);
                 }}
               >
-                <option value="rank">By Rank</option>
-                <option value="traffic">By Traffic</option>
-                <option value="volume">By Volume</option>
-                <option value="score">By Score</option>
-                <option value="cpc">By CPC</option>
+                <option value="rank">{t("By Rank")}</option>
+                <option value="traffic">{t("By Traffic")}</option>
+                <option value="volume">{t("By Volume")}</option>
+                <option value="score">{t("By Score")}</option>
+                <option value="cpc">{t("By CPC")}</option>
               </select>
             )}
           </controlsForm.Field>
@@ -116,7 +118,7 @@ export function DomainSearchCard({
                 className="btn btn-primary shrink-0 px-6"
                 disabled={isLoading || isSubmitting}
               >
-                {isLoading || isSubmitting ? "Loading..." : "Search"}
+                {isLoading || isSubmitting ? t("Loading...") : t("Search")}
               </button>
             )}
           </controlsForm.Subscribe>
@@ -128,7 +130,7 @@ export function DomainSearchCard({
 
             return domainError ? (
               <p id="domain-input-error" className="text-sm text-error">
-                {domainError}
+                {t(domainError)}
               </p>
             ) : null;
           }}
@@ -141,7 +143,7 @@ export function DomainSearchCard({
             return errorMessage ? (
               <div className="rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error flex items-start gap-2">
                 <AlertCircle className="size-4 shrink-0 mt-0.5" />
-                <span>{errorMessage}</span>
+                <span>{t(errorMessage)}</span>
               </div>
             ) : null;
           }}

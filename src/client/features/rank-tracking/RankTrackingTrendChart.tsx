@@ -1,3 +1,6 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
+import { useLocale } from "@/plugins/client/context";
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import {
   CartesianGrid,
@@ -58,14 +61,15 @@ export function RankTrendChart({
    * single keyword's position line, not for an averaged value. */
   showBottomBand?: boolean;
 }) {
+  const { t } = useLocale();
   const { containerRef, width: chartWidth } = useChartWidth();
 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-[11px] text-base-content/50">
-        <span>Google position (1 = best)</span>
+        <span>{t("Google position (1 = best)")}</span>
         <span className="inline-flex items-center gap-1">
-          Better <span aria-hidden>↑</span>
+          {t("Better")} <span aria-hidden>↑</span>
         </span>
       </div>
       <div ref={containerRef} className="w-full min-w-0" style={{ height }}>
@@ -153,7 +157,7 @@ export function RankTrendChart({
 }
 
 export function formatDateTick(value: number): string {
-  return new Date(value).toLocaleDateString("en-US", {
+  return new Date(value).toLocaleDateString(getIntlLocale(readActiveLocale()), {
     month: "short",
     day: "numeric",
   });
@@ -194,6 +198,7 @@ export function TrendRangeToggle({
   value: number;
   onChange: (sinceDays: number) => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="join">
       {TREND_RANGES.map((range) => (
@@ -205,7 +210,7 @@ export function TrendRangeToggle({
           }`}
           onClick={() => onChange(range.sinceDays)}
         >
-          {range.label}
+          {t(range.label)}
         </button>
       ))}
     </div>

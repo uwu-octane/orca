@@ -9,6 +9,8 @@ import {
   RefreshCw,
   Sheet,
 } from "lucide-react";
+// FORK: locale plugin — menu copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 function ToolbarMenu({
   label,
@@ -100,16 +102,17 @@ export function MoreMenu({
   metricsRefreshing: boolean;
   hasData: boolean;
 }) {
+  const { t } = useLocale();
   return (
     <ToolbarMenu
       icon={<MoreHorizontal className="size-4" />}
-      title="More actions"
+      title={t("More actions")}
     >
       {!checkDisabled && (
         <MenuItem
           icon={<Play className="size-3.5" />}
-          label={checkBusy ? "Running..." : "Check rankings"}
-          description="Fetch current Google positions"
+          label={checkBusy ? t("Running...") : t("Check rankings")}
+          description={t("Fetch current Google positions")}
           onClick={onCheckNow}
           disabled={checkBusy}
         />
@@ -120,8 +123,10 @@ export function MoreMenu({
             className={`size-3.5 ${metricsRefreshing ? "animate-spin" : ""}`}
           />
         }
-        label={metricsRefreshing ? "Refreshing..." : "Update keyword stats"}
-        description="Volume, difficulty & CPC — not rankings"
+        label={
+          metricsRefreshing ? t("Refreshing...") : t("Update keyword stats")
+        }
+        description={t("Volume, difficulty & CPC — not rankings")}
         onClick={onRefreshMetrics}
         disabled={metricsRefreshing || !hasData}
       />
@@ -140,23 +145,24 @@ export function ExportMenu({
   onCopyKeywords: () => void;
   hasData: boolean;
 }) {
+  const { t } = useLocale();
   return (
-    <ToolbarMenu label="Export" icon={<Download className="size-3.5" />}>
+    <ToolbarMenu label={t("Export")} icon={<Download className="size-3.5" />}>
       <MenuItem
         icon={<Sheet className="size-3.5" />}
-        label="Export to Sheets"
+        label={t("Export to Sheets")}
         onClick={onExportToSheets}
         disabled={!hasData}
       />
       <MenuItem
         icon={<FileDown className="size-3.5" />}
-        label="Export CSV"
+        label={t("Export CSV")}
         onClick={onExport}
         disabled={!hasData}
       />
       <MenuItem
         icon={<Copy className="size-3.5" />}
-        label="Copy keywords"
+        label={t("Copy keywords")}
         onClick={onCopyKeywords}
         disabled={!hasData}
       />

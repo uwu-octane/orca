@@ -19,6 +19,8 @@ import {
   formatCount,
   formatCtr,
 } from "@/client/features/search-performance/SearchPerformanceColumns";
+// FORK: locale plugin — dashboard GA4 card copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { getGa4DashboardReport } from "@/serverFunctions/ga4";
 
 function formatTrendDay(date: string): string {
@@ -53,6 +55,7 @@ function SessionsTooltip({
   payload?: Array<{ value: number }>;
   label?: string;
 }) {
+  const { t } = useLocale();
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-md border border-base-300 bg-base-100 px-3 py-2 shadow-sm">
@@ -60,7 +63,7 @@ function SessionsTooltip({
         {label ? formatTrendDay(label) : ""}
       </p>
       <p className="text-sm font-medium tabular-nums">
-        {formatCount(payload[0].value)} sessions
+        {t("{count} sessions", { count: formatCount(payload[0].value) })}
       </p>
     </div>
   );
@@ -73,6 +76,7 @@ export function Ga4Card({
   projectId: string;
   connected: boolean;
 }) {
+  const { t } = useLocale();
   const reportQuery = useQuery({
     queryKey: ["dashboardGa4Report", projectId],
     queryFn: () => getGa4DashboardReport({ data: { projectId } }),
@@ -89,8 +93,8 @@ export function Ga4Card({
 
   return (
     <CardShell
-      title="Organic traffic"
-      stamp="Google Analytics · last 28 days"
+      title={t("Organic traffic")}
+      stamp={t("Google Analytics · last 28 days")}
       action={
         <Link
           to="/p/$projectId/settings"
@@ -98,7 +102,7 @@ export function Ga4Card({
           hash="google-analytics"
           className={moreDetailsClass}
         >
-          Manage
+          {t("Manage")}
         </Link>
       }
     >
@@ -113,20 +117,20 @@ export function Ga4Card({
         </div>
       ) : reportQuery.isError ? (
         <p className="text-sm text-base-content/60">
-          Couldn&rsquo;t load Google Analytics data. Try again shortly.
+          {t("Couldn't load Google Analytics data. Try again shortly.")}
         </p>
       ) : report?.connected ? (
         // Covers null (no report row) and 0: a zero-session period would
         // otherwise render an all-zero flatline chart in an empty box.
         !report.totals.sessions ? (
           <p className="text-sm text-base-content/60">
-            No organic search traffic recorded in the last 28 days yet.
+            {t("No organic search traffic recorded in the last 28 days yet.")}
           </p>
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <Stat
-                label="Sessions"
+                label={t("Sessions")}
                 value={statValue(report.totals.sessions, formatCount)}
                 sub={statDelta(
                   report.totals.sessions,
@@ -134,7 +138,7 @@ export function Ga4Card({
                 )}
               />
               <Stat
-                label="Active users"
+                label={t("Active users")}
                 value={statValue(report.totals.activeUsers, formatCount)}
                 sub={statDelta(
                   report.totals.activeUsers,
@@ -142,11 +146,11 @@ export function Ga4Card({
                 )}
               />
               <Stat
-                label="Engagement rate"
+                label={t("Engagement rate")}
                 value={statValue(report.totals.engagementRate, formatCtr)}
               />
               <Stat
-                label="Key events"
+                label={t("Key events")}
                 value={statValue(report.totals.keyEvents, formatCount)}
                 sub={statDelta(
                   report.totals.keyEvents,

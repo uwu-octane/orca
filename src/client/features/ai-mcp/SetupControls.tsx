@@ -1,6 +1,8 @@
 import { Check, ChevronDown, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+// FORK: locale plugin — copy feedback toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export function Collapsible({
   id,
@@ -64,6 +66,7 @@ export function CodeBlock({
   code: string;
   onCopy?: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="flex items-stretch overflow-hidden rounded-md border border-base-300 bg-base-100">
       <pre className="min-w-0 flex-1 overflow-x-auto p-3 text-xs leading-relaxed text-base-content">
@@ -72,7 +75,7 @@ export function CodeBlock({
       <div className="flex shrink-0 items-start border-l border-base-300 p-1.5">
         <CopyButton
           value={code}
-          successMessage="Copied to clipboard"
+          successMessage={t("Copied to clipboard")}
           iconOnly
           onCopy={onCopy}
         />
@@ -93,10 +96,11 @@ export function CopyButton({
   onCopy?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const { t } = useLocale();
 
   const handleCopy = async () => {
     if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
-      toast.error("Clipboard not available");
+      toast.error(t("Clipboard not available"));
       return;
     }
     try {
@@ -106,7 +110,7 @@ export function CopyButton({
       setTimeout(() => setCopied(false), 2000);
       onCopy?.();
     } catch {
-      toast.error("Could not copy to clipboard");
+      toast.error(t("Could not copy to clipboard"));
     }
   };
 
@@ -115,7 +119,7 @@ export function CopyButton({
       <button
         type="button"
         onClick={handleCopy}
-        aria-label="Copy"
+        aria-label={t("Copy")}
         className="flex size-7 items-center justify-center rounded-md text-base-content/60 transition-colors hover:bg-base-200 hover:text-base-content"
       >
         {copied ? (
@@ -138,7 +142,7 @@ export function CopyButton({
       ) : (
         <Copy className="size-3" />
       )}
-      Copy
+      {t("Copy")}
     </button>
   );
 }

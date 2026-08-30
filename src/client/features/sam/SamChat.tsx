@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect } from "react";
 import { Brain, Loader2, Plus, Wrench } from "lucide-react";
 import { createSamSession } from "@/serverFunctions/sam";
+import { useLocale } from "@/plugins/client/context";
 import {
   invalidateSamSessions,
   samSessionsQueryOptions,
@@ -24,6 +25,7 @@ export function SamChat({
   projectId: string;
   activeSessionId: string | undefined;
 }) {
+  const { t } = useLocale();
   const navigate = useNavigate();
   const access = useSamAccess(projectId);
   const sessionsQuery = useQuery(samSessionsQueryOptions(projectId));
@@ -84,7 +86,7 @@ export function SamChat({
             memory SAM reads and writes during the conversation. */}
         <div className="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-3.5">
           <span className="truncate text-sm font-medium text-base-content/80">
-            {activeTitle ?? "Chat"}
+            {activeTitle ?? t("Chat")}
           </span>
           <Link
             to="/p/$projectId/settings/context"
@@ -92,7 +94,7 @@ export function SamChat({
             className="flex shrink-0 items-center gap-1.5 text-xs text-base-content/60 transition-colors hover:text-base-content"
           >
             <Brain className="size-3.5" />
-            Project memory
+            {t("Project memory")}
           </Link>
         </div>
         <div className="flex min-h-0 flex-1">
@@ -134,10 +136,11 @@ export function SamChat({
         <Wrench className="size-6" />
       </div>
       <div className="space-y-1">
-        <p className="text-lg font-medium">What should we work on?</p>
+        <p className="text-lg font-medium">{t("What should we work on?")}</p>
         <p className="max-w-sm text-sm text-base-content/60">
-          SAM is your in-app SEO agent with access to every OpenSEO research
-          tool. Start a chat to get going.
+          {t(
+            "SAM is your in-app SEO agent with access to every OpenSEO research tool. Start a chat to get going.",
+          )}
         </p>
       </div>
       <button
@@ -151,7 +154,7 @@ export function SamChat({
         ) : (
           <Plus className="size-4" />
         )}
-        New chat
+        {t("New chat")}
       </button>
     </div>
   );

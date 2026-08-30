@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { ExportToSheetsButton } from "@/client/components/table/ExportToSheetsButton";
 import type { SerpResultItem } from "@/types/keywords";
+import { useLocale } from "@/plugins/client/context";
 
 export function SerpAnalysisCard({
   items,
@@ -21,6 +22,7 @@ export function SerpAnalysisCard({
   pageSize: number;
   onPageChange: (p: number) => void;
 }) {
+  const { t } = useLocale();
   const totalPages = Math.ceil(items.length / pageSize);
   const pageItems = items.slice(page * pageSize, (page + 1) * pageSize);
 
@@ -31,7 +33,7 @@ export function SerpAnalysisCard({
         <p>{error}</p>
         {onRetry ? (
           <button className="btn btn-xs" onClick={onRetry}>
-            Retry
+            {t("Retry")}
           </button>
         ) : null}
       </div>
@@ -43,7 +45,7 @@ export function SerpAnalysisCard({
     <div>
       <div className="flex items-center justify-between mb-3">
         <div className="text-xs text-base-content/50">
-          {items.length} organic results
+          {t("{count} organic results", { count: items.length })}
         </div>
         <ExportToSheetsButton
           headers={["Rank", "Title", "URL", "Domain"]}
@@ -67,13 +69,14 @@ export function SerpAnalysisCard({
 }
 
 function SerpAnalysisTable({ items }: { items: SerpResultItem[] }) {
+  const { t } = useLocale();
   return (
     <div className="overflow-x-auto">
       <table className="table table-xs w-full">
         <thead>
           <tr className="text-xs text-base-content/60">
             <th className="w-8">#</th>
-            <th>Page</th>
+            <th>{t("Page")}</th>
           </tr>
         </thead>
         <tbody>
@@ -119,12 +122,16 @@ function SerpAnalysisPagination({
   totalPages: number;
   onPageChange: (p: number) => void;
 }) {
+  const { t } = useLocale();
   if (totalPages <= 1) return null;
 
   return (
     <div className="flex items-center justify-between mt-3 pt-3 border-t border-base-200">
       <span className="text-xs text-base-content/50">
-        Page {page + 1} of {totalPages}
+        {t("Page {page} of {totalPages}", {
+          page: page + 1,
+          totalPages,
+        })}
       </span>
       <div className="flex gap-1">
         <button
@@ -133,14 +140,14 @@ function SerpAnalysisPagination({
           onClick={() => onPageChange(page - 1)}
         >
           <ChevronLeft className="size-3.5" />
-          Prev
+          {t("Prev")}
         </button>
         <button
           className="btn btn-ghost btn-xs"
           disabled={page >= totalPages - 1}
           onClick={() => onPageChange(page + 1)}
         >
-          Next
+          {t("Next")}
           <ChevronRight className="size-3.5" />
         </button>
       </div>
@@ -163,11 +170,14 @@ function SerpAnalysisLoadingState() {
 }
 
 function SerpAnalysisEmptyState({ keyword }: { keyword?: string | null }) {
+  const { t } = useLocale();
   return (
     <div className="text-sm text-base-content/50 text-center py-8">
-      <p>No SERP details available for this keyword yet.</p>
+      <p>{t("No SERP details available for this keyword yet.")}</p>
       {keyword ? (
-        <p className="mt-1">Try clicking another keyword to load data.</p>
+        <p className="mt-1">
+          {t("Try clicking another keyword to load data.")}
+        </p>
       ) : null}
     </div>
   );

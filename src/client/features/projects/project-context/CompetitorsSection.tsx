@@ -1,5 +1,7 @@
 import * as React from "react";
 import { Pencil, Plus } from "lucide-react";
+// FORK: locale plugin — competitor copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type { ProjectContextUpdate } from "@/types/schemas/projectContext";
 import {
   ConfirmDeleteButton,
@@ -20,6 +22,7 @@ export function CompetitorsSection({
   projectId: string;
   competitors: ContextCompetitor[];
 }) {
+  const { t } = useLocale();
   const update = useContextUpdate(projectId);
   const [adding, setAdding] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
@@ -54,8 +57,8 @@ export function CompetitorsSection({
   return (
     <section className="space-y-3">
       <SectionHeader
-        title="Competitors"
-        hint="The sites you measure yourself against."
+        title={t("Competitors")}
+        hint={t("The sites you measure yourself against.")}
         action={
           <button
             type="button"
@@ -63,7 +66,7 @@ export function CompetitorsSection({
             onClick={() => setAdding(true)}
           >
             <Plus className="size-3.5" />
-            Add competitor
+            {t("Add competitor")}
           </button>
         }
       />
@@ -81,8 +84,9 @@ export function CompetitorsSection({
       {competitors.length === 0 ? (
         adding ? null : (
           <EmptyState>
-            No competitors yet. Add the sites you compete with, or ask SAM to
-            find them from your rankings and save them here.
+            {t(
+              "No competitors yet. Add the sites you compete with, or ask SAM to find them from your rankings and save them here.",
+            )}
           </EmptyState>
         )
       ) : (
@@ -127,13 +131,17 @@ export function CompetitorsSection({
                   <button
                     type="button"
                     className="btn btn-ghost btn-xs"
-                    aria-label={`Edit ${competitor.domain}`}
+                    aria-label={t("Edit {domain}", {
+                      domain: competitor.domain,
+                    })}
                     onClick={() => setEditingId(competitor.id)}
                   >
                     <Pencil className="size-3.5" />
                   </button>
                   <ConfirmDeleteButton
-                    label={`Remove ${competitor.domain}`}
+                    label={t("Remove {domain}", {
+                      domain: competitor.domain,
+                    })}
                     pending={update.isPending}
                     onConfirm={() =>
                       update.mutate([
@@ -164,6 +172,7 @@ function CompetitorForm({
   onCancel: () => void;
   onSave: (draft: CompetitorDraft) => void;
 }) {
+  const { t } = useLocale();
   const [draft, setDraft] = React.useState<CompetitorDraft>({
     domain: initial?.domain ?? "",
     name: initial?.name ?? "",
@@ -190,26 +199,28 @@ function CompetitorForm({
           placeholder="competitor.com"
           maxLength={255}
           className="input input-bordered input-sm w-full"
-          aria-label="Competitor domain"
+          aria-label={t("Competitor domain")}
         />
         <input
           type="text"
           value={draft.name}
           onChange={(event) => setDraft({ ...draft, name: event.target.value })}
-          placeholder="Name (optional)"
+          placeholder={t("Name (optional)")}
           maxLength={120}
           className="input input-bordered input-sm w-full"
-          aria-label="Competitor name"
+          aria-label={t("Competitor name")}
         />
       </div>
       <input
         type="text"
         value={draft.notes}
         onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
-        placeholder="Why they matter — e.g. wins every comparison keyword (optional)"
+        placeholder={t(
+          "Why they matter — e.g. wins every comparison keyword (optional)",
+        )}
         maxLength={500}
         className="input input-bordered input-sm w-full"
-        aria-label="Competitor notes"
+        aria-label={t("Competitor notes")}
       />
       <FormActions
         pending={pending}

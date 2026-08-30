@@ -1,4 +1,5 @@
 import { Loader2, Zap } from "lucide-react";
+import { useLocale } from "@/plugins/client/context";
 import { Modal } from "@/client/components/Modal";
 import type { RankTrackingConfig } from "@/types/schemas/rank-tracking";
 import {
@@ -23,6 +24,7 @@ export function CheckConfirmModal({
   onRunNow: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useLocale();
   const { costUsd } = estimateRankCheckCredits(
     keywordCount,
     devices,
@@ -42,12 +44,20 @@ export function CheckConfirmModal({
     >
       <div>
         <h3 id="rank-check-confirm-title" className="text-lg font-semibold">
-          Check {keywordCount} keyword
-          {keywordCount !== 1 ? "s" : ""}
+          {t(
+            keywordCount === 1
+              ? "Check {count} keyword"
+              : "Check {count} keywords",
+            { count: keywordCount },
+          )}
         </h3>
         <p className="text-sm text-base-content/60 mt-1">
-          {keywordCount} keywords &times; {dc} device
-          {dc !== 1 ? "s" : ""} = {totalChecks} SERP checks
+          {t(
+            dc === 1
+              ? "{keywords} keywords × {devices} device = {total} SERP checks"
+              : "{keywords} keywords × {devices} devices = {total} SERP checks",
+            { keywords: keywordCount, devices: dc, total: totalChecks },
+          )}
         </p>
       </div>
 
@@ -60,10 +70,14 @@ export function CheckConfirmModal({
           <Zap className="size-5 text-primary" />
         </div>
         <div className="flex-1">
-          <p className="font-medium">Run Now</p>
+          <p className="font-medium">{t("Run Now")}</p>
           <p className="text-xs text-base-content/60">
-            Results in ~
-            {liveTime < 60 ? `${liveTime}s` : `${Math.ceil(liveTime / 60)} min`}
+            {t("Results in ~{time}", {
+              time:
+                liveTime < 60
+                  ? `${liveTime}s`
+                  : `${Math.ceil(liveTime / 60)} min`,
+            })}
           </p>
         </div>
         <div className="text-right">
@@ -73,7 +87,7 @@ export function CheckConfirmModal({
       </button>
 
       <button className="btn btn-ghost btn-sm self-center" onClick={onCancel}>
-        Cancel
+        {t("Cancel")}
       </button>
     </Modal>
   );

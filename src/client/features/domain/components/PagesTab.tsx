@@ -27,6 +27,8 @@ import { pagesToTable } from "@/client/features/domain/utils";
 import type { DomainOverviewRouteState } from "@/client/features/domain/domainRouteState";
 import { buildCsv, downloadCsv } from "@/client/lib/csv";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
+// FORK: locale plugin — export toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { captureClientEvent } from "@/client/lib/posthog";
 import {
   MAX_DATAFORSEO_FILTER_CONDITIONS,
@@ -83,6 +85,7 @@ export function PagesTab({
   onPageSizeChange,
 }: Props) {
   const [showFilters, setShowFilters] = useState(false);
+  const { t } = useLocale();
   // Scope filters consume part of DataForSEO's fixed filter budget.
   const maxConditions =
     MAX_DATAFORSEO_FILTER_CONDITIONS - RESEARCH_SCOPE_FILTER_SLOTS.pages[scope];
@@ -173,7 +176,7 @@ export function PagesTab({
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(JSON.stringify(rows, null, 2));
-    toast.success("Copied data");
+    toast.success(t("Copied data"));
   };
   const handleExportToSheets = () => {
     void exportTableToSheets({

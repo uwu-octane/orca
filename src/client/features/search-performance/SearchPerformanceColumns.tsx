@@ -1,3 +1,5 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { MutableRefObject } from "react";
 import { makeSelectionColumn } from "@/client/components/table/AppDataTable";
@@ -19,7 +21,7 @@ export type SearchPerformanceTableRow = Extract<
 type DimensionRow = SearchPerformanceTableRow;
 type StrikingRow = Report["strikingDistance"][number];
 
-const numberFormat = new Intl.NumberFormat("en-US");
+const numberFormat = new Intl.NumberFormat(getIntlLocale(readActiveLocale()));
 
 export function formatCount(value: number): string {
   return numberFormat.format(Math.round(value));

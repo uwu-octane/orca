@@ -5,6 +5,7 @@ import type { useLaunchController } from "@/client/features/audit/launch/useLaun
 import { getFieldError, getFormError } from "@/client/lib/forms";
 import { PAID_MAX_AUDIT_PAGES } from "@/shared/audit-limits";
 import { SUBSCRIBE_ROUTE } from "@/shared/billing";
+import { useLocale } from "@/plugins/client/context";
 
 type Props = {
   launchForm: ReturnType<typeof useLaunchController>["launchForm"];
@@ -17,10 +18,11 @@ export function LaunchFormCard({
   launchForm,
   maxPagesLimit,
 }: Props) {
+  const { t } = useLocale();
   return (
     <div className="card bg-base-100 border border-base-300">
       <div className="card-body gap-4">
-        <h2 className="card-title text-base">Start New Audit</h2>
+        <h2 className="card-title text-base">{t("Start New Audit")}</h2>
 
         <form
           className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:items-center"
@@ -61,10 +63,11 @@ export function LaunchFormCard({
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" /> Starting...
+                    <Loader2 className="size-4 animate-spin" />{" "}
+                    {t("Starting...")}
                   </>
                 ) : (
-                  "Start Audit"
+                  t("Start Audit")
                 )}
               </button>
             )}
@@ -91,15 +94,16 @@ function LaunchOptions({
   commitMaxPagesInput,
   maxPagesLimit,
 }: Props) {
+  const { t } = useLocale();
   const isFreeLimited = maxPagesLimit < PAID_MAX_AUDIT_PAGES;
 
   return (
     <div className="rounded-lg border border-base-300 bg-base-200/20 p-3 space-y-2">
       <label className="text-xs font-medium uppercase tracking-wide text-base-content/60">
-        Crawl limit
+        {t("Crawl limit")}
       </label>
       <div className="flex items-center gap-2">
-        <span className="text-sm text-base-content/70">Max pages</span>
+        <span className="text-sm text-base-content/70">{t("Max pages")}</span>
         <launchForm.Field name="maxPagesInput">
           {(field) => (
             <input
@@ -122,7 +126,10 @@ function LaunchOptions({
         </launchForm.Field>
       </div>
       <p className="text-xs text-base-content/50">
-        Enter any value from {MIN_PAGES} to {maxPagesLimit.toLocaleString()}.
+        {t("Enter any value from {min} to {max}.", {
+          min: MIN_PAGES,
+          max: maxPagesLimit.toLocaleString(),
+        })}
         {isFreeLimited ? (
           <>
             {" "}
@@ -131,9 +138,11 @@ function LaunchOptions({
               search={{ upgrade: true }}
               className="link link-primary"
             >
-              Upgrade
+              {t("Upgrade")}
             </Link>{" "}
-            to crawl up to {PAID_MAX_AUDIT_PAGES.toLocaleString()} pages.
+            {t("to crawl up to {pages} pages.", {
+              pages: PAID_MAX_AUDIT_PAGES.toLocaleString(),
+            })}
           </>
         ) : null}
       </p>
@@ -142,6 +151,7 @@ function LaunchOptions({
 }
 
 function LighthouseOptions({ launchForm }: Pick<Props, "launchForm">) {
+  const { t } = useLocale();
   return (
     <div className="rounded-lg border border-base-300 bg-base-200/20 p-3 space-y-2">
       <label className="label cursor-pointer justify-start gap-2 p-0">
@@ -157,9 +167,11 @@ function LighthouseOptions({ launchForm }: Pick<Props, "launchForm">) {
         </launchForm.Field>
         <span
           className="text-sm font-medium text-base-content/80"
-          title="Lighthouse measures the performance of your pages and identifies issues."
+          title={t(
+            "Lighthouse measures the performance of your pages and identifies issues.",
+          )}
         >
-          Include Lighthouse
+          {t("Include Lighthouse")}
         </span>
       </label>
 
@@ -170,8 +182,9 @@ function LighthouseOptions({ launchForm }: Pick<Props, "launchForm">) {
           runLighthouse ? (
             <div className="space-y-1">
               <p className="text-xs text-base-content/60">
-                We choose a sample of 20 pages to audit, removing pages from
-                duplicate templates.
+                {t(
+                  "We choose a sample of 20 pages to audit, removing pages from duplicate templates.",
+                )}
               </p>
             </div>
           ) : null
@@ -182,6 +195,7 @@ function LighthouseOptions({ launchForm }: Pick<Props, "launchForm">) {
 }
 
 function LaunchErrors({ launchForm }: Pick<Props, "launchForm">) {
+  const { t } = useLocale();
   return (
     <div className="space-y-2">
       <launchForm.Field name="url">
@@ -189,7 +203,7 @@ function LaunchErrors({ launchForm }: Pick<Props, "launchForm">) {
           const urlError = getFieldError(field.state.meta.errors);
 
           return urlError ? (
-            <p className="text-sm text-error">{urlError}</p>
+            <p className="text-sm text-error">{t(urlError)}</p>
           ) : null;
         }}
       </launchForm.Field>
@@ -200,7 +214,7 @@ function LaunchErrors({ launchForm }: Pick<Props, "launchForm">) {
 
           return errorMessage ? (
             <div className="alert alert-error py-2">
-              <span className="text-sm">{errorMessage}</span>
+              <span className="text-sm">{t(errorMessage)}</span>
             </div>
           ) : null;
         }}

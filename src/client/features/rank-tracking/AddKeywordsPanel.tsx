@@ -5,6 +5,8 @@ import { addTrackingKeywords } from "@/serverFunctions/rank-tracking";
 import { MAX_TRACKED_KEYWORD_LENGTH } from "@/shared/rank-tracking";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { Loader2 } from "lucide-react";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export function AddKeywordsPanel({
   configId,
@@ -17,6 +19,7 @@ export function AddKeywordsPanel({
   onSuccess: (result: { added: number; checkTriggered: boolean }) => void;
   onCancel: () => void;
 }) {
+  const { t } = useLocale();
   const [keywordInput, setKeywordInput] = useState("");
   const mutation = useMutation({
     mutationFn: (kws: string[]) =>
@@ -26,7 +29,9 @@ export function AddKeywordsPanel({
       onSuccess(result);
     },
     onError: (error) => {
-      toast.error(getStandardErrorMessage(error, "Failed to add keywords"));
+      toast.error(
+        getStandardErrorMessage(error, t("Failed to add keywords"), t),
+      );
     },
   });
   const isPending = mutation.isPending;
@@ -35,7 +40,7 @@ export function AddKeywordsPanel({
       <textarea
         className="textarea textarea-bordered textarea-sm flex-1"
         rows={3}
-        placeholder="Enter keywords, one per line"
+        placeholder={t("Enter keywords, one per line")}
         value={keywordInput}
         onChange={(e) => setKeywordInput(e.target.value)}
       />
@@ -49,7 +54,9 @@ export function AddKeywordsPanel({
               .filter(Boolean);
             if (lines.some((l) => l.length > MAX_TRACKED_KEYWORD_LENGTH)) {
               toast.error(
-                `Keywords must be ${MAX_TRACKED_KEYWORD_LENGTH} characters or fewer.`,
+                t("Keywords must be {max} characters or fewer.", {
+                  max: MAX_TRACKED_KEYWORD_LENGTH,
+                }),
               );
               return;
             }
@@ -58,10 +65,10 @@ export function AddKeywordsPanel({
           disabled={isPending || !keywordInput.trim()}
         >
           {isPending && <Loader2 className="size-3 animate-spin" />}
-          Add
+          {t("Add")}
         </button>
         <button className="btn btn-ghost btn-sm" onClick={onCancel}>
-          Cancel
+          {t("Cancel")}
         </button>
       </div>
     </div>

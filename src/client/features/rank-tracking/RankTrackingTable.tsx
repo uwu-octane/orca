@@ -18,6 +18,8 @@ import { captureClientEvent } from "@/client/lib/posthog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { removeTrackingKeywords } from "@/serverFunctions/rank-tracking";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type { RankTrackingRow } from "@/types/schemas/rank-tracking";
 import { useRankTrackingColumns } from "./RankTrackingColumns";
 import { buildRankTrackingExport } from "./RankTrackingTableParts";
@@ -54,6 +56,7 @@ export function RankTrackingTable({
   locationName?: string | null;
   serpDepth: number;
 }) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [showConfirm, setShowConfirm] = useState(false);
   const [trendTarget, setTrendTarget] = useState<KeywordTrendTarget | null>(
@@ -105,6 +108,7 @@ export function RankTrackingTable({
       headers,
       rows: exportRows,
       feature: "rank_tracking",
+      t,
     });
   };
 
@@ -139,11 +143,18 @@ export function RankTrackingTable({
         queryKey: ["rankTrackingCostEstimate", projectId, configId],
       });
       toast.success(
-        `${result.removed} keyword${result.removed !== 1 ? "s" : ""} removed`,
+        t(
+          result.removed === 1
+            ? "{count} keyword removed"
+            : "{count} keywords removed",
+          { count: result.removed },
+        ),
       );
     },
     onError: (error) => {
-      toast.error(getStandardErrorMessage(error, "Failed to remove keywords"));
+      toast.error(
+        getStandardErrorMessage(error, t("Failed to remove keywords"), t),
+      );
     },
   });
 
@@ -159,8 +170,8 @@ export function RankTrackingTable({
     return (
       <div className="rounded-xl border border-dashed border-base-300 p-10 text-center text-sm text-base-content/55">
         {totalCount === 0
-          ? 'No rank data yet. Click "Check Now" to run your first check.'
-          : "No keywords match your search."}
+          ? t('No rank data yet. Click "Check Now" to run your first check.')
+          : t("No keywords match your search.")}
       </div>
     );
   }
@@ -177,17 +188,17 @@ export function RankTrackingTable({
               onClick={() => setShowConfirm(true)}
               variant="danger"
             >
-              Remove
+              {t("Remove")}
             </TableBulkActionButton>
             <TableBulkExportMenu
               actions={[
                 {
-                  label: "Export to Sheets",
+                  label: t("Export to Sheets"),
                   icon: <Sheet className="size-4" />,
                   onClick: exportSelectionToSheets,
                 },
                 {
-                  label: "Export CSV",
+                  label: t("Export CSV"),
                   icon: <FileDown className="size-4" />,
                   onClick: exportSelectionCsv,
                 },
@@ -204,19 +215,22 @@ export function RankTrackingTable({
           labelledBy="remove-keywords-title"
         >
           <h3 id="remove-keywords-title" className="text-lg font-semibold">
-            Remove keywords?
+            {t("Remove keywords?")}
           </h3>
           <p className="text-sm text-base-content/70">
-            This will stop tracking {selectedCount} keyword
-            {selectedCount !== 1 ? "s" : ""}. Historical ranking data is
-            preserved but won't appear in the table.
+            {t(
+              selectedCount === 1
+                ? "This will stop tracking {count} keyword. Historical ranking data is preserved but won't appear in the table."
+                : "This will stop tracking {count} keywords. Historical ranking data is preserved but won't appear in the table.",
+              { count: selectedCount },
+            )}
           </p>
           <div className="flex justify-end gap-2">
             <button
               className="btn btn-ghost btn-sm"
               onClick={() => setShowConfirm(false)}
             >
-              Cancel
+              {t("Cancel")}
             </button>
             <button
               className="btn btn-error btn-sm gap-1"
@@ -228,8 +242,12 @@ export function RankTrackingTable({
               {removeMutation.isPending && (
                 <Loader2 className="size-3 animate-spin" />
               )}
-              Remove {selectedCount} keyword
-              {selectedCount !== 1 ? "s" : ""}
+              {t(
+                selectedCount === 1
+                  ? "Remove {count} keyword"
+                  : "Remove {count} keywords",
+                { count: selectedCount },
+              )}
             </button>
           </div>
         </Modal>
@@ -250,7 +268,10 @@ export function RankTrackingTable({
 
       <AppDataTable table={table} getCellClassName={() => "align-top"} />
       <p className="text-xs text-base-content/60 pt-2">
-        {rows.length} of {totalCount} keywords
+        {t("{count} of {total} keywords", {
+          count: rows.length,
+          total: totalCount,
+        })}
       </p>
     </>
   );

@@ -12,6 +12,8 @@ import {
 import { getProjects } from "@/serverFunctions/projects";
 import { setLastProjectId } from "@/client/lib/active-project";
 import { CreateProjectModal } from "@/client/features/projects/CreateProjectModal";
+// FORK: locale plugin — project switcher copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import type { ProjectSummary } from "./types";
 
 // Below this many projects the plain list is faster to scan than a search box.
@@ -26,6 +28,7 @@ export function ProjectSwitcher({
   // drawer overlay.
   onCloseDrawer?: () => void;
 }) {
+  const { t } = useLocale();
   // Matches are read off router.state at click time; subscribing via
   // useMatches() would re-render the whole sidebar on every route change for
   // a value only a click needs.
@@ -222,7 +225,7 @@ export function ProjectSwitcher({
         <button
           ref={triggerRef}
           type="button"
-          aria-label="Switch project"
+          aria-label={t("Switch project")}
           aria-expanded={open}
           aria-haspopup="listbox"
           onClick={() => (open ? closePanel() : openPanel())}
@@ -231,7 +234,7 @@ export function ProjectSwitcher({
         >
           <span className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-medium text-base-content">
-              {activeProject?.name ?? "Select project"}
+              {activeProject?.name ?? t("Select project")}
             </span>
             {activeProject?.domain ? (
               <span className="truncate text-xs font-normal text-base-content/50">
@@ -245,8 +248,8 @@ export function ProjectSwitcher({
           <Link
             to="/p/$projectId/settings"
             params={{ projectId: activeProject.id }}
-            aria-label="Project settings"
-            title="Project settings"
+            aria-label={t("Project settings")}
+            title={t("Project settings")}
             onClick={() => {
               closePanel();
               onCloseDrawer?.();
@@ -268,8 +271,8 @@ export function ProjectSwitcher({
                   ref={searchInputRef}
                   type="text"
                   value={query}
-                  placeholder="Find project…"
-                  aria-label="Filter projects"
+                  placeholder={t("Find project…")}
+                  aria-label={t("Filter projects")}
                   aria-controls="project-switcher-listbox"
                   aria-activedescendant={
                     filteredProjects[highlightIndex]
@@ -295,7 +298,7 @@ export function ProjectSwitcher({
               ref={listRef}
               id="project-switcher-listbox"
               role="listbox"
-              aria-label="Projects"
+              aria-label={t("Projects")}
               className="menu max-h-[min(60vh,21rem)] w-full flex-nowrap overflow-y-auto p-2"
             >
               {filteredProjects.map((project, index) => {
@@ -335,7 +338,9 @@ export function ProjectSwitcher({
               {filteredProjects.length === 0 ? (
                 <li className="menu-disabled">
                   <span className="text-base-content/50">
-                    No projects match “{query.trim()}”
+                    {t("No projects match “{query}”", {
+                      query: query.trim(),
+                    })}
                   </span>
                 </li>
               ) : null}
@@ -359,7 +364,7 @@ export function ProjectSwitcher({
                 }}
               >
                 <Plus className="size-4" />
-                New project
+                {t("New project")}
               </button>
             </li>
             <li>
@@ -371,7 +376,7 @@ export function ProjectSwitcher({
                 }}
               >
                 <FolderCog className="size-4" />
-                Manage projects
+                {t("Manage projects")}
               </Link>
             </li>
           </ul>

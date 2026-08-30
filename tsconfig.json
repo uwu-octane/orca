@@ -1,6 +1,8 @@
 {
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["web/**/*", "badseo/**/*"],
+  // vendor/ is pulled into the program via its package import (single module
+  // identity); including it here would typecheck the same files twice.
+  "exclude": ["web/**/*", "badseo/**/*", "vendor/**/*"],
   "compilerOptions": {
     "strict": true,
     "esModuleInterop": true,

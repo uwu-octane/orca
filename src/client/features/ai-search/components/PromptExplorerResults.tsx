@@ -17,6 +17,7 @@ import type {
   PromptExplorerModelResult,
   PromptExplorerResult,
 } from "@/types/schemas/ai-search";
+import { useLocale } from "@/plugins/client/context";
 
 type Props = {
   result: PromptExplorerResult;
@@ -44,6 +45,7 @@ function ModelResultCard({
   highlightBrand: string | null;
 }) {
   const accent = getModelAccent(modelResult.model);
+  const { t } = useLocale();
 
   if (modelResult.status === "error") {
     return (
@@ -95,7 +97,7 @@ function ModelResultCard({
       {modelResult.fanOutQueries.length > 0 ? (
         <div className="border-t border-base-200 px-5 py-3">
           <p className="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">
-            Related queries the model considered
+            {t("Related queries the model considered")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {modelResult.fanOutQueries.map((query, index) => (
@@ -121,6 +123,7 @@ function CitationsList({
   highlightBrand: string | null;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const { t } = useLocale();
 
   const visible = expanded ? citations : citations.slice(0, 3);
   const remaining = citations.length - visible.length;
@@ -128,7 +131,7 @@ function CitationsList({
   return (
     <div className="border-t border-base-200 bg-base-200/30 px-5 py-3">
       <p className="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">
-        Cited sources ({citations.length})
+        {t("Cited sources ({count})", { count: citations.length })}
       </p>
       <ul className="space-y-1.5">
         {visible.map((citation, index) => (
@@ -164,7 +167,7 @@ function CitationsList({
           onClick={() => setExpanded((current) => !current)}
           className="mt-1.5 text-xs text-base-content/50 hover:text-base-content"
         >
-          {expanded ? "Show less" : `+${remaining} more`}
+          {expanded ? t("Show less") : t("+{count} more", { count: remaining })}
         </button>
       ) : null}
     </div>
@@ -189,6 +192,7 @@ function ModelHeader({
   status: "success" | "error";
 }) {
   const accent = getModelAccent(model);
+  const { t } = useLocale();
   return (
     <header className="flex flex-wrap items-center justify-between gap-2 border-b border-base-200 bg-base-200/40 px-5 py-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -198,7 +202,7 @@ function ModelHeader({
           <code className="text-xs text-base-content/50">{modelName}</code>
         ) : null}
         {status === "error" ? (
-          <span className="badge badge-error badge-sm">Error</span>
+          <span className="badge badge-error badge-sm">{t("Error")}</span>
         ) : null}
         <BrandMentionBadge
           mentioned={brandMentioned}
@@ -207,13 +211,13 @@ function ModelHeader({
         {webSearch ? (
           <span className="inline-flex items-center gap-1 text-xs text-base-content/60">
             <Globe className="size-3" />
-            web search
+            {t("web search")}
           </span>
         ) : null}
       </div>
       {tokens != null ? (
         <span className="text-xs tabular-nums text-base-content/50">
-          {tokens.toLocaleString()} tokens
+          {tokens.toLocaleString()} {t("tokens")}
         </span>
       ) : null}
     </header>
@@ -227,6 +231,7 @@ function BrandMentionBadge({
   mentioned: boolean | null;
   highlightBrand: string | null;
 }) {
+  const { t } = useLocale();
   if (mentioned == null || !highlightBrand) return null;
   if (mentioned) {
     return (
@@ -239,7 +244,7 @@ function BrandMentionBadge({
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-base-200 px-2 py-0.5 text-xs text-base-content/60">
       <XCircle className="size-3" />
-      no {highlightBrand}
+      {t("No {brand}", { brand: highlightBrand })}
     </span>
   );
 }

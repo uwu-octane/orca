@@ -1,5 +1,6 @@
 import { Minus, Plus, RotateCcw, X } from "lucide-react";
 import { useState, type KeyboardEvent } from "react";
+import { useLocale } from "@/plugins/client/context";
 import type { SavedKeywordsFilterValues } from "./savedKeywordsFilterTypes";
 import type { SavedKeywordsFilterForm } from "./useSavedKeywordsFilters";
 
@@ -12,14 +13,15 @@ export function SavedKeywordsFilterPanel({
   activeFilterCount: number;
   onReset: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="space-y-3 border-b border-base-300 bg-gradient-to-b from-base-100 to-base-200/30 px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold">Refine results</p>
+          <p className="text-sm font-semibold">{t("Refine results")}</p>
           {activeFilterCount > 0 ? (
             <span className="badge badge-xs badge-primary border-0 text-primary-content">
-              {activeFilterCount} active
+              {t("{count} active", { count: activeFilterCount })}
             </span>
           ) : null}
         </div>
@@ -30,7 +32,7 @@ export function SavedKeywordsFilterPanel({
           disabled={activeFilterCount === 0}
         >
           <RotateCcw className="size-3" />
-          Clear all
+          {t("Clear all")}
         </button>
       </div>
 
@@ -38,30 +40,30 @@ export function SavedKeywordsFilterPanel({
         <TermsTokenInput
           form={form}
           name="include"
-          label="Include"
+          label={t("Include")}
           variant="include"
-          placeholder="Must contain… e.g. audit"
+          placeholder={t("Must contain… e.g. audit")}
         />
         <TermsTokenInput
           form={form}
           name="exclude"
-          label="Exclude"
+          label={t("Exclude")}
           variant="exclude"
-          placeholder="Must not contain… e.g. jobs"
+          placeholder={t("Must not contain… e.g. jobs")}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-3">
         <FilterRangeInputs
           form={form}
-          title="Search Volume"
+          title={t("Search Volume")}
           minName="minVol"
           maxName="maxVol"
           min={0}
         />
         <FilterRangeInputs
           form={form}
-          title="CPC (USD)"
+          title={t("CPC (USD)")}
           minName="minCpc"
           maxName="maxCpc"
           step="0.01"
@@ -69,7 +71,7 @@ export function SavedKeywordsFilterPanel({
         />
         <FilterRangeInputs
           form={form}
-          title="Difficulty"
+          title={t("Difficulty")}
           minName="minKd"
           maxName="maxKd"
           min={0}
@@ -122,6 +124,7 @@ function TermsTokenInput({
   variant: TermsVariant;
   placeholder: string;
 }) {
+  const { t } = useLocale();
   const [draft, setDraft] = useState("");
   const styles = VARIANT_STYLES[variant];
   const Icon = styles.icon;
@@ -174,7 +177,7 @@ function TermsTokenInput({
                   <button
                     type="button"
                     className="opacity-70 hover:opacity-100"
-                    aria-label={`Remove ${term}`}
+                    aria-label={t("Remove {term}", { term })}
                     onClick={() =>
                       commit(terms.filter((existing) => existing !== term))
                     }
@@ -221,6 +224,7 @@ function FilterRangeInputs({
   min?: number;
   max?: number;
 }) {
+  const { t } = useLocale();
   return (
     <div className="space-y-2 rounded-lg border border-base-300 bg-base-100 p-2.5">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
@@ -230,7 +234,7 @@ function FilterRangeInputs({
         <CompactRangeInput
           form={form}
           name={minName}
-          placeholder="Min"
+          placeholder={t("Min")}
           step={step}
           min={min}
           max={max}
@@ -238,7 +242,7 @@ function FilterRangeInputs({
         <CompactRangeInput
           form={form}
           name={maxName}
-          placeholder="Max"
+          placeholder={t("Max")}
           step={step}
           min={min}
           max={max}

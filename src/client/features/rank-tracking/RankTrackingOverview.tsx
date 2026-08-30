@@ -1,3 +1,6 @@
+// FORK: locale plugin — display formatting follows the active locale.
+import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
+import { useLocale } from "@/plugins/client/context";
 import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -39,6 +42,7 @@ export function RankTrackingOverview({
   projectId: string;
   configId: string;
 }) {
+  const { t } = useLocale();
   const [sinceDays, setSinceDays] = useState(730);
 
   const { data: trend, isLoading: trendLoading } = useQuery({
@@ -67,7 +71,9 @@ export function RankTrackingOverview({
     <div className="px-4 pt-4 pb-4">
       <div className="rounded-lg border border-base-300 p-3 space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium">Position distribution</span>
+          <span className="text-sm font-medium">
+            {t("Position distribution")}
+          </span>
           <TrendRangeToggle value={sinceDays} onChange={setSinceDays} />
         </div>
 
@@ -81,7 +87,7 @@ export function RankTrackingOverview({
                 className="size-2 rounded-sm"
                 style={{ backgroundColor: b.color }}
               />
-              {b.label}
+              {t(b.label)}
             </span>
           ))}
         </div>
@@ -93,8 +99,12 @@ export function RankTrackingOverview({
         ) : chartData.length <= 1 ? (
           <div className="rounded-lg border border-dashed border-base-300 p-8 text-center text-xs text-base-content/60">
             {chartData.length === 0
-              ? "No history yet — run a check to start tracking positions over time."
-              : "Only 1 check so far — the trend fills in after the next check."}
+              ? t(
+                  "No history yet — run a check to start tracking positions over time.",
+                )
+              : t(
+                  "Only 1 check so far — the trend fills in after the next check.",
+                )}
           </div>
         ) : (
           <div
@@ -182,10 +192,11 @@ function DistributionTooltip({
   label: number;
   byKey: Map<string, number>;
 }) {
+  const { t } = useLocale();
   return (
     <div className="rounded-md border border-base-300 bg-base-100 px-3 py-2 shadow-sm space-y-0.5">
       <p className="text-xs text-base-content/60">
-        {new Date(label).toLocaleDateString("en-US", {
+        {new Date(label).toLocaleDateString(getIntlLocale(readActiveLocale()), {
           month: "short",
           day: "numeric",
           year: "numeric",
@@ -197,7 +208,7 @@ function DistributionTooltip({
             className="size-2 rounded-sm"
             style={{ backgroundColor: b.color }}
           />
-          <span className="text-base-content/60">{b.label}:</span>
+          <span className="text-base-content/60">{t(b.label)}:</span>
           <span className="font-medium tabular-nums">
             {byKey.get(b.key) ?? 0}
           </span>

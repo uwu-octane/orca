@@ -11,12 +11,14 @@ import {
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { getLastProjectId } from "@/client/lib/active-project";
 import { CreateProjectModal } from "@/client/features/projects/CreateProjectModal";
+import { useLocale } from "@/plugins/client/context";
 
 export const Route = createFileRoute("/_app/projects")({
   component: ProjectsPage,
 });
 
 function ProjectsPage() {
+  const { t } = useLocale();
   const [creating, setCreating] = React.useState(false);
   // Read after mount to keep SSR/first render stable.
   const [currentProjectId, setCurrentProjectId] = React.useState<string | null>(
@@ -36,10 +38,13 @@ function ProjectsPage() {
       <div className="mx-auto w-full max-w-2xl space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {t("Projects")}
+            </h1>
             <p className="mt-1 text-sm text-base-content/60">
-              Each project is a separate workspace with its own Search Console,
-              rank tracking, and audits.
+              {t(
+                "Each project is a separate workspace with its own Search Console, rank tracking, and audits.",
+              )}
             </p>
           </div>
           <button
@@ -48,7 +53,7 @@ function ProjectsPage() {
             onClick={() => setCreating(true)}
           >
             <Plus className="size-4" />
-            New project
+            {t("New project")}
           </button>
         </div>
 
@@ -72,12 +77,12 @@ function ProjectsPage() {
                       </span>
                       {project.id === currentProjectId ? (
                         <span className="shrink-0 rounded-full bg-base-300/70 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-base-content/60">
-                          Current
+                          {t("Current")}
                         </span>
                       ) : null}
                     </span>
                     <span className="truncate text-xs text-base-content/50">
-                      {project.domain ?? "No domain set"}
+                      {project.domain ?? t("No domain set")}
                     </span>
                   </span>
                   <ChevronRight className="size-4 shrink-0 text-base-content/40" />
@@ -98,6 +103,7 @@ function ProjectsPage() {
 }
 
 function ArchivedProjects() {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const archivedQuery = useQuery({
     queryKey: ["projects", "archived"],
@@ -111,17 +117,21 @@ function ArchivedProjects() {
     onSuccess: async () => {
       // Prefix match invalidates both the active and archived lists.
       await queryClient.invalidateQueries({ queryKey: ["projects"] });
-      toast.success("Project restored");
+      toast.success(t("Project restored"));
     },
     onError: (error) =>
-      toast.error(getStandardErrorMessage(error, "Failed to restore project")),
+      toast.error(
+        getStandardErrorMessage(error, t("Failed to restore project"), t),
+      ),
   });
 
   if (archived.length === 0) return null;
 
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-medium text-base-content/50">Archived</h2>
+      <h2 className="text-sm font-medium text-base-content/50">
+        {t("Archived")}
+      </h2>
       <ul className="divide-y divide-base-300 overflow-hidden rounded-lg border border-base-300">
         {archived.map((project) => (
           <li
@@ -133,7 +143,7 @@ function ArchivedProjects() {
                 {project.name}
               </span>
               <span className="truncate text-xs text-base-content/50">
-                {project.domain ?? "No domain set"}
+                {project.domain ?? t("No domain set")}
               </span>
             </span>
             <button
@@ -142,7 +152,7 @@ function ArchivedProjects() {
               onClick={() => restoreMutation.mutate(project.id)}
               disabled={restoreMutation.isPending}
             >
-              Restore
+              {t("Restore")}
             </button>
           </li>
         ))}

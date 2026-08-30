@@ -3,6 +3,8 @@ import { chunk, unique } from "remeda";
 import { toast } from "sonner";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { getAhrefsDomainRatings } from "@/serverFunctions/ahrefs";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 /** Map of domain (as held in table rows) → Ahrefs DR, or null when unknown. */
 export type DomainRatings = Record<string, number | null>;
@@ -12,6 +14,7 @@ export type DomainRatings = Record<string, number | null>;
 const DOMAINS_PER_REQUEST = 100;
 
 export function useAhrefsDomainRatings(projectId: string) {
+  const { t } = useLocale();
   const [ratings, setRatings] = useState<DomainRatings | null>(null);
   const ratingsRef = useRef<DomainRatings | null>(null);
   const pendingDomainsRef = useRef(new Set<string>());
@@ -47,7 +50,7 @@ export function useAhrefsDomainRatings(projectId: string) {
       } catch (error) {
         // Opt-in convenience feature — surface partial results, don't crash.
         toast.error(
-          getStandardErrorMessage(error, "Could not load Ahrefs DR."),
+          getStandardErrorMessage(error, t("Could not load Ahrefs DR."), t),
         );
       } finally {
         if (Object.keys(fetched).length > 0) {
@@ -59,7 +62,7 @@ export function useAhrefsDomainRatings(projectId: string) {
         setActiveLoadCount((count) => Math.max(0, count - 1));
       }
     },
-    [projectId],
+    [projectId, t],
   );
 
   return { ratings, isLoading: activeLoadCount > 0, loadRatings };

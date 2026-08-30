@@ -2,6 +2,8 @@ import { Sheet } from "lucide-react";
 import { useState } from "react";
 import type { CsvValue } from "@/client/lib/csv";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
+// FORK: locale plugin — export toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 type Props = {
   headers: string[];
@@ -30,12 +32,13 @@ export function ExportToSheetsButton({
   className,
 }: Props) {
   const [busy, setBusy] = useState(false);
+  const { t } = useLocale();
 
   const handleClick = async () => {
     if (busy) return;
     setBusy(true);
     try {
-      await exportTableToSheets({ headers, rows, feature });
+      await exportTableToSheets({ headers, rows, feature, t });
     } finally {
       setBusy(false);
     }

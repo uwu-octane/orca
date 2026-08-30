@@ -82,10 +82,10 @@ Follow along for updates:
 
 ### Branch model
 
-| Branch | Role | Rules |
-| ------ | ---- | ----- |
+| Branch | Role                               | Rules                                                                                                                       |
+| ------ | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `main` | Pristine mirror of `upstream/main` | Fast-forward only. **Never commit here.** Disposable — if it ever diverges, reset it with `git reset --hard upstream/main`. |
-| `orca` | Fork customizations + releases | All fork changes land here. Deploy and tag releases from this branch. |
+| `orca` | Fork customizations + releases     | All fork changes land here. Deploy and tag releases from this branch.                                                       |
 
 Remotes: `origin` → `uwu-octane/orca`, `upstream` → `every-app/open-seo`.
 

@@ -13,12 +13,15 @@ import {
 import { AuthConfigErrorCard } from "@/client/components/AuthConfigErrorCard";
 import { UnauthenticatedErrorCard } from "@/client/components/UnauthenticatedErrorCard";
 import { SUBSCRIBE_ROUTE } from "@/shared/billing";
+// FORK: locale plugin — error cards translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export const Route = createFileRoute("/_app/")({
   component: IndexRedirect,
 });
 
 function IndexRedirect() {
+  const { t } = useLocale();
   const navigate = useNavigate();
 
   const { data, error, isError, refetch } = useQuery({
@@ -62,7 +65,8 @@ function IndexRedirect() {
           <AuthConfigErrorCard
             message={getStandardErrorMessage(
               error,
-              "An unexpected error occurred. Please check server logs.",
+              t("An unexpected error occurred. Please check server logs."),
+              t,
             )}
             onRetry={() => {
               void refetch();
@@ -76,7 +80,7 @@ function IndexRedirect() {
       return (
         <div className="flex items-center justify-center h-full p-4">
           <UnauthenticatedErrorCard
-            message="Please sign in to access your OpenSEO workspace."
+            message={t("Please sign in to access your OpenSEO workspace.")}
             onRetry={() => {
               void refetch();
             }}
@@ -90,7 +94,9 @@ function IndexRedirect() {
         <div className="flex items-center justify-center h-full p-4">
           <div className="flex flex-col items-center gap-3 max-w-xl text-center">
             <p className="text-base-content/80">
-              Redirecting you to billing so you can start a hosted subscription.
+              {t(
+                "Redirecting you to billing so you can start a hosted subscription.",
+              )}
             </p>
           </div>
         </div>
@@ -103,7 +109,8 @@ function IndexRedirect() {
           <p className="text-error text-center">
             {getStandardErrorMessage(
               error,
-              "An unexpected error occurred. Please check server logs.",
+              t("An unexpected error occurred. Please check server logs."),
+              t,
             )}
           </p>
         </div>

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
+import { useLocale } from "@/plugins/client/context";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { getProjectContext } from "@/serverFunctions/projectContext";
 import {
@@ -43,6 +44,7 @@ const SECTION_PLACEHOLDERS: Record<ProjectContextSectionKey, string> = {
 };
 
 export function ProjectContextPage({ projectId }: { projectId: string }) {
+  const { t } = useLocale();
   const contextQuery = useQuery({
     queryKey: projectContextQueryKey(projectId),
     queryFn: () => getProjectContext({ data: { projectId } }),
@@ -65,7 +67,8 @@ export function ProjectContextPage({ projectId }: { projectId: string }) {
         <span className="text-sm">
           {getStandardErrorMessage(
             contextQuery.error,
-            "Failed to load project context",
+            t("Failed to load project context"),
+            t,
           )}
         </span>
       </div>
@@ -79,9 +82,9 @@ export function ProjectContextPage({ projectId }: { projectId: string }) {
     // draft, open form, or edit state can carry over to another project.
     <div key={projectId} className="space-y-8">
       <p className="text-sm text-base-content/70">
-        What SAM, Claude Code, and any connected MCP client know about this
-        project. They read it before they work and write back what they learn,
-        so correct anything that looks wrong.
+        {t(
+          "What SAM, Claude Code, and any connected MCP client know about this project. They read it before they work and write back what they learn, so correct anything that looks wrong.",
+        )}
       </p>
 
       <ProseSections
@@ -116,6 +119,7 @@ function ProseSections({
   sections: ProjectContextData["sections"];
   missingSections: ProjectContextData["missingSections"];
 }) {
+  const { t } = useLocale();
   const update = useContextUpdate(projectId);
   const stored = new Map(sections.map((section) => [section.key, section]));
   // Only the fields the user actually touched are pinned locally; the rest
@@ -162,8 +166,9 @@ function ProseSections({
     <form onSubmit={handleSubmit} className="space-y-5">
       {missingSections.length === PROJECT_CONTEXT_SECTION_KEYS.length ? (
         <EmptyState>
-          Nothing written down yet. Fill in what you can — or ask SAM to draft
-          it from your site and confirm what it got right.
+          {t(
+            "Nothing written down yet. Fill in what you can — or ask SAM to draft it from your site and confirm what it got right.",
+          )}
         </EmptyState>
       ) : null}
 
@@ -176,15 +181,19 @@ function ProseSections({
                 htmlFor={`context-${key}`}
                 className="text-sm font-medium text-base-content"
               >
-                {PROJECT_CONTEXT_SECTION_LABELS[key]}
+                {t(PROJECT_CONTEXT_SECTION_LABELS[key])}
               </label>
               {section ? (
                 <Provenance by={section.updatedBy} at={section.updatedAt} />
               ) : (
-                <span className="text-xs text-base-content/40">Empty</span>
+                <span className="text-xs text-base-content/40">
+                  {t("Empty")}
+                </span>
               )}
             </div>
-            <p className="text-xs text-base-content/50">{SECTION_HINTS[key]}</p>
+            <p className="text-xs text-base-content/50">
+              {t(SECTION_HINTS[key])}
+            </p>
             <textarea
               id={`context-${key}`}
               value={draftOf(key)}
@@ -203,7 +212,7 @@ function ProseSections({
               }}
               rows={4}
               maxLength={PROSE_MAX_CHARS}
-              placeholder={SECTION_PLACEHOLDERS[key]}
+              placeholder={t(SECTION_PLACEHOLDERS[key])}
               className="textarea textarea-bordered w-full text-sm"
             />
           </div>
@@ -216,7 +225,7 @@ function ProseSections({
           className="btn btn-primary btn-sm"
           disabled={update.isPending || changed.length === 0}
         >
-          Save changes
+          {t("Save changes")}
         </button>
       </div>
     </form>
@@ -230,20 +239,24 @@ function CustomSections({
   projectId: string;
   customSections: ProjectContextData["customSections"];
 }) {
+  const { t } = useLocale();
   const update = useContextUpdate(projectId);
   const [editingSlug, setEditingSlug] = React.useState<string | null>(null);
 
   return (
     <section className="space-y-3">
       <SectionHeader
-        title="Custom sections"
-        hint="Anything an agent wrote down that didn't fit the sections above."
+        title={t("Custom sections")}
+        hint={t(
+          "Anything an agent wrote down that didn't fit the sections above.",
+        )}
       />
 
       {customSections.length === 0 ? (
         <EmptyState>
-          Nothing here yet. Agents add a section when they learn something
-          important that has nowhere else to live.
+          {t(
+            "Nothing here yet. Agents add a section when they learn something important that has nowhere else to live.",
+          )}
         </EmptyState>
       ) : (
         <div className="space-y-3">
@@ -277,13 +290,17 @@ function CustomSections({
                     <button
                       type="button"
                       className="btn btn-ghost btn-xs"
-                      aria-label={`Edit ${custom.title ?? custom.slug}`}
+                      aria-label={t("Edit {title}", {
+                        title: custom.title ?? custom.slug,
+                      })}
                       onClick={() => setEditingSlug(custom.slug)}
                     >
                       <Pencil className="size-3.5" />
                     </button>
                     <ConfirmDeleteButton
-                      label={`Delete ${custom.title ?? custom.slug}`}
+                      label={t("Delete {title}", {
+                        title: custom.title ?? custom.slug,
+                      })}
                       pending={update.isPending}
                       onConfirm={() =>
                         update.mutate([{ deleteCustomSection: custom.slug }])
@@ -314,6 +331,7 @@ function CustomSectionForm({
   onCancel: () => void;
   onSave: (title: string, content: string) => void;
 }) {
+  const { t } = useLocale();
   const [title, setTitle] = React.useState(custom.title ?? "");
   const [content, setContent] = React.useState(custom.content);
 
@@ -333,7 +351,7 @@ function CustomSectionForm({
         placeholder={custom.slug}
         maxLength={120}
         className="input input-bordered input-sm w-full"
-        aria-label="Section title"
+        aria-label={t("Section title")}
       />
       <textarea
         value={content}
@@ -341,7 +359,7 @@ function CustomSectionForm({
         rows={5}
         maxLength={PROSE_MAX_CHARS}
         className="textarea textarea-bordered w-full text-sm"
-        aria-label="Section content"
+        aria-label={t("Section content")}
       />
       <FormActions
         pending={pending}
@@ -359,18 +377,23 @@ function ResearchLog({
   projectId: string;
   researchLog: ProjectContextData["researchLog"];
 }) {
+  const { t } = useLocale();
   const update = useContextUpdate(projectId);
 
   return (
     <section className="space-y-3">
       <SectionHeader
-        title="Research log"
-        hint="What's already been looked up, so nobody buys the same data twice."
+        title={t("Research log")}
+        hint={t(
+          "What's already been looked up, so nobody buys the same data twice.",
+        )}
       />
 
       {researchLog.length === 0 ? (
         <EmptyState>
-          Nothing logged yet. Agents record paid research here as they run it.
+          {t(
+            "Nothing logged yet. Agents record paid research here as they run it.",
+          )}
         </EmptyState>
       ) : (
         <ul className={listClass}>
@@ -388,7 +411,9 @@ function ResearchLog({
               </div>
               <RowActions>
                 <ConfirmDeleteButton
-                  label={`Delete log entry from ${entry.entryDate}`}
+                  label={t("Delete log entry from {date}", {
+                    date: entry.entryDate,
+                  })}
                   pending={update.isPending}
                   onConfirm={() =>
                     update.mutate([{ removeResearchLog: [entry.id] }])

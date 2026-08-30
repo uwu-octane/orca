@@ -10,8 +10,11 @@ import {
   SUBSCRIBE_ROUTE,
   autumnSeoDataCreditsToUsd,
 } from "@/shared/billing";
+// FORK: locale plugin — banner copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 export function FreePlanBanner() {
+  const { t } = useLocale();
   const { data: session } = useSession();
   const customerQuery = useCustomer({
     queryOptions: {
@@ -46,19 +49,19 @@ export function FreePlanBanner() {
       search={{ upgrade: true }}
       className="link link-primary font-medium"
     >
-      Upgrade your plan
+      {t("Upgrade your plan")}
     </Link>
   ) : (
     <Link to={BILLING_ROUTE} className="link link-primary font-medium">
-      Buy more credits
+      {t("Buy more credits")}
     </Link>
   );
 
   if (isOutOfCredits) {
     return (
       <BannerShell variant="error">
-        You&rsquo;ve used all your credits. {creditsActionLink} to continue
-        using OpenSEO.
+        {t("You've used all your credits.")} {creditsActionLink}{" "}
+        {t("to continue using OpenSEO.")}
       </BannerShell>
     );
   }
@@ -66,8 +69,8 @@ export function FreePlanBanner() {
   if (isLowCredits) {
     return (
       <BannerShell variant="warning">
-        You&rsquo;re running low on credits. {creditsActionLink} to keep using
-        OpenSEO.
+        {t("You're running low on credits.")} {creditsActionLink}{" "}
+        {t("to keep using OpenSEO.")}
       </BannerShell>
     );
   }
@@ -75,17 +78,17 @@ export function FreePlanBanner() {
   if (isFreePlan) {
     return (
       <BannerShell variant="info">
-        We hope you&rsquo;re enjoying OpenSEO!{" "}
+        {t("We hope you're enjoying OpenSEO!")}{" "}
         <Link
           to={SUBSCRIBE_ROUTE}
           search={{ upgrade: true }}
           className="link link-primary font-medium"
         >
-          Upgrade anytime
+          {t("Upgrade anytime")}
         </Link>{" "}
-        or{" "}
+        {t("or")}{" "}
         <Link to="/support" className="link link-primary font-medium">
-          reach out with questions
+          {t("reach out with questions")}
         </Link>
         .
       </BannerShell>

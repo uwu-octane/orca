@@ -26,6 +26,8 @@ import {
 import { maybeSendSelfHostHeartbeat } from "@/server/lib/self-host-telemetry";
 import { handleGdprStorageErasure } from "@/server/gdpr/storage-erasure";
 import { GDPR_STORAGE_ERASURE_PATH } from "@/shared/gdpr-erasure";
+// FORK: cordis plugin layer — boot the server plugin tree (lazy singleton).
+import { getAppContext } from "@/plugins/server/context";
 
 const appFetch = createStartHandler(defaultStreamHandler);
 const openSeoOAuthProvider = createOpenSeoOAuthProvider(appFetch);
@@ -136,12 +138,14 @@ function fetch(
   return withPgClient(() => Promise.resolve(handleFetch(request, env, ctx)));
 }
 
-function handleFetch(
+async function handleFetch(
   request: Request,
   env: Env,
   ctx: ExecutionContext,
-): Response | Promise<Response> {
+): Promise<Response> {
   ctx.waitUntil(maybeSendSelfHostHeartbeat());
+  // FORK: boot the plugin tree before handling (memoized; no-op once settled).
+  await getAppContext();
 
   const authMode = getAuthMode(env.AUTH_MODE);
   const publicRequest = requestWithPublicOrigin(request);

@@ -17,10 +17,13 @@ import {
   shouldValidateFieldOnChange,
 } from "@/client/lib/forms";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+// FORK: locale plugin — toasts/confirm copy translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 
 function getLaunchValidationErrors(
   value: LaunchFormValues,
   shouldValidateUntouchedField: boolean,
+  t?: (key: string) => string,
 ) {
   if (value.url.trim()) {
     return null;
@@ -32,7 +35,7 @@ function getLaunchValidationErrors(
 
   return createFormValidationErrors({
     fields: {
-      url: "Please enter a URL.",
+      url: t ? t("Please enter a URL.") : "Please enter a URL.",
     },
   });
 }
@@ -47,6 +50,7 @@ export function useLaunchController({
   onAuditStarted: (auditId: string) => void;
 }) {
   const maxPagesLimit = getMaxPagesLimit(isFreePlan);
+  const { t } = useLocale();
   const historyQuery = useQuery({
     queryKey: ["audit-history", projectId],
     queryFn: () => getAuditHistory({ data: { projectId } }),
@@ -63,8 +67,9 @@ export function useLaunchController({
         getLaunchValidationErrors(
           value,
           shouldValidateFieldOnChange(formApi, "url"),
+          t,
         ),
-      onSubmit: ({ value }) => getLaunchValidationErrors(value, true),
+      onSubmit: ({ value }) => getLaunchValidationErrors(value, true, t),
     },
     onSubmit: async ({ formApi, value }) => {
       const effectiveMaxPages = commitMaxPagesInput(launchForm, maxPagesLimit);
@@ -72,7 +77,12 @@ export function useLaunchController({
 
       if (effectiveMaxPages > 500) {
         const confirmed = window.confirm(
-          `You are about to crawl ${effectiveMaxPages.toLocaleString()} pages. This is okay, but it may take a while. Continue?`,
+          t(
+            "You are about to crawl {count} pages. This is okay, but it may take a while. Continue?",
+            {
+              count: effectiveMaxPages.toLocaleString(),
+            },
+          ),
         );
         if (!confirmed) {
           return;
@@ -86,12 +96,12 @@ export function useLaunchController({
           maxPages: effectiveMaxPages,
           lighthouseStrategy: value.runLighthouse ? "auto" : "none",
         });
-        toast.success("Audit started!");
+        toast.success(t("Audit started!"));
         onAuditStarted(result.auditId);
       } catch (error) {
         formApi.setErrorMap({
           onSubmit: createFormValidationErrors({
-            form: getStandardErrorMessage(error, "Failed to start audit"),
+            form: getStandardErrorMessage(error, t("Failed to start audit"), t),
           }),
         });
       }
@@ -114,6 +124,7 @@ function useLaunchMutations({
   projectId: string;
   historyRefetch: () => Promise<unknown>;
 }) {
+  const { t } = useLocale();
   const startMutation = useMutation({
     mutationFn: (data: {
       projectId: string;
@@ -128,7 +139,7 @@ function useLaunchMutations({
       deleteAudit({ data: { projectId, auditId } }),
     onSuccess: () => {
       void historyRefetch();
-      toast.success("Audit deleted");
+      toast.success(t("Audit deleted"));
     },
   });
 

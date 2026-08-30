@@ -30,6 +30,9 @@ import {
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
 import { captureClientEvent } from "@/client/lib/posthog";
+// FORK: locale plugin — toasts translate via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
+import type { T } from "@/plugins/locale";
 import {
   SEARCH_PERFORMANCE_PAGE_SIZES,
   type SearchPerformanceTableDimension,
@@ -81,7 +84,7 @@ function dimensionExportTable(
   };
 }
 
-function runExport(table: ExportTable, target: ExportTarget): void {
+function runExport(table: ExportTable, target: ExportTarget, t?: T): void {
   if (target === "csv") {
     downloadCsv(table.filename, buildCsv(table.headers, table.rows));
     captureClientEvent("data:export", {
@@ -94,11 +97,16 @@ function runExport(table: ExportTable, target: ExportTarget): void {
     headers: table.headers,
     rows: table.rows,
     feature: "search_performance",
+    t,
   });
 }
 
-export function exportStriking(report: Report, target: ExportTarget): void {
-  runExport(strikingExportTable(report), target);
+export function exportStriking(
+  report: Report,
+  target: ExportTarget,
+  t?: T,
+): void {
+  runExport(strikingExportTable(report), target, t);
 }
 
 /** Export the full queries/pages dataset (fetched separately, not the visible
@@ -108,9 +116,10 @@ export function exportDimensionRows(
   rows: SearchPerformanceTableRow[],
   range: Report["range"],
   target: ExportTarget,
+  t?: T,
 ): void {
   const stamp = `${range.startDate}-to-${range.endDate}`;
-  runExport(dimensionExportTable(dimension, rows, stamp), target);
+  runExport(dimensionExportTable(dimension, rows, stamp), target, t);
 }
 
 export function TabButton({
@@ -155,30 +164,34 @@ function positionDelta(current: number, previous: number): Delta {
 }
 
 export function TotalsCards({ report }: { report: Report }) {
+  const { t } = useLocale();
   const { totals, prevTotals, range } = report;
-  const deltaTitle = `vs ${range.prevStartDate} to ${range.prevEndDate}`;
+  const deltaTitle = t("vs {start} to {end}", {
+    start: range.prevStartDate,
+    end: range.prevEndDate,
+  });
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <TotalCard
-        label="Clicks"
+        label={t("Clicks")}
         value={formatCount(totals.clicks)}
         delta={percentDelta(totals.clicks, prevTotals.clicks)}
         deltaTitle={deltaTitle}
       />
       <TotalCard
-        label="Impressions"
+        label={t("Impressions")}
         value={formatCount(totals.impressions)}
         delta={percentDelta(totals.impressions, prevTotals.impressions)}
         deltaTitle={deltaTitle}
       />
       <TotalCard
-        label="CTR"
+        label={t("CTR")}
         value={formatCtr(totals.ctr)}
         delta={percentDelta(totals.ctr, prevTotals.ctr)}
         deltaTitle={deltaTitle}
       />
       <TotalCard
-        label="Avg position"
+        label={t("Avg position")}
         value={formatPosition(totals.position)}
         delta={positionDelta(totals.position, prevTotals.position)}
         deltaTitle={deltaTitle}
@@ -225,6 +238,7 @@ export function DimensionTable({
   rows: SearchPerformanceTableRow[];
   keyLabel: string;
 }) {
+  const { t } = useLocale();
   const columns = useMemo(() => buildDimensionColumns(keyLabel), [keyLabel]);
   const table = useAppTable({
     data: rows,
@@ -239,7 +253,9 @@ export function DimensionTable({
       wrapperClassName="overflow-x-auto"
       empty={
         <p className="p-6 text-sm text-base-content/60">
-          No data for this period yet. Search Console data trails by a few days.
+          {t(
+            "No data for this period yet. Search Console data trails by a few days.",
+          )}
         </p>
       }
     />
@@ -253,6 +269,7 @@ export function StrikingDistanceTable({
   projectId: string;
   rows: Report["strikingDistance"];
 }) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const anchorRef = useSelectionAnchor();
   const [rowSelection, setRowSelection] = useState({});
@@ -289,10 +306,15 @@ export function StrikingDistanceTable({
         .join("\n");
       await navigator.clipboard.writeText(text);
       toast.success(
-        `Copied ${selectedQueries.length} ${selectedQueries.length === 1 ? "keyword" : "keywords"}`,
+        t(
+          selectedQueries.length === 1
+            ? "Copied {count} keyword"
+            : "Copied {count} keywords",
+          { count: selectedQueries.length },
+        ),
       );
     } catch {
-      toast.error("Couldn't copy to clipboard");
+      toast.error(t("Couldn't copy to clipboard"));
     }
   };
 
@@ -308,21 +330,28 @@ export function StrikingDistanceTable({
         queryKey: ["savedKeywords", projectId],
       });
       toast.success(
-        `Saved ${keywords.length} ${keywords.length === 1 ? "keyword" : "keywords"}`,
+        t(
+          keywords.length === 1
+            ? "Saved {count} keyword"
+            : "Saved {count} keywords",
+          { count: keywords.length },
+        ),
       );
       setRowSelection({});
     },
     onError: (error) => {
-      toast.error(getStandardErrorMessage(error, "Could not save keywords"));
+      toast.error(
+        getStandardErrorMessage(error, t("Could not save keywords"), t),
+      );
     },
   });
 
   if (rows.length === 0) {
     return (
       <p className="p-6 text-sm text-base-content/60">
-        No striking-distance queries in this period. These are queries ranking
-        at positions 5 to 20, where an improvement is most likely to move
-        traffic.
+        {t(
+          "No striking-distance queries in this period. These are queries ranking at positions 5 to 20, where an improvement is most likely to move traffic.",
+        )}
       </p>
     );
   }
@@ -331,8 +360,9 @@ export function StrikingDistanceTable({
     <>
       <div className="p-4">
         <p className="mb-3 text-sm text-base-content/60">
-          Queries ranking at positions 5 to 20, sorted by impressions. Improve
-          the listed page to move them into the top results.
+          {t(
+            "Queries ranking at positions 5 to 20, sorted by impressions. Improve the listed page to move them into the top results.",
+          )}
         </p>
         <AppDataTable
           table={table}
@@ -352,7 +382,7 @@ export function StrikingDistanceTable({
       />
       <TableBulkActionBar
         selectedCount={selectedQueries.length}
-        selectedLabel={selectedQueries.length === 1 ? "query" : "queries"}
+        selectedLabel={t(selectedQueries.length === 1 ? "query" : "queries")}
         onClear={() => setRowSelection({})}
         actions={
           <div className="flex items-center gap-1 px-1.5">
@@ -360,7 +390,7 @@ export function StrikingDistanceTable({
               icon={<Copy className="size-3.5" />}
               onClick={() => void copyKeywords()}
             >
-              Copy keywords
+              {t("Copy keywords")}
             </TableBulkActionButton>
             <TableBulkActionButton
               icon={
@@ -373,7 +403,7 @@ export function StrikingDistanceTable({
               onClick={() => save.mutate(selectedQueries)}
               disabled={save.isPending}
             >
-              Save as keywords
+              {t("Save as keywords")}
             </TableBulkActionButton>
           </div>
         }

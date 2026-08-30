@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+// FORK: locale plugin — rank tracking config copy translates via the plugin tree.
+import { useLocale } from "@/plugins/client/context";
 import { getRankTrackingConfigs } from "@/serverFunctions/rank-tracking";
 import { RankTrackingDomainDetail } from "@/client/features/rank-tracking/RankTrackingDomainDetail";
 import { RankTrackingConfigModal } from "@/client/features/rank-tracking/RankTrackingConfigModal";
@@ -12,6 +14,7 @@ export const Route = createFileRoute(
 });
 
 function RankTrackingConfigRoute() {
+  const { t } = useLocale();
   const { projectId, configId } = Route.useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -52,10 +55,10 @@ function RankTrackingConfigRoute() {
     return (
       <>
         <p className="text-sm text-base-content/70">
-          Domain configuration not found.
+          {t("Domain configuration not found.")}
         </p>
         <button className="btn btn-ghost btn-sm" onClick={handleBack}>
-          Back to domains
+          {t("Back to domains")}
         </button>
       </>
     );

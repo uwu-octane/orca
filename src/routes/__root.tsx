@@ -27,6 +27,9 @@ import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { Toaster } from "sonner";
 import { queryClient } from "@/client/tanstack-db";
 import { getActiveOrganizationId } from "@/lib/auth-session";
+// FORK: cordis plugin layer — client provider (mounted below, inside ClientOnly).
+import { CordisProvider } from "@/plugins/client/context";
+import { localeInitScript } from "@/plugins/locale/client/init-script";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -131,6 +134,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script
           dangerouslySetInnerHTML={{ __html: themePreferenceInitScript }}
         />
+        {/* FORK: set <html lang> before paint from the locale preference. */}
+        <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
         <HeadContent />
       </head>
       <body>
@@ -142,7 +147,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               context — nothing fetches until a useCustomer consumer mounts. */}
           <AutumnProvider>
             <QueryClientProvider client={queryClient}>
-              <>
+              {/* FORK: cordis plugin layer — client tree mounted once per app. */}
+              <CordisProvider>
                 <PostHogBootstrap />
                 {children}
                 <ExportToSheetsModal />
@@ -163,7 +169,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                     ]}
                   />
                 ) : null}
-              </>
+              </CordisProvider>
             </QueryClientProvider>
           </AutumnProvider>
         </ClientOnly>

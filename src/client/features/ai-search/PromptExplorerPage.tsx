@@ -25,6 +25,7 @@ import {
   type PromptExplorerModel,
   type WebSearchCountryCode,
 } from "@/types/schemas/ai-search";
+import { useLocale } from "@/plugins/client/context";
 
 type PromptExplorerFormValues = {
   prompt: string;
@@ -72,6 +73,7 @@ function PromptExplorerPageInner({
   onSubmit,
   planGate,
 }: Props & { planGate: HostedPlanGateState }) {
+  const { t } = useLocale();
   const [form, setForm] = useState<PromptExplorerFormValues>(urlState);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -160,17 +162,19 @@ function PromptExplorerPageInner({
     event.preventDefault();
     const trimmed = form.prompt.trim();
     if (trimmed.length === 0) {
-      setValidationError("Enter a prompt");
+      setValidationError(t("Enter a prompt"));
       return;
     }
     if (trimmed.length > PROMPT_EXPLORER_MAX_PROMPT_LENGTH) {
       setValidationError(
-        `Keep prompts under ${PROMPT_EXPLORER_MAX_PROMPT_LENGTH} characters`,
+        t("Keep prompts under {count} characters", {
+          count: PROMPT_EXPLORER_MAX_PROMPT_LENGTH,
+        }),
       );
       return;
     }
     if (form.models.length === 0) {
-      setValidationError("Select at least one model");
+      setValidationError(t("Select at least one model"));
       return;
     }
     setValidationError(null);
@@ -182,10 +186,15 @@ function PromptExplorerPageInner({
   };
 
   const errorMessage = exploreQuery.isError
-    ? getStandardErrorMessage(exploreQuery.error)
+    ? getStandardErrorMessage(exploreQuery.error, undefined, t)
     : null;
   const isLoading = hasActivePrompt && exploreQuery.isPending;
   const resultData = hasActivePrompt ? exploreQuery.data : undefined;
+  const bullets = PROMPT_EXPLORER_BULLETS.map((bullet) => ({
+    ...bullet,
+    title: t(bullet.title),
+    body: t(bullet.body),
+  }));
 
   const updateForm = <K extends keyof PromptExplorerFormValues>(
     key: K,
@@ -199,18 +208,21 @@ function PromptExplorerPageInner({
     <div className="px-4 py-4 pb-24 overflow-auto md:px-6 md:py-6 md:pb-8">
       <div className="mx-auto max-w-7xl space-y-4">
         <div>
-          <h1 className="text-2xl font-semibold">Prompt Explorer</h1>
+          <h1 className="text-2xl font-semibold">{t("Prompt Explorer")}</h1>
           <p className="text-sm text-base-content/70">
-            Ask any prompt across ChatGPT, Claude, Gemini, and Perplexity
-            side-by-side.
+            {t(
+              "Ask any prompt across ChatGPT, Claude, Gemini, and Perplexity side-by-side.",
+            )}
           </p>
         </div>
 
         {planGate.isFreePlan ? (
           <AiSearchPaidPlanGate
-            feature="Prompt Explorer"
-            description="Ask one prompt across ChatGPT, Claude, Gemini, and Perplexity at the same time and compare their answers — including which sources each model cites."
-            bullets={PROMPT_EXPLORER_BULLETS}
+            feature={t("Prompt Explorer")}
+            description={t(
+              "Ask one prompt across ChatGPT, Claude, Gemini, and Perplexity at the same time and compare their answers — including which sources each model cites.",
+            )}
+            bullets={bullets}
           />
         ) : (
           <>
@@ -254,7 +266,7 @@ function PromptExplorerPageInner({
                     className="btn btn-ghost btn-sm gap-2 px-0 text-base-content/70 hover:bg-transparent"
                   >
                     <ArrowLeft className="size-4" />
-                    Recent searches
+                    {t("Recent searches")}
                   </Link>
                 </div>
                 <PromptExplorerResults result={resultData} />

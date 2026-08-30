@@ -17,3 +17,5 @@ drizzle-pg/
 planning/
 worker-configuration.d.ts
 web/
+# vendored cordis loader (deepseek-harness vendor/, MIT) — keep upstream formatting
+vendor/
