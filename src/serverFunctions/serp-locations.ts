@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAuthenticatedContext } from "@/serverFunctions/middleware";
-import { fetchSerpLocationsForCountry } from "@/server/lib/dataforseo/serp-locations";
+// FORK: geographic lookup uses the installed Cordis provider.
+import { fetchSerpLocationsForCountry } from "@/server/lib/dataforseo";
 
 /** ISO 3166-1 alpha-2, e.g. "us" — DataForSEO rejects country names. */
 const countryCodeField = z.string().regex(/^[a-z]{2}$/i);

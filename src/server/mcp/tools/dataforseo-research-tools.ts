@@ -1,10 +1,9 @@
 /* eslint-disable max-lines */
 import { z } from "zod";
-import {
-  createDataforseoClient,
-  fetchKeywordMetricsForList,
-  type KeywordMetricRow,
-} from "@/server/lib/dataforseo";
+import { createDataforseoClient } from "@/server/lib/dataforseo";
+// FORK: portable metrics are shared with the application and background jobs.
+import { fetchKeywordMetrics } from "@/server/lib/seo-data";
+import type { KeywordMetric as KeywordMetricRow } from "@/plugins/seo-data/schemas";
 import { buildProjectMeta } from "@/server/mcp/context";
 import { mcpResponse } from "@/server/mcp/formatters";
 import {
@@ -1076,14 +1075,16 @@ export const getKeywordMetricsTool = {
     // Assert against the RESOLVED pair: an explicit language with an omitted
     // location must validate against the project's default location.
     assertLanguageForLocation(locationCode, languageCode);
-    const client = createDataforseoClient(context.billing);
-    const metrics = await fetchKeywordMetricsForList(client, {
-      keywords: args.keywords,
-      locationCode,
-      languageCode,
-      includeClickstreamData: args.includeClickstreamData ?? false,
-      creditFeature: "keyword_research",
-    });
+    const metrics = await fetchKeywordMetrics(
+      {
+        keywords: args.keywords,
+        locationCode,
+        languageCode,
+        includeClickstreamData: args.includeClickstreamData ?? false,
+        creditFeature: "keyword_research",
+      },
+      context.billing,
+    );
     const rows = sortKeywordMetricRows(
       metrics.map(toMcpKeywordMetricRow),
       args.sortBy ?? "search_volume",

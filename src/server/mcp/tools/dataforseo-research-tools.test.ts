@@ -1,6 +1,6 @@
+// FORK: keyword metric fixtures live in keyword-metrics.test.ts.
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import type { fetchKeywordMetricsForList as FetchKeywordMetricsForList } from "@/server/lib/dataforseo/keyword-metrics";
 import * as researchTools from "./dataforseo-research-tools";
 import { makeToolContext, textContent } from "./tool-test-support";
 
@@ -13,17 +13,9 @@ vi.mock("cloudflare:workers", () => ({
   env: {},
 }));
 
-// Keep the real fetchKeywordMetricsForList (it only routes provider calls onto
-// the supplied client) so the handler's normalization is exercised end-to-end.
-vi.mock("@/server/lib/dataforseo", async () => {
-  const keywordMetrics = await vi.importActual<{
-    fetchKeywordMetricsForList: typeof FetchKeywordMetricsForList;
-  }>("@/server/lib/dataforseo/keyword-metrics");
-  return {
-    createDataforseoClient: mocks.createDataforseoClient,
-    fetchKeywordMetricsForList: keywordMetrics.fetchKeywordMetricsForList,
-  };
-});
+vi.mock("@/server/lib/dataforseo", () => ({
+  createDataforseoClient: mocks.createDataforseoClient,
+}));
 
 vi.mock("@/server/features/projects/services/ProjectService", () => ({
   ProjectService: {
@@ -267,125 +259,6 @@ describe("DataForSEO research MCP tools", () => {
         "local_pack",
       ]).success,
     ).toBe(true);
-  });
-
-  it("normalizes keyword_overview rows with difficulty and intent", async () => {
-    const keywordOverview = vi.fn().mockResolvedValue([
-      {
-        keyword: "seo automation",
-        keyword_info: {
-          search_volume: 2400,
-          cpc: 25.6,
-          competition: 0.24,
-          competition_level: "LOW",
-        },
-        keyword_properties: { keyword_difficulty: 18 },
-        search_intent_info: { main_intent: "commercial" },
-      },
-    ]);
-
-    mocks.createDataforseoClient.mockReturnValue({
-      labs: { keywordOverview },
-    });
-    const { getKeywordMetricsTool } = researchTools;
-
-    const result = await getKeywordMetricsTool.handler(
-      { projectId: "project_1", keywords: ["seo automation"] },
-      toolContext,
-    );
-
-    expect(keywordOverview).toHaveBeenCalledWith(
-      expect.objectContaining({
-        keywords: ["seo automation"],
-        locationCode: 2840,
-        languageCode: "en",
-        creditFeature: "keyword_research",
-      }),
-    );
-    const rows = z
-      .object({
-        keywords: z.array(
-          z
-            .object({
-              keyword: z.string(),
-              search_volume: z.number().nullable(),
-              keyword_difficulty: z.number().nullable(),
-              main_intent: z.string().nullable(),
-            })
-            .passthrough(),
-        ),
-      })
-      .passthrough()
-      .parse(result.structuredContent).keywords;
-    expect(rows[0]).toMatchObject({
-      keyword: "seo automation",
-      search_volume: 2400,
-      keyword_difficulty: 18,
-      main_intent: "commercial",
-    });
-    const out = textContent(result);
-    expect(out).toContain("keyword | volume | KD | CPC | competition | intent");
-    expect(out).toContain("seo automation");
-  });
-
-  it("sorts keyword metric rows by the requested numeric field", async () => {
-    const keywordOverview = vi.fn().mockResolvedValue([
-      { keyword: "low", keyword_info: { search_volume: 10 } },
-      { keyword: "high", keyword_info: { search_volume: 90 } },
-      { keyword: "medium", keyword_info: { search_volume: 50 } },
-    ]);
-
-    mocks.createDataforseoClient.mockReturnValue({
-      labs: { keywordOverview },
-    });
-    const { getKeywordMetricsTool } = researchTools;
-
-    const result = await getKeywordMetricsTool.handler(
-      {
-        projectId: "project_1",
-        keywords: ["low", "high", "medium"],
-        sortBy: "search_volume",
-      },
-      toolContext,
-    );
-
-    const rows = z
-      .object({ keywords: z.array(z.object({ keyword: z.string() })) })
-      .passthrough()
-      .parse(result.structuredContent).keywords;
-    expect(rows.map((row) => row.keyword)).toEqual(["high", "medium", "low"]);
-  });
-
-  it("drops monthly trends when includeMonthlyTrends is false", async () => {
-    const keywordOverview = vi.fn().mockResolvedValue([
-      {
-        keyword: "seo",
-        keyword_info: {
-          search_volume: 100,
-          monthly_searches: [{ year: 2026, month: 1, search_volume: 100 }],
-        },
-      },
-    ]);
-
-    mocks.createDataforseoClient.mockReturnValue({
-      labs: { keywordOverview },
-    });
-    const { getKeywordMetricsTool } = researchTools;
-
-    const result = await getKeywordMetricsTool.handler(
-      {
-        projectId: "project_1",
-        keywords: ["seo"],
-        includeMonthlyTrends: false,
-      },
-      toolContext,
-    );
-
-    const rows = z
-      .object({ keywords: z.array(z.record(z.string(), z.unknown())) })
-      .passthrough()
-      .parse(result.structuredContent).keywords;
-    expect(rows[0]).not.toHaveProperty("monthly_searches");
   });
 });
 

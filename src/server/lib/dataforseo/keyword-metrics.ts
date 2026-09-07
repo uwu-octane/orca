@@ -1,11 +1,15 @@
-import type { createDataforseoClient } from "@/server/lib/dataforseo/client";
+// FORK: adapter internals use the metered implementation, not the plugin facade.
+import type { createMeteredDataforseoClient } from "@/plugins/dataforseo/client";
 import type { AdsKeywordItem } from "@/server/lib/dataforseo/google-ads";
 import type { KeywordOverviewItem } from "@/server/lib/dataforseo/labs";
-import type { CreditFeature } from "@/shared/billing-credit-features";
+import type {
+  KeywordMetric,
+  KeywordMetricsInput,
+} from "@/plugins/seo-data/schemas";
 import { getKeywordDataProvider } from "@/shared/keyword-locations";
 import type { MonthlySearch } from "@/types/keywords";
 
-type DataforseoClient = ReturnType<typeof createDataforseoClient>;
+type DataforseoClient = ReturnType<typeof createMeteredDataforseoClient>;
 
 // Narrowed to the two endpoints the helper uses, so tests can fake it cheaply.
 type KeywordMetricsClient = {
@@ -18,17 +22,6 @@ const KEYWORD_METRICS_BATCH_SIZE = 700;
 
 // `intent` is the raw `main_intent` (null for Google Ads); run it through
 // `normalizeIntent` for the app enum. `competition` is a 0-1 ratio.
-export type KeywordMetricRow = {
-  keyword: string;
-  searchVolume: number | null;
-  cpc: number | null;
-  competition: number | null;
-  competitionLevel: string | null;
-  keywordDifficulty: number | null;
-  intent: string | null;
-  monthlySearches: MonthlySearch[];
-};
-
 function toMonthlySearches(
   entries:
     | {
@@ -49,7 +42,7 @@ function toMonthlySearches(
 function normalizeKeywordOverview(
   item: KeywordOverviewItem,
   keyword: string,
-): KeywordMetricRow {
+): KeywordMetric {
   const info = item.keyword_info;
   // The clickstream-normalized block only exists when the caller opted into
   // clickstream data (it doubles request cost); prefer it when present.
@@ -76,7 +69,7 @@ function normalizeKeywordOverview(
 function normalizeAdsKeyword(
   item: AdsKeywordItem,
   keyword: string,
-): KeywordMetricRow {
+): KeywordMetric {
   return {
     keyword,
     searchVolume: item.search_volume ?? null,
@@ -104,18 +97,11 @@ function normalizeAdsKeyword(
 // null volume / CPC.
 export async function fetchKeywordMetricsForList(
   client: KeywordMetricsClient,
-  params: {
-    keywords: string[];
-    locationCode: number;
-    languageCode: string;
-    creditFeature: CreditFeature;
-    includeClickstreamData?: boolean;
-    locationName?: string;
-  },
-): Promise<KeywordMetricRow[]> {
+  params: KeywordMetricsInput,
+): Promise<KeywordMetric[]> {
   const useGoogleAds =
     getKeywordDataProvider(params.locationCode) === "google_ads";
-  const rows: KeywordMetricRow[] = [];
+  const rows: KeywordMetric[] = [];
 
   for (let i = 0; i < params.keywords.length; i += KEYWORD_METRICS_BATCH_SIZE) {
     const keywords = params.keywords.slice(i, i + KEYWORD_METRICS_BATCH_SIZE);
@@ -180,7 +166,7 @@ export async function fetchKeywordMetricsForList(
   return rows;
 }
 
-function nullMetricRow(keyword: string): KeywordMetricRow {
+function nullMetricRow(keyword: string): KeywordMetric {
   return {
     keyword,
     searchVolume: null,
@@ -197,13 +183,13 @@ function mergeLocalAndNationalRows(
   keywords: string[],
   adsItems: AdsKeywordItem[],
   labsItems: KeywordOverviewItem[],
-): KeywordMetricRow[] {
+): KeywordMetric[] {
   const labsByKeyword = new Map(
     labsItems
       .filter((item) => item.keyword)
       .map((item) => [item.keyword!.toLowerCase(), item]),
   );
-  const rows: KeywordMetricRow[] = [];
+  const rows: KeywordMetric[] = [];
   const covered = new Set<string>();
 
   for (const item of adsItems) {

@@ -10,8 +10,7 @@ const mocks = vi.hoisted(() => ({
   isHostedServerAuthMode: vi.fn(),
   customerHasPaidPlan: vi.fn(),
   beginRankCheckRun: vi.fn(),
-  createDataforseoClient: vi.fn(),
-  fetchKeywordMetricsForList: vi.fn(),
+  fetchKeywordMetrics: vi.fn(),
 }));
 
 vi.mock("cloudflare:workers", () => ({ env: { RANK_CHECK_WORKFLOW: {} } }));
@@ -29,9 +28,9 @@ vi.mock("@/server/features/rank-tracking/services/rankCheckRunGuards", () => ({
   beginRankCheckRun: mocks.beginRankCheckRun,
   reconcileActiveRankCheckRun: vi.fn(),
 }));
-vi.mock("@/server/lib/dataforseo", () => ({
-  createDataforseoClient: mocks.createDataforseoClient,
-  fetchKeywordMetricsForList: mocks.fetchKeywordMetricsForList,
+// FORK: provider work is reached through the shared capability.
+vi.mock("@/server/lib/seo-data", () => ({
+  fetchKeywordMetrics: mocks.fetchKeywordMetrics,
 }));
 
 const config = {
@@ -298,14 +297,12 @@ describe("RankTrackingService management invariants", () => {
         billingCustomer,
       ),
     ).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });
-    expect(mocks.createDataforseoClient).not.toHaveBeenCalled();
-    expect(mocks.fetchKeywordMetricsForList).not.toHaveBeenCalled();
+    expect(mocks.fetchKeywordMetrics).not.toHaveBeenCalled();
   });
 
   it("allows self-hosted metrics refresh without a plan check", async () => {
     mocks.isHostedServerAuthMode.mockResolvedValue(false);
-    mocks.createDataforseoClient.mockReturnValue({});
-    mocks.fetchKeywordMetricsForList.mockResolvedValue([]);
+    mocks.fetchKeywordMetrics.mockResolvedValue([]);
 
     await expect(
       RankTrackingService.refreshKeywordMetrics(
@@ -315,7 +312,7 @@ describe("RankTrackingService management invariants", () => {
       ),
     ).resolves.toEqual({ updated: 0 });
     expect(mocks.customerHasPaidPlan).not.toHaveBeenCalled();
-    expect(mocks.fetchKeywordMetricsForList).toHaveBeenCalledTimes(1);
+    expect(mocks.fetchKeywordMetrics).toHaveBeenCalledTimes(1);
   });
 
   it("rejects missing or foreign trackers with NOT_FOUND before mutation", async () => {

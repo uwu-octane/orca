@@ -1,5 +1,11 @@
 # Fork maintenance log
 
+## 2026-09-07 DataForSEO providers
+
+The server manifest installs `seoData` and `dataforseo`. Application-owned Zod schemas define keyword metrics and live SERPs; their consumers resolve explicitly selected providers through Cordis. Remaining DataForSEO APIs retain their existing vendor-specific contracts behind a lazy compatibility facade, including free task collection and catalogs. The plugin owns the existing metering implementation, and malformed billed task items now retain their cost when validation fails.
+
+Server and client module maps are separate so browser builds cannot resolve server plugins. SERP analysis cache keys include provider, provider version and schema version; previous keys expire normally and subsequent requests populate the new keys through the usual paid path. No provider fallback or new retry policy is added. Database tables remain unchanged; enabling another real metrics provider requires a separate provenance and historical-data migration. Contracts and extension guidance live in `src/plugins/seo-data/README.md` and `src/plugins/dataforseo/README.md`.
+
 ## 2026-09-07 Cordis assembly
 
 Manifest and programmatic boot reject unknown fields, blank names/IDs, and duplicate IDs. Boot audits enabled plugins after all entries settle and disposes failed contexts before a retry. Regression tests cover dependency order, cleanup, and concurrent singleton initialization. The data-provider review is recorded in `docs/CORDIS_SEO_DATA_REVIEW.md`.

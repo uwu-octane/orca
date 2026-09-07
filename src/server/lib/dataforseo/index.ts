@@ -1,22 +1,15 @@
-// Public surface of the DataForSEO integration. Internals live in the
-// per-section files (labs / serp / business / backlinks / ai / lighthouse),
-// which sit behind the single dynamic import in client.ts so the ~3 MB SDK
-// loads lazily; everything funnels through envelope.ts (status + billing) and
-// is metered in client.ts. Runtime values re-exported here must be SDK-free
+// FORK: compatibility surface of the DataForSEO Cordis plugin. Section files
+// and the SDK load lazily through src/plugins/dataforseo/client.ts, which
+// owns metering. Portable capabilities live in server/lib/seo-data.ts.
+// Runtime values re-exported here must be SDK-free
 // (shared.ts) or lazy — a static value re-export from a section file would
 // drag the SDK back into the eager isolate startup graph.
 
-import {
-  loadDataforseoSections,
-  type DataforseoSections,
-} from "@/server/lib/dataforseo/client";
+// FORK: all application I/O is resolved through the Cordis provider.
+import { getDataforseoProvider } from "@/plugins/server/context";
+import type { DataforseoProvider } from "@/plugins/dataforseo";
 
 export { createDataforseoClient } from "@/server/lib/dataforseo/client";
-
-export {
-  fetchKeywordMetricsForList,
-  type KeywordMetricRow,
-} from "@/server/lib/dataforseo/keyword-metrics";
 
 export {
   buildLlmTarget,
@@ -31,19 +24,16 @@ export { normalizeBacklinksTarget } from "@/server/lib/dataforseoBacklinksTarget
 /** Lazy wrappers for the section fetchers called outside the metered client.
  * Task collection is free at DataForSEO (the task was charged at task_post), so
  * routing these through the metering seam would charge the customer twice. */
-export const fetchRankCheckTaskResult: DataforseoSections["fetchRankCheckTaskResult"] =
-  async (input) =>
-    (await loadDataforseoSections()).fetchRankCheckTaskResult(input);
+export const fetchRankCheckTaskResult: DataforseoProvider["collectRankTask"] =
+  async (input) => (await getDataforseoProvider()).collectRankTask(input);
 
-export const fetchBusinessDataTaskResult: DataforseoSections["fetchBusinessDataTaskResult"] =
-  async (input) =>
-    (await loadDataforseoSections()).fetchBusinessDataTaskResult(input);
+export const fetchBusinessDataTaskResult: DataforseoProvider["collectBusinessTask"] =
+  async (input) => (await getDataforseoProvider()).collectBusinessTask(input);
 
 /** Free ($0) at DataForSEO, so it skips the metered client entirely — a
  *  zero-credit org can still list categories. */
-export const fetchBusinessListingsCategories: DataforseoSections["fetchBusinessListingsCategories"] =
-  async () =>
-    (await loadDataforseoSections()).fetchBusinessListingsCategories();
+export const fetchBusinessListingsCategories: DataforseoProvider["businessCategories"] =
+  async () => (await getDataforseoProvider()).businessCategories();
 
 export type {
   BusinessTaskEndpoint,
@@ -72,3 +62,8 @@ export type {
   DomainPageSummaryItem,
   BacklinksHistoryItem,
 } from "@/server/lib/dataforseo/backlinks";
+
+/** Free geographic catalog, loaded by the installed provider on demand. */
+export const fetchSerpLocationsForCountry: DataforseoProvider["serpLocations"] =
+  async (countryCode) =>
+    (await getDataforseoProvider()).serpLocations(countryCode);

@@ -1,6 +1,6 @@
 # Cordis 数据能力插件接入与维护评审
 
-状态：评审基线与分阶段提案。评审日期：2026-09-07。装配校验、缺依赖审计和失败清理已在后续基础修复中实现；下述问题与探针记录描述评审时的源码，当前行为见 [PLUGINS.md](./PLUGINS.md)。
+状态：历史评审基线与分阶段提案。评审日期：2026-09-07。后续已实现装配校验、缺依赖审计、失败清理，以及 `seoData` / `dataforseo` 插件。关键词指标与实时 SERP 已采用应用自有 Zod schema 和显式 provider 路由，其余接口保留供应商专用协议。下述问题与探针记录描述评审时的源码；当前行为见 [PLUGINS.md](./PLUGINS.md)，已落实的契约及后续来源追踪要求见 [SEO data contract](../src/plugins/seo-data/README.md)。
 
 源码基线：orca `973f4200e5b02dcb3068e0486e13a1d9da3fd29d`；deepseek-harness `d347e703908d0406b7a7ef80e3a0e594d86b2215`。本文区分已验证的现状与建议方案，不改变既有业务策略。任何新增或修改的 fallback 均须在改代码前取得维护者同意。
 

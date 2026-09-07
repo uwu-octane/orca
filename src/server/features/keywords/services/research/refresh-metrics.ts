@@ -1,9 +1,7 @@
 import { KeywordResearchRepository } from "@/server/features/keywords/repositories/KeywordResearchRepository";
 import { normalizeIntent } from "@/server/features/keywords/services/research/helpers";
-import {
-  createDataforseoClient,
-  fetchKeywordMetricsForList,
-} from "@/server/lib/dataforseo";
+// FORK: metrics use the provider-independent Cordis capability.
+import { fetchKeywordMetrics } from "@/server/lib/seo-data";
 import type { BillingCustomerContext } from "@/server/billing/subscription";
 import type { RefreshSavedKeywordMetricsInput } from "@/types/schemas/keywords";
 
@@ -22,7 +20,6 @@ export async function refreshSavedKeywordMetrics(
 
   if (rows.length === 0) return { updated: 0 };
 
-  const client = createDataforseoClient(billingCustomer);
   let updated = 0;
 
   // Group by (locationCode, languageCode) so each provider call is homogeneous.
@@ -36,12 +33,15 @@ export async function refreshSavedKeywordMetrics(
 
   for (const groupRows of groups.values()) {
     const { locationCode, languageCode } = groupRows[0].row;
-    const metrics = await fetchKeywordMetricsForList(client, {
-      keywords: groupRows.map((r) => r.row.keyword),
-      locationCode,
-      languageCode,
-      creditFeature: "keyword_research",
-    });
+    const metrics = await fetchKeywordMetrics(
+      {
+        keywords: groupRows.map((r) => r.row.keyword),
+        locationCode,
+        languageCode,
+        creditFeature: "keyword_research",
+      },
+      billingCustomer,
+    );
     const byKeyword = new Map(
       metrics.map((metric) => [metric.keyword.toLowerCase(), metric]),
     );

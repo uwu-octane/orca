@@ -1,8 +1,7 @@
 import type { LocaleService } from "@/plugins/locale";
 
-/** Service typings shared by both sides. Each plugin declares its service on
- *  the cordis Context here (billing/seoData/mcp are seams in
- *  docs/PLUGINS.md, not yet provided). */
+/** Locale is shared by both sides. Server capability declarations live with
+ * their owning plugins so this module does not import server implementations. */
 declare module "cordis" {
   interface Context {
     locale: LocaleService;

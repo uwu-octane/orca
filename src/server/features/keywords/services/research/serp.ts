@@ -5,6 +5,8 @@ import type { SerpResultItem } from "@/types/keywords";
 import { z } from "zod";
 import type { BillingCustomerContext } from "@/server/billing/subscription";
 import { createDataforseoClient } from "@/server/lib/dataforseo";
+// FORK: cache identities follow the explicitly selected provider and schema.
+import { getSerpCacheIdentity } from "@/server/lib/seo-data";
 import { normalizeKeyword } from "./helpers";
 
 const SERP_CACHE_TTL_SECONDS = 12 * 60 * 60;
@@ -67,6 +69,7 @@ async function getSerpLiveAnalysis(
   const keyword = normalizeKeyword(input.keyword);
 
   const cacheKey = await buildCacheKey("serp:analysis", {
+    source: await getSerpCacheIdentity(),
     organizationId: billingCustomer.organizationId,
     projectId: input.projectId,
     keyword,

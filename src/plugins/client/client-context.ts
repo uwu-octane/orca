@@ -1,5 +1,5 @@
 import { Context } from "cordis";
-import { clientModules } from "@/plugins/module-map";
+import { clientModules } from "@/plugins/client/modules";
 import { bootPlugins } from "@/plugins/shared/plugin";
 import { parsePluginManifest } from "@/plugins/shared/manifest";
 import manifestYaml from "@/plugins/manifest.yaml?raw";

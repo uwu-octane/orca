@@ -1,4 +1,3 @@
-import { z } from "zod";
 import {
   SerpApiStopCrawlOnMatchInfo,
   SerpGoogleLocalFinderLiveAdvancedRequestInfo,
@@ -17,6 +16,11 @@ import {
   type DataforseoApiResponse,
 } from "@/server/lib/dataforseo/envelope";
 import { AppError } from "@/server/lib/errors";
+// FORK: the live SERP schema is owned by the application capability.
+import {
+  serpItemSchema as serpSnapshotItemSchema,
+  type SerpItem,
+} from "@/plugins/seo-data/schemas";
 
 /** DataForSEO bills SERPs in pages of 10; depth outside 10-100 is rejected. */
 function clampSerpDepth(depth: number): number {
@@ -43,44 +47,7 @@ function stopCrawlOnTarget(targetDomain: string) {
   };
 }
 
-// Kept as a hand-written schema: the SDK's BaseSerpApiElementItem type omits
-// etv / estimated_paid_traffic_cost / backlinks_info / rank_changes, which we
-// rely on. The fields survive deserialization (the SDK copies unknown keys), so
-// validating here is both our type-safety guard and how we read those fields.
-const serpSnapshotItemSchema = z
-  .object({
-    type: z.string(),
-    rank_group: z.number().nullable().optional(),
-    rank_absolute: z.number().nullable().optional(),
-    domain: z.string().nullable().optional(),
-    title: z.string().nullable().optional(),
-    url: z.string().nullable().optional(),
-    description: z.string().nullable().optional(),
-    breadcrumb: z.string().nullable().optional(),
-    etv: z.number().nullable().optional(),
-    estimated_paid_traffic_cost: z.number().nullable().optional(),
-    backlinks_info: z
-      .object({
-        referring_domains: z.number().nullable().optional(),
-        backlinks: z.number().nullable().optional(),
-      })
-      .passthrough()
-      .nullable()
-      .optional(),
-    rank_changes: z
-      .object({
-        previous_rank_absolute: z.number().nullable().optional(),
-        is_new: z.boolean().nullable().optional(),
-        is_up: z.boolean().nullable().optional(),
-        is_down: z.boolean().nullable().optional(),
-      })
-      .passthrough()
-      .nullable()
-      .optional(),
-  })
-  .passthrough();
-
-export type SerpLiveItem = z.infer<typeof serpSnapshotItemSchema>;
+export type SerpLiveItem = SerpItem;
 
 export async function fetchLiveSerp(input: {
   keyword: string;

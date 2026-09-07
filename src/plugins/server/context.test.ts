@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Context } from "cordis";
-import type * as moduleMap from "@/plugins/module-map";
 
 const state = vi.hoisted(() => ({ fail: true, cleanup: vi.fn() }));
 
@@ -9,8 +8,7 @@ vi.mock("@/plugins/manifest.yaml?raw", () => ({
     "server:\n  - id: resource\n    name: resource\n  - id: checked\n    name: checked",
 }));
 
-vi.mock("@/plugins/module-map", async (importOriginal) => ({
-  ...(await importOriginal<typeof moduleMap>()),
+vi.mock("@/plugins/server/modules", () => ({
   serverModules: {
     resource: async () => ({
       apply(ctx: Context) {

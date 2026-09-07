@@ -227,10 +227,12 @@ export function parseTaskItems<T extends z.ZodTypeAny>(
       `dataforseo.${endpoint}.invalid-payload`,
       parsed.error.issues.slice(0, 5),
     );
-    throw new AppError(
-      "INTERNAL_ERROR",
-      `DataForSEO ${endpoint} returned an invalid response shape`,
-    );
+    // FORK: normalization must not erase a cost already reported by the
+    // provider. The plugin's meter records charged failures before rethrowing.
+    const message = `DataForSEO ${endpoint} returned an invalid response shape`;
+    const billing = tryBuildTaskBilling(task);
+    if (billing) throw new DataforseoChargedTaskError(message, billing);
+    throw new AppError("INTERNAL_ERROR", message);
   }
   return parsed.data;
 }

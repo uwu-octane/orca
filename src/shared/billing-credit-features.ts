@@ -1,14 +1,18 @@
-export type CreditFeature =
-  | "keyword_research"
-  | "domain_overview"
-  | "backlinks"
-  | "site_audit"
-  | "rank_tracking"
-  | "ai_citations"
-  | "ai_prompt_responses"
-  | "local_seo"
-  | "onboarding"
-  | "agent";
+// FORK: one set of credit feature values for runtime plugin schemas and types.
+export const CREDIT_FEATURES = [
+  "keyword_research",
+  "domain_overview",
+  "backlinks",
+  "site_audit",
+  "rank_tracking",
+  "ai_citations",
+  "ai_prompt_responses",
+  "local_seo",
+  "onboarding",
+  "agent",
+] as const;
+
+export type CreditFeature = (typeof CREDIT_FEATURES)[number];
 
 const CREDIT_FEATURE_LABELS: Record<string, string> = {
   keyword_research: "Keyword Research",

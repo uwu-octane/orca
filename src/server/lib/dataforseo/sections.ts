@@ -1,6 +1,8 @@
+// FORK: the lazy section boundary is owned by the DataForSEO plugin.
 // Root of the lazily loaded DataForSEO subtree. The section fetchers — and
 // the ~3 MB dataforseo-client SDK they statically import — are reached only
-// through the single dynamic import in client.ts (loadDataforseoSections), so
+// through the single dynamic import in the DataForSEO plugin's client.ts
+// (loadDataforseoSections), so
 // the whole subtree lands in one lazy chunk outside the eager isolate startup
 // graph. Never import this barrel or a section file statically from eager
 // server code; the leanWorkerBundle vite plugin fails the build if the SDK

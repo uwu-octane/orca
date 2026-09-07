@@ -1,19 +1,11 @@
 import type { ModuleLoaderLike } from "@orca/cordis-plugin-loader";
 
 /**
- * Static plugin module resolution: manifest names → dynamic imports.
- * Assembly (enable/disable/config) is runtime; resolution is compile-time
- * because workerd has no filesystem. One map per side keeps the other
- * side's chunks out of the bundle.
+ * Static module resolution shared by both runtimes. The actual module maps
+ * live in server/modules.ts and client/modules.ts so the client never parses
+ * server dynamic imports during bundling.
  */
 
-export const serverModules: Record<string, () => Promise<unknown>> = {};
-
-export const clientModules: Record<string, () => Promise<unknown>> = {
-  locale: () => import("@/plugins/locale"),
-};
-
-/** Minimal module-loader shape backed by a static map. */
 export function createModuleLoader(
   modules: Record<string, () => Promise<unknown>>,
 ): ModuleLoaderLike {

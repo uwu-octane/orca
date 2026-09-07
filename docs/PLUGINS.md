@@ -5,8 +5,8 @@ runtime from a versioned manifest. The architecture follows
 deepseek-harness's vendored cordis stack in lighter form; the loader is
 vendored into `vendor/loader` and the core comes from npm `cordis@4.0.0-rc.8`.
 
-> This document is the specification. It is completed in phases; the
-> "seams" section at the bottom is a design contract, not implemented code.
+This document describes the installed plugin layer. Provider contracts and
+extension instructions live in [the SEO capability README](../src/plugins/seo-data/README.md).
 
 ## Status
 
@@ -16,7 +16,9 @@ vendored into `vendor/loader` and the core comes from npm `cordis@4.0.0-rc.8`.
 - [x] Phase 3 — shell translation (sidebar/nav/menus, auth, errors, settings)
 - [x] Phase 4 — Intl locale threading (client formatters + server locale param)
 - [x] Phase 5 — seams for `billing` / `seoData` / `mcp` documented; evolution
-      paths recorded below. Seam implementation is separate, planned work.
+      paths recorded below.
+- [x] Phase 6 — strict assembly, DataForSEO plugin, and independently selected
+      keyword-metrics/live-SERP capabilities with application-owned schemas.
 
 ## Assembly model
 
@@ -26,8 +28,11 @@ vendored into `vendor/loader` and the core comes from npm `cordis@4.0.0-rc.8`.
   (billing phase); plugins may still declare `inject` from their module.
   Unknown fields, blank ids/names, and duplicate ids within either side are
   rejected before mounting any plugin. Programmatic boot uses the same checks.
-- **Module map** — `src/plugins/module-map.ts` maps plugin names to static
-  `import()`s. The loader's `internal` is this map; plugin resolution is
+- **Module maps** — `src/plugins/server/modules.ts` and
+  `src/plugins/client/modules.ts` map plugin names to static `import()`s.
+  `src/plugins/module-map.ts` provides only the shared resolver. Keeping
+  imports in separate files prevents the browser build from parsing server
+  modules. The loader's `internal` uses the relevant map; plugin resolution is
   compile-time, assembly (enable/disable/config/failure isolation) is
   runtime. workerd has no filesystem, so Node-style package resolution is
   replaced by this map on both server and client.
@@ -40,8 +45,9 @@ vendored into `vendor/loader` and the core comes from npm `cordis@4.0.0-rc.8`.
 
 ## Plugin shape
 
-A plugin is a module exporting (or default-exporting) a function or object.
-This is the actual locale pilot, which is the canonical shape:
+A function plugin uses named `name` / `inject` / `Config` / `apply` exports.
+Do not also default-export `apply`: loader unwrapping would lose the sibling
+metadata. Service classes use a default export. The locale pilot uses:
 
 ```ts
 // src/plugins/locale/index.ts
@@ -76,7 +82,7 @@ The locale pilot itself has no `Config`; its preference is runtime state
 - `inject: string[]` lists required services; the fiber stays pending until
   all exist and re-runs when one appears/disappears/changes. Boot waits for
   the complete manifest and rejects enabled entries that remain inactive.
-- Services are **kebab-case names** (`billing`, `seoData`, `locale`, `mcp`).
+- Services have stable Context keys (`seoData`, `dataforseo`, `locale`).
   Subclass `Service` for lifecycle or swappable implementations; use plain
   `ctx.provide(name, value)` for simple value services (the locale service).
 - Declare services on `Context` via `declare module "cordis"`.
@@ -92,6 +98,10 @@ The locale pilot itself has no `Config`; its preference is runtime state
   module-scope singleton, wired once from `src/server.ts`). A failed boot
   disposes its fresh context before rejecting; concurrent requests share
   that failure and the next request can create a fresh tree.
+  Configured SEO routes are validated after the full tree is mounted.
+  Application calls use `getSeoData()` or the compatibility provider getter,
+  so scheduled handlers, Workflows and DOs initialize without a prior HTTP
+  request. Boot performs no supplier requests or credential reads.
 - Client boot: `src/plugins/client/context.tsx` (`CordisProvider` mounted
   inside `ClientOnly` in `__root.tsx`; React reads services off the context).
   Fiber activation is async, so hooks must tolerate the boot window: the
@@ -114,17 +124,34 @@ The locale pilot itself has no `Config`; its preference is runtime state
   `FORK.md` entry — conflicts with upstream are expected and accepted; the
   marks exist to locate them.
 
-## Seams (design contract, not yet implemented)
+## Installed data services
+
+- **`seoData`** owns the keyword-metrics and live-SERP request/result schemas
+  and explicit provider selection. Implementations register with a
+  lifecycle-owned effect. Its manifest config selects each capability by id.
+- **`dataforseo`** provides the existing vendor-specific client, free task
+  collection, category lookup and geographic catalog. Its plugin registers
+  the two portable capabilities on `seoData`. Public compatibility calls in
+  `src/server/lib/dataforseo` resolve this installed plugin on every call;
+  they never construct an alternate implementation if it is absent.
+- Metering lives in `src/plugins/dataforseo/client.ts` and continues using
+  the existing subscription helpers. SDK sections load only when a real
+  call executes. No billing wrapper is added outside an already metered
+  provider call. Billed item-validation failures retain their cost.
+
+The keyword-metrics capability is used by saved-keyword refresh, tracker
+metrics refresh and MCP `get_keyword_metrics`. All existing `serp.live`
+calls use the selected live-SERP capability. Other DataForSEO methods retain
+their vendor-specific types through the compatibility API. Schema ownership
+does not imply different vendors' scores are directly comparable.
+
+## Planned services
 
 - **`billing`** — `BillingProvider` interface mirroring the six functions of
   `src/server/billing/subscription.ts` (ensureCustomer / hasPaidPlan /
   hasManagedAccess / checkCreditsDepleted / assertCreditsAvailable /
   trackSpend). Implementations: Autumn (wraps the current module), Noop
   (self-hosted). Provider selection via manifest config.
-- **`seoData`** — endpoint-family interfaces over
-  `src/server/lib/dataforseo/` (the facade keeps its lazy SDK boundary); the
-  metering seam moves inside the adapter via `inject: ["billing"]`; Google
-  connectors become a second adapter.
 - **`mcp`** — `ctx.mcp.registerTool(name, zodSchema, handler)`; tool plugins
   declare `inject: ["seoData", "billing"]`.
 
@@ -138,7 +165,8 @@ The locale pilot itself has no `Config`; its preference is runtime state
   child context with `ctx.isolate` inside the request handler rather than
   growing a stateful service. The server tree itself stays stateless.
 - **Third-party plugins** — a plugin published outside this repo is one line
-  in `module-map.ts` (`name: () => import("pkg")`). Versioning, review, and
+  in the appropriate `server/modules.ts` or `client/modules.ts` map
+  (`name: () => import("pkg")`). Versioning, review, and
   supply-chain policy for external plugins are open questions by design.
 - **Manifest `inject`** — re-enable the `inject` field in the manifest entry
   schema when a plugin needs per-entry service injection (billing phase).

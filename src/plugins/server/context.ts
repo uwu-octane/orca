@@ -1,5 +1,5 @@
 import { Context } from "cordis";
-import { serverModules } from "@/plugins/module-map";
+import { serverModules } from "@/plugins/server/modules";
 import { bootPlugins } from "@/plugins/shared/plugin";
 import { parsePluginManifest } from "@/plugins/shared/manifest";
 import manifestYaml from "@/plugins/manifest.yaml?raw";
@@ -19,11 +19,31 @@ export function getAppContext(): Promise<Context> {
   boot ??= (async () => {
     const manifest = parsePluginManifest(manifestYaml);
     const ctx = new Context();
-    await bootPlugins(ctx, manifest.server, serverModules);
-    return ctx;
+    try {
+      await bootPlugins(ctx, manifest.server, serverModules);
+      ctx.get("seoData")?.validateRoutes();
+      return ctx;
+    } catch (error) {
+      await ctx.fiber.dispose();
+      throw error;
+    }
   })().catch((error) => {
     boot = undefined;
     throw error;
   });
   return boot;
+}
+
+/** Resolves within any Worker invocation, including Workflow and DO calls. */
+export async function getSeoData() {
+  const service = (await getAppContext()).get("seoData");
+  if (!service) throw new Error("SEO data service is not configured");
+  return service;
+}
+
+/** Compatibility calls still require the explicitly installed vendor plugin. */
+export async function getDataforseoProvider() {
+  const provider = (await getAppContext()).get("dataforseo");
+  if (!provider) throw new Error("DataForSEO plugin is not configured");
+  return provider;
 }

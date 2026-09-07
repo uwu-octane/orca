@@ -3,10 +3,8 @@ import {
   customerHasPaidPlan,
   type BillingCustomerContext,
 } from "@/server/billing/subscription";
-import {
-  createDataforseoClient,
-  fetchKeywordMetricsForList,
-} from "@/server/lib/dataforseo";
+// FORK: metrics use the provider-independent Cordis capability.
+import { fetchKeywordMetrics } from "@/server/lib/seo-data";
 import { RankTrackingRepository } from "@/server/features/rank-tracking/repositories/RankTrackingRepository";
 import { AppError } from "@/server/lib/errors";
 import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
@@ -263,21 +261,23 @@ async function refreshKeywordMetrics(
   const keywords = await RankTrackingRepository.getKeywordsForConfig(configId);
   if (keywords.length === 0) return { updated: 0 };
 
-  const client = createDataforseoClient(billingCustomer);
-  const metrics = await fetchKeywordMetricsForList(client, {
-    keywords: keywords.map((kw) => kw.keyword),
-    locationCode: config.locationCode,
-    // Trackers can pair any SERP language with any country; the keyword-data
-    // APIs only serve the country's own languages.
-    languageCode: resolveKeywordDataLanguage(
-      config.locationCode,
-      config.languageCode,
-    ),
-    // Local configs get volume/CPC scoped to the tracked city; national
-    // numbers can overstate local demand by orders of magnitude.
-    locationName: config.locationName ?? undefined,
-    creditFeature: "rank_tracking",
-  });
+  const metrics = await fetchKeywordMetrics(
+    {
+      keywords: keywords.map((kw) => kw.keyword),
+      locationCode: config.locationCode,
+      // Trackers can pair any SERP language with any country; the keyword-data
+      // APIs only serve the country's own languages.
+      languageCode: resolveKeywordDataLanguage(
+        config.locationCode,
+        config.languageCode,
+      ),
+      // Local configs get volume/CPC scoped to the tracked city; national
+      // numbers can overstate local demand by orders of magnitude.
+      locationName: config.locationName ?? undefined,
+      creditFeature: "rank_tracking",
+    },
+    billingCustomer,
+  );
   const byKeyword = new Map(
     metrics.map((metric) => [metric.keyword.toLowerCase(), metric]),
   );

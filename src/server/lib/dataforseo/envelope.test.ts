@@ -10,6 +10,29 @@ import { AppError } from "@/server/lib/errors";
 const itemSchema = z.object({ keyword: z.string().optional() }).passthrough();
 
 describe("parseTaskItems", () => {
+  // FORK: paid normalization failures must still reach the plugin's meter.
+  it("preserves provider cost when billed items fail validation", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const task = {
+      path: ["v3", "serp", "google", "organic", "live", "advanced"],
+      cost: 0.05,
+      result: [{ items: [{ keyword: 123 }] }],
+    };
+    expect(() => parseTaskItems("serp", task, itemSchema)).toThrow(
+      new DataforseoChargedTaskError(
+        "DataForSEO serp returned an invalid response shape",
+        { path: task.path, costUsd: task.cost },
+      ),
+    );
+    try {
+      parseTaskItems("serp", task, itemSchema);
+    } catch (error) {
+      expect(error).toMatchObject({
+        billing: { path: task.path, costUsd: 0.05 },
+      });
+    }
+  });
+
   it("returns [] when the result items are null", () => {
     const task = { status_code: 20000, result: [{ items: null }] };
     expect(parseTaskItems("x", task, itemSchema)).toEqual([]);
