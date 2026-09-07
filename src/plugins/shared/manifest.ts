@@ -8,16 +8,34 @@ import type { EntryOptions } from "@orca/cordis-plugin-loader";
  * boot. Unknown fields are rejected rather than passed through. `inject` is
  * deliberately unsupported until a plugin needs it (billing phase).
  */
-const entrySchema = z.object({
-  id: z.string(),
-  name: z.string(),
+const nonBlankString = z.string().refine((value) => value.trim().length > 0, {
+  message: "Must not be blank",
+});
+
+const entrySchema = z.strictObject({
+  id: nonBlankString,
+  name: nonBlankString,
   config: z.unknown().optional(),
   disabled: z.boolean().optional(),
 });
 
-const pluginManifestSchema = z.object({
-  server: z.array(entrySchema).default([]),
-  client: z.array(entrySchema).default([]),
+const entryListSchema = z.array(entrySchema).superRefine((entries, ctx) => {
+  const ids = new Set<string>();
+  entries.forEach((entry, index) => {
+    if (ids.has(entry.id)) {
+      ctx.addIssue({
+        code: "custom",
+        path: [index, "id"],
+        message: `Duplicate plugin entry id: ${entry.id}`,
+      });
+    }
+    ids.add(entry.id);
+  });
+});
+
+const pluginManifestSchema = z.strictObject({
+  server: entryListSchema.default([]),
+  client: entryListSchema.default([]),
 });
 
 interface PluginManifest {
@@ -32,6 +50,11 @@ function toEntry(row: z.infer<typeof entrySchema>): EntryOptions {
     ...(row.config !== undefined ? { config: row.config } : {}),
     ...(row.disabled !== undefined ? { disabled: row.disabled } : {}),
   };
+}
+
+/** Apply the same validation to programmatic boot entries and YAML rows. */
+export function validatePluginEntries(entries: EntryOptions[]): EntryOptions[] {
+  return entryListSchema.parse(entries).map(toEntry);
 }
 
 export function parsePluginManifest(yamlText: string): PluginManifest {

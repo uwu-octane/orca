@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Context } from "cordis";
 import { z } from "zod";
 import { bootPlugins } from "@/plugins/shared/plugin";
@@ -24,6 +24,99 @@ const modules = {
 };
 
 describe("bootPlugins", () => {
+  it("rejects missing required services after settling", async () => {
+    const ctx = new Context();
+    const apply = vi.fn();
+    await expect(
+      bootPlugins(ctx, [{ id: "consumer", name: "consumer" }], {
+        consumer: async () => ({
+          name: "consumer",
+          inject: ["missing"],
+          apply,
+        }),
+      }),
+    ).rejects.toThrow(/consumer.*did not activate.*missing/);
+    expect(apply).not.toHaveBeenCalled();
+  });
+
+  it("activates a consumer whose dependency is mounted later", async () => {
+    const ctx = new Context();
+    const apply = vi.fn();
+    try {
+      await bootPlugins(
+        ctx,
+        [
+          { id: "consumer", name: "consumer" },
+          { id: "provider", name: "plain-plugin" },
+        ],
+        {
+          ...modules,
+          consumer: async () => ({ inject: ["plainValue"], apply }),
+        },
+      );
+      expect(apply).toHaveBeenCalledOnce();
+    } finally {
+      await ctx.fiber.dispose();
+    }
+  });
+
+  it("does not require dependencies of disabled plugins", async () => {
+    const ctx = new Context();
+    const load = vi.fn();
+    try {
+      await bootPlugins(
+        ctx,
+        [{ id: "consumer", name: "consumer", disabled: true }],
+        { consumer: load },
+      );
+      expect(load).not.toHaveBeenCalled();
+    } finally {
+      await ctx.fiber.dispose();
+    }
+  });
+
+  it("rejects duplicate IDs before importing any modules", async () => {
+    const ctx = new Context();
+    const load = vi.fn();
+    await expect(
+      bootPlugins(
+        ctx,
+        [
+          { id: "same", name: "one" },
+          { id: "same", name: "two" },
+        ],
+        { one: load, two: load },
+      ),
+    ).rejects.toThrow(/Duplicate plugin entry id: same/);
+    expect(load).not.toHaveBeenCalled();
+  });
+
+  it("awaits cleanup of earlier registrations when a later module fails", async () => {
+    const ctx = new Context();
+    const cleanup = vi.fn(async () => {
+      await Promise.resolve();
+    });
+    await expect(
+      bootPlugins(
+        ctx,
+        [
+          { id: "resource", name: "resource" },
+          { id: "missing", name: "missing" },
+        ],
+        {
+          resource: async () => ({
+            apply(pluginContext: Context) {
+              pluginContext.provide("resource", true);
+              pluginContext.effect(() => cleanup);
+            },
+          }),
+        },
+      ),
+    ).rejects.toThrow(/unknown plugin module/);
+    expect(cleanup).toHaveBeenCalledOnce();
+    expect(ctx.get("resource")).toBeUndefined();
+  });
+
   it("applies manifest entries and exposes their services", async () => {
     const ctx = new Context();
     try {

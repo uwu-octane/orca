@@ -24,6 +24,8 @@ vendored into `vendor/loader` and the core comes from npm `cordis@4.0.0-rc.8`.
   loader entry options: `{ id, name, config, disabled }`. `inject` is
   deliberately rejected at the manifest boundary until a plugin needs it
   (billing phase); plugins may still declare `inject` from their module.
+  Unknown fields, blank ids/names, and duplicate ids within either side are
+  rejected before mounting any plugin. Programmatic boot uses the same checks.
 - **Module map** — `src/plugins/module-map.ts` maps plugin names to static
   `import()`s. The loader's `internal` is this map; plugin resolution is
   compile-time, assembly (enable/disable/config/failure isolation) is
@@ -72,7 +74,8 @@ The locale pilot itself has no `Config`; its preference is runtime state
 (localStorage on the client), not boot-time configuration.
 
 - `inject: string[]` lists required services; the fiber stays pending until
-  all exist and re-runs when one appears/disappears/changes.
+  all exist and re-runs when one appears/disappears/changes. Boot waits for
+  the complete manifest and rejects enabled entries that remain inactive.
 - Services are **kebab-case names** (`billing`, `seoData`, `locale`, `mcp`).
   Subclass `Service` for lifecycle or swappable implementations; use plain
   `ctx.provide(name, value)` for simple value services (the locale service).
@@ -86,7 +89,9 @@ The locale pilot itself has no `Config`; its preference is runtime state
   needs per-request state, boot a child scope with `ctx.isolate` (documented
   evolution path, not built).
 - Server boot: `src/plugins/server/context.ts` (`getAppContext()`, lazy
-  module-scope singleton, wired once from `src/server.ts`).
+  module-scope singleton, wired once from `src/server.ts`). A failed boot
+  disposes its fresh context before rejecting; concurrent requests share
+  that failure and the next request can create a fresh tree.
 - Client boot: `src/plugins/client/context.tsx` (`CordisProvider` mounted
   inside `ClientOnly` in `__root.tsx`; React reads services off the context).
   Fiber activation is async, so hooks must tolerate the boot window: the

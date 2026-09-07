@@ -1,5 +1,9 @@
 # Fork maintenance log
 
+## 2026-09-07 Cordis assembly
+
+Manifest and programmatic boot reject unknown fields, blank names/IDs, and duplicate IDs. Boot audits enabled plugins after all entries settle and disposes failed contexts before a retry. Regression tests cover dependency order, cleanup, and concurrent singleton initialization. The data-provider review is recorded in `docs/CORDIS_SEO_DATA_REVIEW.md`.
+
 Change log for this fork of [every-app/open-seo](https://github.com/every-app/open-seo).
 Branch model and rules: see "Fork maintenance" in [README.md](./README.md).
 
