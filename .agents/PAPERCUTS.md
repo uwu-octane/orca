@@ -10,6 +10,8 @@ data, or sensitive paths.
 
 ## Open
 
+- [ ] `2026-09-10T07:54:29Z` — `codex` — `.env.selfhost.example` points readers to the missing `docs/SELF_HOSTING_CLOUDFLARE_ALCHEMY.md`; update the template's walkthrough link to the existing `docs/SELF_HOSTING_CLOUDFLARE.md` so new self-host installs reach the current Alchemy setup instructions.
+
 - [ ] `2026-08-20T20:36:32Z` — `codex` — The PR preview Access check treats an immediate workers.dev 404 as proof the preview is public, even though the same URL can begin returning the expected Access redirect seconds later; retry 404 responses as propagation-era errors before failing and recommending stage destruction.
 - [ ] `2026-08-18T03:06:44Z` — `claude` — Changing an MCP tool's `outputSchema` while the dev server hot-reloads makes in-flight MCP sessions reject the tool's own (already billed) results — clients validate against the schema cached at connect time, surfacing as "must NOT have additional properties". Note in the MCP dev docs/skill: reconnect the MCP session after any output-schema change before re-testing live.
 - [ ] `2026-08-05T20:59:09Z` — `codex` — The documented `pnpm seed:rank-tracking` command fails before opening local D1 because `scripts/seed-rank-tracking.ts` imports the provider-aware `src/db/schema` barrel and plain `tsx` cannot load the resulting `cloudflare:workers` URL. Keep the seed script on dialect-local schema imports or run it through a Workers-compatible execution path. (Workaround: seed via raw SQL with `wrangler d1 execute DB --local`.)
