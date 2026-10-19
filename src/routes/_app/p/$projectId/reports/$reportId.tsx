@@ -102,7 +102,7 @@ function ReportDetailPage() {
 
   const loadError = {
     error: reportQuery.error,
-    fallback: "Failed to load the report",
+    fallback: t("Failed to load the report"),
     onRetry: () => void reportQuery.refetch(),
     isRetrying: reportQuery.isFetching,
   };
@@ -116,7 +116,7 @@ function ReportDetailPage() {
       <div className="px-4 py-4 md:px-6 md:py-6">
         <div className="mx-auto max-w-7xl space-y-4">
           <BackLink to="/p/$projectId/reports" params={{ projectId }}>
-            Reports
+            {t("Reports")}
           </BackLink>
           {/* A deleted report and another project's report are the same
               answer on purpose, so ids cannot be probed. Retrying either
@@ -124,13 +124,15 @@ function ReportDetailPage() {
           {notFound ? (
             <QueryError
               variant="page"
-              title="Report not found"
-              fallback="This report does not exist or you do not have access to it."
+              title={t("Report not found")}
+              fallback={t(
+                "This report does not exist or you do not have access to it.",
+              )}
             />
           ) : (
             <QueryError
               variant="page"
-              title="Couldn't load the report"
+              title={t("Couldn't load the report")}
               {...loadError}
             />
           )}
@@ -168,18 +170,18 @@ function ReportDetailPage() {
       <PageHeader
         backLink={
           <BackLink to="/p/$projectId/reports" params={{ projectId }}>
-            Reports
+            {t("Reports")}
           </BackLink>
         }
         title={report.title}
         description={
           <dl className="flex flex-wrap items-baseline gap-x-6 gap-y-1 text-foreground">
             <div className="flex items-baseline gap-1.5">
-              <dt className="text-muted-foreground">Created by</dt>
+              <dt className="text-muted-foreground">{t("Created by")}</dt>
               <dd>{formatCreatedBy(report)}</dd>
             </div>
             <div className="flex items-baseline gap-1.5">
-              <dt className="text-muted-foreground">Type</dt>
+              <dt className="text-muted-foreground">{t("Type")}</dt>
               {/* As in the list's Type column: the template name when the
                     report followed one, else the skill, else an em dash. */}
               <dd>{report.templateName ?? report.skill ?? "—"}</dd>
@@ -206,7 +208,7 @@ function ReportDetailPage() {
                 ) : (
                   <Lock data-icon="inline-start" />
                 )}
-                Share
+                {t("Share")}
               </Button>
             ) : (
               <Button onClick={exportPdf}>
@@ -220,7 +222,7 @@ function ReportDetailPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label="Report actions"
+                    aria-label={t("Report actions")}
                   />
                 }
               >
@@ -241,7 +243,7 @@ function ReportDetailPage() {
                   onClick={() => setShowDelete(true)}
                 >
                   <Trash2 />
-                  Delete
+                  {t("Delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -261,8 +263,8 @@ function ReportDetailPage() {
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Full screen"
-            title="Full screen"
+            aria-label={t("Full screen")}
+            title={t("Full screen")}
             onClick={() =>
               void navigate({ search: () => ({ full: true }), replace: true })
             }
@@ -273,8 +275,8 @@ function ReportDetailPage() {
             variant="ghost"
             size="icon-sm"
             nativeButton={false}
-            aria-label="Open in new tab"
-            title="Open in new tab"
+            aria-label={t("Open in new tab")}
+            title={t("Open in new tab")}
             render={
               <a href={`/r/${report.id}`} target="_blank" rel="noreferrer" />
             }
@@ -316,6 +318,8 @@ function FullScreenReport({
   title: string;
   onExit: () => void;
 }) {
+  const { t } = useLocale();
+
   const exitRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -335,7 +339,7 @@ function FullScreenReport({
         <span className="truncate text-sm font-medium">{title}</span>
         <Button ref={exitRef} variant="ghost" onClick={onExit}>
           <Minimize2 data-icon="inline-start" />
-          Exit
+          {t("Exit")}
         </Button>
       </div>
       <div className="min-h-0 flex-1 p-2">

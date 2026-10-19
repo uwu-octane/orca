@@ -60,6 +60,8 @@ export function formatCreatedBy(report: ReportListItem): string {
  * event and the invalidation cannot drift apart.
  */
 export function useDeleteReport(projectId: string, onDeleted?: () => void) {
+  const { t } = useLocale();
+
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (reportId: string) =>
@@ -69,7 +71,7 @@ export function useDeleteReport(projectId: string, onDeleted?: () => void) {
         project_id: projectId,
         report_id: reportId,
       });
-      toast.success("Report deleted");
+      toast.success(t("Report deleted"));
       void queryClient.invalidateQueries({
         queryKey: reportsQueryKey(projectId),
       });
@@ -95,16 +97,18 @@ export function DeleteReportModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useLocale();
+
   return (
     <ConfirmDialog
-      title={`Delete \u201c${title}\u201d?`}
-      confirmLabel="Delete report"
+      title={t("Delete “{name}”?", { name: title })}
+      confirmLabel={t("Delete report")}
       destructive
       pending={isPending}
       onClose={onClose}
       onConfirm={onConfirm}
     >
-      This cannot be undone.
+      {t("This cannot be undone.")}
     </ConfirmDialog>
   );
 }
@@ -162,7 +166,7 @@ export function ShareReportModal({
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Link copied");
+      toast.success(t("Link copied"));
     } catch {
       toast.error(t("Clipboard not available"));
     }
@@ -177,7 +181,7 @@ export function ShareReportModal({
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader className="min-w-0 pr-8">
-          <DialogTitle>Share</DialogTitle>
+          <DialogTitle>{t("Share")}</DialogTitle>
           <DialogDescription className="truncate">
             {report.title}
           </DialogDescription>
@@ -186,11 +190,13 @@ export function ShareReportModal({
         <div className="rounded-lg border border-border">
           <Field orientation="horizontal" className="p-4">
             <FieldContent>
-              <FieldLabel htmlFor={switchId}>Public link</FieldLabel>
+              <FieldLabel htmlFor={switchId}>{t("Public link")}</FieldLabel>
               <FieldDescription id={`${switchId}-description`}>
                 {shared
-                  ? "Anyone with the link can view. No sign-in needed."
-                  : "Only members of your organization can open it. A link that was open can keep loading for up to a minute."}
+                  ? t("Anyone with the link can view. No sign-in needed.")
+                  : t(
+                      "Only members of your organization can open it. A link that was open can keep loading for up to a minute.",
+                    )}
               </FieldDescription>
             </FieldContent>
             <Switch
@@ -210,7 +216,7 @@ export function ShareReportModal({
                 <Input
                   readOnly
                   value={url}
-                  aria-label="Share link"
+                  aria-label={t("Share link")}
                   onFocus={(event) => event.target.select()}
                   className="min-w-0 flex-1 basis-64"
                 />
@@ -219,7 +225,7 @@ export function ShareReportModal({
                     variant="outline"
                     size="icon"
                     nativeButton={false}
-                    aria-label="Open link"
+                    aria-label={t("Open link")}
                     title={t("Open")}
                     render={<a href={url} target="_blank" rel="noreferrer" />}
                   >
@@ -227,14 +233,18 @@ export function ShareReportModal({
                   </Button>
                   <Button onClick={() => void copy()}>
                     <Copy data-icon="inline-start" />
-                    Copy link
+                    {t("Copy link")}
                   </Button>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Shows the latest saved version. Hidden from search engines.
+                {t(
+                  "Shows the latest saved version. Hidden from search engines.",
+                )}
                 {report.sharedAt
-                  ? ` Link created ${formatRelativeTime(report.sharedAt)}.`
+                  ? t(" Link created {time}.", {
+                      time: formatRelativeTime(report.sharedAt),
+                    })
                   : ""}
               </p>
             </div>
@@ -247,7 +257,8 @@ export function ShareReportModal({
           <p className="text-sm text-destructive">
             {getStandardErrorMessage(
               mutation.error,
-              "Failed to update sharing",
+              t("Failed to update sharing"),
+              t,
             )}
           </p>
         ) : null}

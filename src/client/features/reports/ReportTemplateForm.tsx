@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 // FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
 import { revalidateLogic } from "@tanstack/react-form";
@@ -20,15 +21,23 @@ import type { ReportTemplate } from "@/types/schemas/report-templates";
 // One form for create and edit. Shape only, as at every other boundary: the
 // caps come back from the service with their copy and show in a toast.
 const formSchema = z.object({
-  name: z.string().trim().min(1, "Give the template a name."),
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: () => translate("Give the template a name.") }),
   description: z
     .string()
     .trim()
-    .min(1, "Say in one line when to use this template."),
+    .min(1, {
+      error: () => translate("Say in one line when to use this template."),
+    }),
   instructions: z
     .string()
     .trim()
-    .min(1, "Say who the report is for and which sections it has."),
+    .min(1, {
+      error: () =>
+        translate("Say who the report is for and which sections it has."),
+    }),
 });
 
 const INSTRUCTIONS_PLACEHOLDER = `Audience: the client's marketing lead, not technical.
@@ -68,7 +77,9 @@ export function ReportTemplateForm({
         is_update: !result.created,
         source: "app",
       });
-      toast.success(result.created ? "Template created" : "Template saved");
+      toast.success(
+        result.created ? t("Template created") : t("Template saved"),
+      );
       onSaved();
     },
   });
@@ -96,7 +107,7 @@ export function ReportTemplateForm({
           <form.Form className="flex flex-col gap-4">
             <DialogHeader>
               <DialogTitle>
-                {template ? "Edit template" : "New template"}
+                {template ? t("Edit template") : t("New template")}
               </DialogTitle>
             </DialogHeader>
 
@@ -104,7 +115,7 @@ export function ReportTemplateForm({
               {(field) => (
                 <field.TextField
                   label={t("Name")}
-                  placeholder="Monthly client check-in"
+                  placeholder={t("Monthly client check-in")}
                   required
                 />
               )}
@@ -113,9 +124,13 @@ export function ReportTemplateForm({
             <form.AppField name="description">
               {(field) => (
                 <field.TextField
-                  label="Description"
-                  description="One line saying when to use it. This is what an agent reads to decide."
-                  placeholder="The monthly update we send retainer clients."
+                  label={t("Description")}
+                  description={t(
+                    "One line saying when to use it. This is what an agent reads to decide.",
+                  )}
+                  placeholder={t(
+                    "The monthly update we send retainer clients.",
+                  )}
                   required
                 />
               )}
@@ -124,10 +139,12 @@ export function ReportTemplateForm({
             <form.AppField name="instructions">
               {(field) => (
                 <field.TextareaField
-                  label="Instructions"
-                  description="Brand voice for the whole project lives in Context › Writing preferences."
+                  label={t("Instructions")}
+                  description={t(
+                    "Brand voice for the whole project lives in Context › Writing preferences.",
+                  )}
                   className="h-56 font-mono leading-relaxed md:text-xs"
-                  placeholder={INSTRUCTIONS_PLACEHOLDER}
+                  placeholder={t(INSTRUCTIONS_PLACEHOLDER)}
                   required
                 />
               )}
@@ -143,7 +160,7 @@ export function ReportTemplateForm({
                 {t("Cancel")}
               </Button>
               <form.SubmitButton>
-                {template ? t("Save changes") : "Create template"}
+                {template ? t("Save changes") : t("Create template")}
               </form.SubmitButton>
             </DialogFooter>
           </form.Form>

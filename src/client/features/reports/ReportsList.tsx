@@ -34,8 +34,10 @@ export function ReportsList({
     return (
       <EmptyState
         icon={FileText}
-        title="No reports yet"
-        description="Run an Orca skill such as seo-audit from Claude Code or Codex and the report will appear here."
+        title={t("No reports yet")}
+        description={t(
+          "Run an Orca skill such as seo-audit from Claude Code or Codex and the report will appear here.",
+        )}
       />
     );
   }
@@ -46,9 +48,9 @@ export function ReportsList({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Created by</TableHead>
-              <TableHead>Type</TableHead>
+              <TableHead>{t("Title")}</TableHead>
+              <TableHead>{t("Created by")}</TableHead>
+              <TableHead>{t("Type")}</TableHead>
               <TableHead>{t("Updated")}</TableHead>
               <TableHead />
             </TableRow>
@@ -78,13 +80,15 @@ export function ReportsList({
                   {formatRelativeTime(report.updatedAt)}
                 </TableCell>
                 <TableCell className="w-10 text-right">
-                  <RowActionsMenu label={`Actions for ${report.title}`}>
+                  <RowActionsMenu
+                    label={t("Actions for {name}", { name: report.title })}
+                  >
                     <DropdownMenuItem
                       variant="destructive"
                       onClick={() => onDelete(report)}
                     >
                       <Trash2 />
-                      Delete
+                      {t("Delete")}
                     </DropdownMenuItem>
                   </RowActionsMenu>
                 </TableCell>
@@ -95,7 +99,9 @@ export function ReportsList({
       </TableCard>
       {reports.length === REPORT_APP_LIST_LIMIT ? (
         <p className="text-xs text-muted-foreground">
-          Showing the {REPORT_APP_LIST_LIMIT} most recent reports.
+          {t("Showing the {count} most recent reports.", {
+            count: REPORT_APP_LIST_LIMIT,
+          })}
         </p>
       ) : null}
     </div>

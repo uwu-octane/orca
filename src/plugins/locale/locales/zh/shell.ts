@@ -171,4 +171,6 @@ export const shellZh = {
   "change this project's connection": "更改此项目的连接",
   "Migrated {count} organization into the shared organization.":
     "已将 {count} 个组织迁移至共享组织。",
+  Edit: "编辑",
+  Delete: "删除",
 } satisfies Record<string, string>;

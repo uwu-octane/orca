@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -25,6 +26,8 @@ export const Route = createFileRoute("/_app/p/$projectId/reports/templates")({
 });
 
 function ReportTemplatesPage() {
+  const { t } = useLocale();
+
   const { projectId } = Route.useParams();
   const queryClient = useQueryClient();
   // `{}` opens the form for a new template; `{ template }` opens it for an edit.
@@ -57,7 +60,7 @@ function ReportTemplatesPage() {
         project_id: projectId,
         template_id: templateId,
       });
-      toast.success("Template deleted");
+      toast.success(t("Template deleted"));
       setPendingDelete(null);
       invalidate();
     },
@@ -69,22 +72,24 @@ function ReportTemplatesPage() {
         <PageHeader
           backLink={
             <BackLink to="/p/$projectId/reports" params={{ projectId }}>
-              Reports
+              {t("Reports")}
             </BackLink>
           }
-          title="Report templates"
-          description="Reusable briefs your agents follow when they write a report: who it is for, which sections it has, and how it should sound."
+          title={t("Report templates")}
+          description={t(
+            "Reusable briefs your agents follow when they write a report: who it is for, which sections it has, and how it should sound.",
+          )}
           actions={
             <Button onClick={() => setForm({})}>
               <Plus data-icon="inline-start" />
-              New template
+              {t("New template")}
             </Button>
           }
         />
 
         <QueryState
           query={templatesQuery}
-          errorFallback="Failed to load templates"
+          errorFallback={t("Failed to load templates")}
         >
           {(data) => (
             <ReportTemplatesList
@@ -110,14 +115,14 @@ function ReportTemplatesPage() {
 
       {pendingDelete ? (
         <ConfirmDialog
-          title={`Delete \u201c${pendingDelete.name}\u201d?`}
-          confirmLabel="Delete template"
+          title={t("Delete “{name}”?", { name: pendingDelete.name })}
+          confirmLabel={t("Delete template")}
           destructive
           pending={deleteMutation.isPending}
           onClose={() => setPendingDelete(null)}
           onConfirm={() => deleteMutation.mutate(pendingDelete.id)}
         >
-          Reports already written from it are not affected.
+          {t("Reports already written from it are not affected.")}
         </ConfirmDialog>
       ) : null}
     </div>

@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/client/components/PageHeader";
 import { Button } from "@/client/components/ui/button";
@@ -18,6 +19,8 @@ export const Route = createFileRoute("/_app/p/$projectId/reports/")({
 });
 
 function ReportsPage() {
+  const { t } = useLocale();
+
   const { projectId } = Route.useParams();
   const [pendingDelete, setPendingDelete] = useState<ReportListItem | null>(
     null,
@@ -40,8 +43,8 @@ function ReportsPage() {
     <div className="overflow-auto px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
       <div className="mx-auto max-w-7xl space-y-4">
         <PageHeader
-          title="Reports"
-          description="HTML reports your agents saved to this project."
+          title={t("Reports")}
+          description={t("HTML reports your agents saved to this project.")}
           actions={
             <Button
               variant="ghost"
@@ -53,12 +56,15 @@ function ReportsPage() {
                 />
               }
             >
-              Templates
+              {t("Templates")}
             </Button>
           }
         />
 
-        <QueryState query={reportsQuery} errorFallback="Failed to load reports">
+        <QueryState
+          query={reportsQuery}
+          errorFallback={t("Failed to load reports")}
+        >
           {(data) => (
             <ReportsList
               projectId={projectId}
