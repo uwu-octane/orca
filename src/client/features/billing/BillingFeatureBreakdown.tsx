@@ -124,7 +124,7 @@ export function BillingFeatureBreakdown() {
     <BillingUsageSection title={t("Usage by feature")}>
       <QueryState
         query={eventsQuery}
-        errorFallback="Failed to load usage"
+        errorFallback={t("Failed to load usage")}
         loading={
           <div className="space-y-3">
             {[0, 1, 2, 3].map((i) => (

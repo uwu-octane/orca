@@ -32,7 +32,11 @@ export function InsufficientCreditsError({
   let message: string;
   let action: ReactElement;
   if (!accountQuery.data) {
-    message = getStandardErrorMessage(new Error("INSUFFICIENT_CREDITS"));
+    message = getStandardErrorMessage(
+      new Error("INSUFFICIENT_CREDITS"),
+      undefined,
+      t,
+    );
     action = (
       <CreditsButton
         link={<Link to={BILLING_ROUTE} />}
@@ -40,17 +44,25 @@ export function InsufficientCreditsError({
       />
     );
   } else if (isFreePlan) {
-    message = `You don't have enough credits for this. Upgrade to get $${BASE_PLAN_OFFER.monthlyCreditsUsd} of credits every month.`;
+    message = t(
+      "You don't have enough credits for this. Upgrade to get ${amount} of credits every month.",
+      { amount: BASE_PLAN_OFFER.monthlyCreditsUsd },
+    );
     action = (
       <CreditsButton
         link={<Link to={SUBSCRIBE_ROUTE} search={{ upgrade: true }} />}
-        label="Upgrade plan"
+        label={t("Upgrade plan")}
       />
     );
   } else {
     message = refillDate
-      ? `You don't have enough credits for this. Buy more credits to keep going, or wait for your monthly credits to refill on ${refillDate}.`
-      : "You don't have enough credits for this. Buy more credits to keep going.";
+      ? t(
+          "You don't have enough credits for this. Buy more credits to keep going, or wait for your monthly credits to refill on {date}.",
+          { date: refillDate },
+        )
+      : t(
+          "You don't have enough credits for this. Buy more credits to keep going.",
+        );
     action = (
       <CreditsButton
         link={<Link to={BILLING_ROUTE} />}

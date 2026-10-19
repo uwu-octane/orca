@@ -26,13 +26,6 @@ import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { BILLING_ROUTE } from "@/shared/billing";
 import { SUPPORT_EMAIL } from "@/client/lib/support";
 
-const PLAN_FEATURES = [
-  "Keyword research, backlinks, rank tracking, and site audits",
-  "MCP server and agent skills for Claude, Cursor, and ChatGPT",
-  "Google Search Console Integration",
-  monthlyCreditsFeature(YC_PLAN_OFFER),
-];
-
 export const Route = createFileRoute("/_authenticated/yc")({
   // The loader fills the module-scoped query client, so keep it out of server
   // requests: one worker isolate must not cache another account's billing.
@@ -49,6 +42,12 @@ export const Route = createFileRoute("/_authenticated/yc")({
 
 function YcPlanPage() {
   const { t } = useLocale();
+  const PLAN_FEATURES = [
+    t("Keyword research, backlinks, rank tracking, and site audits"),
+    t("MCP server and agent skills for Claude, Cursor, and ChatGPT"),
+    t("Google Search Console Integration"),
+    monthlyCreditsFeature(YC_PLAN_OFFER),
+  ];
 
   const { data: session } = useSession();
   const [isAttaching, setIsAttaching] = useState(false);
@@ -70,7 +69,9 @@ function YcPlanPage() {
       <StatusScreen logo title={t("Billing unavailable")} size="sm">
         <QueryError
           cause={accountQuery.error}
-          fallback="We couldn't verify your billing status right now. Please try again."
+          fallback={t(
+            "We couldn't verify your billing status right now. Please try again.",
+          )}
           onRetry={() => void accountQuery.refetch()}
           isRetrying={accountQuery.isFetching}
         />
@@ -94,6 +95,7 @@ function YcPlanPage() {
         getStandardErrorMessage(
           err,
           t("We couldn't start the checkout. Please try again."),
+          t,
         ),
       );
       setIsAttaching(false);
@@ -110,10 +112,11 @@ function YcPlanPage() {
           alt="Orca"
           className="mx-auto size-10 rounded-lg"
         />
-        <h1 className="text-xl font-semibold">Orca for YC founders</h1>
+        <h1 className="text-xl font-semibold">{t("Orca for YC founders")}</h1>
         <p className="text-sm text-muted-foreground">
-          A bigger monthly credit pool for teams doing serious SEO work, with
-          your first month free through the YC deal.
+          {t(
+            "A bigger monthly credit pool for teams doing serious SEO work, with your first month free through the YC deal.",
+          )}
         </p>
       </div>
 
@@ -122,10 +125,11 @@ function YcPlanPage() {
           <Tag className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
           <p className="text-muted-foreground">
             <span className="font-medium text-foreground">
-              Don&rsquo;t forget your promo code.
+              {t("Don't forget your promo code.")}
             </span>{" "}
-            Enter the code from the YC deal under &ldquo;Add promotion
-            code&rdquo; on the checkout page to get your first month free.
+            {t(
+              "Enter the code from the YC deal under “Add promotion code” on the checkout page to get your first month free.",
+            )}
           </p>
         </div>
 
@@ -140,13 +144,13 @@ function YcPlanPage() {
           <Skeleton className="h-9 w-full" />
         ) : isOnYcPlan ? (
           <p className="text-sm text-muted-foreground">
-            You&rsquo;re already on the {YC_PLAN_OFFER.name}
+            {t("You're already on the {plan}", { plan: t(YC_PLAN_OFFER.name) })}
             {t(".")}{" "}
             <Link
               to={BILLING_ROUTE}
               className="underline underline-offset-2 hover:text-foreground"
             >
-              Manage it on Billing
+              {t("Manage it on Billing")}
             </Link>
             {t(".")}
           </p>
@@ -161,19 +165,21 @@ function YcPlanPage() {
               {isAttaching
                 ? t("Redirecting...")
                 : isPaid
-                  ? `Switch to the ${YC_PLAN_OFFER.name}`
-                  : `Get the ${YC_PLAN_OFFER.name}`}
+                  ? t("Switch to the {plan}", { plan: t(YC_PLAN_OFFER.name) })
+                  : t("Get the {plan}", { plan: t(YC_PLAN_OFFER.name) })}
             </Button>
             {isPaid ? (
               <p className="text-center text-xs text-muted-foreground">
-                Replaces your current subscription.
+                {t("Replaces your current subscription.")}
               </p>
             ) : null}
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Only the organization owner can change the plan. Ask them to switch
-            this organization to the {YC_PLAN_OFFER.name}
+            {t(
+              "Only the organization owner can change the plan. Ask them to switch this organization to the {plan}",
+              { plan: t(YC_PLAN_OFFER.name) },
+            )}
             {t(".")}
           </p>
         )}
@@ -181,7 +187,7 @@ function YcPlanPage() {
 
       <div className="text-center space-y-2">
         <p className="text-sm text-muted-foreground">
-          Questions? Email{" "}
+          {t("Questions? Email")}{" "}
           <a
             className="underline underline-offset-2 hover:text-foreground"
             href={`mailto:${SUPPORT_EMAIL}`}

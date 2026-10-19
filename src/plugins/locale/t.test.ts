@@ -1,4 +1,9 @@
 import {
+  BASE_PLAN_OFFER,
+  YC_PLAN_OFFER,
+} from "@/client/features/billing/plan-offers";
+import { BILLING_TABS } from "@/shared/billing";
+import {
   LOCATION_OPTIONS,
   getLanguageOptions,
 } from "@/shared/keyword-locations";
@@ -252,6 +257,18 @@ describe("translate", () => {
         translate(label),
         `untranslated project option: ${label}`,
       ).not.toBe(label);
+    }
+  });
+
+  it("translates checkout plan names and billing tabs", () => {
+    for (const label of [
+      BASE_PLAN_OFFER.name,
+      YC_PLAN_OFFER.name,
+      ...BILLING_TABS.map((tab) => tab.label),
+    ]) {
+      expect(translate(label), `untranslated billing label: ${label}`).not.toBe(
+        label,
+      );
     }
   });
 

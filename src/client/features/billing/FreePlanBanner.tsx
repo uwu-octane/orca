@@ -24,9 +24,9 @@ export function FreePlanBanner() {
     return (
       <AppBanner variant={isOutOfCredits ? "destructive" : "warning"}>
         {isOutOfCredits
-          ? "Your organization has used its credits."
-          : "Your organization is running low on credits."}{" "}
-        Ask your organization owner to add more.
+          ? t("Your organization has used its credits.")
+          : t("Your organization is running low on credits.")}{" "}
+        {t("Ask your organization owner to add more.")}
       </AppBanner>
     );
   }
@@ -53,14 +53,20 @@ export function FreePlanBanner() {
       <AppBanner variant="destructive">
         {isFreePlan ? (
           <>
-            You&rsquo;ve used your free credits. {creditsActionLink} to get $
-            {BASE_PLAN_OFFER.monthlyCreditsUsd} of credits every month.
+            {t("You've used your free credits.")} {creditsActionLink}{" "}
+            {t("to get ${amount} of credits every month.", {
+              amount: BASE_PLAN_OFFER.monthlyCreditsUsd,
+            })}
           </>
         ) : (
           <>
-            You&rsquo;ve used this month&rsquo;s credits. {creditsActionLink} to
-            keep going
-            {refillDate ? `, or wait for them to refill on ${refillDate}` : ""}
+            {t("You've used this month's credits.")} {creditsActionLink}{" "}
+            {t("to keep going")}
+            {refillDate
+              ? t(", or wait for them to refill on {date}", {
+                  date: refillDate,
+                })
+              : ""}
             {t(".")}
           </>
         )}
@@ -71,7 +77,7 @@ export function FreePlanBanner() {
   if (isLowCredits) {
     return (
       <AppBanner variant="warning">
-        You&rsquo;re running low on credits. {creditsActionLink}{" "}
+        {t("You're running low on credits.")} {creditsActionLink}{" "}
         {t("to keep using Orca.")}
       </AppBanner>
     );
@@ -80,7 +86,7 @@ export function FreePlanBanner() {
   if (isFreePlan) {
     return (
       <AppBanner variant="info">
-        We hope you&rsquo;re enjoying Orca!{" "}
+        {t("We hope you're enjoying Orca!")}{" "}
         <Link
           to={SUBSCRIBE_ROUTE}
           search={{ upgrade: true }}
@@ -88,7 +94,7 @@ export function FreePlanBanner() {
         >
           {t("Upgrade anytime")}
         </Link>{" "}
-        {"or"}{" "}
+        {t("or")}{" "}
         <Link
           to="/support"
           className="font-medium text-primary underline-offset-4 hover:underline"

@@ -29,13 +29,6 @@ import { useCanManageBilling } from "@/client/features/team/organizationQueries"
 import { SUPPORT_EMAIL } from "@/client/lib/support";
 import { Button } from "@/client/components/ui/button";
 
-const PLAN_FEATURES = [
-  "Keyword research, backlinks, rank tracking, and site audits",
-  "MCP server and agent skills for Claude, Cursor, and ChatGPT",
-  "Google Search Console Integration",
-  monthlyCreditsFeature(BASE_PLAN_OFFER),
-];
-
 // How long the post-checkout "finalizing" screen polls Autumn before giving
 // up and letting the user through anyway, and how often it polls.
 const FINALIZING_TIMEOUT_MS = 30_000;
@@ -71,6 +64,12 @@ export const Route = createFileRoute("/_authenticated/subscribe")({
 
 function SubscribePage() {
   const { t } = useLocale();
+  const PLAN_FEATURES = [
+    t("Keyword research, backlinks, rank tracking, and site audits"),
+    t("MCP server and agent skills for Claude, Cursor, and ChatGPT"),
+    t("Google Search Console Integration"),
+    monthlyCreditsFeature(BASE_PLAN_OFFER),
+  ];
 
   const navigate = useNavigate();
   const { upgrade: isUpgradeFlow, redirect, checkout } = Route.useSearch();
@@ -148,7 +147,7 @@ function SubscribePage() {
       <StatusScreen
         logo
         size="sm"
-        title="Finalizing your subscription…"
+        title={t("Finalizing your subscription…")}
         pending
         description={t("This usually takes a few seconds.")}
         footer={
@@ -158,8 +157,7 @@ function SubscribePage() {
               className="underline underline-offset-2 hover:text-foreground"
               href={`mailto:${SUPPORT_EMAIL}`}
             >
-              {t("Email")}
-              {SUPPORT_EMAIL}
+              {t("Email")} {SUPPORT_EMAIL}
             </a>
             {t(".")}
           </>
@@ -173,7 +171,9 @@ function SubscribePage() {
       <StatusScreen logo title={t("Billing unavailable")} size="sm">
         <QueryError
           cause={accountQuery.error}
-          fallback="We couldn't verify your billing status right now. Please try again."
+          fallback={t(
+            "We couldn't verify your billing status right now. Please try again.",
+          )}
           onRetry={() => void accountQuery.refetch()}
           isRetrying={accountQuery.isFetching}
         />
@@ -192,6 +192,7 @@ function SubscribePage() {
         getStandardErrorMessage(
           err,
           t("We couldn't start the checkout. Please try again."),
+          t,
         ),
       );
       setIsAttaching(false);
@@ -214,7 +215,7 @@ function SubscribePage() {
           {isUpgradeFlow
             ? t("Upgrade your plan")
             : firstName
-              ? `Welcome to Orca, ${firstName}!`
+              ? t("Welcome to Orca, {name}!", { name: firstName })
               : t("Welcome to Orca!")}
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -262,15 +263,16 @@ function SubscribePage() {
           </Button>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Only the organization owner can subscribe. Ask them to upgrade this
-            organization.
+            {t(
+              "Only the organization owner can subscribe. Ask them to upgrade this organization.",
+            )}
           </p>
         )}
       </PlanOfferCard>
 
       <div className="text-center space-y-2">
         <p className="text-sm text-muted-foreground">
-          Questions? Email{" "}
+          {t("Questions? Email")}{" "}
           <a
             className="underline underline-offset-2 hover:text-foreground"
             href={`mailto:${SUPPORT_EMAIL}`}

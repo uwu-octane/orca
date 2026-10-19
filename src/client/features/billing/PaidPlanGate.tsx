@@ -46,7 +46,7 @@ export function PaidPlanGate({
               {t(
                 "It runs on costlier AI data, so it's part of the {plan}: ${price} a month, with ${credits} of usage credits included.",
                 {
-                  plan: BASE_PLAN_OFFER.name,
+                  plan: t(BASE_PLAN_OFFER.name),
                   price: BASE_PLAN_OFFER.priceUsd,
                   credits: BASE_PLAN_OFFER.monthlyCreditsUsd,
                 },

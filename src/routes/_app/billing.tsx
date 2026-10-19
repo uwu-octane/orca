@@ -120,7 +120,7 @@ function BillingPage() {
     } catch (err) {
       setError({
         action,
-        message: getStandardErrorMessage(err, fallbackMessage),
+        message: getStandardErrorMessage(err, fallbackMessage, t),
       });
       setPendingAction(null);
     }
@@ -155,7 +155,9 @@ function BillingPage() {
       ) : !account ? (
         <QueryError
           cause={accountQuery.error}
-          fallback="We couldn't load your billing details right now. Please try again."
+          fallback={t(
+            "We couldn't load your billing details right now. Please try again.",
+          )}
           onRetry={() => void accountQuery.refetch()}
           isRetrying={accountQuery.isFetching}
         />
@@ -164,7 +166,7 @@ function BillingPage() {
           {accountQuery.isError ? (
             <QueryError
               cause={accountQuery.error}
-              fallback="Failed to refresh billing details"
+              fallback={t("Failed to refresh billing details")}
               onRetry={() => void accountQuery.refetch()}
               isRetrying={accountQuery.isFetching}
             />
@@ -178,35 +180,46 @@ function BillingPage() {
                   <div className="text-2xl font-semibold tabular-nums">
                     ${totalRemaining.toFixed(2)}{" "}
                     <span className="text-sm font-normal text-muted-foreground">
-                      {"remaining"}
+                      {t("remaining")}
                     </span>
                   </div>
                   {!isFreePlan ? (
                     <div className="mt-1 flex gap-3 text-xs text-muted-foreground">
                       <span className="tabular-nums">
-                        Monthly ${monthlyRemaining.toFixed(2)}
+                        {t("Monthly ${amount}", {
+                          amount: monthlyRemaining.toFixed(2),
+                        })}
                       </span>
                       <span>&middot;</span>
                       <span className="tabular-nums">
-                        Top-ups ${topUpRemaining.toFixed(2)}
+                        {t("Top-ups ${amount}", {
+                          amount: topUpRemaining.toFixed(2),
+                        })}
                       </span>
                     </div>
                   ) : null}
                   {isOutOfCredits ? (
                     <p className="mt-2 text-xs text-destructive">
                       {isFreePlan
-                        ? "You’ve used your free credits. Upgrade your plan to continue."
-                        : `You’ve used this month’s credits. Buy more below to keep going${
-                            refillDate
-                              ? `, or wait for them to refill on ${refillDate}`
-                              : ""
-                          }.`}
+                        ? t(
+                            "You’ve used your free credits. Upgrade your plan to continue.",
+                          )
+                        : refillDate
+                          ? t(
+                              "You’ve used this month’s credits. Buy more below to keep going, or wait for them to refill on {date}.",
+                              { date: refillDate },
+                            )
+                          : t(
+                              "You’ve used this month’s credits. Buy more below to keep going.",
+                            )}
                     </p>
                   ) : isLowCredits ? (
                     <p className="mt-2 text-xs text-amber-600">
-                      You&rsquo;re running low on credits.{" "}
+                      {t("You're running low on credits.")}{" "}
                       {isFreePlan
-                        ? `Upgrade to get $${BASE_PLAN_OFFER.monthlyCreditsUsd}/month.`
+                        ? t("Upgrade to get ${amount}/month.", {
+                            amount: BASE_PLAN_OFFER.monthlyCreditsUsd,
+                          })
                         : t("Buy more credits below.")}
                     </p>
                   ) : null}
@@ -216,28 +229,31 @@ function BillingPage() {
                   <span className="font-medium">{t("Plan")}</span>{" "}
                   <span className="text-muted-foreground">
                     {account.paidPlanId
-                      ? getPlanName(account.paidPlanId)
+                      ? t(getPlanName(account.paidPlanId))
                       : t("Free Plan")}
                   </span>
                   {account.paidPlanId ? (
                     <span className="text-muted-foreground">
                       {" "}
-                      &middot; ${account.monthlyCreditsUsd.toFixed(2)} of Usage
-                      Credits each month
+                      &middot;{" "}
+                      {t("${amount} of Usage Credits each month", {
+                        amount: account.monthlyCreditsUsd.toFixed(2),
+                      })}
                     </span>
                   ) : null}
                 </div>
 
                 {!canManageBilling ? (
                   <p className="border-t border-border pt-3 text-sm text-muted-foreground">
-                    Only the organization owner can change the plan or buy
-                    credits. Ask them if you need more.
+                    {t(
+                      "Only the organization owner can change the plan or buy credits. Ask them if you need more.",
+                    )}
                   </p>
                 ) : isFreePlan ? (
                   <div className="space-y-3 border-t border-border pt-3">
                     <div className="flex items-baseline justify-between gap-4">
                       <span className="text-sm font-medium">
-                        {BASE_PLAN_OFFER.name}
+                        {t(BASE_PLAN_OFFER.name)}
                       </span>
                       <span className="text-sm font-medium tabular-nums">
                         ${BASE_PLAN_OFFER.priceUsd}
@@ -246,7 +262,7 @@ function BillingPage() {
                     </div>
                     <ul className="space-y-1.5">
                       {[
-                        "Access to all Orca features",
+                        t("Access to all Orca features"),
                         monthlyCreditsFeature(BASE_PLAN_OFFER),
                       ].map((item) => (
                         <li
@@ -269,7 +285,9 @@ function BillingPage() {
                         void runAction(
                           "plan",
                           openUpgradeCheckout,
-                          "We couldn't start the checkout. Please try again.",
+                          t(
+                            "We couldn't start the checkout. Please try again.",
+                          ),
                         )
                       }
                     >
@@ -290,12 +308,14 @@ function BillingPage() {
                         void runAction(
                           "plan",
                           openPortal,
-                          "We couldn't open the billing portal. Please try again.",
+                          t(
+                            "We couldn't open the billing portal. Please try again.",
+                          ),
                         )
                       }
                     >
                       {pendingAction === "plan"
-                        ? "Opening Stripe..."
+                        ? t("Opening Stripe...")
                         : t("Manage subscription")}
                     </Button>
                     {actionError("plan")}
@@ -325,7 +345,7 @@ function BillingPage() {
                         max={99}
                         step={1}
                         inputMode="numeric"
-                        aria-label="Top-up amount in USD"
+                        aria-label={t("Top-up amount in USD")}
                         aria-invalid={showTopUpError}
                         value={topUpAmount}
                         onChange={(e) => setTopUpAmount(e.target.value)}
@@ -345,7 +365,7 @@ function BillingPage() {
                       void runAction(
                         "topUp",
                         startTopUpCheckout,
-                        "We couldn't start the checkout. Please try again.",
+                        t("We couldn't start the checkout. Please try again."),
                       )
                     }
                   >

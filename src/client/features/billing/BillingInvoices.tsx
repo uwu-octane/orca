@@ -70,6 +70,8 @@ function InvoiceEmailsToggle({
 }: {
   invoiceEmailsEnabled: boolean;
 }) {
+  const { t } = useLocale();
+
   const mutation = useMutation({
     mutationFn: (enabled: boolean) => setInvoiceEmails({ data: { enabled } }),
     // The error shows inline under the switch.
@@ -95,18 +97,20 @@ function InvoiceEmailsToggle({
           onCheckedChange={(enabled) => mutation.mutate(enabled)}
         />
         <FieldLabel htmlFor="billing-invoice-emails">
-          Email me a receipt for each invoice
+          {t("Email me a receipt for each invoice")}
         </FieldLabel>
       </div>
       <FieldDescription>
-        Stripe sends the receipt to the billing email on your account after each
-        payment.
+        {t(
+          "Stripe sends the receipt to the billing email on your account after each payment.",
+        )}
       </FieldDescription>
       {mutation.isError ? (
         <p role="alert" className="text-sm text-destructive">
           {getStandardErrorMessage(
             mutation.error,
-            "We couldn't save this setting. Please try again.",
+            t("We couldn't save this setting. Please try again."),
+            t,
           )}
         </p>
       ) : null}
@@ -133,7 +137,7 @@ function InvoiceTable() {
     return (
       <QueryError
         error={invoicesQuery.error}
-        fallback="We couldn't load your invoices. Please try again."
+        fallback={t("We couldn't load your invoices. Please try again.")}
         onRetry={() => void invoicesQuery.refetch()}
         isRetrying={invoicesQuery.isFetching}
       />
@@ -143,7 +147,9 @@ function InvoiceTable() {
   const { invoices, hasMore } = invoicesQuery.data;
 
   if (invoices.length === 0) {
-    return <p className="text-sm text-muted-foreground">No invoices yet.</p>;
+    return (
+      <p className="text-sm text-muted-foreground">{t("No invoices yet.")}</p>
+    );
   }
 
   return (
@@ -151,13 +157,13 @@ function InvoiceTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Invoice</TableHead>
+            <TableHead>{t("Invoice")}</TableHead>
             <TableHead>{t("Date")}</TableHead>
-            <TableHead>Billing period</TableHead>
-            <TableHead>Amount</TableHead>
+            <TableHead>{t("Billing period")}</TableHead>
+            <TableHead>{t("Amount")}</TableHead>
             <TableHead>{t("Status")}</TableHead>
             <TableHead>
-              <span className="sr-only">Download</span>
+              <span className="sr-only">{t("Download")}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -189,7 +195,11 @@ function InvoiceTable() {
                       variant: "outline",
                       size: "sm",
                     })}
-                    aria-label={`Download ${invoice.number ?? "invoice"} PDF`}
+                    aria-label={
+                      invoice.number != null
+                        ? t("Download {number} PDF", { number: invoice.number })
+                        : t("Download invoice PDF")
+                    }
                   >
                     <Download />
                     PDF
@@ -202,8 +212,9 @@ function InvoiceTable() {
       </Table>
       {hasMore ? (
         <p className="text-xs text-muted-foreground">
-          Showing your newest invoices. Find older invoices under Manage
-          subscription.
+          {t(
+            "Showing your newest invoices. Find older invoices under Manage subscription.",
+          )}
         </p>
       ) : null}
     </div>

@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 import {
   AUTUMN_PAID_PLAN_ID,
   AUTUMN_YC_PLAN_ID,
@@ -39,5 +40,7 @@ export function getPlanName(planId: string) {
 }
 
 export function monthlyCreditsFeature(offer: PlanOffer) {
-  return `Includes $${offer.monthlyCreditsUsd.toFixed(2)} of Usage Credits each month`;
+  return translate("Includes ${amount} of Usage Credits each month", {
+    amount: offer.monthlyCreditsUsd.toFixed(2),
+  });
 }

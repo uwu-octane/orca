@@ -29,7 +29,7 @@ export function PlanOfferCard({
     <Card>
       <CardContent className="space-y-4">
         <div className="flex items-baseline justify-between gap-4">
-          <span className="font-semibold">{offer.name}</span>
+          <span className="font-semibold">{t(offer.name)}</span>
           <span className="text-lg font-semibold tabular-nums">
             ${offer.priceUsd}
             {t("/month")}
@@ -59,11 +59,13 @@ export function PlanOfferCard({
               {t("30-day money-back guarantee")}
             </TooltipTrigger>
             <TooltipContent>
-              Not for you yet? Email {SUPPORT_EMAIL} within 30 days of your
-              charge and we'll refund your subscription.
+              {t(
+                "Not for you yet? Email {email} within 30 days of your charge and we'll refund your subscription.",
+                { email: SUPPORT_EMAIL },
+              )}
             </TooltipContent>
           </Tooltip>
-          . Cancel anytime. Powered by Stripe.
+          {t(". Cancel anytime. Powered by Stripe.")}
         </p>
       </CardContent>
     </Card>

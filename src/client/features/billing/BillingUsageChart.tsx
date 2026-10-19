@@ -24,10 +24,6 @@ import {
   useBillingUsageEvents,
 } from "@/client/features/billing/useBillingUsageEvents";
 
-const chartConfig = {
-  credits: { label: "Usage", color: "#7c3aed" },
-} satisfies ChartConfig;
-
 export function BillingUsageChart() {
   const { t } = useLocale();
 
@@ -37,7 +33,7 @@ export function BillingUsageChart() {
     <BillingUsageSection title={t("Usage")}>
       <QueryState
         query={eventsQuery}
-        errorFallback="Failed to load usage"
+        errorFallback={t("Failed to load usage")}
         loading={<Skeleton className="h-40 w-full" />}
       >
         {(events) => <UsageChart events={events} />}
@@ -48,6 +44,10 @@ export function BillingUsageChart() {
 
 function UsageChart({ events }: { events: BillingUsageEvent[] }) {
   const { t } = useLocale();
+
+  const chartConfig = {
+    credits: { label: t("Usage"), color: "#7c3aed" },
+  } satisfies ChartConfig;
 
   const chartData = binEventsByDay(events);
   const totalSpend = chartData.reduce((sum, d) => sum + d.credits, 0);

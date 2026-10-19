@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { DataTableTabs } from "@/client/components/table/DataTableToolbar";
 import { TableCard } from "@/client/components/ui/table";
 import { TabsTrigger } from "@/client/components/ui/tabs";
@@ -20,6 +21,7 @@ export function BillingTabs({
   /** Null hides the Invoices tab. */
   invoiceEmailsEnabled: boolean | null;
 }) {
+  const { t } = useLocale();
   const showInvoices = invoiceEmailsEnabled !== null && tab === "invoices";
 
   return (
@@ -34,7 +36,7 @@ export function BillingTabs({
         >
           {BILLING_TABS.map((item) => (
             <TabsTrigger key={item.value} value={item.value}>
-              {item.label}
+              {t(item.label)}
             </TabsTrigger>
           ))}
         </DataTableTabs>
