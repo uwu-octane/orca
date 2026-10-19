@@ -1,3 +1,4 @@
+import { MONTH_SHORT_LABELS } from "@/client/features/keywords/utils";
 import { LIGHTHOUSE_CATEGORY_TABS } from "@/shared/lighthouse";
 import { categoryLabel } from "@/client/features/lighthouse/issues/utils";
 import { passwordSchema } from "@/client/features/auth/passwordSchema";
@@ -303,6 +304,14 @@ describe("translate", () => {
           `untranslated Lighthouse category: ${label}`,
         ).not.toBe(label);
       }
+    }
+  });
+
+  it("translates every month used in keyword trends", () => {
+    for (const month of MONTH_SHORT_LABELS) {
+      expect(translate(month), `untranslated trend month: ${month}`).not.toBe(
+        month,
+      );
     }
   });
 

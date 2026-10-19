@@ -48,7 +48,8 @@ function formatTrendRangeLabel(trend: KeywordResearchRow["trend"]): string {
   if (last12.length === 0) return translate("Last 12 available months");
 
   const [startLabel, endLabel] = [last12[0], last12[last12.length - 1]].map(
-    (m) => `${MONTH_SHORT_LABELS[m.month - 1] ?? `M${m.month}`} ${m.year}`,
+    (m) =>
+      `${translate(MONTH_SHORT_LABELS[m.month - 1] ?? `M${m.month}`)} ${m.year}`,
   );
   return startLabel === endLabel ? startLabel : `${startLabel} - ${endLabel}`;
 }

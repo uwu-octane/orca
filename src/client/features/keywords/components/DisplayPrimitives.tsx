@@ -39,8 +39,9 @@ export function AreaTrendChart({
   const last12 = lastTwelveMonths(trend);
   if (last12.length === 0) return null;
 
+  const monthLabels = MONTH_SHORT_LABELS.map((month) => t(month));
   const data = last12.map((m) => ({
-    month: MONTH_SHORT_LABELS[m.month - 1],
+    month: monthLabels[m.month - 1],
     searchVolume: m.searchVolume,
   }));
 
