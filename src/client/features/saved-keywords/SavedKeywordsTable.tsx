@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import {
   createColumnHelper,
   type ColumnDef,
@@ -47,13 +48,15 @@ export function SavedKeywordsTable({
   toolbar: ReactNode;
   footer: ReactNode;
 }) {
+  const { t } = useLocale();
+
   const selectAnchorRef = useSelectionAnchor();
   const columns = useMemo<ColumnDef<SavedKeywordRow>[]>(
     () => [
       makeSelectionColumn<SavedKeywordRow>(selectAnchorRef),
       columnHelper.accessor("keyword", {
         header: ({ column }) => (
-          <SortableHeader column={column} label="Keyword" />
+          <SortableHeader column={column} label={t("Keyword")} />
         ),
         cell: ({ getValue }) => (
           <span className="font-medium">{getValue()}</span>
@@ -61,12 +64,14 @@ export function SavedKeywordsTable({
       }),
       columnHelper.accessor("searchVolume", {
         header: ({ column }) => (
-          <SortableHeader column={column} label="Volume" />
+          <SortableHeader column={column} label={t("Volume")} />
         ),
         cell: ({ getValue }) => formatSavedKeywordNumber(getValue()),
       }),
       columnHelper.accessor("cpc", {
-        header: ({ column }) => <SortableHeader column={column} label="CPC" />,
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("CPC")} />
+        ),
         cell: ({ getValue }) => {
           const value = getValue();
           return value == null ? "-" : `$${value.toFixed(2)}`;
@@ -76,8 +81,10 @@ export function SavedKeywordsTable({
         header: ({ column }) => (
           <SortableHeader
             column={column}
-            label="Competition"
-            helpText="Paid-search competition from Google Ads (0-1): higher means more advertisers bidding."
+            label={t("Competition")}
+            helpText={t(
+              "Paid-search competition from Google Ads (0-1): higher means more advertisers bidding.",
+            )}
           />
         ),
         cell: ({ getValue }) => {
@@ -89,14 +96,16 @@ export function SavedKeywordsTable({
         header: ({ column }) => (
           <SortableHeader
             column={column}
-            label="Difficulty"
-            helpText="Organic ranking difficulty (0-100): higher means harder to reach Google's top 10."
+            label={t("Difficulty")}
+            helpText={t(
+              "Organic ranking difficulty (0-100): higher means harder to reach Google's top 10.",
+            )}
           />
         ),
         cell: ({ getValue }) => <ScoreBadge value={getValue()} />,
       }),
       columnHelper.accessor("intent", {
-        header: () => "Intent",
+        header: () => t("Intent"),
         cell: ({ getValue }) => (
           <IntentBadge intent={normalizeIntent(getValue())} />
         ),
@@ -104,14 +113,14 @@ export function SavedKeywordsTable({
       }),
       columnHelper.display({
         id: "tags",
-        header: () => "Tags",
+        header: () => t("Tags"),
         cell: ({ row }) => <TagList tags={row.original.tags} />,
         enableSorting: false,
         meta: { cellClassName: "min-w-40 max-w-64" },
       }),
       columnHelper.accessor("fetchedAt", {
         header: ({ column }) => (
-          <SortableHeader column={column} label="Last Fetched" />
+          <SortableHeader column={column} label={t("Last Fetched")} />
         ),
         cell: ({ getValue }) => (
           <span className="text-xs text-muted-foreground">
@@ -120,7 +129,7 @@ export function SavedKeywordsTable({
         ),
       }),
     ],
-    [selectAnchorRef],
+    [selectAnchorRef, t],
   );
   const table = useDataTable({
     data: rows,
@@ -144,8 +153,10 @@ export function SavedKeywordsTable({
       isFiltered={hasActiveFilters}
       onClearFilters={onClearFilters}
       empty={{
-        title: "No saved keywords yet",
-        description: "Use the Keyword Research page to find and save keywords.",
+        title: t("No saved keywords yet"),
+        description: t(
+          "Use the Keyword Research page to find and save keywords.",
+        ),
       }}
       toolbar={toolbar}
       footer={footer}

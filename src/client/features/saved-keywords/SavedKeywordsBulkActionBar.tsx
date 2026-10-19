@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { Copy, FileDown, Sheet, Tags, Trash2 } from "lucide-react";
 import {
   TableBulkActionBar,
@@ -24,6 +25,8 @@ export function SavedKeywordsBulkActionBar({
   onClear: () => void;
   exportingSelection: boolean;
 }) {
+  const { t } = useLocale();
+
   if (selectedCount === 0) return null;
 
   return (
@@ -37,24 +40,24 @@ export function SavedKeywordsBulkActionBar({
               icon={<Tags className="size-3.5" />}
               onClick={onOpenTags}
             >
-              Tag
+              {t("Tag")}
             </TableBulkActionButton>
 
             <TableBulkExportMenu
               busy={exportingSelection}
               actions={[
                 {
-                  label: "Copy keywords",
+                  label: t("Copy keywords"),
                   icon: <Copy className="size-4" />,
                   onClick: onCopy,
                 },
                 {
-                  label: "Export to Sheets",
+                  label: t("Export to Sheets"),
                   icon: <Sheet className="size-4" />,
                   onClick: onExportSheets,
                 },
                 {
-                  label: "Export CSV",
+                  label: t("Export CSV"),
                   icon: <FileDown className="size-4" />,
                   onClick: onExportCsv,
                 },
@@ -68,7 +71,7 @@ export function SavedKeywordsBulkActionBar({
               onClick={onDelete}
               variant="danger"
             >
-              Delete
+              {t("Delete")}
             </TableBulkActionButton>
           </div>
         </>

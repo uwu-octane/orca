@@ -1,3 +1,4 @@
+import { TAG_COLOR_KEYS } from "@/shared/tag-colors";
 import { countBy } from "remeda";
 import { beforeEach, describe, expect, it } from "vitest";
 import { LOCALE_STORAGE_KEY } from "./locale-settings";
@@ -73,6 +74,14 @@ describe("translate", () => {
           label,
         );
       }
+    }
+  });
+
+  it("translates every selectable tag color", () => {
+    for (const color of TAG_COLOR_KEYS) {
+      expect(translate(color), `untranslated tag color: ${color}`).not.toBe(
+        color,
+      );
     }
   });
 

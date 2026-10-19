@@ -111,6 +111,7 @@ function TermsTokenInput({
   variant: TermsVariant;
   placeholder: string;
 }) {
+  const { t } = useLocale();
   const [draft, setDraft] = useState("");
   const styles = VARIANT_STYLES[variant];
   const Icon = styles.icon;
@@ -162,7 +163,7 @@ function TermsTokenInput({
                   <button
                     type="button"
                     className="opacity-70 hover:opacity-100"
-                    aria-label={`Remove ${term}`}
+                    aria-label={t("Remove {term}", { term })}
                     onClick={() =>
                       commit(terms.filter((existing) => existing !== term))
                     }

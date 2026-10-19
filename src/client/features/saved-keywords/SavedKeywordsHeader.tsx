@@ -39,7 +39,7 @@ export function SavedKeywordsHeader({
             <Button
               variant="outline"
               size="sm"
-              title="Fetch new volume, difficulty, and CPC"
+              title={t("Fetch new volume, difficulty, and CPC")}
               disabled={disabled || metricsRefreshing}
               onClick={() => setConfirmingRefresh(true)}
             >
@@ -64,16 +64,17 @@ export function SavedKeywordsHeader({
 
       {confirmingRefresh ? (
         <ConfirmDialog
-          title="Update keyword stats?"
-          confirmLabel="Update stats"
+          title={t("Update keyword stats?")}
+          confirmLabel={t("Update stats")}
           onConfirm={() => {
             setConfirmingRefresh(false);
             onRefreshMetrics();
           }}
           onClose={() => setConfirmingRefresh(false)}
         >
-          This fetches new volume, difficulty, and CPC for every saved keyword
-          in this project. Each keyword uses credits.
+          {t(
+            "This fetches new volume, difficulty, and CPC for every saved keyword in this project. Each keyword uses credits.",
+          )}
         </ConfirmDialog>
       ) : null}
     </>

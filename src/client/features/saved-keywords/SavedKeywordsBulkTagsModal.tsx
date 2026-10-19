@@ -125,9 +125,13 @@ export function SavedKeywordsBulkTagsModal({
         <DialogHeader>
           <DialogTitle>{t("Update tags")}</DialogTitle>
           <DialogDescription>
-            Apply or remove tags across {selectedCount} selected keyword
-            {selectedCount !== 1 ? "s" : ""}
-            {t(".")}
+            {selectedCount === 1
+              ? t("Apply or remove tags across {count} selected keyword.", {
+                  count: selectedCount,
+                })
+              : t("Apply or remove tags across {count} selected keywords.", {
+                  count: selectedCount,
+                })}
           </DialogDescription>
         </DialogHeader>
 
@@ -194,7 +198,7 @@ export function SavedKeywordsBulkTagsModal({
               </InputGroupAddon>
               <InputGroupInput
                 ref={inputRef}
-                aria-label="Search or create a tag"
+                aria-label={t("Search or create a tag")}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 onKeyDown={(event) => {
@@ -270,8 +274,15 @@ export function SavedKeywordsBulkTagsModal({
             </div>
             {removeIds.length > 0 ? (
               <p className="text-xs text-muted-foreground">
-                {removeIds.length} tag{removeIds.length !== 1 ? "s" : ""} will
-                be detached from the selected keywords.
+                {removeIds.length === 1
+                  ? t(
+                      "{count} tag will be detached from the selected keywords.",
+                      { count: removeIds.length },
+                    )
+                  : t(
+                      "{count} tags will be detached from the selected keywords.",
+                      { count: removeIds.length },
+                    )}
               </p>
             ) : null}
           </div>

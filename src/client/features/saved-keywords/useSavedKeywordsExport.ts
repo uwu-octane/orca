@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { formatCentsForCsv } from "@/client/features/keywords/state/keywordControllerActions";
@@ -19,6 +20,8 @@ export function useSavedKeywordsExport(params: {
   sort: ExportSavedKeywordsInput["sort"];
   order: ExportSavedKeywordsInput["order"];
 }) {
+  const { t } = useLocale();
+
   const [exporting, setExporting] = useState<"csv" | "sheets" | null>(null);
   const [exportingSelection, setExportingSelection] = useState(false);
 
@@ -62,7 +65,7 @@ export function useSavedKeywordsExport(params: {
       const result = await exportSavedKeywords({ data: exportInput });
       await runExport(format, result.rows);
     } catch (error) {
-      toast.error(getStandardErrorMessage(error, "Could not export"));
+      toast.error(getStandardErrorMessage(error, t("Could not export"), t));
     } finally {
       setExporting(null);
     }

@@ -26,18 +26,26 @@ export function DeleteSavedKeywordsModal({
 }) {
   const { t } = useLocale();
 
-  const plural = selectedCount !== 1 ? "s" : "";
   return (
     <ConfirmDialog
       title={t("Delete keywords?")}
-      confirmLabel={`Delete ${selectedCount} keyword${plural}`}
+      confirmLabel={
+        selectedCount === 1
+          ? t("Delete {count} keyword", { count: selectedCount })
+          : t("Delete {count} keywords", { count: selectedCount })
+      }
       destructive
       pending={isPending}
       onClose={onClose}
       onConfirm={onConfirm}
     >
-      This will permanently delete {selectedCount} saved keyword{plural}
-      {t(".")}
+      {selectedCount === 1
+        ? t("This will permanently delete {count} saved keyword.", {
+            count: selectedCount,
+          })
+        : t("This will permanently delete {count} saved keywords.", {
+            count: selectedCount,
+          })}
     </ConfirmDialog>
   );
 }

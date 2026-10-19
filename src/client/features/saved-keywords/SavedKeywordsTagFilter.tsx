@@ -88,8 +88,8 @@ export function SavedKeywordsTagFilter({
             }
           </ComboboxValue>
           <ComboboxChipsInput
-            aria-label="Filter by tag"
-            placeholder={selectedTags.length > 0 ? "" : "Filter by tag…"}
+            aria-label={t("Filter by tag")}
+            placeholder={selectedTags.length > 0 ? "" : t("Filter by tag…")}
           />
         </ComboboxChips>
         <ComboboxContent anchor={anchor}>
@@ -115,8 +115,8 @@ export function SavedKeywordsTagFilter({
       <Button
         variant="ghost"
         size="icon-sm"
-        aria-label="Manage tags"
-        title="Manage tags"
+        aria-label={t("Manage tags")}
+        title={t("Manage tags")}
         disabled={availableTags.length === 0}
         onClick={() => setManaging(true)}
       >
@@ -162,9 +162,9 @@ function TagManagerDialog({
     >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Manage tags</DialogTitle>
+          <DialogTitle>{t("Manage tags")}</DialogTitle>
           <DialogDescription>
-            Rename, recolor, or delete the tags in this project.
+            {t("Rename, recolor, or delete the tags in this project.")}
           </DialogDescription>
         </DialogHeader>
 
@@ -187,7 +187,7 @@ function TagManagerDialog({
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    aria-label={`Edit ${tag.name}`}
+                    aria-label={t("Edit {tag}", { tag: tag.name })}
                     aria-pressed={editing}
                     className="aria-pressed:bg-muted"
                     onClick={() => setEditingTagId(editing ? null : tag.id)}
