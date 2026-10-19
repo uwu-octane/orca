@@ -49,8 +49,9 @@ export function createDataforseoClient(
     },
     serp: {
       live: (input) => fetchLiveSerp(input, customer),
-      rankCheck: defer((client) => client.serp.rankCheck),
+      rankCheckBatch: defer((client) => client.serp.rankCheckBatch),
       rankCheckTaskPost: defer((client) => client.serp.rankCheckTaskPost),
+      localTaskPost: defer((client) => client.serp.localTaskPost),
       local: defer((client) => client.serp.local),
     },
     labs: {
@@ -61,6 +62,8 @@ export function createDataforseoClient(
       live: defer((client) => client.lighthouse.live),
     },
     aiSearch: {
+      trackingTaskPost: defer((client) => client.aiSearch.trackingTaskPost),
+      trackingLiveBatch: defer((client) => client.aiSearch.trackingLiveBatch),
       mentionsSearch: defer((client) => client.aiSearch.mentionsSearch),
       aggregatedMetrics: defer((client) => client.aiSearch.aggregatedMetrics),
       topPages: defer((client) => client.aiSearch.topPages),

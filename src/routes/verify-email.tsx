@@ -1,6 +1,11 @@
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
+import { translate } from "@/plugins/locale";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/client/components/ui/button";
+import { Spinner } from "@/client/components/ui/spinner";
 import {
   AuthPageCard,
   AuthPageShell,
@@ -13,9 +18,6 @@ import {
   isHostedClientAuthMode,
 } from "@/lib/auth-mode";
 import { getSignInSearch, normalizeAuthRedirect } from "@/lib/auth-redirect";
-// FORK: locale plugin — page copy translates via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
-import type { T } from "@/plugins/locale";
 import { z } from "zod";
 
 const verificationIssueSchema = z
@@ -32,22 +34,23 @@ export const Route = createFileRoute("/verify-email")({
   component: VerifyEmailPage,
 });
 
-function getVerificationErrorMessage(
-  error: string | undefined,
-  t: T,
-): string | null {
+function getVerificationErrorMessage(error: string | undefined) {
   switch ((error ?? "").toLowerCase()) {
     case "invalid_token":
-      return t(
+      return translate(
         "This link is no longer valid. Request a new email to keep going.",
       );
     case "token_expired":
-      return t("This link has expired. Request a new email to keep going.");
+      return translate(
+        "This link has expired. Request a new email to keep going.",
+      );
     case "user_not_found":
-      return t("We couldn't find this account anymore. Try creating it again.");
+      return translate(
+        "We couldn't find this account anymore. Try creating it again.",
+      );
     default:
       return error
-        ? t(
+        ? translate(
             "We couldn't confirm this email. Request a new email and try again.",
           )
         : null;
@@ -60,40 +63,38 @@ function getVerifyEmailPageCopy({
   isPending,
   isRedirecting,
   email,
-  t,
 }: {
   isHostedMode: boolean;
   errorMessage: string | null;
   isPending: boolean;
   isRedirecting: boolean;
   email: string | undefined;
-  t: T;
 }) {
   if (!isHostedMode) {
     return {
-      title: t("Verify email"),
-      helperText: t("Email confirmation isn't available right now."),
+      title: translate("Verify email"),
+      helperText: "Email confirmation isn't available right now.",
     };
   }
 
   if (errorMessage) {
     return {
-      title: t("We couldn't confirm your email"),
-      helperText: errorMessage,
+      title: translate("We couldn't confirm your email"),
+      helperText: undefined,
     };
   }
 
   if (isRedirecting) {
     return {
-      title: t("Email confirmed"),
-      helperText: t("You're all set. Taking you to your account now."),
+      title: translate("Email confirmed"),
+      helperText: "You're all set. Taking you to your account now.",
     };
   }
 
   if (isPending) {
     return {
-      title: t("Verify email"),
-      helperText: t("Checking your email confirmation."),
+      title: translate("Verify email"),
+      helperText: "Checking your email confirmation.",
     };
   }
 
@@ -102,21 +103,22 @@ function getVerifyEmailPageCopy({
   // unverified hosted user would be bounced straight back by the verification
   // gate.
   return {
-    title: t("Verify your email"),
+    title: translate("Verify your email"),
     helperText: email
-      ? t("Click the link we sent to {email} to verify your email.", { email })
-      : t("Check your inbox for the link to verify your email."),
+      ? `Click the link we sent to ${email} to verify your email.`
+      : translate("Check your inbox for the link to verify your email."),
   };
 }
 
 function VerifyEmailPage() {
   const { t } = useLocale();
+
   const search = Route.useSearch();
   const redirectTo = normalizeAuthRedirect(search.redirect);
   const isHostedMode = isHostedClientAuthMode();
   const { data: session, isPending } = useSession();
   const bypassEmailVerification = isEmailVerificationBypassed();
-  const errorMessage = getVerificationErrorMessage(search.error, t);
+  const errorMessage = getVerificationErrorMessage(search.error);
   const verificationIssueType = search.error
     ? verificationIssueSchema.parse(search.error)
     : null;
@@ -133,7 +135,6 @@ function VerifyEmailPage() {
     isPending,
     isRedirecting,
     email,
-    t,
   });
 
   useEffect(() => {
@@ -186,9 +187,7 @@ function VerifyEmailPage() {
         callbackURL: callbackURL.toString(),
       });
       if (result.error) {
-        toast.error(
-          result.error.message || t("We couldn't send another email."),
-        );
+        toast.error(result.error.message || "We couldn't send another email.");
         return;
       }
       captureClientEvent("auth:verification_resend");
@@ -212,7 +211,7 @@ function VerifyEmailPage() {
             <Link
               to="/sign-in"
               search={getSignInSearch(redirectTo)}
-              className="text-base-content/50 hover:text-base-content transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               {t("Back to sign in")}
             </Link>
@@ -220,31 +219,21 @@ function VerifyEmailPage() {
         }
       >
         {!isHostedMode ? null : errorMessage ? (
-          <div className="space-y-3">
-            <div className="alert alert-error">
-              <span>{errorMessage}</span>
-            </div>
-            <Link
-              to="/sign-in"
-              search={getSignInSearch(redirectTo)}
-              className="btn btn-soft w-full"
-            >
-              {t("Back to sign in")}
-            </Link>
-          </div>
+          <p className="text-sm text-destructive">{errorMessage}</p>
         ) : isPending || isRedirecting ? (
           <div className="flex justify-center py-4">
-            <span className="loading loading-spinner loading-md" />
+            <Spinner />
           </div>
         ) : email ? (
-          <button
+          <Button
             type="button"
-            className="btn btn-soft w-full"
+            variant="secondary"
+            className="w-full"
+            pending={isResending}
             onClick={() => void handleResend()}
-            disabled={isResending}
           >
             {isResending ? t("Sending email...") : t("Resend email")}
-          </button>
+          </Button>
         ) : null}
       </AuthPageCard>
     </AuthPageShell>

@@ -1,10 +1,19 @@
-import { useState, type ComponentProps } from "react";
-import { createColumnHelper, type Table } from "@tanstack/react-table";
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
+import { translate } from "@/plugins/locale";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, Sparkles } from "lucide-react";
-import { AppDataTable } from "@/client/components/table/AppDataTable";
 import { SortableHeader } from "@/client/components/table/SortableHeader";
-import { HeaderHelpLabel } from "@/client/features/keywords/components";
+import { HelpLabel } from "@/client/components/HelpLabel";
+import { ExpandableList } from "@/client/components/ExpandableList";
+import { Badge } from "@/client/components/ui/badge";
+import { buttonVariants } from "@/client/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
 import { numericNullsLast } from "@/client/components/table/nullSafeSort";
 import {
   formatCount,
@@ -13,7 +22,6 @@ import {
 } from "@/client/features/ai-search/platformLabels";
 import { formatUrlForDisplay } from "@/client/components/table/url";
 import type { BrandLookupResult } from "@/types/schemas/ai-search";
-import { useLocale } from "@/plugins/client/context";
 
 type TopPageRow = BrandLookupResult["topPages"][number];
 type TopQueryRow = BrandLookupResult["topQueries"][number];
@@ -30,14 +38,11 @@ function HeaderWithHelp({
   const { t } = useLocale();
 
   return (
-    <span className="uppercase tracking-wider">
-      <HeaderHelpLabel label={t(label)} helpText={t(helpText)} />
+    <span className="tracking-wider uppercase">
+      <HelpLabel label={t(label)} helpText={helpText} />
     </span>
   );
 }
-
-// prettier-ignore
-function LocalizedSortableHeader(props: ComponentProps<typeof SortableHeader>) { const { t } = useLocale(); return <SortableHeader {...props} label={t(props.label)} helpText={props.helpText ? t(props.helpText) : undefined} />; }
 
 const PLATFORM_HELP =
   "Which AI surface produced the answer — ChatGPT or Google AI Overview.";
@@ -49,7 +54,7 @@ const PLATFORM_HELP =
  */
 function PlatformCell({ platform }: { platform: PlatformKey }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs text-base-content/70">
+    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
       <span
         className={`size-1.5 rounded-full ${PLATFORM_DOT_CLASS[platform]}`}
       />
@@ -92,6 +97,7 @@ function PageUrlCell({
   targetDomain: string | null;
 }) {
   const { t } = useLocale();
+
   const path = urlPath(row.url);
   const isOwn =
     targetDomain != null &&
@@ -106,18 +112,14 @@ function PageUrlCell({
       className="group block max-w-xl"
     >
       <span className="inline-flex items-center gap-1.5">
-        <span className="font-medium text-base-content group-hover:underline">
+        <span className="font-medium text-foreground group-hover:underline">
           {row.domain ?? formatUrlForDisplay(row.url)}
         </span>
-        {isOwn ? (
-          <span className="badge badge-primary badge-xs border-0">
-            {t("You")}
-          </span>
-        ) : null}
-        <ExternalLink className="size-3 shrink-0 text-base-content/40" />
+        {isOwn ? <Badge size="sm">{t("You")}</Badge> : null}
+        <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
       </span>
       {path ? (
-        <span className="block truncate text-xs text-base-content/50">
+        <span className="block truncate text-xs text-muted-foreground">
           {path}
         </span>
       ) : null}
@@ -139,92 +141,43 @@ function KeywordsCell({
   projectId: string;
   brand: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const { t } = useLocale();
 
   if (keywords.length === 0) {
-    return <span className="text-base-content/40">—</span>;
+    return <span className="text-muted-foreground">—</span>;
   }
 
-  const visible = expanded ? keywords : keywords.slice(0, 3);
-  const remaining = keywords.length - visible.length;
-
   return (
-    <div className="space-y-1">
-      <ul className="space-y-0.5">
-        {visible.map((keyword) => (
-          <li key={keyword.question}>
-            <Link
-              to="/p/$projectId/prompt-explorer"
-              params={{ projectId }}
-              search={{ q: keyword.question, hb: brand || undefined }}
-              className="group/kw inline-flex items-baseline gap-2 text-xs"
-              title={t("Run this prompt in Prompt Explorer")}
+    <ExpandableList
+      items={keywords}
+      className="space-y-0.5"
+      renderItem={(keyword) => (
+        <li key={keyword.question}>
+          <Link
+            to="/p/$projectId/prompt-explorer"
+            params={{ projectId }}
+            search={{ q: keyword.question, hb: brand || undefined }}
+            className="group/kw inline-flex items-baseline gap-2 text-xs"
+            title={t("Run this prompt in Prompt Explorer")}
+          >
+            <span className="text-foreground/80 group-hover/kw:underline">
+              {keyword.question}
+            </span>
+            <span
+              className="shrink-0 text-muted-foreground tabular-nums"
+              title={t("Prompt volume in the fetched sample")}
             >
-              <span className="text-base-content/80 group-hover/kw:underline">
-                {keyword.question}
-              </span>
-              <span
-                className="shrink-0 tabular-nums text-base-content/40"
-                title={t("Prompt volume in the fetched sample")}
-              >
-                {formatCount(keyword.aiSearchVolume)} {t("vol.")}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      {keywords.length > 3 ? (
-        <button
-          type="button"
-          onClick={() => setExpanded((current) => !current)}
-          className="text-xs text-base-content/50 hover:text-base-content"
-        >
-          {expanded ? t("Show less") : t("+{count} more", { count: remaining })}
-        </button>
-      ) : null}
-    </div>
+              {formatCount(keyword.aiSearchVolume)} {t("vol.")}
+            </span>
+          </Link>
+        </li>
+      )}
+    />
   );
 }
 
-function QueryCell({ row }: { row: TopQueryRow }) {
-  const { t } = useLocale();
-  return (
-    <>
-      <p className="break-words font-medium">{row.question}</p>
-      {row.brandsMentioned.length > 0 ? (
-        <p className="mt-0.5 text-xs text-base-content/50">
-          {t("Brands:")} {row.brandsMentioned.slice(0, 5).join(", ")}
-        </p>
-      ) : null}
-    </>
-  );
-}
-
-function PromptActionCell({
-  question,
-  projectId,
-  brand,
-}: {
-  question: string;
-  projectId: string;
-  brand: string;
-}) {
-  const { t } = useLocale();
-  const actionLabel = t("Run this prompt in Prompt Explorer");
-  return (
-    <Link
-      to="/p/$projectId/prompt-explorer"
-      params={{ projectId }}
-      search={{ q: question, hb: brand || undefined }}
-      aria-label={actionLabel}
-      className="btn btn-ghost btn-xs gap-1 tooltip tooltip-left opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
-      data-tip={actionLabel}
-    >
-      <Sparkles className="size-3.5" />
-    </Link>
-  );
-}
+const TEXT_CELL = "min-w-80 max-w-2xl align-top";
+const NUMBER_CELL = "whitespace-nowrap text-right align-top";
 
 const pagesHelper = createColumnHelper<TopPageRow>();
 const queriesHelper = createColumnHelper<TopQueryRow>();
@@ -243,9 +196,10 @@ export function buildTopPagesColumns({
   return [
     pagesHelper.accessor("url", {
       id: "url",
+      meta: { cellClassName: TEXT_CELL },
       header: () => (
         <HeaderWithHelp
-          label="Source"
+          label={translate("Source")}
           helpText="A page cited as a source in AI answers where the searched brand or domain appears."
         />
       ),
@@ -258,8 +212,12 @@ export function buildTopPagesColumns({
       ? [
           pagesHelper.accessor("platform", {
             id: "platform",
+            meta: { cellClassName: "whitespace-nowrap align-top" },
             header: () => (
-              <HeaderWithHelp label="Platform" helpText={PLATFORM_HELP} />
+              <HeaderWithHelp
+                label={translate("Platform")}
+                helpText={PLATFORM_HELP}
+              />
             ),
             enableSorting: false,
             cell: ({ getValue }) => <PlatformCell platform={getValue()} />,
@@ -268,9 +226,10 @@ export function buildTopPagesColumns({
       : []),
     pagesHelper.display({
       id: "keywords",
+      meta: { cellClassName: "max-w-lg align-top" },
       header: () => (
         <HeaderWithHelp
-          label="Cited for"
+          label={translate("Cited for")}
           helpText="Example prompts from the fetched sample where this page was cited."
         />
       ),
@@ -284,10 +243,11 @@ export function buildTopPagesColumns({
     }),
     pagesHelper.accessor("capturedVolume", {
       id: "capturedVolume",
+      meta: { cellClassName: NUMBER_CELL },
       header: ({ column }) => (
-        <LocalizedSortableHeader
+        <SortableHeader
           column={column}
-          label="Source vol."
+          label={translate("Source vol.")}
           helpText="Estimated monthly prompt demand DataForSEO reports for this cited source, across prompts where the searched brand or domain appears."
           align="right"
         />
@@ -313,21 +273,36 @@ export function buildTopQueriesColumns({
   return [
     queriesHelper.accessor("question", {
       id: "question",
+      meta: { cellClassName: TEXT_CELL },
       header: () => (
         <HeaderWithHelp
-          label="Query"
+          label={translate("Query")}
           helpText="A sampled user prompt whose AI answer cited the searched brand or domain in its text or sources. The prompt itself may not name the brand."
         />
       ),
       enableSorting: false,
-      cell: ({ row }) => <QueryCell row={row.original} />,
+      cell: ({ row }) => (
+        <>
+          <p className="break-words font-medium">{row.original.question}</p>
+          {row.original.brandsMentioned.length > 0 ? (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {translate("Brands:")}
+              {row.original.brandsMentioned.slice(0, 5).join(", ")}
+            </p>
+          ) : null}
+        </>
+      ),
     }),
     ...(showPlatform
       ? [
           queriesHelper.accessor("platform", {
             id: "platform",
+            meta: { cellClassName: "whitespace-nowrap align-top" },
             header: () => (
-              <HeaderWithHelp label="Platform" helpText={PLATFORM_HELP} />
+              <HeaderWithHelp
+                label={translate("Platform")}
+                helpText={PLATFORM_HELP}
+              />
             ),
             enableSorting: false,
             cell: ({ getValue }) => <PlatformCell platform={getValue()} />,
@@ -336,10 +311,11 @@ export function buildTopQueriesColumns({
       : []),
     queriesHelper.accessor("aiSearchVolume", {
       id: "aiSearchVolume",
+      meta: { cellClassName: NUMBER_CELL },
       header: ({ column }) => (
-        <LocalizedSortableHeader
+        <SortableHeader
           column={column}
-          label="AI search vol."
+          label={translate("AI search vol.")}
           helpText="Estimated monthly search demand for this prompt's topic. This is prompt demand, not the number of brand mentions."
           align="right"
         />
@@ -352,92 +328,33 @@ export function buildTopQueriesColumns({
     }),
     queriesHelper.display({
       id: "action",
-      header: () => <span className="sr-only">{useLocale().t("Actions")}</span>,
+      header: () => <span className="sr-only">{translate("Actions")}</span>,
       meta: { cellClassName: "w-px whitespace-nowrap text-right align-top" },
       cell: ({ row }) => (
-        <PromptActionCell
-          question={row.original.question}
-          projectId={projectId}
-          brand={brand}
-        />
+        <Tooltip>
+          <TooltipTrigger
+            delay={150}
+            render={
+              <Link
+                to="/p/$projectId/prompt-explorer"
+                params={{ projectId }}
+                search={{ q: row.original.question, hb: brand || undefined }}
+                className={buttonVariants({
+                  variant: "ghost",
+                  size: "icon-xs",
+                  className: "text-muted-foreground",
+                })}
+                aria-label={translate("Run this prompt in Prompt Explorer")}
+              />
+            }
+          >
+            <Sparkles />
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            {translate("Run this prompt in Prompt Explorer")}
+          </TooltipContent>
+        </Tooltip>
       ),
     }),
   ];
-}
-
-export function TopPagesTable({
-  table,
-  emptyMessage = "No cited sources to show.",
-}: {
-  table: Table<TopPageRow>;
-  emptyMessage?: string;
-}) {
-  const { t } = useLocale();
-  if (table.getRowModel().rows.length === 0) {
-    return (
-      <p className="p-6 text-center text-sm text-base-content/60">
-        {t(emptyMessage)}
-      </p>
-    );
-  }
-
-  return <BrandLookupTable table={table} urlLikeColumnId="url" />;
-}
-
-export function TopQueriesTable({
-  table,
-  emptyMessage = "No matching queries found.",
-}: {
-  table: Table<TopQueryRow>;
-  emptyMessage?: string;
-}) {
-  const { t } = useLocale();
-  if (table.getRowModel().rows.length === 0) {
-    return (
-      <p className="p-6 text-center text-sm text-base-content/60">
-        {t(emptyMessage)}
-      </p>
-    );
-  }
-
-  return <BrandLookupTable table={table} urlLikeColumnId="question" />;
-}
-
-function BrandLookupTable<T>({
-  table,
-  urlLikeColumnId,
-}: {
-  table: Table<T>;
-  urlLikeColumnId: string;
-}) {
-  return (
-    <AppDataTable
-      table={table}
-      getRowClassName={() => "group transition-colors hover:bg-base-200/40"}
-      getCellClassName={(_, columnId) =>
-        cellClassName(
-          columnId,
-          urlLikeColumnId,
-          table.getColumn(columnId)?.getCanSort() ?? false,
-        )
-      }
-    />
-  );
-}
-
-function cellClassName(
-  columnId: string,
-  urlLikeColumnId: string,
-  isNumeric: boolean,
-): string {
-  if (columnId === urlLikeColumnId) {
-    return "min-w-80 max-w-2xl align-top";
-  }
-  if (columnId === "keywords") {
-    return "max-w-lg align-top";
-  }
-  if (isNumeric) {
-    return "whitespace-nowrap text-right align-top";
-  }
-  return "whitespace-nowrap align-top";
 }

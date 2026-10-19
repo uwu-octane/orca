@@ -1,4 +1,5 @@
-import { useState } from "react";
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import {
   AlertCircle,
   CheckCircle2,
@@ -6,22 +7,28 @@ import {
   Globe,
   XCircle,
 } from "lucide-react";
+import { cn } from "cn";
 import { MarkdownAnswer } from "@/client/features/ai-search/components/MarkdownAnswer";
+import { getModelAccent } from "@/client/features/ai-search/platformLabels";
 import {
   formatModelLabel,
-  getModelAccent,
-} from "@/client/features/ai-search/platformLabels";
+  formatCountryLabel,
+} from "@/shared/prompt-explorer-labels";
 import { formatUrlForDisplay } from "@/client/components/table/url";
+import { ExpandableList } from "@/client/components/ExpandableList";
+import { Badge } from "@/client/components/ui/badge";
 import type {
   PromptExplorerCitation,
   PromptExplorerModelResult,
   PromptExplorerResult,
 } from "@/types/schemas/ai-search";
-import { useLocale } from "@/plugins/client/context";
 
 type Props = {
   result: PromptExplorerResult;
 };
+
+const ARTICLE_CLASS =
+  "overflow-hidden rounded-r-lg border border-l-4 border-border bg-card";
 
 export function PromptExplorerResults({ result }: Props) {
   return (
@@ -44,25 +51,30 @@ function ModelResultCard({
   modelResult: PromptExplorerModelResult;
   highlightBrand: string | null;
 }) {
-  const accent = getModelAccent(modelResult.model);
   const { t } = useLocale();
 
+  const accent = getModelAccent(modelResult.model);
+
   if (modelResult.status === "error") {
+    const skipped = modelResult.errorCode === "UNSUPPORTED_COUNTRY";
     return (
-      <article
-        className={`overflow-hidden rounded-r-lg border border-base-300 border-l-4 ${accent.border} bg-base-100`}
-      >
+      <article className={cn(ARTICLE_CLASS, accent.border)}>
         <ModelHeader
           model={modelResult.model}
           modelName={null}
           tokens={null}
-          webSearch={false}
+          webSearch={null}
           brandMentioned={null}
           highlightBrand={null}
-          status="error"
+          status={skipped ? "skipped" : "error"}
         />
-        <div className="flex items-start gap-2 px-5 py-4 text-sm text-error">
-          <AlertCircle className="mt-0.5 size-4 shrink-0" />
+        <div
+          className={cn(
+            "flex items-start gap-2 px-5 py-4 text-sm",
+            skipped ? "text-muted-foreground" : "text-destructive",
+          )}
+        >
+          {!skipped ? <AlertCircle className="mt-0.5 size-4 shrink-0" /> : null}
           <span>{modelResult.message}</span>
         </div>
       </article>
@@ -70,9 +82,7 @@ function ModelResultCard({
   }
 
   return (
-    <article
-      className={`overflow-hidden rounded-r-lg border border-base-300 border-l-4 ${accent.border} bg-base-100`}
-    >
+    <article className={cn(ARTICLE_CLASS, accent.border)}>
       <ModelHeader
         model={modelResult.model}
         modelName={modelResult.modelName}
@@ -83,6 +93,11 @@ function ModelResultCard({
         status="success"
       />
 
+      <p className="px-5 pt-3 text-xs text-muted-foreground">
+        {modelResult.webSearchCountryCode
+          ? `Country hint sent: ${formatCountryLabel(modelResult.webSearchCountryCode)}. This is not a verified search location.`
+          : "No country hint sent. Any search uses the provider’s default location."}
+      </p>
       <div className="px-5 py-5">
         <MarkdownAnswer text={modelResult.text} />
       </div>
@@ -95,18 +110,19 @@ function ModelResultCard({
       ) : null}
 
       {modelResult.fanOutQueries.length > 0 ? (
-        <div className="border-t border-base-200 px-5 py-3">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">
+        <div className="border-t border-border px-5 py-3">
+          <p className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
             {t("Related queries the model considered")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {modelResult.fanOutQueries.map((query, index) => (
-              <span
+              <Badge
                 key={`${query}-${index}`}
-                className="rounded-full border border-base-300 px-2.5 py-0.5 text-xs text-base-content/70"
+                variant="outline"
+                className="font-normal text-muted-foreground"
               >
                 {query}
-              </span>
+              </Badge>
             ))}
           </div>
         </div>
@@ -122,30 +138,26 @@ function CitationsList({
   citations: PromptExplorerCitation[];
   highlightBrand: string | null;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const { t } = useLocale();
-
-  const visible = expanded ? citations : citations.slice(0, 3);
-  const remaining = citations.length - visible.length;
-
   return (
-    <div className="border-t border-base-200 bg-base-200/30 px-5 py-3">
-      <p className="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">
-        {t("Cited sources ({count})", { count: citations.length })}
+    <div className="border-t border-border bg-muted/30 px-5 py-3">
+      <p className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+        Cited sources ({citations.length})
       </p>
-      <ul className="space-y-1.5">
-        {visible.map((citation, index) => (
+      <ExpandableList
+        items={citations}
+        className="space-y-1.5"
+        renderItem={(citation, index) => (
           <li
             key={`${citation.url}-${index}`}
             className="flex items-start gap-2 text-sm"
           >
-            <span className="mt-1 size-1 shrink-0 rounded-full bg-base-content/30" />
+            <span className="mt-1 size-1 shrink-0 rounded-full bg-foreground/30" />
             <a
               href={citation.url}
               target="_blank"
               rel="noreferrer"
-              className={`link inline-flex items-start gap-1 ${
-                citation.matchedBrand ? "link-primary font-medium" : ""
+              className={`inline-flex items-start gap-1 underline underline-offset-2 ${
+                citation.matchedBrand ? "font-medium text-primary" : ""
               }`}
             >
               <span className="break-all">
@@ -154,22 +166,11 @@ function CitationsList({
               <ExternalLink className="mt-1 size-3 shrink-0" />
             </a>
             {citation.matchedBrand && highlightBrand ? (
-              <span className="badge badge-primary badge-xs">
-                {highlightBrand}
-              </span>
+              <Badge size="sm">{highlightBrand}</Badge>
             ) : null}
           </li>
-        ))}
-      </ul>
-      {citations.length > 3 ? (
-        <button
-          type="button"
-          onClick={() => setExpanded((current) => !current)}
-          className="mt-1.5 text-xs text-base-content/50 hover:text-base-content"
-        >
-          {expanded ? t("Show less") : t("+{count} more", { count: remaining })}
-        </button>
-      ) : null}
+        )}
+      />
     </div>
   );
 }
@@ -186,38 +187,50 @@ function ModelHeader({
   model: PromptExplorerModelResult["model"];
   modelName: string | null;
   tokens: number | null;
-  webSearch: boolean;
+  /** null = not applicable (error card): render neither web-search state. */
+  webSearch: boolean | null;
   brandMentioned: boolean | null;
   highlightBrand: string | null;
-  status: "success" | "error";
+  status: "success" | "error" | "skipped";
 }) {
-  const accent = getModelAccent(model);
   const { t } = useLocale();
+
+  const accent = getModelAccent(model);
   return (
-    <header className="flex flex-wrap items-center justify-between gap-2 border-b border-base-200 bg-base-200/40 px-5 py-3">
+    <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/40 px-5 py-3">
       <div className="flex flex-wrap items-center gap-2">
         <span className={`size-2 rounded-full ${accent.dot}`} />
         <h3 className="text-sm font-semibold">{formatModelLabel(model)}</h3>
         {modelName ? (
-          <code className="text-xs text-base-content/50">{modelName}</code>
+          <code className="text-xs text-muted-foreground">{modelName}</code>
         ) : null}
         {status === "error" ? (
-          <span className="badge badge-error badge-sm">{t("Error")}</span>
+          <Badge variant="destructive">{t("Error")}</Badge>
+        ) : null}
+        {status === "skipped" ? (
+          <Badge variant="secondary">Skipped</Badge>
         ) : null}
         <BrandMentionBadge
           mentioned={brandMentioned}
           highlightBrand={highlightBrand}
         />
         {webSearch ? (
-          <span className="inline-flex items-center gap-1 text-xs text-base-content/60">
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
             <Globe className="size-3" />
             {t("web search")}
+          </span>
+        ) : webSearch === false ? (
+          // The model chose not to browse for this answer — that's why there
+          // are no cited sources on this card.
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <Globe className="size-3" />
+            no web search
           </span>
         ) : null}
       </div>
       {tokens != null ? (
-        <span className="text-xs tabular-nums text-base-content/50">
-          {tokens.toLocaleString()} {t("tokens")}
+        <span className="text-xs text-muted-foreground tabular-nums">
+          {tokens.toLocaleString()} {"tokens"}
         </span>
       ) : null}
     </header>
@@ -231,20 +244,19 @@ function BrandMentionBadge({
   mentioned: boolean | null;
   highlightBrand: string | null;
 }) {
-  const { t } = useLocale();
   if (mentioned == null || !highlightBrand) return null;
   if (mentioned) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
-        <CheckCircle2 className="size-3" />
+      <Badge variant="success">
+        <CheckCircle2 data-icon="inline-start" />
         {highlightBrand}
-      </span>
+      </Badge>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-base-200 px-2 py-0.5 text-xs text-base-content/60">
-      <XCircle className="size-3" />
-      {t("No {brand}", { brand: highlightBrand })}
-    </span>
+    <Badge variant="secondary" className="font-normal text-muted-foreground">
+      <XCircle data-icon="inline-start" />
+      no {highlightBrand}
+    </Badge>
   );
 }

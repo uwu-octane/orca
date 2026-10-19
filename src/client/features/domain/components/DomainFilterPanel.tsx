@@ -1,3 +1,5 @@
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import {
   useCallback,
   useEffect,
@@ -5,18 +7,17 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { AlertTriangle, RotateCcw } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import {
-  FilterNumberInput,
-  FilterRangeGroup,
-  FilterTextInput,
-} from "@/client/features/domain/components/DomainFilterFields";
-import {
-  debugDomain,
-  useDomainRenderDebug,
-} from "@/client/features/domain/domainDebug";
+  DataTableFilterGroup,
+  DataTableFilterPanel,
+  DataTableRangeFilter,
+} from "@/client/components/table/DataTableToolbar";
+import { Alert, AlertDescription } from "@/client/components/ui/alert";
+import { Badge } from "@/client/components/ui/badge";
+import { Button } from "@/client/components/ui/button";
+import { Input } from "@/client/components/ui/input";
 import { MAX_DATAFORSEO_FILTER_CONDITIONS } from "@/types/schemas/domain";
-import { useLocale } from "@/plugins/client/context";
 
 type FilterValues = Record<string, string>;
 
@@ -34,7 +35,6 @@ type FilterRangeField<TValues extends FilterValues> = {
 };
 
 type Props<TValues extends FilterValues> = {
-  debugName: string;
   activeFilterCount: number;
   appliedFilters: TValues;
   fields: ReadonlyArray<keyof TValues>;
@@ -53,7 +53,6 @@ type Props<TValues extends FilterValues> = {
 };
 
 export function DomainFilterPanel<TValues extends FilterValues>({
-  debugName,
   activeFilterCount,
   appliedFilters,
   fields,
@@ -66,6 +65,7 @@ export function DomainFilterPanel<TValues extends FilterValues>({
   renderExtra,
 }: Props<TValues>) {
   const { t } = useLocale();
+
   const appliedKey = useMemo(
     () => fields.map((key) => appliedFilters[key]).join("|"),
     [appliedFilters, fields],
@@ -88,33 +88,14 @@ export function DomainFilterPanel<TValues extends FilterValues>({
       }),
     [appliedFilters, countConditions, draftFilters, fields, maxConditions],
   );
-  useDomainRenderDebug(debugName, {
-    activeFilterCount,
-    conditionCount: meta.conditionCount,
-    dirtyCount: meta.dirtyCount,
-  });
   const applyFilters = useCallback(() => {
     if (meta.overLimit) return;
-    debugDomain(`${debugName}:apply`, {
-      conditionCount: meta.conditionCount,
-      dirtyCount: meta.dirtyCount,
-      draftFilters,
-    });
     onApply(draftFilters);
-  }, [
-    debugName,
-    draftFilters,
-    meta.conditionCount,
-    meta.dirtyCount,
-    meta.overLimit,
-    onApply,
-  ]);
+  }, [draftFilters, meta.overLimit, onApply]);
   const cancelFilterEdits = useCallback(() => {
-    debugDomain(`${debugName}:cancel`);
     setDraftFilters(appliedFilters);
-  }, [appliedFilters, debugName]);
+  }, [appliedFilters]);
   const resetFilters = useCallback(() => {
-    debugDomain(`${debugName}:clear`);
     // Also clear unapplied draft edits — when the applied filters are already
     // empty, the applied-sync effect won't fire (appliedKey is unchanged).
     setDraftFilters((current) => {
@@ -123,7 +104,7 @@ export function DomainFilterPanel<TValues extends FilterValues>({
       return next;
     });
     onClear();
-  }, [debugName, fields, onClear]);
+  }, [fields, onClear]);
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key !== "Enter") return;
     // Let buttons (Cancel, toggles) handle their own Enter activation.
@@ -132,131 +113,108 @@ export function DomainFilterPanel<TValues extends FilterValues>({
     event.preventDefault();
     applyFilters();
   };
-  const handleValueChange = useCallback(
-    (key: keyof TValues, value: string) => {
-      debugDomain(`${debugName}:draft-change`, {
-        field: String(key),
-        valueLength: value.length,
-      });
-      setDraftFilters((current) => ({ ...current, [key]: value }));
-    },
-    [debugName],
-  );
+  const handleValueChange = useCallback((key: keyof TValues, value: string) => {
+    setDraftFilters((current) => ({ ...current, [key]: value }));
+  }, []);
 
   return (
-    <div
-      className="border-b border-base-300 bg-gradient-to-b from-base-100 to-base-200/30 px-4 py-3 space-y-3"
-      onKeyDown={handleKeyDown}
+    <DataTableFilterPanel
+      activeCount={activeFilterCount}
+      onReset={resetFilters}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold">{t("Refine table results")}</p>
-          {activeFilterCount > 0 ? (
-            <span className="badge badge-xs badge-primary border-0 text-primary-content">
-              {t("{count} active", { count: activeFilterCount })}
-            </span>
-          ) : null}
-          {meta.dirtyCount > 0 ? (
-            <span className="badge badge-xs badge-warning border-0">
-              {t("{count} unapplied", { count: meta.dirtyCount })}
-            </span>
-          ) : null}
+      <div className="space-y-3" onKeyDown={handleKeyDown}>
+        <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+          {textFields.map((field) => (
+            <DataTableFilterGroup
+              key={String(field.key)}
+              label={t(field.label)}
+            >
+              <Input
+                className="h-7"
+                aria-label={t(field.label)}
+                placeholder={t(field.placeholder)}
+                value={draftFilters[field.key]}
+                onChange={(event) =>
+                  handleValueChange(field.key, event.target.value)
+                }
+              />
+            </DataTableFilterGroup>
+          ))}
         </div>
-        <button
-          type="button"
-          className="btn btn-xs btn-ghost gap-1"
-          onClick={resetFilters}
-          disabled={activeFilterCount === 0 && !meta.isDirty}
-        >
-          <RotateCcw className="size-3" />
-          {t("Clear all")}
-        </button>
-      </div>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        {textFields.map((field) => (
-          <FilterTextInput
-            key={String(field.key)}
-            label={t(field.label)}
-            placeholder={t(field.placeholder)}
-            value={draftFilters[field.key]}
-            onChange={(value) => handleValueChange(field.key, value)}
-          />
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {rangeFields.map((field) => (
-          <FilterRangeGroup key={String(field.minKey)} title={t(field.title)}>
-            <FilterNumberInput
-              value={draftFilters[field.minKey]}
-              onChange={(value) => handleValueChange(field.minKey, value)}
-              placeholder={t("Min")}
-              step={field.step}
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {rangeFields.map((field) => (
+            <DataTableRangeFilter
+              key={String(field.minKey)}
+              label={t(field.title)}
+              min={{
+                step: field.step,
+                value: draftFilters[field.minKey],
+                onChange: (event) =>
+                  handleValueChange(field.minKey, event.target.value),
+              }}
+              max={{
+                step: field.step,
+                value: draftFilters[field.maxKey],
+                onChange: (event) =>
+                  handleValueChange(field.maxKey, event.target.value),
+              }}
             />
-            <FilterNumberInput
-              value={draftFilters[field.maxKey]}
-              onChange={(value) => handleValueChange(field.maxKey, value)}
-              placeholder={t("Max")}
-              step={field.step}
-            />
-          </FilterRangeGroup>
-        ))}
-      </div>
-
-      {renderExtra ? renderExtra(draftFilters, handleValueChange) : null}
-
-      {meta.overLimit ? (
-        <div className="alert alert-warning py-2 text-xs">
-          <AlertTriangle className="size-4 shrink-0" />
-          <span>
-            {t(
-              "Too many filter conditions ({count} of {max} max). Remove some terms or ranges before applying.",
-              { count: meta.conditionCount, max: maxConditions },
-            )}
-          </span>
+          ))}
         </div>
-      ) : null}
-      <div className="flex items-center justify-between gap-2 pt-1">
-        <span className="text-xs text-base-content/50 tabular-nums">
-          {t("{count} / {max} conditions", {
-            count: meta.conditionCount,
-            max: maxConditions,
-          })}
-        </span>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="btn btn-sm btn-ghost"
-            onClick={cancelFilterEdits}
-            disabled={!meta.isDirty}
-          >
-            {t("Cancel")}
-          </button>
-          <button
-            type="button"
-            className="btn btn-sm btn-primary"
-            onClick={applyFilters}
-            disabled={!meta.isDirty || meta.overLimit}
-            title={
-              meta.overLimit
-                ? t(
-                    "This scope leaves room for at most {max} filter conditions per request",
-                    { max: maxConditions },
-                  )
-                : undefined
-            }
-          >
-            {t("Apply filters")}
-            {meta.isDirty ? (
-              <span className="badge badge-xs ml-1 border-0 bg-primary-content/20">
-                {meta.dirtyCount}
-              </span>
+
+        {renderExtra ? renderExtra(draftFilters, handleValueChange) : null}
+
+        {meta.overLimit ? (
+          <Alert variant="warning">
+            <AlertTriangle />
+            <AlertDescription className="text-foreground">
+              Too many filter conditions ({meta.conditionCount} of{" "}
+              {maxConditions} max). Remove some terms or ranges before applying.
+            </AlertDescription>
+          </Alert>
+        ) : null}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {meta.conditionCount} / {maxConditions} conditions
+            </span>
+            {meta.dirtyCount > 0 ? (
+              <Badge size="sm" variant="warning">
+                {meta.dirtyCount} unapplied
+              </Badge>
             ) : null}
-          </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={cancelFilterEdits}
+              disabled={!meta.isDirty}
+            >
+              {t("Cancel")}
+            </Button>
+            <Button
+              size="sm"
+              onClick={applyFilters}
+              disabled={!meta.isDirty || meta.overLimit}
+              title={
+                meta.overLimit
+                  ? `This scope leaves room for at most ${maxConditions} filter conditions per request`
+                  : undefined
+              }
+            >
+              {t("Apply filters")}
+              {meta.isDirty ? (
+                <Badge size="sm" variant="secondary">
+                  {meta.dirtyCount}
+                </Badge>
+              ) : null}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </DataTableFilterPanel>
   );
 }
 

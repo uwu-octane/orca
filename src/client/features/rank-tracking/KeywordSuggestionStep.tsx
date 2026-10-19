@@ -1,3 +1,6 @@
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
+import { translate } from "@/plugins/locale";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -5,20 +8,25 @@ import {
   type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table";
-import { Loader2, AlertCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { getDomainKeywordSuggestions } from "@/serverFunctions/domain";
 import { addTrackingKeywords } from "@/serverFunctions/rank-tracking";
 import { isLabsLocationCode } from "@/client/features/keywords/locations";
-import { getStandardErrorMessage } from "@/client/lib/error-messages";
-// FORK: locale plugin — toasts translate via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
+import { Spinner } from "@/client/components/Spinner";
 import {
-  AppDataTable,
+  DataTable,
   makeSelectionColumn,
-  useAppTable,
-} from "@/client/components/table/AppDataTable";
-import { SortableHeader } from "./RankTrackingColumns";
+  useDataTable,
+} from "@/client/components/table/DataTable";
+import { Button } from "@/client/components/ui/button";
+import {
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/client/components/ui/dialog";
+import { SortableHeader } from "@/client/components/table/SortableHeader";
+import { RANK_TRACKING_HEADER_CLASS } from "./RankTrackingColumns";
 import {
   applyShiftRangeSelection,
   type SelectionAnchor,
@@ -40,9 +48,9 @@ const baseColumns: ColumnDef<SuggestedKeyword>[] = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label="Keyword"
-        id="keyword"
-        tooltip="The search term this domain ranks for"
+        label={translate("Keyword")}
+        title={translate("The search term this domain ranks for")}
+        className={RANK_TRACKING_HEADER_CLASS}
       />
     ),
     cell: ({ getValue }) => (
@@ -56,9 +64,9 @@ const baseColumns: ColumnDef<SuggestedKeyword>[] = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label="Position"
-        id="position"
-        tooltip="Current Google ranking position"
+        label={translate("Position")}
+        title={translate("Current Google ranking position")}
+        className={RANK_TRACKING_HEADER_CLASS}
       />
     ),
     cell: ({ getValue }) => {
@@ -66,7 +74,7 @@ const baseColumns: ColumnDef<SuggestedKeyword>[] = [
       return pos != null ? (
         pos
       ) : (
-        <span className="text-base-content/40">—</span>
+        <span className="text-muted-foreground">—</span>
       );
     },
     sortingFn: (rowA, rowB) => {
@@ -81,9 +89,9 @@ const baseColumns: ColumnDef<SuggestedKeyword>[] = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label="Volume"
-        id="searchVolume"
-        tooltip="Monthly search volume"
+        label={translate("Volume")}
+        title={translate("Monthly search volume")}
+        className={RANK_TRACKING_HEADER_CLASS}
       />
     ),
     cell: ({ getValue }) => {
@@ -91,7 +99,7 @@ const baseColumns: ColumnDef<SuggestedKeyword>[] = [
       return vol != null ? (
         vol.toLocaleString()
       ) : (
-        <span className="text-base-content/40">—</span>
+        <span className="text-muted-foreground">—</span>
       );
     },
     sortingFn: (rowA, rowB) => {
@@ -106,9 +114,9 @@ const baseColumns: ColumnDef<SuggestedKeyword>[] = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label="Traffic"
-        id="traffic"
-        tooltip="Estimated monthly organic traffic"
+        label={translate("Traffic")}
+        title={translate("Estimated monthly organic traffic")}
+        className={RANK_TRACKING_HEADER_CLASS}
       />
     ),
     cell: ({ getValue }) => {
@@ -116,7 +124,7 @@ const baseColumns: ColumnDef<SuggestedKeyword>[] = [
       return traffic != null ? (
         Math.round(traffic).toLocaleString()
       ) : (
-        <span className="text-base-content/40">—</span>
+        <span className="text-muted-foreground">—</span>
       );
     },
     sortingFn: (rowA, rowB) => {
@@ -145,6 +153,7 @@ export function KeywordSuggestionStep({
   onClose,
 }: Props) {
   const { t } = useLocale();
+
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [hasInitialized, setHasInitialized] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([
@@ -195,7 +204,7 @@ export function KeywordSuggestionStep({
     }
   }, [suggestionsQuery.data, hasInitialized]);
 
-  const table = useAppTable({
+  const table = useDataTable({
     data,
     columns,
     state: { rowSelection, sorting },
@@ -213,15 +222,8 @@ export function KeywordSuggestionStep({
     mutationFn: (keywords: string[]) =>
       addTrackingKeywords({ data: { projectId, configId, keywords } }),
     onSuccess: (result) => {
-      toast.success(
-        t("Added {count} keywords for tracking", { count: result.added }),
-      );
+      toast.success(`Added ${result.added} keywords for tracking`);
       onDone(configId);
-    },
-    onError: (error) => {
-      toast.error(
-        getStandardErrorMessage(error, t("Failed to add keywords"), t),
-      );
     },
   });
 
@@ -234,144 +236,115 @@ export function KeywordSuggestionStep({
     }
   };
 
-  const sectionHeader = (title: string) => (
-    <div className="flex items-center justify-between">
-      <h2 id="keyword-suggestions-title" className="text-lg font-semibold">
-        {title}
-      </h2>
-      <button className="btn btn-ghost btn-sm btn-square" onClick={onClose}>
-        <X className="size-4" />
-      </button>
-    </div>
-  );
-
   if (!labsSupported) {
     return (
       <>
-        {sectionHeader(t("Add keywords manually"))}
-        <div className="flex flex-col items-center justify-center gap-3 py-16">
-          <p className="text-xs text-base-content/50">
-            {t(
-              "Ranked-keyword suggestions aren't available for this country. Continue and add the keywords you want to track manually.",
-            )}
-          </p>
-          <button className="btn btn-primary btn-sm mt-2" onClick={onClose}>
-            {t("Continue")}
-          </button>
-        </div>
+        <StepHeader
+          title={t("Add keywords manually")}
+          description={t(
+            "Ranked-keyword suggestions aren't available for this country. Continue and add the keywords you want to track manually.",
+          )}
+        />
+        <DialogFooter>
+          <Button onClick={onClose}>{t("Continue")}</Button>
+        </DialogFooter>
       </>
     );
   }
 
-  // Loading state
   if (suggestionsQuery.isLoading) {
     return (
       <>
-        {sectionHeader(t("Finding your top keywords..."))}
-        <div className="flex flex-col items-center justify-center gap-3 py-16">
-          <Loader2 className="size-8 animate-spin text-primary" />
-          <p className="text-xs text-base-content/50">
-            {t("This usually takes a few seconds")}
-          </p>
+        <StepHeader title={t("Finding your top keywords...")} />
+        <div className="flex flex-col items-center justify-center py-16">
+          <Spinner label={t("This usually takes a few seconds")} />
         </div>
       </>
     );
   }
 
-  // Error state
   if (suggestionsQuery.isError) {
     return (
       <>
-        {sectionHeader(t("Couldn't fetch keywords"))}
-        <div className="flex flex-col items-center justify-center gap-3 py-16">
-          <AlertCircle className="size-8 text-error" />
-          <p className="text-xs text-base-content/50">
-            {t("You can skip this step and add keywords manually later.")}
-          </p>
-          <div className="flex gap-2 mt-2">
-            <button className="btn btn-primary btn-sm" onClick={onClose}>
-              {t("Skip")}
-            </button>
-          </div>
-        </div>
+        <StepHeader
+          title={t("Couldn't fetch keywords")}
+          description="You can skip this step and add keywords manually later."
+        />
+        <DialogFooter>
+          <Button onClick={onClose}>{t("Skip")}</Button>
+        </DialogFooter>
       </>
     );
   }
 
-  // Empty state
   if (data.length === 0) {
     return (
       <>
-        {sectionHeader(t("No rankings found"))}
-        <div className="flex flex-col items-center justify-center gap-3 py-16">
-          <p className="text-xs text-base-content/50">
-            {t(
-              "We couldn't find any keywords {domain} currently ranks for. You can add keywords manually.",
-              { domain },
-            )}
-          </p>
-          <button className="btn btn-primary btn-sm mt-2" onClick={onClose}>
-            {t("Skip")}
-          </button>
-        </div>
+        <StepHeader
+          title={t("No rankings found")}
+          description={`We couldn't find any keywords ${domain} currently ranks for. You can add keywords manually.`}
+        />
+        <DialogFooter>
+          <Button onClick={onClose}>{t("Skip")}</Button>
+        </DialogFooter>
       </>
     );
   }
 
-  // Data loaded
   return (
-    <div className="flex flex-col gap-3">
-      {sectionHeader(t("Choose keywords to track"))}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-base-content/60">
-          {t("We found {count} keywords {domain} ranks for.", {
-            count: data.length,
-            domain,
-          })}
-        </p>
-      </div>
-
-      <AppDataTable
-        table={table}
-        className="table table-xs table-pin-rows w-full"
-        wrapperClassName="overflow-y-auto max-h-[400px] border border-base-300 rounded-lg"
-        stickyHeader
-        getRowProps={(row) => ({
-          className: "hover:bg-base-200/50 cursor-pointer",
-          onClick: (event) => {
-            if (applyShiftRangeSelection(event, row, table, selectAnchorRef)) {
-              return;
-            }
-
-            row.toggleSelected();
-          },
-        })}
+    <>
+      <StepHeader
+        title={t("Choose keywords to track")}
+        description={`We found ${data.length} keywords ${domain} ranks for.`}
       />
 
-      <div className="flex items-center justify-between gap-3 pt-1">
-        <p className="text-xs text-base-content/60">
-          {t("{count} of {total} selected", {
-            count: selectedCount,
-            total: data.length,
-          })}
+      <DataTable
+        table={table}
+        empty={{ title: "No keywords" }}
+        scrollClassName="max-h-[400px]"
+        onRowClick={(row, event) => {
+          if (applyShiftRangeSelection(event, row, table, selectAnchorRef)) {
+            return;
+          }
+          row.toggleSelected();
+        }}
+      />
+
+      <DialogFooter className="items-center sm:justify-between">
+        <p className="text-xs text-muted-foreground">
+          {selectedCount} of {data.length} {"selected"}
         </p>
         <div className="flex items-center gap-2">
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>
+          <Button variant="ghost" onClick={onClose}>
             {t("Skip")}
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
+          </Button>
+          <Button
             onClick={handleAdd}
-            disabled={addMutation.isPending || selectedCount === 0}
+            pending={addMutation.isPending}
+            disabled={selectedCount === 0}
           >
-            {addMutation.isPending && (
-              <Loader2 className="size-3.5 animate-spin" />
-            )}
-            {t(selectedCount !== 1 ? "Save Keywords" : "Save Keyword")}
-          </button>
+            {t("Save Keyword")}
+            {selectedCount !== 1 ? "s" : ""}
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogFooter>
+    </>
+  );
+}
+
+function StepHeader({
+  title,
+  description,
+}: {
+  title: string;
+  description?: string;
+}) {
+  return (
+    <DialogHeader>
+      <DialogTitle>{title}</DialogTitle>
+      {description ? (
+        <DialogDescription>{description}</DialogDescription>
+      ) : null}
+    </DialogHeader>
   );
 }

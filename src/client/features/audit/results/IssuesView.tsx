@@ -1,27 +1,26 @@
-import { useMemo, useState } from "react";
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
+
+import { useMemo, useState, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
+import { sort } from "remeda";
 import {
   getIssueDescriptor,
   ISSUE_SEVERITY_ORDER,
   type IssueSeverity,
 } from "@/shared/audit-issues";
 import type { AuditResultsData } from "@/client/features/audit/results/types";
-import { useLocale } from "@/plugins/client/context";
+import { SeverityBadge } from "@/client/features/audit/shared";
+import { EmptyState } from "@/client/components/EmptyState";
 
 type AuditIssueRow = AuditResultsData["issues"][number];
 
 const MAX_RENDERED_URLS = 100;
 
-const SEVERITY_DOT: Record<IssueSeverity, string> = {
-  critical: "bg-error",
-  warning: "bg-warning",
-  info: "bg-base-content/30",
-};
-
 const SEVERITY_RULE: Record<IssueSeverity, string> = {
-  critical: "border-l-error/60",
+  critical: "border-l-destructive/60",
   warning: "border-l-warning/60",
-  info: "border-l-base-content/20",
+  info: "border-l-info/60",
 };
 
 const SEVERITY_LABEL: Record<IssueSeverity, string> = {
@@ -69,15 +68,23 @@ function groupIssues(issues: AuditIssueRow[]): IssueGroup[] {
     group.issues.push(issue);
   }
 
-  return Array.from(groups.values()).toSorted(
+  return sort(
+    Array.from(groups.values()),
     (a, b) =>
       ISSUE_SEVERITY_ORDER[a.severity] - ISSUE_SEVERITY_ORDER[b.severity] ||
       b.issues.length - a.issues.length,
   );
 }
 
-export function IssuesView({ issues }: { issues: AuditIssueRow[] }) {
+export function IssuesView({
+  issues,
+  tabs,
+}: {
+  issues: AuditIssueRow[];
+  tabs: ReactNode;
+}) {
   const { t } = useLocale();
+
   const groups = useMemo(() => groupIssues(issues), [issues]);
 
   const sections = useMemo(
@@ -91,24 +98,24 @@ export function IssuesView({ issues }: { issues: AuditIssueRow[] }) {
     [groups],
   );
 
-  if (issues.length === 0) {
-    return (
-      <div className="py-10 text-center text-base-content/60">
-        <p className="font-medium">{t("No issues recorded for this audit.")}</p>
-        <p className="text-sm mt-1">
-          {t(
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      {tabs}
+      {issues.length === 0 ? (
+        <EmptyState
+          variant="plain"
+          title={t("No issues recorded for this audit.")}
+          description={t(
             "Either the site is in great shape, or this audit ran before issue checks existed — run a new audit to get the full report.",
           )}
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="border border-base-300 rounded-lg overflow-hidden">
-      {sections.map((section) => (
-        <IssueSection key={section.severity} section={section} />
-      ))}
+        />
+      ) : (
+        <div>
+          {sections.map((section) => (
+            <IssueSection key={section.severity} section={section} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -119,25 +126,21 @@ function IssueSection({
   section: { severity: IssueSeverity; groups: IssueGroup[] };
 }) {
   const { t } = useLocale();
+
   const issueCount = section.groups.reduce(
     (sum, group) => sum + group.issues.length,
     0,
   );
 
   return (
-    <div className="border-t border-base-300 first:border-t-0">
-      <div className="flex items-center gap-2 bg-base-200/60 px-4 py-1.5 border-b border-base-300/60">
-        <span
-          className={`size-1.5 rounded-full ${SEVERITY_DOT[section.severity]}`}
-        />
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/60">
+    <div className="border-t border-border first:border-t-0">
+      <div className="flex items-center gap-2 bg-muted/50 px-4 py-1.5 border-b border-border">
+        <SeverityBadge severity={section.severity}>
           {t(SEVERITY_LABEL[section.severity])}
-        </span>
-        <span className="text-[11px] tabular-nums text-base-content/40">
-          {issueCount}
-        </span>
+          <span className="tabular-nums">{issueCount}</span>
+        </SeverityBadge>
       </div>
-      <div className="divide-y divide-base-300/60">
+      <div className="divide-y divide-border">
         {section.groups.map((group) => (
           <IssueRow key={group.issueType} group={group} />
         ))}
@@ -148,52 +151,48 @@ function IssueSection({
 
 function IssueRow({ group }: { group: IssueGroup }) {
   const { t } = useLocale();
+
   const [open, setOpen] = useState(false);
 
   return (
     <div
       className={
         open
-          ? `border-l-2 ${SEVERITY_RULE[group.severity]} bg-base-200/20`
+          ? `border-l-2 ${SEVERITY_RULE[group.severity]} bg-muted/30`
           : "border-l-2 border-l-transparent"
       }
     >
       <button
         type="button"
-        className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-base-200/40 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-muted/50 transition-colors"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
       >
-        <span
-          className={`size-2 shrink-0 rounded-full ${SEVERITY_DOT[group.severity]}`}
-        />
         <span className="text-sm font-medium flex-1 min-w-0 truncate">
           {t(group.title)}
         </span>
-        <span className="text-xs tabular-nums text-base-content/50 shrink-0">
-          {t("{count} {unit}", {
-            count: group.issues.length,
-            unit: t(group.issues.length === 1 ? "page" : "pages"),
-          })}
+        <span className="text-xs tabular-nums text-muted-foreground shrink-0">
+          {group.issues.length}{" "}
+          {t(group.issues.length === 1 ? "page" : "pages")}
         </span>
         <ChevronRight
-          className={`size-4 shrink-0 text-base-content/40 transition-transform ${
+          className={`size-4 shrink-0 text-muted-foreground transition-transform ${
             open ? "rotate-90" : ""
           }`}
         />
       </button>
 
       {open && (
-        <div className="pl-9 pr-4 pb-4 pt-0.5 space-y-3">
+        <div className="pl-4 pr-4 pb-4 pt-0.5 space-y-3">
           {group.explanation && (
-            <p className="text-sm text-base-content/70 max-w-prose">
+            <p className="text-sm text-muted-foreground max-w-prose">
               {t(group.explanation)}
             </p>
           )}
           {group.howToFix && (
             <p className="text-sm max-w-prose">
-              <span className="font-medium">{t("How to fix:")}</span>{" "}
-              <span className="text-base-content/80">{t(group.howToFix)}</span>
+              <span className="font-medium">{t("How to fix:")}</span>
+              <span className="text-foreground/80">{t(group.howToFix)}</span>
             </p>
           )}
           <AffectedUrlList issues={group.issues} />
@@ -204,19 +203,18 @@ function IssueRow({ group }: { group: IssueGroup }) {
 }
 
 function AffectedUrlList({ issues }: { issues: AuditIssueRow[] }) {
-  const { t } = useLocale();
   const rendered = issues.slice(0, MAX_RENDERED_URLS);
   const remaining = issues.length - rendered.length;
 
   return (
-    <div className="max-h-[320px] overflow-y-auto rounded border border-base-300/60 bg-base-100">
+    <div className="max-h-[320px] overflow-y-auto rounded border border-border bg-card">
       {rendered.map((issue) => (
         <div
           key={issue.id}
-          className="px-3 py-1.5 text-sm flex flex-col gap-0.5 border-b border-base-300/50 last:border-b-0"
+          className="px-3 py-1.5 text-sm flex flex-col gap-0.5 border-b border-border last:border-b-0"
         >
           <a
-            className="link link-hover text-base-content/80 truncate"
+            className="text-foreground/80 truncate hover:underline"
             href={issue.pageUrl}
             target="_blank"
             rel="noreferrer"
@@ -228,30 +226,22 @@ function AffectedUrlList({ issues }: { issues: AuditIssueRow[] }) {
         </div>
       ))}
       {remaining > 0 && (
-        <div className="px-3 py-2 text-xs text-base-content/50">
-          {t("…and {count} more — export the issues CSV for the full list.", {
-            count: remaining,
-          })}
+        <div className="px-3 py-2 text-xs text-muted-foreground">
+          …and {remaining} more — export the issues CSV for the full list.
         </div>
       )}
     </div>
   );
 }
 
+// AuditRepository is the only writer and always stores JSON.stringify of a
+// details object, so the parse cannot throw.
 function parseDetails(detailsJson: string): Array<[string, unknown]> | null {
-  try {
-    const parsed: unknown = JSON.parse(detailsJson);
-    if (
-      typeof parsed === "object" &&
-      parsed !== null &&
-      !Array.isArray(parsed)
-    ) {
-      return Object.entries(parsed);
-    }
-    return null;
-  } catch {
-    return null;
+  const parsed: unknown = JSON.parse(detailsJson);
+  if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+    return Object.entries(parsed);
   }
+  return null;
 }
 
 function IssueDetails({ detailsJson }: { detailsJson: string | null }) {
@@ -268,7 +258,7 @@ function IssueDetails({ detailsJson }: { detailsJson: string | null }) {
   if (entries.length === 0) return null;
 
   return (
-    <span className="text-xs text-base-content/50 truncate">
+    <span className="text-xs text-muted-foreground truncate">
       {entries
         .map(([key, value]) => {
           const rendered = Array.isArray(value)

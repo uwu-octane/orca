@@ -5,27 +5,30 @@ import { captureClientEvent } from "@/client/lib/posthog";
 // FORK: locale plugin — error copy translates via the plugin tree.
 import { useLocale } from "@/plugins/client/context";
 import { LOCATIONS } from "@/client/features/keywords/utils";
+import { formatLocationLabel } from "@/shared/keyword-locations";
 import { parseKeywordInput } from "@/client/features/keywords/state/keywordControllerActions";
 import { researchKeywords } from "@/serverFunctions/keywords";
 import type {
   KeywordMode,
-  ResearchSource,
   ResultLimit,
 } from "@/client/features/keywords/keywordResearchTypes";
 
 type AddSearchFn = (
   keyword: string,
   locationCode: number,
-  locationName: string,
+  locationLabel: string,
+  localLocationName: string | undefined,
 ) => void;
 
 type KeywordResearchRequestInput = {
   projectId: string;
   keywordInput: string;
   locationCode: number | undefined;
+  locationName: string | undefined;
   resultLimit: ResultLimit;
   mode: KeywordMode;
   clickstream: boolean;
+  groupKeywords: boolean;
 };
 
 type KeywordResearchQueryInput = KeywordResearchRequestInput & {
@@ -37,9 +40,11 @@ type KeywordResearchRequest = {
   keywords: string[];
   seedKeyword: string;
   locationCode: number | undefined;
+  locationName: string | undefined;
   resultLimit: ResultLimit;
   mode: KeywordMode;
   clickstream: boolean;
+  groupKeywords: boolean;
 };
 
 export const KEYWORD_RESEARCH_STALE_TIME_MS = 24 * 60 * 60 * 1000;
@@ -56,9 +61,11 @@ export function buildKeywordResearchRequest(
     keywords,
     seedKeyword,
     locationCode: input.locationCode,
+    locationName: input.locationName,
     resultLimit: input.resultLimit,
     mode: input.mode,
     clickstream: input.clickstream,
+    groupKeywords: input.groupKeywords,
   };
 }
 
@@ -71,9 +78,11 @@ export function buildKeywordResearchQueryKey(
         request.projectId,
         request.keywords,
         request.locationCode,
+        request.locationName,
         request.resultLimit,
         request.mode,
         request.clickstream,
+        request.groupKeywords,
       ]
     : ["keywordResearch", "idle"];
 }
@@ -84,9 +93,11 @@ export function keywordResearchQueryFn(request: KeywordResearchRequest) {
       projectId: request.projectId,
       keywords: request.keywords,
       locationCode: request.locationCode,
+      locationName: request.locationName,
       resultLimit: request.resultLimit,
       mode: request.mode,
       clickstream: request.clickstream,
+      groupKeywords: request.groupKeywords,
     },
   });
 }
@@ -97,9 +108,11 @@ export function useKeywordResearchData(
 ) {
   const {
     clickstream,
+    groupKeywords,
     displayedLocationCode,
     keywordInput,
     locationCode,
+    locationName,
     mode,
     projectId,
     resultLimit,
@@ -110,12 +123,23 @@ export function useKeywordResearchData(
       buildKeywordResearchRequest({
         keywordInput,
         locationCode,
+        locationName,
         mode,
         projectId,
         resultLimit,
         clickstream,
+        groupKeywords,
       }),
-    [clickstream, keywordInput, locationCode, mode, projectId, resultLimit],
+    [
+      clickstream,
+      groupKeywords,
+      keywordInput,
+      locationCode,
+      locationName,
+      mode,
+      projectId,
+      resultLimit,
+    ],
   );
   const queryKey = useMemo(
     () => buildKeywordResearchQueryKey(request),
@@ -150,13 +174,17 @@ export function useKeywordResearchData(
       location_code: displayedLocationCode,
       search_mode: request.mode,
       clickstream: request.clickstream,
+      local: request.locationName !== undefined,
       result_count: researchQuery.data.rows.length,
     });
 
     addSearch(
       request.seedKeyword,
       displayedLocationCode,
-      LOCATIONS[displayedLocationCode] || "Unknown",
+      request.locationName
+        ? formatLocationLabel(request.locationName)
+        : LOCATIONS[displayedLocationCode] || "Unknown",
+      request.locationName,
     );
   }, [
     addSearch,
@@ -178,9 +206,6 @@ export function useKeywordResearchData(
     rows,
     hasSearched,
     lastSearchError: hasSearched && researchQuery.isError,
-    lastResultSource:
-      researchQuery.data?.source ?? ("related" as ResearchSource),
-    lastUsedFallback: researchQuery.data?.usedFallback ?? false,
     lastSearchKeyword: request?.seedKeyword ?? "",
     lastSearchLocationCode: displayedLocationCode,
     researchError,

@@ -17,7 +17,7 @@ the selected provider and never stored on the singleton service.
 | Capability       | Request                                                                                                        | Result                                                                                                                                  |
 | ---------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `keywordMetrics` | keywords, locationCode, languageCode, required creditFeature; optional locationName and includeClickstreamData | Array of keyword, searchVolume, cpc, competition, competitionLevel, keywordDifficulty, intent, monthlySearches                          |
-| `serpLive`       | keyword, locationCode, languageCode; optional creditFeature                                                    | Array of SERP items with type, group/absolute ranks, URL/domain/title/description and optional traffic/backlink/rank-change information |
+| `serpLive`       | keyword, locationCode, languageCode; optional creditFeature, depth, locationName and device                    | Array of SERP items with type, group/absolute ranks, URL/domain/title/description and optional traffic/backlink/rank-change information |
 
 `locationCode` retains the application's existing geographic identifiers.
 An implementation must map them explicitly to its own geography. A local
@@ -31,7 +31,10 @@ zero placeholders produced by the existing adapter. Intent stays a nullable
 string here; application-specific enum projection remains in its consumers.
 The contract does not add imputation or substitute data from another source.
 
-Live SERPs retain Google desktop/Windows results with depth 100. Snake-case
+Live SERPs use Google desktop/Windows results with depth 20 by default, matching
+upstream. Callers may request a different depth, mobile device or canonical
+location name. Provider version 2 invalidates caches created under the old
+depth-100 contract. Snake-case
 result fields preserve the existing application protocol. `rank_group` and
 `rank_absolute` remain separate, and consumers keep their existing choice
 of rank field. Passthrough result fields preserve existing projections.
@@ -61,8 +64,8 @@ returning to the caller. Boot only registers implementations and validates
 configuration; it must not load supplier SDKs or call paid APIs.
 
 Providers own authenticated execution and metering. A paid implementation
-must check the organization allowance and record every charged upstream
-operation through the existing subscription helpers, including charged
+must reserve the organization allowance before upstream work and settle
+every charged operation through the subscription helpers, including charged
 failures. Do not wrap the already metered DataForSEO adapter with another
 charge. The service cannot infer a different supplier's price or retry policy.
 

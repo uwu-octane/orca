@@ -1,15 +1,23 @@
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import { z } from "zod";
+import { Button } from "@/client/components/ui/button";
 import {
   getCurrentAuthRedirect,
   getOAuthSignedQuery,
 } from "@/lib/auth-redirect";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
-// FORK: locale plugin — auth chrome translates via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
 
 export const authRedirectSearchSchema = z.object({
   redirect: z.string().optional(),
 });
+
+// The auth forms keep their pre-shadcn look: white inputs with 16px text, and a
+// soft grey submit button.
+export const authInputClassName =
+  "border-foreground/20 bg-card text-base md:text-base";
+export const authSubmitClassName =
+  "w-full border-border bg-[color-mix(in_oklab,var(--card),var(--foreground)_8%)] font-semibold hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_12%)]";
 
 export function useAuthPageState(redirect: string | undefined) {
   const redirectTo = getCurrentAuthRedirect(redirect);
@@ -42,26 +50,29 @@ export function AuthMethodChooser({
   onContinueWithEmail: () => void;
 }) {
   const { t } = useLocale();
+
   return (
     <div className="space-y-3">
-      <button
+      <Button
         type="button"
-        className="btn w-full border border-black/10 bg-white text-neutral-900 hover:border-black/20 hover:bg-neutral-50 disabled:bg-white disabled:text-neutral-500 disabled:opacity-70"
+        variant="outline"
+        className="w-full border-black/10 !bg-white font-semibold !text-neutral-900 hover:border-black/20 hover:!bg-neutral-50"
         onClick={onContinueWithGoogle}
         disabled={disabled || isBusy}
       >
         <GoogleLogo />
         {isBusy ? t("Opening Google...") : googleLabel}
-      </button>
+      </Button>
 
-      <button
+      <Button
         type="button"
-        className="btn w-full"
+        variant="outline"
+        className="w-full bg-card font-semibold dark:border-border dark:bg-card"
         onClick={onContinueWithEmail}
         disabled={disabled || isBusy}
       >
         {t(emailLabel)}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -102,7 +113,7 @@ export function AuthPageCard({
 }) {
   return (
     <div className="w-full max-w-xs space-y-6">
-      <div className="text-center space-y-3">
+      <div className="space-y-3 text-center">
         <img
           src="/transparent-logo.png"
           alt="Orca"
@@ -111,12 +122,12 @@ export function AuthPageCard({
         <div>
           <h1 className="text-xl font-semibold">{title}</h1>
           {helperText ? (
-            <p className="text-sm text-base-content/60 mt-1">{helperText}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{helperText}</p>
           ) : null}
         </div>
       </div>
 
-      {children}
+      <div className="space-y-4">{children}</div>
 
       {footer ? <div className="text-center">{footer}</div> : null}
     </div>
@@ -129,7 +140,7 @@ export function AuthPageShell({ children }: { children: React.ReactNode }) {
     // auto-margin child centers when it fits but stays fully reachable (top and
     // bottom) when it's taller than the viewport. Plain `justify-center` clips
     // the overflow with no way to scroll to it.
-    <div className="h-[100dvh] flex flex-col items-center overflow-y-auto p-4 bg-base-200">
+    <div className="flex h-[100dvh] flex-col items-center overflow-y-auto bg-background p-4">
       <div className="m-auto flex w-full flex-col items-center">{children}</div>
     </div>
   );

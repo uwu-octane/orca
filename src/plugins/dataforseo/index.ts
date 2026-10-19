@@ -14,6 +14,8 @@ export const inject = ["seoData"];
  * portable keyword metrics and live SERPs are declared by seoData. */
 export interface DataforseoProvider {
   createClient: typeof createMeteredDataforseoClient;
+  collectLocalTask: DataforseoSections["fetchLocalSerpTaskResult"];
+  collectAiTrackingTask: DataforseoSections["fetchAiTrackingTaskResult"];
   collectRankTask: DataforseoSections["fetchRankCheckTaskResult"];
   collectBusinessTask: DataforseoSections["fetchBusinessDataTaskResult"];
   businessCategories: DataforseoSections["fetchBusinessListingsCategories"];
@@ -30,6 +32,10 @@ declare module "cordis" {
 export function apply(ctx: Context): void {
   const provider: DataforseoProvider = {
     createClient: createMeteredDataforseoClient,
+    collectLocalTask: async (input) =>
+      (await loadDataforseoSections()).fetchLocalSerpTaskResult(input),
+    collectAiTrackingTask: async (input) =>
+      (await loadDataforseoSections()).fetchAiTrackingTaskResult(input),
     collectRankTask: async (input) =>
       (await loadDataforseoSections()).fetchRankCheckTaskResult(input),
     collectBusinessTask: async (input) =>
@@ -44,13 +50,13 @@ export function apply(ctx: Context): void {
   ctx.provide("dataforseo", provider);
   ctx.seoData.registerKeywordMetrics({
     id: "dataforseo",
-    version: "1",
+    version: "2",
     query: (input, customer) =>
       fetchKeywordMetricsForList(provider.createClient(customer), input),
   });
   ctx.seoData.registerSerpLive({
     id: "dataforseo",
-    version: "1",
+    version: "2",
     query: (input, customer) =>
       provider.createClient(customer).serp.live(input),
   });

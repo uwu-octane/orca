@@ -1,10 +1,16 @@
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import { useLayoutEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { MARKDOWN_COMPONENTS } from "@/client/components/Markdown";
-// FORK: locale plugin — answer toggle copy translates via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
+import { Button } from "@/client/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/client/components/ui/collapsible";
 
 type Props = {
   text: string;
@@ -30,6 +36,7 @@ const COLLAPSED_MAX_PX = 240;
  */
 export function MarkdownAnswer({ text }: Props) {
   const { t } = useLocale();
+
   const contentRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [needsCollapse, setNeedsCollapse] = useState(false);
@@ -46,7 +53,7 @@ export function MarkdownAnswer({ text }: Props) {
 
   if (normalized.trim().length === 0 && thinking.length === 0) {
     return (
-      <p className="text-sm text-base-content/60 italic">
+      <p className="text-sm text-muted-foreground italic">
         {t("Model returned an empty response.")}
       </p>
     );
@@ -80,31 +87,32 @@ export function MarkdownAnswer({ text }: Props) {
           {isCollapsed ? (
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-base-100 to-transparent"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-card to-transparent"
             />
           ) : null}
         </div>
       ) : null}
 
       {needsCollapse ? (
-        <button
-          type="button"
+        <Button
+          variant="link"
+          size="xs"
           onClick={() => setExpanded((prev) => !prev)}
-          className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          className="mt-2 h-auto px-0"
           aria-expanded={expanded}
         >
           {expanded ? (
             <>
-              <ChevronUp className="size-3.5" />
+              <ChevronUp data-icon="inline-start" />
               {t("Show less")}
             </>
           ) : (
             <>
-              <ChevronDown className="size-3.5" />
+              <ChevronDown data-icon="inline-start" />
               {t("Read more")}
             </>
           )}
-        </button>
+        </Button>
       ) : null}
     </div>
   );
@@ -112,19 +120,22 @@ export function MarkdownAnswer({ text }: Props) {
 
 function ThinkingBlock({ text }: { text: string }) {
   const { t } = useLocale();
+
   return (
-    <details
-      open
-      className="group mb-3 rounded-lg border border-base-300 bg-base-200/40"
+    <Collapsible
+      defaultOpen
+      className="mb-3 rounded-lg border border-border bg-muted/40"
     >
-      <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-xs font-medium text-base-content/70 hover:text-base-content">
-        <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" />
+      <CollapsibleTrigger className="group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50">
+        <ChevronDown className="size-3.5 transition-transform group-data-panel-open:rotate-180" />
         {t("Model Thinking")}
-      </summary>
-      <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-b-lg border-t border-base-300 bg-base-200/60 px-3 py-2.5 text-xs font-mono text-base-content/80">
-        {text}
-      </pre>
-    </details>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <pre className="overflow-x-auto rounded-b-lg border-t border-border bg-muted/60 px-3 py-2.5 font-mono text-xs break-words whitespace-pre-wrap text-foreground/80">
+          {text}
+        </pre>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 

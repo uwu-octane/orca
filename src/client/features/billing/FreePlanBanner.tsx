@@ -1,124 +1,104 @@
-import { Link } from "@tanstack/react-router";
-import { useCustomer } from "autumn-js/react";
-import { useSession } from "@/lib/auth-client";
-import { getCustomerPlanStatus } from "@/client/features/billing/plan-detection";
-import {
-  AUTUMN_SEO_DATA_BALANCE_FEATURE_ID,
-  AUTUMN_SEO_DATA_TOPUP_BALANCE_FEATURE_ID,
-  BILLING_ROUTE,
-  LOW_CREDITS_THRESHOLD_USD,
-  SUBSCRIBE_ROUTE,
-  autumnSeoDataCreditsToUsd,
-} from "@/shared/billing";
-// FORK: locale plugin — banner copy translates via the plugin tree.
+// FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
+import { Link } from "@tanstack/react-router";
+import { AppBanner } from "@/client/layout/AppBanner";
+import { BASE_PLAN_OFFER } from "@/client/features/billing/plan-offers";
+import { useCreditBalance } from "@/client/features/billing/useCreditBalance";
+import { useCanManageBilling } from "@/client/features/team/organizationQueries";
+import { BILLING_ROUTE, SUBSCRIBE_ROUTE } from "@/shared/billing";
 
 export function FreePlanBanner() {
   const { t } = useLocale();
-  const { data: session } = useSession();
-  const customerQuery = useCustomer({
-    queryOptions: {
-      enabled: Boolean(session?.user?.id),
-    },
-  });
 
-  if (customerQuery.isLoading || !customerQuery.data) {
+  const { accountQuery, isFreePlan, isOutOfCredits, isLowCredits, refillDate } =
+    useCreditBalance();
+  const canManageBilling = useCanManageBilling();
+
+  if (!accountQuery.data) {
     return null;
   }
 
-  const planStatus = getCustomerPlanStatus(customerQuery.data);
-  const isFreePlan = planStatus === "free";
-
-  const monthlyRemaining = autumnSeoDataCreditsToUsd(
-    customerQuery.data.balances?.[AUTUMN_SEO_DATA_BALANCE_FEATURE_ID]
-      ?.remaining ?? 0,
-  );
-  const topUpRemaining = autumnSeoDataCreditsToUsd(
-    customerQuery.data.balances?.[AUTUMN_SEO_DATA_TOPUP_BALANCE_FEATURE_ID]
-      ?.remaining ?? 0,
-  );
-  const totalRemaining = monthlyRemaining + topUpRemaining;
-
-  const isOutOfCredits = totalRemaining <= 0;
-  const isLowCredits =
-    !isOutOfCredits && totalRemaining < LOW_CREDITS_THRESHOLD_USD;
+  // Only the owner can change the plan or buy credits, so a link would lead
+  // everyone else to a page where they can't act.
+  if (!canManageBilling && (isOutOfCredits || isLowCredits)) {
+    return (
+      <AppBanner variant={isOutOfCredits ? "destructive" : "warning"}>
+        {isOutOfCredits
+          ? "Your organization has used its credits."
+          : "Your organization is running low on credits."}{" "}
+        Ask your organization owner to add more.
+      </AppBanner>
+    );
+  }
 
   const creditsActionLink = isFreePlan ? (
     <Link
       to={SUBSCRIBE_ROUTE}
       search={{ upgrade: true }}
-      className="link link-primary font-medium"
+      className="font-medium text-primary underline-offset-4 hover:underline"
     >
       {t("Upgrade your plan")}
     </Link>
   ) : (
-    <Link to={BILLING_ROUTE} className="link link-primary font-medium">
+    <Link
+      to={BILLING_ROUTE}
+      className="font-medium text-primary underline-offset-4 hover:underline"
+    >
       {t("Buy more credits")}
     </Link>
   );
 
   if (isOutOfCredits) {
     return (
-      <BannerShell variant="error">
-        {t("You've used all your credits.")} {creditsActionLink}{" "}
-        {t("to continue using Orca.")}
-      </BannerShell>
+      <AppBanner variant="destructive">
+        {isFreePlan ? (
+          <>
+            You&rsquo;ve used your free credits. {creditsActionLink} to get $
+            {BASE_PLAN_OFFER.monthlyCreditsUsd} of credits every month.
+          </>
+        ) : (
+          <>
+            You&rsquo;ve used this month&rsquo;s credits. {creditsActionLink} to
+            keep going
+            {refillDate ? `, or wait for them to refill on ${refillDate}` : ""}
+            {t(".")}
+          </>
+        )}
+      </AppBanner>
     );
   }
 
   if (isLowCredits) {
     return (
-      <BannerShell variant="warning">
-        {t("You're running low on credits.")} {creditsActionLink}{" "}
+      <AppBanner variant="warning">
+        You&rsquo;re running low on credits. {creditsActionLink}{" "}
         {t("to keep using Orca.")}
-      </BannerShell>
+      </AppBanner>
     );
   }
 
   if (isFreePlan) {
     return (
-      <BannerShell variant="info">
-        {t("We hope you're enjoying Orca!")}{" "}
+      <AppBanner variant="info">
+        We hope you&rsquo;re enjoying Orca!{" "}
         <Link
           to={SUBSCRIBE_ROUTE}
           search={{ upgrade: true }}
-          className="link link-primary font-medium"
+          className="font-medium text-primary underline-offset-4 hover:underline"
         >
           {t("Upgrade anytime")}
         </Link>{" "}
-        {t("or")}{" "}
-        <Link to="/support" className="link link-primary font-medium">
+        {"or"}{" "}
+        <Link
+          to="/support"
+          className="font-medium text-primary underline-offset-4 hover:underline"
+        >
           {t("reach out with questions")}
         </Link>
-        .
-      </BannerShell>
+        {t(".")}
+      </AppBanner>
     );
   }
 
   return null;
-}
-
-function BannerShell({
-  variant,
-  children,
-}: {
-  variant: "info" | "warning" | "error";
-  children: React.ReactNode;
-}) {
-  const alertClass =
-    variant === "error"
-      ? "alert-error"
-      : variant === "warning"
-        ? "alert-warning"
-        : "alert-info";
-
-  return (
-    <div className="shrink-0 px-4 py-2.5 md:px-6">
-      <div className="mx-auto max-w-7xl">
-        <div className={`alert text-sm ${alertClass}`}>
-          <span>{children}</span>
-        </div>
-      </div>
-    </div>
-  );
 }

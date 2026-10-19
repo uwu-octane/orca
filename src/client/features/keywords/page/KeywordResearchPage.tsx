@@ -1,11 +1,18 @@
-import { Link } from "@tanstack/react-router";
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import { useCallback, useMemo } from "react";
-import { AlertCircle, ArrowLeft } from "lucide-react";
+import { ErrorState } from "@/client/components/ErrorState";
+import { FormDialog } from "@/client/components/FormDialog";
+import { BackButton, PageHeader } from "@/client/components/PageHeader";
+import { Button } from "@/client/components/ui/button";
+import { InsufficientCreditsError } from "@/client/features/billing/InsufficientCreditsError";
 import { getErrorCode } from "@/client/lib/error-messages";
-import { BILLING_ROUTE } from "@/shared/billing";
+import { formatLocationLabel } from "@/shared/keyword-locations";
 import { useKeywordResearchController } from "@/client/features/keywords/state/useKeywordResearchController";
-import type { KeywordResearchControllerInput } from "@/client/features/keywords/state/useKeywordResearchController";
-import type { KeywordControlsValues } from "@/client/features/keywords/hooks/useKeywordControlsForm";
+import type {
+  KeywordResearchControllerInput,
+  KeywordSubmitValues,
+} from "@/client/features/keywords/state/useKeywordResearchController";
 import { parseKeywordInput } from "@/client/features/keywords/state/keywordControllerActions";
 import {
   useKeywordSearchParams,
@@ -25,7 +32,6 @@ import { KeywordResearchLoadingState } from "./KeywordResearchLoadingState";
 import { KeywordResearchResults } from "./KeywordResearchResults";
 import { KeywordResearchSearchBar } from "./KeywordResearchSearchBar";
 import type { KeywordResearchControllerState } from "./types";
-import { useLocale } from "@/plugins/client/context";
 
 type ControllerProps = Omit<KeywordResearchControllerInput, "onFormSubmit">;
 type Props = Omit<
@@ -40,6 +46,7 @@ function isKeywordSearchTab(tab: SearchTab): tab is KeywordSearchTab {
 
 export function KeywordResearchPage(input: Props) {
   const { t } = useLocale();
+
   const setSearchParams = useKeywordSearchParams();
   const projectId = input.projectId;
   const { locationCode, displayedLocationCode, setPreferredLocationCode } =
@@ -54,9 +61,11 @@ export function KeywordResearchPage(input: Props) {
         setSearchParams({
           q: undefined,
           loc: undefined,
+          locName: undefined,
           kLimit: undefined,
           mode: undefined,
           cs: undefined,
+          grp: undefined,
         });
         return;
       }
@@ -64,9 +73,11 @@ export function KeywordResearchPage(input: Props) {
       setSearchParams({
         q: tabInput.keyword,
         loc: tabInput.locationCode,
+        locName: tabInput.locationName,
         kLimit: tabInput.resultLimit === 150 ? undefined : tabInput.resultLimit,
         mode: tabInput.mode === "auto" ? undefined : tabInput.mode,
         cs: tabInput.clickstream ? true : undefined,
+        grp: tabInput.groupKeywords ? true : undefined,
       });
     },
     [setSearchParams],
@@ -80,24 +91,30 @@ export function KeywordResearchPage(input: Props) {
       type: "keyword",
       keyword,
       locationCode,
+      locationName: input.locationName,
       resultLimit: input.resultLimit,
       mode: input.keywordMode,
       clickstream: input.clickstream,
+      groupKeywords: input.groupKeywords,
     };
   }, [
     input.clickstream,
+    input.groupKeywords,
     input.keywordInput,
     input.keywordMode,
+    input.locationName,
     locationCode,
     input.resultLimit,
   ]);
   const searchTabs = useSearchTabNavigation({
     storageKey: `keyword:${projectId}`,
     urlInput,
-    getLabel: useCallback(
-      (tabInput) => (tabInput.type === "keyword" ? tabInput.keyword : ""),
-      [],
-    ),
+    getLabel: useCallback((tabInput) => {
+      if (tabInput.type !== "keyword") return "";
+      return tabInput.locationName
+        ? `${tabInput.keyword} · ${formatLocationLabel(tabInput.locationName, 1)}`
+        : tabInput.keyword;
+    }, []),
     navigateToInput: useCallback(
       (tabInput) => {
         navigateToKeywordInput(tabInput?.type === "keyword" ? tabInput : null);
@@ -121,7 +138,7 @@ export function KeywordResearchPage(input: Props) {
   }, [searchTabs.activeTabId, searchTabs.tabs, urlInput]);
 
   const onFormSubmit = useCallback(
-    (value: KeywordControlsValues) => {
+    (value: KeywordSubmitValues) => {
       const keywords = parseKeywordInput(value.keyword);
       if (keywords.length === 0) return;
 
@@ -129,9 +146,11 @@ export function KeywordResearchPage(input: Props) {
         type: "keyword",
         keyword,
         locationCode: value.locationCode,
+        locationName: value.locationName,
         resultLimit: value.resultLimit,
         mode: value.mode,
         clickstream: value.clickstream,
+        groupKeywords: value.groupKeywords,
       }));
 
       for (const tabInput of inputs) {
@@ -154,10 +173,12 @@ export function KeywordResearchPage(input: Props) {
             locationCode: activeTab.input.locationCode,
             displayedLocationCode:
               activeTab.input.locationCode ?? displayedLocationCode,
+            locationName: activeTab.input.locationName,
             setPreferredLocationCode,
             resultLimit: activeTab.input.resultLimit,
             keywordMode: activeTab.input.mode,
             clickstream: activeTab.input.clickstream,
+            groupKeywords: activeTab.input.groupKeywords,
           }
         : {
             ...input,
@@ -180,37 +201,34 @@ export function KeywordResearchPage(input: Props) {
 
   return (
     <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
-      <div className="mx-auto flex max-w-7xl flex-col gap-5">
-        <div>
-          <h1 className="text-2xl font-semibold">{t("Keyword Research")}</h1>
-          <p className="text-sm text-base-content/70">
-            {t(
-              "Discover keyword ideas, search demand, and ranking opportunities.",
-            )}
-          </p>
-        </div>
+      <div className="mx-auto flex max-w-7xl flex-col gap-4">
+        <PageHeader
+          title={t("Keyword Research")}
+          description={t(
+            "Discover keyword ideas, search demand, and ranking opportunities.",
+          )}
+          backLink={
+            controller.hasSearched ? (
+              <BackButton
+                data-testid="keyword-research-recent-searches"
+                onClick={showRecentSearches}
+              >
+                {t("Recent searches")}
+              </BackButton>
+            ) : undefined
+          }
+        />
 
         <KeywordResearchSearchBar controller={controller} />
         {controller.hasSearched ? (
-          <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              data-testid="keyword-research-recent-searches"
-              className="btn btn-ghost btn-sm w-fit gap-2 px-0 text-base-content/70 hover:bg-transparent"
-              onClick={showRecentSearches}
-            >
-              <ArrowLeft className="size-4" />
-              {t("Recent searches")}
-            </button>
-            <SearchTabStrip
-              projectId={projectId}
-              tabs={searchTabs.tabs}
-              activeTabId={searchTabs.activeTabId}
-              onSelect={searchTabs.selectTab}
-              onClose={searchTabs.closeTab}
-              onViewed={searchTabs.markTabViewed}
-            />
-          </div>
+          <SearchTabStrip
+            projectId={projectId}
+            tabs={searchTabs.tabs}
+            activeTabId={searchTabs.activeTabId}
+            onSelect={searchTabs.selectTab}
+            onClose={searchTabs.closeTab}
+            onViewed={searchTabs.markTabViewed}
+          />
         ) : null}
         <KeywordResearchContent
           controller={controller}
@@ -230,45 +248,64 @@ function KeywordResearchContent({
   projectId: string;
 }) {
   const { t } = useLocale();
+
   if (controller.isLoading) {
     return <KeywordResearchLoadingState />;
   }
 
-  if (controller.researchError) {
-    const isCreditsError =
-      getErrorCode(controller.researchMutationError) === "INSUFFICIENT_CREDITS";
-
-    return (
-      <div className="flex-1 flex items-center justify-center pt-1">
-        <div className="w-full max-w-xl rounded-xl border border-error/30 bg-error/10 p-5 text-error space-y-3">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="mt-0.5 size-4 shrink-0" />
-            <p className="text-sm">{t(controller.researchError)}</p>
-          </div>
-          {isCreditsError ? (
-            <Link to={BILLING_ROUTE} className="btn btn-sm">
-              {t("Go to Billing")}
-            </Link>
-          ) : (
-            <button className="btn btn-sm" onClick={controller.retrySearch}>
-              {t("Try again")}
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
+  const errorCard = controller.researchError ? (
+    <ResearchErrorCard
+      controller={controller}
+      message={t(controller.researchError)}
+    />
+  ) : null;
 
   if (controller.rows.length === 0) {
     return (
-      <KeywordResearchEmptyState
-        controller={controller}
-        projectId={projectId}
-      />
+      errorCard ?? (
+        <KeywordResearchEmptyState
+          controller={controller}
+          projectId={projectId}
+        />
+      )
     );
   }
 
-  return <KeywordResearchResults controller={controller} />;
+  // A failed refetch keeps the loaded results on screen, under the error.
+  return (
+    <>
+      {errorCard}
+      <KeywordResearchResults controller={controller} />
+    </>
+  );
+}
+
+function ResearchErrorCard({
+  controller,
+  message,
+}: {
+  controller: KeywordResearchControllerState;
+  message: string;
+}) {
+  const errorCode = getErrorCode(controller.researchMutationError);
+
+  return (
+    <div className="mx-auto w-full max-w-xl pt-1">
+      {errorCode === "INSUFFICIENT_CREDITS" ? (
+        <InsufficientCreditsError />
+      ) : (
+        <ErrorState
+          message={message}
+          onRetry={
+            errorCode === "UNKNOWN_LOCATION"
+              ? undefined
+              : controller.retrySearch
+          }
+          isRetrying={controller.researchRetrying}
+        />
+      )}
+    </div>
+  );
 }
 
 function KeywordSaveDialog({
@@ -277,35 +314,39 @@ function KeywordSaveDialog({
   controller: KeywordResearchControllerState;
 }) {
   const { t } = useLocale();
+
   if (!controller.showSaveDialog) return null;
 
   return (
-    <div className="modal modal-open">
-      <div className="modal-box">
-        <h3 className="font-bold text-lg">
-          {t("Save {count} Keywords", { count: controller.selectedRows.size })}
-        </h3>
-        <div className="py-4">
-          <p className="text-base-content/70 text-sm">
-            {t("These keywords will be saved to your current project.")}
-          </p>
-        </div>
-        <div className="modal-action">
-          <button
-            className="btn"
+    <FormDialog
+      title={`Save ${controller.selectedKeywordRows.length} Keywords`}
+      onClose={() => controller.setShowSaveDialog(false)}
+      actions={
+        <>
+          <Button
+            variant="outline"
             onClick={() => controller.setShowSaveDialog(false)}
           >
             {t("Cancel")}
-          </button>
-          <button className="btn btn-primary" onClick={controller.confirmSave}>
+          </Button>
+          <Button
+            pending={controller.savePending}
+            onClick={controller.confirmSave}
+          >
             {t("Save")}
-          </button>
-        </div>
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-2 text-sm text-muted-foreground">
+        <p>{t("These keywords will be saved to your current project.")}</p>
+        {controller.locationName ? (
+          <p>
+            Saved keywords show national metrics. The local volume for{" "}
+            {formatLocationLabel(controller.locationName)} is not saved.
+          </p>
+        ) : null}
       </div>
-      <div
-        className="modal-backdrop"
-        onClick={() => controller.setShowSaveDialog(false)}
-      />
-    </div>
+    </FormDialog>
   );
 }

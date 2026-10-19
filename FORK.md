@@ -1,5 +1,11 @@
 # Fork maintenance log
 
+## 2026-10-20 Upstream sync
+
+Merged upstream `d7ea7852` (OpenSEO 0.1.13), including the Base UI/shadcn migration, AI visibility, audit worker and billing reservation/settlement changes. Preserved Orca branding, locale controls, Cordis provider selection and private-origin authentication. Existing Chinese dictionary entries were reconnected to the new UI; new upstream vocabulary may remain English.
+
+The maintainer approved upstream fallback policies for model routing, audit rendering, research, rank checking and keyword queries. Portable SERP inputs now carry depth, device and location name; provider version 2 invalidates old cache entries. The vendored loader is an explicit pnpm workspace package.
+
 ## 2026-09-07 DataForSEO providers
 
 The server manifest installs `seoData` and `dataforseo`. Application-owned Zod schemas define keyword metrics and live SERPs; their consumers resolve explicitly selected providers through Cordis. Remaining DataForSEO APIs retain their existing vendor-specific contracts behind a lazy compatibility facade, including free task collection and catalogs. The plugin owns the existing metering implementation, and malformed billed task items now retain their cost when validation fails.
@@ -17,6 +23,7 @@ Branch model and rules: see "Fork maintenance" in [README.md](./README.md).
 
 | Date       | Upstream base | Notes                                                            |
 | ---------- | ------------- | ---------------------------------------------------------------- |
+| 2026-10-20 | `d7ea7852`    | Synced upstream 0.1.13, preserving Orca customizations.          |
 | 2026-08-24 | `c469a48`     | Fork created; `orca` branch cut from upstream main at `c469a48`. |
 
 ## Customizations

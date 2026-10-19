@@ -1,11 +1,18 @@
-// FORK: keyword metric fixtures live in keyword-metrics.test.ts.
+import { fetchKeywordMetricsForList } from "@/server/lib/dataforseo/keyword-metrics";
+import type { KeywordMetricsInput } from "@/plugins/seo-data/schemas";
+/* eslint-disable max-lines, max-lines-per-function -- every DataForSEO research tool is covered in this one spec, matching dataforseo-research-tools.ts */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import type { fetchKeywordMetricsForList as FetchKeywordMetricsForList } from "@/server/lib/dataforseo/keyword-metrics";
 import * as researchTools from "./dataforseo-research-tools";
 import { makeToolContext, textContent } from "./tool-test-support";
 
 const mocks = vi.hoisted(() => ({
   createDataforseoClient: vi.fn(),
+  metricsClient: {
+    labs: { keywordOverview: vi.fn() },
+    keywords: { adsSearchVolume: vi.fn() },
+  },
   getProjectForOrganization: vi.fn(),
 }));
 
@@ -13,14 +20,28 @@ vi.mock("cloudflare:workers", () => ({
   env: {},
 }));
 
-vi.mock("@/server/lib/dataforseo", () => ({
-  createDataforseoClient: mocks.createDataforseoClient,
-}));
+// Keep the real fetchKeywordMetricsForList (it only routes provider calls onto
+// the supplied client) so the handler's normalization is exercised end-to-end.
+vi.mock("@/server/lib/dataforseo", async () => {
+  const keywordMetrics = await vi.importActual<{
+    fetchKeywordMetricsForList: typeof FetchKeywordMetricsForList;
+  }>("@/server/lib/dataforseo/keyword-metrics");
+  return {
+    createDataforseoClient: mocks.createDataforseoClient,
+    fetchKeywordMetricsForList: keywordMetrics.fetchKeywordMetricsForList,
+  };
+});
 
 vi.mock("@/server/features/projects/services/ProjectService", () => ({
   ProjectService: {
     getProjectForOrganization: mocks.getProjectForOrganization,
   },
+}));
+
+// FORK: exercise normalization through the application capability boundary.
+vi.mock("@/server/lib/seo-data", () => ({
+  fetchKeywordMetrics: (input: KeywordMetricsInput) =>
+    fetchKeywordMetricsForList(mocks.metricsClient, input),
 }));
 
 const toolContext = makeToolContext();
@@ -46,12 +67,8 @@ describe("DataForSEO research MCP tools", () => {
         attributes: { available_attributes: {} },
       },
     ]);
-    const local = vi.fn();
-    const questionsAnswers = vi.fn();
-
     mocks.createDataforseoClient.mockReturnValue({
-      business: { businessListings, questionsAnswers },
-      serp: { local },
+      business: { businessListings },
     });
 
     const result = await researchTools.searchLocalBusinessesTool.handler(
@@ -75,14 +92,9 @@ describe("DataForSEO research MCP tools", () => {
         categories: ["cafe"],
       }),
     );
-    expect(local).not.toHaveBeenCalled();
-    expect(questionsAnswers).not.toHaveBeenCalled();
-
     expect(result.structuredContent.businesses).toEqual([
       { title: "Acme Cafe", url: "https://acme-cafe.example" },
     ]);
-    expect(textContent(result)).toContain("title | category");
-    expect(textContent(result)).toContain("Acme Cafe");
   });
 
   it("maps local business rating/review/claim filters onto the provider call", async () => {
@@ -168,6 +180,29 @@ describe("DataForSEO research MCP tools", () => {
     expect(textContent(result)).toContain("Acme Cafe");
   });
 
+  // EVE-67: a coordinate with no zoom lets DataForSEO pick one, and its guess
+  // returned 1 row for "bookkeeping services" at this exact coordinate — the
+  // agent then told the customer they had no competitors.
+  it("falls back to a city-sized zoom when the caller gives no zoom", async () => {
+    const local = vi.fn().mockResolvedValue([]);
+    mocks.createDataforseoClient.mockReturnValue({ serp: { local } });
+
+    await researchTools.getLocalSerpResultsTool.handler(
+      {
+        projectId: "project_1",
+        keyword: "bookkeeping services",
+        near: { latitude: 37.3079, longitude: -121.8917 },
+      },
+      toolContext,
+    );
+
+    expect(local).toHaveBeenCalledWith(
+      expect.objectContaining({
+        locationCoordinate: "37.3079,-121.8917,12z",
+      }),
+    );
+  });
+
   it("fetches Google Business Q&A as an explicit tool", async () => {
     const questionsAnswers = vi
       .fn()
@@ -205,8 +240,6 @@ describe("DataForSEO research MCP tools", () => {
     expect(content.questions).toEqual([
       { question_text: "Do you serve breakfast?" },
     ]);
-    expect(textContent(result)).toContain("question | asked by");
-    expect(textContent(result)).toContain("Do you serve breakfast?");
   });
 
   it("filters SERP competitors only by explicit excluded domains", async () => {
@@ -240,25 +273,129 @@ describe("DataForSEO research MCP tools", () => {
     expect(textContent(result)).toContain("competitor.example");
   });
 
-  it("keeps AI overview result types out of SERP competitors", async () => {
-    const { findSerpCompetitorsTool, getRankedKeywordsTool } = researchTools;
+  it("normalizes keyword_overview rows with difficulty and intent, sorted by the requested field", async () => {
+    const keywordOverview =
+      mocks.metricsClient.labs.keywordOverview.mockResolvedValue([
+        {
+          keyword: "seo automation",
+          keyword_info: {
+            search_volume: 2400,
+            cpc: 25.6,
+            competition: 0.24,
+            competition_level: "LOW",
+          },
+          keyword_properties: { keyword_difficulty: 18 },
+          search_intent_info: { main_intent: "commercial" },
+        },
+        { keyword: "high", keyword_info: { search_volume: 9000 } },
+        { keyword: "low", keyword_info: { search_volume: 10 } },
+      ]);
 
-    expect(
-      getRankedKeywordsTool.config.inputSchema.resultTypes.safeParse([
-        "ai_overview_reference",
-      ]).success,
-    ).toBe(true);
-    expect(
-      findSerpCompetitorsTool.config.inputSchema.resultTypes.safeParse([
-        "ai_overview_reference",
-      ]).success,
-    ).toBe(false);
-    expect(
-      findSerpCompetitorsTool.config.inputSchema.resultTypes.safeParse([
-        "organic",
-        "local_pack",
-      ]).success,
-    ).toBe(true);
+    mocks.createDataforseoClient.mockReturnValue({
+      labs: { keywordOverview },
+    });
+    const result = await researchTools.getKeywordMetricsTool.handler(
+      {
+        projectId: "project_1",
+        keywords: ["seo automation", "high", "low"],
+        sortBy: "search_volume",
+        // Doubles the credit cost, so it must reach the paid call.
+        includeClickstreamData: true,
+      },
+      toolContext,
+    );
+
+    expect(keywordOverview).toHaveBeenCalledWith(
+      expect.objectContaining({
+        keywords: ["seo automation", "high", "low"],
+        locationCode: 2840,
+        languageCode: "en",
+        includeClickstreamData: true,
+        creditFeature: "keyword_research",
+      }),
+    );
+    const rows = z
+      .object({
+        keywords: z.array(
+          z
+            .object({
+              keyword: z.string(),
+              search_volume: z.number().nullable(),
+              keyword_difficulty: z.number().nullable(),
+              main_intent: z.string().nullable(),
+            })
+            .passthrough(),
+        ),
+      })
+      .passthrough()
+      .parse(result.structuredContent).keywords;
+    expect(rows.map((row) => row.keyword)).toEqual([
+      "high",
+      "seo automation",
+      "low",
+    ]);
+    expect(rows[1]).toMatchObject({
+      keyword: "seo automation",
+      search_volume: 2400,
+      keyword_difficulty: 18,
+      main_intent: "commercial",
+    });
+    const out = textContent(result);
+    expect(out).toContain(
+      "keyword | volume | trend | KD | CPC | competition | intent",
+    );
+    expect(out).toContain("seo automation");
+  });
+
+  it("serves a Google-Ads-only location (Iceland) from adsSearchVolume without KD/intent", async () => {
+    const keywordOverview = mocks.metricsClient.labs.keywordOverview;
+    const adsSearchVolume =
+      mocks.metricsClient.keywords.adsSearchVolume.mockResolvedValue([
+        {
+          keyword: "hotel reykjavik",
+          search_volume: 1300,
+          cpc: 2.54,
+          competition: "HIGH",
+          competition_index: 42,
+        },
+      ]);
+
+    mocks.createDataforseoClient.mockReturnValue({
+      labs: { keywordOverview },
+      keywords: { adsSearchVolume },
+    });
+
+    const result = await researchTools.getKeywordMetricsTool.handler(
+      {
+        projectId: "project_1",
+        keywords: ["hotel reykjavik"],
+        // Iceland is not supported by DataForSEO Labs; the tool must resolve
+        // the market with the Ads-aware resolver rather than the Labs-only one.
+        locationCode: 2352,
+        languageCode: "is",
+      },
+      toolContext,
+    );
+
+    expect(keywordOverview).not.toHaveBeenCalled();
+    expect(adsSearchVolume).toHaveBeenCalledWith(
+      expect.objectContaining({
+        keywords: ["hotel reykjavik"],
+        locationCode: 2352,
+        languageCode: "is",
+        creditFeature: "keyword_research",
+      }),
+    );
+    const rows = z
+      .object({ keywords: z.array(z.record(z.string(), z.unknown())) })
+      .passthrough()
+      .parse(result.structuredContent).keywords;
+    expect(rows[0]).toMatchObject({
+      keyword: "hotel reykjavik",
+      search_volume: 1300,
+      keyword_difficulty: null,
+      main_intent: null,
+    });
   });
 });
 

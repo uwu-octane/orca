@@ -1,26 +1,27 @@
-import { memo, useMemo } from "react";
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
+import { useMemo } from "react";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import {
-  AppDataTable,
-  useAppTable,
-} from "@/client/components/table/AppDataTable";
+  DataTable,
+  useDataTable,
+  type DataTableFrameProps,
+} from "@/client/components/table/DataTable";
 import { ExternalUrlCell } from "@/client/components/table/url";
-import { SortableHeader } from "@/client/features/domain/components/SortableHeader";
-import { useDomainRenderDebug } from "@/client/features/domain/domainDebug";
+import { SortableHeader } from "@/client/components/table/SortableHeader";
 import {
   formatNumber,
   formatRounded,
   toPageSortMode,
+  domainSortColumn,
 } from "@/client/features/domain/utils";
-// FORK: locale plugin — table copy translates via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
 import type {
   DomainSortMode,
   PageRow,
   SortOrder,
 } from "@/client/features/domain/types";
 
-type Props = {
+type Props = DataTableFrameProps & {
   domain: string;
   rows: PageRow[];
   sortMode: DomainSortMode;
@@ -30,26 +31,26 @@ type Props = {
 
 const pageColumnHelper = createColumnHelper<PageRow>();
 
-function DomainPagesTableComponent({
+export function DomainPagesTable({
   domain,
   rows,
   sortMode,
   currentSortOrder,
   onSortClick,
+  ...frame
 }: Props) {
   const { t } = useLocale();
-  const renderStarted = performance.now();
+
   const columns = useMemo<ColumnDef<PageRow>[]>(
     () => [
       pageColumnHelper.display({
         id: "page",
-        header: () => t("Page"),
+        header: () => "Page",
         cell: ({ row }) => (
           <ExternalUrlCell
-            value={row.original.relativePath ?? row.original.page}
+            value={row.original.page}
             label={row.original.relativePath ?? row.original.page}
             baseDomain={domain}
-            className="link link-primary inline-flex items-center gap-1"
           />
         ),
         meta: {
@@ -60,9 +61,11 @@ function DomainPagesTableComponent({
         header: () => (
           <SortableHeader
             label={t("Organic Traffic")}
-            isActive={toPageSortMode(sortMode) === "traffic"}
-            order={currentSortOrder}
-            onClick={() => onSortClick("traffic")}
+            column={domainSortColumn(
+              toPageSortMode(sortMode) === "traffic",
+              currentSortOrder,
+              () => onSortClick("traffic"),
+            )}
           />
         ),
         cell: ({ getValue }) => formatRounded(getValue()),
@@ -71,9 +74,11 @@ function DomainPagesTableComponent({
         header: () => (
           <SortableHeader
             label={t("Keywords")}
-            isActive={toPageSortMode(sortMode) === "keywords"}
-            order={currentSortOrder}
-            onClick={() => onSortClick("volume")}
+            column={domainSortColumn(
+              toPageSortMode(sortMode) === "keywords",
+              currentSortOrder,
+              () => onSortClick("volume"),
+            )}
           />
         ),
         cell: ({ getValue }) => formatNumber(getValue()),
@@ -85,28 +90,15 @@ function DomainPagesTableComponent({
   // data-keyed memo, so _autoResetPageIndex fires each render and its setState
   // schedules another one — an unbounded render loop that freezes the tab.
   const tableData = useMemo(() => rows.slice(0, 100), [rows]);
-  const table = useAppTable({
+  const table = useDataTable({
     data: tableData,
     columns,
   });
-  useDomainRenderDebug("DomainPagesTable", {
-    rows: rows.length,
-    durationMs: Math.round(performance.now() - renderStarted),
-    sortMode,
-    currentSortOrder,
-  });
-
   return (
-    <AppDataTable
+    <DataTable
       table={table}
-      className="table table-sm"
-      empty={
-        <div className="py-6 text-center text-base-content/60">
-          {t("No pages match this search.")}
-        </div>
-      }
+      empty={{ title: t("No pages match this search.") }}
+      {...frame}
     />
   );
 }
-
-export const DomainPagesTable = memo(DomainPagesTableComponent);

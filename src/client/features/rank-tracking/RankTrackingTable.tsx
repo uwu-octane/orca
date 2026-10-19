@@ -1,28 +1,26 @@
-import { useCallback, useRef, useState } from "react";
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { FileDown, Loader2, Sheet, Trash2 } from "lucide-react";
-import { Modal } from "@/client/components/Modal";
-import {
-  AppDataTable,
-  useAppTable,
-} from "@/client/components/table/AppDataTable";
+import { FileDown, Plus, Sheet, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/client/components/ConfirmDialog";
+import { Button } from "@/client/components/ui/button";
+import { DataTable, useDataTable } from "@/client/components/table/DataTable";
 import {
   TableBulkActionBar,
   TableBulkActionButton,
   TableBulkExportMenu,
 } from "@/client/components/table/TableBulkActionBar";
-import { buildCsv } from "@/client/lib/csv";
-import { downloadCsv } from "@/client/lib/csv";
-import { exportTableToSheets } from "@/client/lib/exportToSheets";
-import { captureClientEvent } from "@/client/lib/posthog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { SortingState } from "@tanstack/react-table";
 import { removeTrackingKeywords } from "@/serverFunctions/rank-tracking";
-import { getStandardErrorMessage } from "@/client/lib/error-messages";
-// FORK: locale plugin — toasts translate via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
 import type { RankTrackingRow } from "@/types/schemas/rank-tracking";
-import { useRankTrackingColumns } from "./RankTrackingColumns";
-import { buildRankTrackingExport } from "./RankTrackingTableParts";
+import {
+  PINNED_COLUMN_ID,
+  useRankTrackingColumns,
+} from "./RankTrackingColumns";
+import { useSetKeywordPinned } from "./useSetKeywordPinned";
+import { exportRankTracking } from "./RankTrackingTableParts";
 import {
   KeywordTrendModal,
   type KeywordTrendTarget,
@@ -32,31 +30,38 @@ import type { SelectionAnchor } from "@/client/components/table/tableSelection";
 export function RankTrackingTable({
   totalCount,
   rows,
-  resultsLoading,
   showDesktop,
   showMobile,
-  defaultSortId,
+  sorting,
+  onSortingChange,
   domain,
   configId,
   projectId,
   locationCode,
+  languageCode,
   locationName,
   serpDepth,
+  onAddKeywords,
+  onClearFilters,
 }: {
   totalCount: number;
   rows: RankTrackingRow[];
-  resultsLoading: boolean;
   showDesktop: boolean;
   showMobile: boolean;
-  defaultSortId: string;
+  sorting: SortingState;
+  onSortingChange: (sorting: SortingState) => void;
   domain: string;
   configId: string;
   projectId: string;
   locationCode: number;
+  languageCode: string;
   locationName?: string | null;
   serpDepth: number;
+  onAddKeywords: () => void;
+  onClearFilters: () => void;
 }) {
   const { t } = useLocale();
+
   const queryClient = useQueryClient();
   const [showConfirm, setShowConfirm] = useState(false);
   const [trendTarget, setTrendTarget] = useState<KeywordTrendTarget | null>(
@@ -73,21 +78,40 @@ export function RankTrackingTable({
     [],
   );
 
+  const setKeywordPinned = useSetKeywordPinned(projectId, configId);
   const columns = useRankTrackingColumns({
     showDesktop,
     showMobile,
     domain,
     selectAnchorRef,
     onKeywordClick: handleKeywordClick,
+    onSetPinned: setKeywordPinned,
     locationName,
   });
 
-  const table = useAppTable({
+  // The pinned column sorts first and stays out of the sorting the page owns.
+  // Keep sorting stable across the table's own state updates, which otherwise
+  // recompute sorted rows and queue another pagination reset on every render.
+  const tableSorting = useMemo(
+    () => [{ id: PINNED_COLUMN_ID, desc: false }, ...sorting],
+    [sorting],
+  );
+  const table = useDataTable({
     data: rows,
     columns,
-    initialState: {
-      sorting: [{ id: defaultSortId, desc: false }],
+    state: {
+      sorting: tableSorting,
+      columnVisibility: { [PINNED_COLUMN_ID]: false },
     },
+    onSortingChange: (updater) =>
+      onSortingChange(
+        (typeof updater === "function"
+          ? updater(tableSorting)
+          : updater
+        ).filter((sort) => sort.id !== PINNED_COLUMN_ID),
+      ),
+    // The URL has no value for "unsorted", so a column stays sorted.
+    enableSortingRemoval: false,
     withSorting: true,
     getRowId: (row) => row.trackingKeywordId,
     enableRowSelection: true,
@@ -98,37 +122,16 @@ export function RankTrackingTable({
   const selectedCount = selectedRows.length;
   const selectedRankRows = selectedRows.map((row) => row.original);
 
-  const exportSelectionToSheets = () => {
-    const { headers, rows: exportRows } = buildRankTrackingExport(
-      selectedRankRows,
+  const exportSelection = (format: "csv" | "sheets") =>
+    exportRankTracking({
+      format,
+      rows: selectedRankRows,
       showDesktop,
       showMobile,
-    );
-    void exportTableToSheets({
-      headers,
-      rows: exportRows,
-      feature: "rank_tracking",
-      t,
+      domain,
+      locationName,
+      scope: "selection",
     });
-  };
-
-  const exportSelectionCsv = () => {
-    const { headers, rows: exportRows } = buildRankTrackingExport(
-      selectedRankRows,
-      showDesktop,
-      showMobile,
-    );
-    const csvRows = exportRows.map((row) =>
-      row.map((cell, idx) =>
-        idx === 3 && typeof cell === "number" ? cell.toFixed(2) : cell,
-      ),
-    );
-    downloadCsv(
-      `rank-tracking-${domain}-selected.csv`,
-      buildCsv(headers, csvRows),
-    );
-    captureClientEvent("rank_tracking:export_csv", { scope: "selection" });
-  };
 
   const removeMutation = useMutation({
     mutationFn: (keywordIds: string[]) =>
@@ -143,38 +146,10 @@ export function RankTrackingTable({
         queryKey: ["rankTrackingCostEstimate", projectId, configId],
       });
       toast.success(
-        t(
-          result.removed === 1
-            ? "{count} keyword removed"
-            : "{count} keywords removed",
-          { count: result.removed },
-        ),
-      );
-    },
-    onError: (error) => {
-      toast.error(
-        getStandardErrorMessage(error, t("Failed to remove keywords"), t),
+        `${result.removed} keyword${result.removed !== 1 ? "s" : ""} removed`,
       );
     },
   });
-
-  if (resultsLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="size-5 animate-spin text-base-content/50" />
-      </div>
-    );
-  }
-
-  if (rows.length === 0) {
-    return (
-      <div className="rounded-xl border border-dashed border-base-300 p-10 text-center text-sm text-base-content/55">
-        {totalCount === 0
-          ? t('No rank data yet. Click "Check Now" to run your first check.')
-          : t("No keywords match your search.")}
-      </div>
-    );
-  }
 
   return (
     <>
@@ -195,12 +170,12 @@ export function RankTrackingTable({
                 {
                   label: t("Export to Sheets"),
                   icon: <Sheet className="size-4" />,
-                  onClick: exportSelectionToSheets,
+                  onClick: () => exportSelection("sheets"),
                 },
                 {
                   label: t("Export CSV"),
                   icon: <FileDown className="size-4" />,
-                  onClick: exportSelectionCsv,
+                  onClick: () => exportSelection("csv"),
                 },
               ]}
             />
@@ -208,49 +183,19 @@ export function RankTrackingTable({
         }
       />
 
-      {/* Confirm modal */}
       {showConfirm && (
-        <Modal
+        <ConfirmDialog
+          title={t("Remove keywords?")}
+          confirmLabel={`Remove ${selectedCount} keyword${selectedCount !== 1 ? "s" : ""}`}
+          destructive
+          pending={removeMutation.isPending}
+          onConfirm={() => removeMutation.mutate(selectedRows.map((r) => r.id))}
           onClose={() => setShowConfirm(false)}
-          labelledBy="remove-keywords-title"
         >
-          <h3 id="remove-keywords-title" className="text-lg font-semibold">
-            {t("Remove keywords?")}
-          </h3>
-          <p className="text-sm text-base-content/70">
-            {t(
-              selectedCount === 1
-                ? "This will stop tracking {count} keyword. Historical ranking data is preserved but won't appear in the table."
-                : "This will stop tracking {count} keywords. Historical ranking data is preserved but won't appear in the table.",
-              { count: selectedCount },
-            )}
-          </p>
-          <div className="flex justify-end gap-2">
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={() => setShowConfirm(false)}
-            >
-              {t("Cancel")}
-            </button>
-            <button
-              className="btn btn-error btn-sm gap-1"
-              onClick={() =>
-                removeMutation.mutate(selectedRows.map((r) => r.id))
-              }
-              disabled={removeMutation.isPending}
-            >
-              {removeMutation.isPending && (
-                <Loader2 className="size-3 animate-spin" />
-              )}
-              {t(
-                selectedCount === 1
-                  ? "Remove {count} keyword"
-                  : "Remove {count} keywords",
-                { count: selectedCount },
-              )}
-            </button>
-          </div>
-        </Modal>
+          This will stop tracking {selectedCount} {"keyword"}
+          {selectedCount !== 1 ? "s" : ""}. Historical ranking data is preserved
+          but won't appear in the table.
+        </ConfirmDialog>
       )}
 
       {trendTarget && (
@@ -260,19 +205,35 @@ export function RankTrackingTable({
           configId={configId}
           domain={domain}
           locationCode={locationCode}
+          languageCode={languageCode}
           locationName={locationName ?? undefined}
           serpDepth={serpDepth}
           onClose={() => setTrendTarget(null)}
         />
       )}
 
-      <AppDataTable table={table} getCellClassName={() => "align-top"} />
-      <p className="text-xs text-base-content/60 pt-2">
-        {t("{count} of {total} keywords", {
-          count: rows.length,
-          total: totalCount,
-        })}
-      </p>
+      <DataTable
+        table={table}
+        isFiltered={totalCount > 0}
+        onClearFilters={onClearFilters}
+        empty={{
+          title: "No keywords yet",
+          description: "Add the keywords you want to track for this domain.",
+          action: (
+            <Button size="sm" onClick={onAddKeywords}>
+              <Plus data-icon="inline-start" />
+              {t("Add Keywords")}
+            </Button>
+          ),
+        }}
+        footer={
+          rows.length > 0 ? (
+            <p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
+              {rows.length} of {totalCount} {"keywords"}
+            </p>
+          ) : null
+        }
+      />
     </>
   );
 }

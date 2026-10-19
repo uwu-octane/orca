@@ -1,29 +1,59 @@
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import { Link } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
-import { MIN_PAGES } from "@/client/features/audit/launch/types";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertTitle } from "@/client/components/ui/alert";
+import { Button } from "@/client/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/client/components/ui/card";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/client/components/ui/field";
+import { Input } from "@/client/components/ui/input";
+import { Switch } from "@/client/components/ui/switch";
+import {
+  clampMaxPagesInput,
+  MIN_PAGES,
+} from "@/client/features/audit/launch/types";
 import type { useLaunchController } from "@/client/features/audit/launch/useLaunchController";
 import { getFieldError, getFormError } from "@/client/lib/forms";
-import { PAID_MAX_AUDIT_PAGES } from "@/shared/audit-limits";
+import { isHostedClientAuthMode } from "@/lib/auth-mode";
+import { RENDERED_MAX_AUDIT_PAGES } from "@/shared/audit-limits";
+import { renderingEstimateText } from "@/shared/audit-rendering";
 import { SUBSCRIBE_ROUTE } from "@/shared/billing";
-import { useLocale } from "@/plugins/client/context";
 
 type Props = {
   launchForm: ReturnType<typeof useLaunchController>["launchForm"];
   commitMaxPagesInput: () => number;
   maxPagesLimit: number;
+  paidMaxPagesLimit: number;
+  canRenderJavaScript?: boolean;
 };
 
 export function LaunchFormCard({
   commitMaxPagesInput,
   launchForm,
   maxPagesLimit,
+  paidMaxPagesLimit,
+  canRenderJavaScript,
 }: Props) {
   const { t } = useLocale();
-  return (
-    <div className="card bg-base-100 border border-base-300">
-      <div className="card-body gap-4">
-        <h2 className="card-title text-base">{t("Start New Audit")}</h2>
 
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          <h2>{t("Start New Audit")}</h2>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
         <form
           className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:items-center"
           onSubmit={(event) => {
@@ -36,40 +66,33 @@ export function LaunchFormCard({
               const urlError = getFieldError(field.state.meta.errors);
 
               return (
-                <label
-                  className={`input input-bordered w-full lg:col-span-9 ${urlError ? "input-error" : ""}`}
-                >
-                  <input
-                    placeholder="https://example.com"
-                    value={field.state.value}
-                    onChange={(event) => {
-                      field.handleChange(event.target.value);
-                      if (launchForm.state.errorMap.onSubmit) {
-                        launchForm.setErrorMap({ onSubmit: undefined });
-                      }
-                    }}
-                  />
-                </label>
+                <Input
+                  className="lg:col-span-9"
+                  aria-label="Site URL"
+                  aria-invalid={urlError ? true : undefined}
+                  placeholder="https://example.com"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => {
+                    field.handleChange(event.target.value);
+                    if (launchForm.state.errorMap.onSubmit) {
+                      launchForm.setErrorMap({ onSubmit: undefined });
+                    }
+                  }}
+                />
               );
             }}
           </launchForm.Field>
 
           <launchForm.Subscribe selector={(state) => state.isSubmitting}>
             {(isSubmitting) => (
-              <button
+              <Button
                 type="submit"
-                className="btn btn-primary btn-sm w-full lg:col-span-3"
-                disabled={isSubmitting}
+                className="w-full lg:col-span-3"
+                pending={isSubmitting}
               >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />{" "}
-                    {t("Starting...")}
-                  </>
-                ) : (
-                  t("Start Audit")
-                )}
-              </button>
+                {isSubmitting ? t("Starting...") : t("Start Audit")}
+              </Button>
             )}
           </launchForm.Subscribe>
 
@@ -78,14 +101,22 @@ export function LaunchFormCard({
               launchForm={launchForm}
               commitMaxPagesInput={commitMaxPagesInput}
               maxPagesLimit={maxPagesLimit}
+              paidMaxPagesLimit={paidMaxPagesLimit}
             />
-            <LighthouseOptions launchForm={launchForm} />
+            <div className="space-y-4">
+              <LighthouseOptions launchForm={launchForm} />
+              <RenderingOptions
+                launchForm={launchForm}
+                maxPagesLimit={maxPagesLimit}
+                canRenderJavaScript={canRenderJavaScript}
+              />
+            </div>
           </div>
         </form>
 
         <LaunchErrors launchForm={launchForm} />
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -93,118 +124,170 @@ function LaunchOptions({
   launchForm,
   commitMaxPagesInput,
   maxPagesLimit,
+  paidMaxPagesLimit,
 }: Props) {
   const { t } = useLocale();
-  const isFreeLimited = maxPagesLimit < PAID_MAX_AUDIT_PAGES;
 
   return (
-    <div className="rounded-lg border border-base-300 bg-base-200/20 p-3 space-y-2">
-      <label className="text-xs font-medium uppercase tracking-wide text-base-content/60">
-        {t("Crawl limit")}
-      </label>
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-base-content/70">{t("Max pages")}</span>
-        <launchForm.Field name="maxPagesInput">
-          {(field) => (
-            <input
-              type="number"
-              min={MIN_PAGES}
-              max={maxPagesLimit}
-              className="input input-bordered input-sm w-28"
-              value={field.state.value}
-              onChange={(event) => {
-                const next = event.target.value;
-                if (!/^\d*$/.test(next)) return;
-                field.handleChange(next);
-                if (launchForm.state.errorMap.onSubmit) {
-                  launchForm.setErrorMap({ onSubmit: undefined });
-                }
-              }}
-              onBlur={commitMaxPagesInput}
-            />
-          )}
-        </launchForm.Field>
-      </div>
-      <p className="text-xs text-base-content/50">
-        {t("Enter any value from {min} to {max}.", {
-          min: MIN_PAGES,
-          max: maxPagesLimit.toLocaleString(),
-        })}
-        {isFreeLimited ? (
+    <Field className="rounded-lg border border-border p-3">
+      <FieldLabel htmlFor="audit-max-pages">{t("Max pages")}</FieldLabel>
+      <launchForm.Field name="maxPagesInput">
+        {(field) => (
+          <Input
+            id="audit-max-pages"
+            type="number"
+            min={MIN_PAGES}
+            max={maxPagesLimit}
+            className="w-28"
+            value={field.state.value}
+            onChange={(event) => {
+              const next = event.target.value;
+              if (!/^\d*$/.test(next)) return;
+              field.handleChange(next);
+              if (launchForm.state.errorMap.onSubmit) {
+                launchForm.setErrorMap({ onSubmit: undefined });
+              }
+            }}
+            onBlur={commitMaxPagesInput}
+          />
+        )}
+      </launchForm.Field>
+      <FieldDescription>
+        Enter any value from {MIN_PAGES} to {maxPagesLimit.toLocaleString()}
+        {t(".")}
+        {maxPagesLimit === RENDERED_MAX_AUDIT_PAGES
+          ? " Audits that render JavaScript are limited to this many pages."
+          : null}
+        {maxPagesLimit < paidMaxPagesLimit ? (
           <>
             {" "}
-            <Link
-              to={SUBSCRIBE_ROUTE}
-              search={{ upgrade: true }}
-              className="link link-primary"
-            >
+            <Link to={SUBSCRIBE_ROUTE} search={{ upgrade: true }}>
               {t("Upgrade")}
             </Link>{" "}
-            {t("to crawl up to {pages} pages.", {
-              pages: PAID_MAX_AUDIT_PAGES.toLocaleString(),
-            })}
+            to crawl up to {paidMaxPagesLimit.toLocaleString()} pages.
           </>
         ) : null}
-      </p>
-    </div>
+      </FieldDescription>
+    </Field>
   );
 }
 
 function LighthouseOptions({ launchForm }: Pick<Props, "launchForm">) {
   const { t } = useLocale();
+
   return (
-    <div className="rounded-lg border border-base-300 bg-base-200/20 p-3 space-y-2">
-      <label className="label cursor-pointer justify-start gap-2 p-0">
+    <Field className="rounded-lg border border-border p-3">
+      <div className="flex items-center gap-2">
         <launchForm.Field name="runLighthouse">
           {(field) => (
-            <input
-              type="checkbox"
-              className="toggle toggle-sm toggle-primary"
+            <Switch
+              id="audit-run-lighthouse"
               checked={Boolean(field.state.value)}
-              onChange={(event) => field.handleChange(event.target.checked)}
+              onCheckedChange={(checked) => field.handleChange(checked)}
             />
           )}
         </launchForm.Field>
-        <span
-          className="text-sm font-medium text-base-content/80"
+        <FieldLabel
+          htmlFor="audit-run-lighthouse"
           title={t(
             "Lighthouse measures the performance of your pages and identifies issues.",
           )}
         >
           {t("Include Lighthouse")}
-        </span>
-      </label>
+        </FieldLabel>
+      </div>
 
       <launchForm.Subscribe
         selector={(snapshot) => snapshot.values.runLighthouse}
       >
         {(runLighthouse) =>
           runLighthouse ? (
-            <div className="space-y-1">
-              <p className="text-xs text-base-content/60">
-                {t(
-                  "We choose a sample of 20 pages to audit, removing pages from duplicate templates.",
-                )}
-              </p>
-            </div>
+            <FieldDescription>
+              {t(
+                "We choose a sample of 20 pages to audit, removing pages from duplicate templates.",
+              )}
+            </FieldDescription>
           ) : null
         }
       </launchForm.Subscribe>
-    </div>
+    </Field>
+  );
+}
+
+function RenderingOptions({
+  launchForm,
+  maxPagesLimit,
+  canRenderJavaScript,
+}: Pick<Props, "launchForm" | "maxPagesLimit" | "canRenderJavaScript">) {
+  const { t } = useLocale();
+
+  return (
+    <Field className="rounded-lg border border-border p-3">
+      <div className="flex items-center gap-2">
+        <launchForm.Field name="renderJavaScript">
+          {(field) => (
+            <Switch
+              id="audit-render-javascript"
+              checked={field.state.value}
+              disabled={canRenderJavaScript !== true}
+              onCheckedChange={(checked) => field.handleChange(checked)}
+            />
+          )}
+        </launchForm.Field>
+        <FieldLabel
+          htmlFor="audit-render-javascript"
+          title="Loads each page in a browser before auditing it. Slower."
+        >
+          Render JavaScript
+        </FieldLabel>
+      </div>
+
+      {isHostedClientAuthMode() && (
+        <launchForm.Subscribe
+          selector={(state) => ({
+            renderJavaScript: state.values.renderJavaScript,
+            maxPagesInput: state.values.maxPagesInput,
+          })}
+        >
+          {({ renderJavaScript, maxPagesInput }) =>
+            renderJavaScript ? (
+              <FieldDescription>
+                {renderingEstimateText(
+                  clampMaxPagesInput(maxPagesInput, maxPagesLimit),
+                )}
+              </FieldDescription>
+            ) : null
+          }
+        </launchForm.Subscribe>
+      )}
+      {canRenderJavaScript === false && (
+        <FieldDescription>
+          This deployment has no browser, so rendering needs a Context.dev API
+          key. Set <code>CONTEXT_API_KEY</code>, restart Orca, then reload this
+          page.{" "}
+          <a
+            href="https://github.com/every-app/open-seo/blob/main/docs/SELF_HOSTING_CLOUDFLARE_OPERATIONS.md#render-javascript-in-site-audits"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("Setup guide")}
+          </a>
+        </FieldDescription>
+      )}
+    </Field>
   );
 }
 
 function LaunchErrors({ launchForm }: Pick<Props, "launchForm">) {
   const { t } = useLocale();
+
   return (
     <div className="space-y-2">
       <launchForm.Field name="url">
         {(field) => {
           const urlError = getFieldError(field.state.meta.errors);
 
-          return urlError ? (
-            <p className="text-sm text-error">{t(urlError)}</p>
-          ) : null;
+          return urlError ? <FieldError>{t(urlError)}</FieldError> : null;
         }}
       </launchForm.Field>
 
@@ -213,9 +296,10 @@ function LaunchErrors({ launchForm }: Pick<Props, "launchForm">) {
           const errorMessage = getFormError(submitError);
 
           return errorMessage ? (
-            <div className="alert alert-error py-2">
-              <span className="text-sm">{t(errorMessage)}</span>
-            </div>
+            <Alert variant="destructive">
+              <AlertCircle />
+              <AlertTitle>{t(errorMessage)}</AlertTitle>
+            </Alert>
           ) : null;
         }}
       </launchForm.Subscribe>

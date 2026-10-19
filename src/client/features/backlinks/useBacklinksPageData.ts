@@ -1,5 +1,6 @@
+import { translate } from "@/plugins/locale";
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type QueryKey } from "@tanstack/react-query";
 import type {
   BacklinksPageProps,
   BacklinksSearchState,
@@ -23,13 +24,12 @@ import {
 } from "@/types/schemas/backlinks";
 import {
   toBacklinksFiltersPayload,
+  backlinksFilterBudgetError,
   toReferringDomainsFiltersPayload,
   toTopPagesFiltersPayload,
 } from "./backlinksFilterTypes";
 import type { BacklinksFiltersState } from "./useBacklinksFilters";
 import { toScopeSearchParam } from "@/shared/researchScope";
-// FORK: locale plugin — error copy translates via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
 
 type UseBacklinksPageDataArgs = {
   projectId: string;
@@ -44,16 +44,13 @@ const BACKLINKS_QUERY_STALE_TIME_MS = 5 * 60 * 1000;
 function getBacklinksErrorMessage(
   error: unknown,
   fallback: string,
-  t?: (key: string) => string,
 ): string | null {
   if (!error) return null;
   if (getErrorCode(error) === "VALIDATION_ERROR") {
-    return t
-      ? t("Enter a valid domain or page URL.")
-      : "Enter a valid domain or page URL.";
+    return translate("Enter a valid domain or page URL.");
   }
 
-  return getStandardErrorMessage(error, fallback, t);
+  return getStandardErrorMessage(error, fallback);
 }
 
 /**
@@ -79,7 +76,6 @@ export function useBacklinksPageData({
   searchState,
   filters,
 }: UseBacklinksPageDataArgs) {
-  const { t } = useLocale();
   const searchCardInitialValues = useMemo(
     () => ({
       target: searchState.target,
@@ -93,6 +89,18 @@ export function useBacklinksPageData({
   const targetReady = Boolean(target);
   const baseQueryKeyParts = [projectId, scope, target] as const;
   const pageInputBase = { projectId, target, scope, page, pageSize };
+  // Keep the current table on screen while paging, sorting or filtering the
+  // same target. A new target shows the loading state instead. Each tab has
+  // its own query, so switching tabs never shows another tab's rows.
+  const keepSameTarget = <T>(
+    previous: T | undefined,
+    previousQuery: { queryKey: QueryKey } | undefined,
+  ) =>
+    baseQueryKeyParts.every(
+      (part, index) => previousQuery?.queryKey[index + 1] === part,
+    )
+      ? previous
+      : undefined;
 
   const overviewQuery = useQuery({
     queryKey: ["backlinksOverview", ...baseQueryKeyParts],
@@ -111,6 +119,11 @@ export function useBacklinksPageData({
     () => toBacklinksFiltersPayload(filters.backlinks.values),
     [filters.backlinks.values],
   );
+  const rowsFilterError = backlinksFilterBudgetError(
+    filters.backlinks.values,
+    scope,
+    !searchState.includeSpam,
+  );
   const rowsQuery = useQuery({
     queryKey: [
       "backlinksRows",
@@ -121,9 +134,13 @@ export function useBacklinksPageData({
       rowsSort.order,
       rowsFilters,
       rowsMode,
+      searchState.includeSpam ?? false,
     ],
-    enabled: targetReady && tab === "backlinks",
+    enabled: targetReady && tab === "backlinks" && !rowsFilterError,
     staleTime: BACKLINKS_QUERY_STALE_TIME_MS,
+    // Over-budget filters never run the query, so no rows (and no export) may
+    // stand in for them.
+    placeholderData: rowsFilterError ? undefined : keepSameTarget,
     queryFn: () =>
       getBacklinksRows({
         data: {
@@ -132,6 +149,7 @@ export function useBacklinksPageData({
           sortOrder: rowsSort.order,
           filters: rowsFilters,
           mode: rowsMode,
+          hideSpam: !searchState.includeSpam,
         },
       }),
   });
@@ -158,6 +176,7 @@ export function useBacklinksPageData({
     ],
     enabled: targetReady && tab === "domains",
     staleTime: BACKLINKS_QUERY_STALE_TIME_MS,
+    placeholderData: keepSameTarget,
     queryFn: () =>
       getBacklinksReferringDomains({
         data: {
@@ -191,6 +210,7 @@ export function useBacklinksPageData({
     ],
     enabled: targetReady && tab === "pages",
     staleTime: BACKLINKS_QUERY_STALE_TIME_MS,
+    placeholderData: keepSameTarget,
     queryFn: () =>
       getBacklinksTopPages({
         data: {
@@ -204,8 +224,7 @@ export function useBacklinksPageData({
 
   const overviewErrorMessage = getBacklinksErrorMessage(
     overviewQuery.error,
-    t("Could not load backlinks data."),
-    t,
+    "Could not load backlinks data.",
   );
   const activeTabQuery =
     tab === "backlinks"
@@ -213,14 +232,14 @@ export function useBacklinksPageData({
       : tab === "domains"
         ? referringDomainsQuery
         : topPagesQuery;
-  const activeTabErrorMessage = getBacklinksErrorMessage(
-    activeTabQuery.error,
-    t("Could not load this tab."),
-    t,
-  );
+  const activeTabFilterError = tab === "backlinks" ? rowsFilterError : null;
+  const activeTabErrorMessage =
+    activeTabFilterError ??
+    getBacklinksErrorMessage(activeTabQuery.error, "Could not load this tab.");
 
   return {
     activeTabErrorMessage,
+    activeTabFilterError,
     activeTabQuery,
     overviewErrorMessage,
     overviewQuery,
@@ -230,6 +249,8 @@ export function useBacklinksPageData({
     topPagesQuery,
   };
 }
+
+export type BacklinksPageData = ReturnType<typeof useBacklinksPageData>;
 
 export function navigateToBacklinksSearch(
   navigate: BacklinksPageProps["navigate"],

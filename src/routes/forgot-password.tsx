@@ -1,14 +1,16 @@
-import { useForm } from "@tanstack/react-form";
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useAppForm } from "@/client/components/form/useAppForm";
+import { Alert, AlertDescription } from "@/client/components/ui/alert";
+import { Button } from "@/client/components/ui/button";
 import {
   AuthPageCard,
   AuthPageShell,
   authRedirectSearchSchema,
 } from "@/client/features/auth/AuthPage";
-import { getFieldError, getFormError } from "@/client/lib/forms";
+import { getFormError } from "@/client/lib/forms";
 import { authClient } from "@/lib/auth-client";
-// FORK: locale plugin — auth copy translates via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { getSignInSearch, normalizeAuthRedirect } from "@/lib/auth-redirect";
 import { z } from "zod";
@@ -24,11 +26,12 @@ export const Route = createFileRoute("/forgot-password")({
 
 function ForgotPasswordPage() {
   const { t } = useLocale();
+
   const search = Route.useSearch();
   const redirectTo = normalizeAuthRedirect(search.redirect);
   const isHostedMode = isHostedClientAuthMode();
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       email: "",
     },
@@ -48,8 +51,7 @@ function ForgotPasswordPage() {
         if (result.error) {
           formApi.setErrorMap({
             onSubmit: {
-              form:
-                result.error.message || t("We couldn't send the reset email."),
+              form: result.error.message || "We couldn't send the reset email.",
               fields: {},
             },
           });
@@ -58,9 +60,7 @@ function ForgotPasswordPage() {
       } catch {
         formApi.setErrorMap({
           onSubmit: {
-            form: t(
-              "We couldn't send the reset email right now. Please try again.",
-            ),
+            form: "We couldn't send the reset email right now. Please try again.",
             fields: {},
           },
         });
@@ -86,10 +86,7 @@ function ForgotPasswordPage() {
               title={isSuccess ? t("Check your email") : t("Forgot password")}
               helperText={
                 isSuccess
-                  ? t(
-                      "If an account exists for {email}, we sent a reset link.",
-                      { email: submittedEmail },
-                    )
+                  ? undefined
                   : isHostedMode
                     ? t(
                         "Enter your email and we'll send you a password reset link.",
@@ -101,7 +98,7 @@ function ForgotPasswordPage() {
                   <Link
                     to="/sign-in"
                     search={getSignInSearch(redirectTo)}
-                    className="text-base-content/50 hover:text-base-content transition-colors"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {t("Back to sign in")}
                   </Link>
@@ -109,59 +106,46 @@ function ForgotPasswordPage() {
               }
             >
               {isSuccess ? (
-                <div className="alert alert-success">
-                  <span>
-                    {t(
-                      "If an account exists for that email, you'll receive password reset instructions shortly.",
-                    )}
-                  </span>
-                </div>
+                <Alert variant="success">
+                  <AlertDescription>
+                    If an account exists for {submittedEmail}, you'll receive
+                    password reset instructions shortly.
+                  </AlertDescription>
+                </Alert>
               ) : (
-                <form
-                  className="space-y-4"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    void form.handleSubmit();
-                  }}
-                >
-                  <form.Field name="email">
-                    {(field) => {
-                      const error = getFieldError(field.state.meta.errors);
+                <form.AppForm>
+                  <form.Form className="space-y-4">
+                    <form.AppField name="email">
+                      {(field) => (
+                        <field.TextField
+                          label="Email address"
+                          type="email"
+                          placeholder={t("Email address...")}
+                          autoComplete="email"
+                          disabled={!isHostedMode}
+                          required
+                        />
+                      )}
+                    </form.AppField>
 
-                      return (
-                        <div>
-                          <input
-                            type="email"
-                            className="input input-bordered w-full"
-                            placeholder={t("Email address...")}
-                            value={field.state.value}
-                            onChange={(event) =>
-                              field.handleChange(event.target.value)
-                            }
-                            autoComplete="email"
-                            disabled={!isHostedMode}
-                            required
-                          />
-                          {error ? (
-                            <p className="mt-1 text-sm text-error">{error}</p>
-                          ) : null}
-                        </div>
-                      );
-                    }}
-                  </form.Field>
-
-                  {errorMessage ? (
-                    <p className="text-sm text-error">{errorMessage}</p>
-                  ) : null}
-                  <button
-                    className="btn btn-soft w-full"
-                    disabled={!isHostedMode || isSubmitting}
-                  >
-                    {isSubmitting
-                      ? t("Sending reset link...")
-                      : t("Send reset link")}
-                  </button>
-                </form>
+                    {errorMessage ? (
+                      <Alert variant="destructive">
+                        <AlertDescription>{errorMessage}</AlertDescription>
+                      </Alert>
+                    ) : null}
+                    <Button
+                      type="submit"
+                      variant="secondary"
+                      className="w-full"
+                      pending={isSubmitting}
+                      disabled={!isHostedMode}
+                    >
+                      {isSubmitting
+                        ? t("Sending reset link...")
+                        : t("Send reset link")}
+                    </Button>
+                  </form.Form>
+                </form.AppForm>
               )}
             </AuthPageCard>
           );

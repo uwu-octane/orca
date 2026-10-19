@@ -1,7 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
+// FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
+import { useId } from "react";
 import { SerpLocationCombobox } from "@/client/components/SerpLocationCombobox";
-import { prewarmSerpLocations } from "@/serverFunctions/serp-locations";
+import { usePrewarmSerpLocations } from "@/client/components/usePrewarmSerpLocations";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/client/components/ui/field";
+import { RadioGroup, RadioGroupItem } from "@/client/components/ui/radio-group";
 
 type TargetingMode = "national" | "local";
 
@@ -11,62 +21,55 @@ export function SearchTargetingField({
   locationName,
   onLocationNameChange,
   countryCode,
+  error,
 }: {
   mode: TargetingMode;
   onModeChange: (mode: TargetingMode) => void;
   locationName: string | undefined;
   onLocationNameChange: (locationName: string | undefined) => void;
   countryCode: string;
+  /** The error for the city, shown under the city search. */
+  error?: string;
 }) {
   const { t } = useLocale();
-  // Warm the server-side location cache the moment Local targeting is in
-  // play, so the country list is hot before the first keystroke. Best-effort:
-  // a failed warm just means the first search is slower, so no retries, and
-  // staleTime keeps one warm per country per session.
-  useQuery({
-    queryKey: ["serp-locations-prewarm", countryCode],
-    queryFn: () => prewarmSerpLocations({ data: { countryCode } }),
-    enabled: mode === "local",
-    staleTime: Infinity,
-    retry: false,
-  });
+
+  const id = useId();
+  // Warm the moment Local targeting is in play.
+  usePrewarmSerpLocations(countryCode, mode === "local");
   return (
-    <div className="form-control">
-      <label className="label">
-        <span className="label-text font-medium">{t("Search Targeting")}</span>
-      </label>
-      <div className="flex gap-2">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="radio"
-            className="radio radio-sm"
-            checked={mode === "national"}
-            onChange={() => {
-              onModeChange("national");
-              onLocationNameChange(undefined);
-            }}
-          />
-          <span className="text-sm">{t("National")}</span>
-        </label>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="radio"
-            className="radio radio-sm"
-            checked={mode === "local"}
-            onChange={() => onModeChange("local")}
-          />
-          <span className="text-sm">{t("Local")}</span>
-        </label>
-      </div>
-      <p className="text-xs text-base-content/50 mt-1.5">
+    <FieldSet className="gap-2" data-invalid={error ? true : undefined}>
+      <FieldLegend variant="label" className="mb-0">
+        {t("Search Targeting")}
+      </FieldLegend>
+      <RadioGroup
+        value={mode}
+        onValueChange={(value) => {
+          if (value === "local") onModeChange("local");
+          if (value === "national") {
+            onModeChange("national");
+            onLocationNameChange(undefined);
+          }
+        }}
+        className="flex gap-4"
+      >
+        <Field orientation="horizontal" className="w-auto">
+          <RadioGroupItem value="national" id={`${id}-national`} />
+          <FieldLabel htmlFor={`${id}-national`} className="font-normal">
+            {t("National")}
+          </FieldLabel>
+        </Field>
+        <Field orientation="horizontal" className="w-auto">
+          <RadioGroupItem value="local" id={`${id}-local`} />
+          <FieldLabel htmlFor={`${id}-local`} className="font-normal">
+            {t("Local")}
+          </FieldLabel>
+        </Field>
+      </RadioGroup>
+      <FieldDescription>
         {mode === "local" ? (
           <>
-            <>
-              <span className="text-success font-medium">{t("Best for:")}</span>{" "}
-              {t(
-                '"near me" queries, city/county keywords, service-area pages.',
-              )}
-            </>
+            <span className="font-medium text-success">{t("Best for:")}</span>{" "}
+            {t('"near me" queries, city/county keywords, service-area pages.')}
           </>
         ) : (
           <>
@@ -75,17 +78,23 @@ export function SearchTargetingField({
             )}
           </>
         )}
-      </p>
+      </FieldDescription>
       {mode === "local" && (
-        <div className="mt-2">
+        <>
+          <FieldLabel htmlFor={`${id}-city`} className="sr-only">
+            City or region
+          </FieldLabel>
           <SerpLocationCombobox
+            id={`${id}-city`}
             value={locationName}
             onChange={onLocationNameChange}
             countryCode={countryCode}
             placeholder={t("Search cities...")}
+            invalid={Boolean(error)}
           />
-        </div>
+        </>
       )}
-    </div>
+      {error ? <FieldError>{error}</FieldError> : null}
+    </FieldSet>
   );
 }

@@ -1,98 +1,56 @@
-import { useState } from "react";
-import {
-  ChevronDown,
-  Download,
-  Gauge,
-  MoreHorizontal,
-  Sheet,
-} from "lucide-react";
-import type { CsvValue } from "@/client/lib/csv";
-import { exportTableToSheets } from "@/client/lib/exportToSheets";
-// FORK: locale plugin — export toasts translate via the plugin tree.
+// FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
-import type { BacklinksSearchState } from "./backlinksPageTypes";
-import { exportBacklinksTabCsv } from "./export";
+import { ChevronDown, Gauge, Link2, MoreHorizontal } from "lucide-react";
+import { Button } from "@/client/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/client/components/ui/dropdown-menu";
+import { Spinner } from "@/client/components/ui/spinner";
+import { DEFAULT_BACKLINKS_SPAM_THRESHOLD } from "@/types/schemas/backlinks";
 
-export function BacklinksExportMenu({
-  activeTab,
-  exportTarget,
-  headers,
-  rows,
+export function BacklinksBestLinksMenu({
+  hideSpam,
+  onHideSpamChange,
 }: {
-  activeTab: BacklinksSearchState["tab"];
-  exportTarget: string;
-  headers: string[];
-  rows: CsvValue[][];
+  hideSpam: boolean;
+  onHideSpamChange: (hideSpam: boolean) => void;
 }) {
-  const [isExportingSheets, setIsExportingSheets] = useState(false);
-  const { t } = useLocale();
-  const canExport = rows.length > 0 && !isExportingSheets;
-
-  const handleExportToSheets = async () => {
-    if (!canExport) return;
-    setIsExportingSheets(true);
-    try {
-      await exportTableToSheets({
-        headers,
-        rows,
-        feature: `backlinks_${activeTab}`,
-        t,
-      });
-    } finally {
-      setIsExportingSheets(false);
-    }
-  };
-
   return (
-    <div className="dropdown dropdown-end">
-      <div
-        tabIndex={0}
-        role="button"
-        className={`btn btn-sm btn-ghost gap-1 ${rows.length === 0 ? "btn-disabled" : ""}`}
-        aria-label={t("Export backlinks table")}
-      >
-        <Download className="size-4" />
-        {t("Export")}
-        <ChevronDown className="size-3 opacity-60" />
-      </div>
-      <ul
-        tabIndex={0}
-        role="menu"
-        className="dropdown-content z-10 menu p-2 shadow-lg bg-base-100 border border-base-300 rounded-box w-56"
-      >
-        <li>
-          <button
-            type="button"
-            onClick={() => void handleExportToSheets()}
-            disabled={!canExport}
-          >
-            {isExportingSheets ? (
-              <span className="loading loading-spinner loading-xs" />
-            ) : (
-              <Sheet className="size-4" />
-            )}
-            {t("Export to Sheets")}
-          </button>
-        </li>
-        <li>
-          <button
-            type="button"
-            onClick={() =>
-              exportBacklinksTabCsv({
-                tab: activeTab,
-                target: exportTarget,
-                headers,
-                rows,
-              })
-            }
-            disabled={rows.length === 0}
-          >
-            <Download className="size-4" />
-            {t("Export CSV")}
-          </button>
-        </li>
-      </ul>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="ghost" size="sm" />}>
+        <Link2 data-icon="inline-start" />
+        Best links: {hideSpam ? "On" : "Off"}
+        <ChevronDown data-icon="inline-end" className="opacity-60" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-72">
+        <DropdownMenuRadioGroup
+          value={hideSpam ? "best" : "all"}
+          onValueChange={(value) => onHideSpamChange(value === "best")}
+        >
+          <DropdownMenuRadioItem value="best">
+            <span>
+              <span className="block">Best links only</span>
+              <span className="block text-xs text-muted-foreground">
+                Scores below {DEFAULT_BACKLINKS_SPAM_THRESHOLD} or unknown
+              </span>
+            </span>
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="all">
+            <span>
+              <span className="block">All links (spammy included)</span>
+              <span className="block text-xs text-muted-foreground">
+                Includes scores {DEFAULT_BACKLINKS_SPAM_THRESHOLD} or higher
+              </span>
+            </span>
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -106,40 +64,31 @@ export function BacklinksActionsMenu({
   ratableDomains: string[];
 }) {
   const { t } = useLocale();
+
   return (
-    <div className="dropdown dropdown-end">
-      <div
-        tabIndex={0}
-        role="button"
-        className="btn btn-sm btn-ghost btn-square"
-        aria-label={t("Backlinks table actions")}
-        title={t("Backlinks table actions")}
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t("Backlinks table actions")}
+            title={t("Backlinks table actions")}
+          />
+        }
       >
-        <MoreHorizontal className="size-4" />
-      </div>
-      <ul
-        tabIndex={0}
-        role="menu"
-        className="dropdown-content z-10 menu p-2 shadow-lg bg-base-100 border border-base-300 rounded-box w-52"
-      >
-        <li>
-          <button
-            type="button"
-            onClick={() => void loadRatings(ratableDomains)}
-            disabled={isLoadingRatings}
-            title={t(
-              "Look up Ahrefs Domain Rating for each domain in the table",
-            )}
-          >
-            {isLoadingRatings ? (
-              <span className="loading loading-spinner loading-xs" />
-            ) : (
-              <Gauge className="size-4" />
-            )}
-            {t("Ahrefs DR")}
-          </button>
-        </li>
-      </ul>
-    </div>
+        <MoreHorizontal />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuItem
+          onClick={() => void loadRatings(ratableDomains)}
+          disabled={isLoadingRatings}
+          title={t("Look up Ahrefs Domain Rating for each domain in the table")}
+        >
+          {isLoadingRatings ? <Spinner /> : <Gauge />}
+          Ahrefs DR
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

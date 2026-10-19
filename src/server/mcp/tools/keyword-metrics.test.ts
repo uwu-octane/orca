@@ -203,7 +203,9 @@ describe("get_keyword_metrics through the SEO capability", () => {
       main_intent: "commercial",
     });
     const out = textContent(result);
-    expect(out).toContain("keyword | volume | KD | CPC | competition | intent");
+    expect(out).toContain(
+      "keyword | volume | trend | KD | CPC | competition | intent",
+    );
     expect(out).toContain("seo automation");
   });
 

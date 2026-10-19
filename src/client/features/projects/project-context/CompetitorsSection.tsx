@@ -1,19 +1,13 @@
-import * as React from "react";
-import { Pencil, Plus } from "lucide-react";
-// FORK: locale plugin — competitor copy translates via the plugin tree.
+// FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
+import * as React from "react";
+import { Input } from "@/client/components/ui/input";
+import { FormActions } from "@/client/components/FormActions";
 import type { ProjectContextUpdate } from "@/types/schemas/projectContext";
-import {
-  ConfirmDeleteButton,
-  EmptyState,
-  FormActions,
-  listClass,
-  Provenance,
-  RowActions,
-  SectionHeader,
-  useContextUpdate,
-  type ContextCompetitor,
-} from "./shared";
+import { EditableListSection } from "./EditableListSection";
+import { Provenance, useContextUpdate, type ContextCompetitor } from "./shared";
+
+type CompetitorDraft = { domain: string; name: string; notes: string };
 
 export function CompetitorsSection({
   projectId,
@@ -23,20 +17,19 @@ export function CompetitorsSection({
   competitors: ContextCompetitor[];
 }) {
   const { t } = useLocale();
-  const update = useContextUpdate(projectId);
-  const [adding, setAdding] = React.useState(false);
-  const [editingId, setEditingId] = React.useState<string | null>(null);
 
-  const save = (previousDomain: string | null, draft: CompetitorDraft) => {
+  const update = useContextUpdate(projectId);
+
+  const save = (
+    previousDomain: string | null,
+    draft: CompetitorDraft,
+    close: () => void,
+  ) => {
     const ops: ProjectContextUpdate[] = [];
-    // Competitors upsert by domain, so a retyped domain has to drop the old row
-    // before the new one lands.
     if (previousDomain && previousDomain !== draft.domain.trim()) {
       ops.push({ removeCompetitors: [previousDomain] });
     }
-    // Send the fields even when blank: an omitted field means "keep what's
-    // stored" (so agent writes merge), so clearing one from the form has to
-    // send the empty string.
+    // Blank values clear stored fields. Omission would preserve agent writes.
     ops.push({
       addCompetitors: [
         {
@@ -46,120 +39,48 @@ export function CompetitorsSection({
         },
       ],
     });
-    update.mutate(ops, {
-      onSuccess: () => {
-        setAdding(false);
-        setEditingId(null);
-      },
-    });
+    update.mutate(ops, { onSuccess: close });
   };
 
   return (
-    <section className="space-y-3">
-      <SectionHeader
-        title={t("Competitors")}
-        hint={t("The sites you measure yourself against.")}
-        action={
-          <button
-            type="button"
-            className="btn btn-ghost btn-xs"
-            onClick={() => setAdding(true)}
-          >
-            <Plus className="size-3.5" />
-            {t("Add competitor")}
-          </button>
-        }
-      />
-
-      {adding ? (
-        <div className={listClass}>
-          <CompetitorForm
-            pending={update.isPending}
-            onCancel={() => setAdding(false)}
-            onSave={(draft) => save(null, draft)}
-          />
+    <EditableListSection
+      title={t("Competitors")}
+      hint="The sites you measure yourself against."
+      addLabel="Add competitor"
+      emptyTitle="No competitors yet"
+      emptyDescription="Add the sites you compete with, or ask your agent to find them from your rankings and save them here."
+      items={competitors}
+      getId={(item) => item.id}
+      getLabel={(item) => item.domain}
+      pending={update.isPending}
+      onRemove={(item) => update.mutate([{ removeCompetitors: [item.domain] }])}
+      renderItem={(item) => (
+        <div className="min-w-0 space-y-0.5">
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            <span className="truncate text-sm font-medium">{item.domain}</span>
+            {item.name ? (
+              <span className="truncate text-xs text-muted-foreground">
+                {item.name}
+              </span>
+            ) : null}
+          </div>
+          {item.notes ? (
+            <p className="text-sm text-muted-foreground">{item.notes}</p>
+          ) : null}
+          <Provenance by={item.updatedBy} at={item.updatedAt} />
         </div>
-      ) : null}
-
-      {competitors.length === 0 ? (
-        adding ? null : (
-          <EmptyState>
-            {t(
-              "No competitors yet. Add the sites you compete with, or ask SAM to find them from your rankings and save them here.",
-            )}
-          </EmptyState>
-        )
-      ) : (
-        <ul className={listClass}>
-          {competitors.map((competitor) =>
-            editingId === competitor.id ? (
-              <li key={competitor.id}>
-                <CompetitorForm
-                  initial={competitor}
-                  pending={update.isPending}
-                  onCancel={() => setEditingId(null)}
-                  onSave={(draft) => save(competitor.domain, draft)}
-                />
-              </li>
-            ) : (
-              <li
-                key={competitor.id}
-                className="flex items-start justify-between gap-3 p-3"
-              >
-                <div className="min-w-0 space-y-0.5">
-                  <div className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="truncate text-sm font-medium">
-                      {competitor.domain}
-                    </span>
-                    {competitor.name ? (
-                      <span className="truncate text-xs text-base-content/60">
-                        {competitor.name}
-                      </span>
-                    ) : null}
-                  </div>
-                  {competitor.notes ? (
-                    <p className="text-sm text-base-content/70">
-                      {competitor.notes}
-                    </p>
-                  ) : null}
-                  <Provenance
-                    by={competitor.updatedBy}
-                    at={competitor.updatedAt}
-                  />
-                </div>
-                <RowActions>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-xs"
-                    aria-label={t("Edit {domain}", {
-                      domain: competitor.domain,
-                    })}
-                    onClick={() => setEditingId(competitor.id)}
-                  >
-                    <Pencil className="size-3.5" />
-                  </button>
-                  <ConfirmDeleteButton
-                    label={t("Remove {domain}", {
-                      domain: competitor.domain,
-                    })}
-                    pending={update.isPending}
-                    onConfirm={() =>
-                      update.mutate([
-                        { removeCompetitors: [competitor.domain] },
-                      ])
-                    }
-                  />
-                </RowActions>
-              </li>
-            ),
-          )}
-        </ul>
       )}
-    </section>
+      renderForm={(item, close) => (
+        <CompetitorForm
+          initial={item}
+          pending={update.isPending}
+          onCancel={close}
+          onSave={(draft) => save(item?.domain ?? null, draft, close)}
+        />
+      )}
+    />
   );
 }
-
-type CompetitorDraft = { domain: string; name: string; notes: string };
 
 function CompetitorForm({
   initial,
@@ -173,6 +94,7 @@ function CompetitorForm({
   onSave: (draft: CompetitorDraft) => void;
 }) {
   const { t } = useLocale();
+
   const [draft, setDraft] = React.useState<CompetitorDraft>({
     domain: initial?.domain ?? "",
     name: initial?.name ?? "",
@@ -181,7 +103,7 @@ function CompetitorForm({
 
   return (
     <form
-      className="space-y-2 bg-base-200/40 p-3"
+      className="space-y-2 bg-muted/40 p-3"
       onSubmit={(event) => {
         event.preventDefault();
         if (!draft.domain.trim() || pending) return;
@@ -189,43 +111,38 @@ function CompetitorForm({
       }}
     >
       <div className="grid gap-2 sm:grid-cols-2">
-        <input
+        <Input
           autoFocus
-          type="text"
           value={draft.domain}
           onChange={(event) =>
             setDraft({ ...draft, domain: event.target.value })
           }
           placeholder="competitor.com"
           maxLength={255}
-          className="input input-bordered input-sm w-full"
           aria-label={t("Competitor domain")}
         />
-        <input
-          type="text"
+        <Input
           value={draft.name}
           onChange={(event) => setDraft({ ...draft, name: event.target.value })}
           placeholder={t("Name (optional)")}
           maxLength={120}
-          className="input input-bordered input-sm w-full"
           aria-label={t("Competitor name")}
         />
       </div>
-      <input
-        type="text"
+      <Input
         value={draft.notes}
         onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
         placeholder={t(
           "Why they matter — e.g. wins every comparison keyword (optional)",
         )}
         maxLength={500}
-        className="input input-bordered input-sm w-full"
         aria-label={t("Competitor notes")}
       />
       <FormActions
         pending={pending}
         disabled={!draft.domain.trim()}
         onCancel={onCancel}
+        size="xs"
       />
     </form>
   );

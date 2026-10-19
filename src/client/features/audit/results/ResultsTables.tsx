@@ -1,29 +1,24 @@
-import { useMemo, useState } from "react";
+import { translate } from "@/plugins/locale";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   createColumnHelper,
   type ColumnDef,
   type SortingState,
 } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
-import {
-  AppDataTable,
-  useAppTable,
-} from "@/client/components/table/AppDataTable";
-import { TableExportMenu } from "@/client/components/table/TableBulkActionBar";
+import { Badge } from "@/client/components/ui/badge";
+import { Button } from "@/client/components/ui/button";
+import { DataTable, useDataTable } from "@/client/components/table/DataTable";
 import { SortableHeader } from "@/client/components/table/SortableHeader";
 import {
   extractPathname,
   LighthouseScoreBadge,
 } from "@/client/features/audit/shared";
-// FORK: locale plugin — table copy translates via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
-import type { T } from "@/plugins/locale";
 import type { AuditResultsData } from "@/client/features/audit/results/types";
 import {
   countActiveFilters,
-  EmptyTableMessage,
   PerformanceFilterBar,
-  TableFilterToggle,
+  ResultsTableToolbar,
 } from "@/client/features/audit/results/AuditResultsTableFilters";
 import {
   EMPTY_PERFORMANCE_FILTERS,
@@ -42,13 +37,14 @@ export function PerformanceTable({
   projectId,
   lighthouse,
   pages,
+  tabs,
 }: {
   auditId: string;
   projectId: string;
   lighthouse: AuditResultsData["lighthouse"];
   pages: AuditResultsData["pages"];
+  tabs: ReactNode;
 }) {
-  const { t } = useLocale();
   const [filters, setFilters] = useState<PerformanceFilters>(
     EMPTY_PERFORMANCE_FILTERS,
   );
@@ -78,10 +74,10 @@ export function PerformanceTable({
     EMPTY_PERFORMANCE_FILTERS,
   );
   const columns = useMemo(
-    () => buildPerformanceColumns({ auditId, projectId, t }),
-    [auditId, projectId, t],
+    () => buildPerformanceColumns({ auditId, projectId }),
+    [auditId, projectId],
   );
-  const table = useAppTable({
+  const table = useDataTable({
     data: filteredRows,
     columns,
     state: { sorting },
@@ -89,46 +85,50 @@ export function PerformanceTable({
     withSorting: true,
   });
 
+  const resetFilters = () => setFilters(EMPTY_PERFORMANCE_FILTERS);
+
   return (
-    <div className="space-y-3">
-      <TableFilterToggle
-        showFilters={showFilters}
-        onToggle={() => setShowFilters((current) => !current)}
-        activeFilterCount={activeFilterCount}
-        resultCount={filteredRows.length}
-        totalCount={rows.length}
-      />
-      {showFilters ? (
-        <PerformanceFilterBar
-          filters={filters}
-          onChange={setFilters}
-          activeFilterCount={activeFilterCount}
-          onReset={() => setFilters(EMPTY_PERFORMANCE_FILTERS)}
-        />
-      ) : null}
-      <AppDataTable
-        table={table}
-        className="table table-sm"
-        empty={
-          <EmptyTableMessage label="No performance results match these filters." />
-        }
-      />
-    </div>
+    <DataTable
+      table={table}
+      empty={{ title: "No Lighthouse results" }}
+      isFiltered={activeFilterCount > 0}
+      onClearFilters={resetFilters}
+      toolbar={
+        <>
+          {tabs}
+          <ResultsTableToolbar
+            showFilters={showFilters}
+            onToggle={() => setShowFilters((current) => !current)}
+            activeFilterCount={activeFilterCount}
+            resultCount={filteredRows.length}
+            totalCount={rows.length}
+          />
+          {showFilters ? (
+            <PerformanceFilterBar
+              filters={filters}
+              onChange={setFilters}
+              activeFilterCount={activeFilterCount}
+              onReset={resetFilters}
+            />
+          ) : null}
+        </>
+      }
+    />
   );
 }
 
 function buildPerformanceColumns({
   auditId,
   projectId,
-  t,
 }: {
   auditId: string;
   projectId: string;
-  t: T;
 }): ColumnDef<PerformanceRowData>[] {
   return [
     performanceColumnHelper.accessor("pagePath", {
-      header: ({ column }) => <SortableHeader column={column} label="URL" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} label={translate("URL")} />
+      ),
       cell: ({ getValue }) => (
         <span className="text-xs">{getValue() ?? "-"}</span>
       ),
@@ -137,7 +137,7 @@ function buildPerformanceColumns({
     }),
     performanceColumnHelper.accessor("strategy", {
       header: ({ column }) => (
-        <SortableHeader column={column} label={t("Device")} />
+        <SortableHeader column={column} label={translate("Device")} />
       ),
       cell: ({ getValue }) => (
         <span className="capitalize text-xs">{getValue()}</span>
@@ -146,24 +146,18 @@ function buildPerformanceColumns({
     performanceColumnHelper.display({
       id: "status",
       header: ({ column }) => (
-        <SortableHeader column={column} label={t("Status")} />
+        <SortableHeader column={column} label={translate("Status")} />
       ),
       cell: ({ row }) => {
         const isFailed = isLighthouseFailure(row.original);
         const failureMessage =
-          row.original.errorMessage ??
-          t("Lighthouse returned no category scores");
+          row.original.errorMessage ?? "Lighthouse returned no category scores";
         return isFailed ? (
-          <span
-            className="badge badge-error badge-outline text-xs"
-            title={failureMessage}
-          >
-            {t("failed")}
-          </span>
+          <Badge variant="destructive" title={failureMessage}>
+            {"failed"}
+          </Badge>
         ) : (
-          <span className="badge badge-success badge-outline text-xs">
-            {t("ok")}
-          </span>
+          <Badge variant="success">{"ok"}</Badge>
         );
       },
       enableSorting: true,
@@ -173,7 +167,7 @@ function buildPerformanceColumns({
     }),
     performanceColumnHelper.accessor("performanceScore", {
       header: ({ column }) => (
-        <SortableHeader column={column} label={t("Perf")} />
+        <SortableHeader column={column} label={translate("Perf")} />
       ),
       cell: ({ getValue }) => <LighthouseScoreBadge score={getValue()} />,
       sortingFn: nullableNumberSort,
@@ -184,7 +178,9 @@ function buildPerformanceColumns({
       sortingFn: nullableNumberSort,
     }),
     performanceColumnHelper.accessor("seoScore", {
-      header: ({ column }) => <SortableHeader column={column} label="SEO" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} label={translate("SEO")} />
+      ),
       cell: ({ getValue }) => <LighthouseScoreBadge score={getValue()} />,
       sortingFn: nullableNumberSort,
     }),
@@ -195,7 +191,7 @@ function buildPerformanceColumns({
         return value ? (
           <span className="text-xs">{(value / 1000).toFixed(1)}s</span>
         ) : (
-          <span className="text-xs text-base-content/40">-</span>
+          <span className="text-xs text-muted-foreground">-</span>
         );
       },
       sortingFn: nullableNumberSort,
@@ -207,7 +203,7 @@ function buildPerformanceColumns({
         return value != null ? (
           <span className="text-xs">{value.toFixed(3)}</span>
         ) : (
-          <span className="text-xs text-base-content/40">-</span>
+          <span className="text-xs text-muted-foreground">-</span>
         );
       },
       sortingFn: nullableNumberSort,
@@ -219,7 +215,7 @@ function buildPerformanceColumns({
         return value ? (
           <span className="text-xs">{Math.round(value)}ms</span>
         ) : (
-          <span className="text-xs text-base-content/40">-</span>
+          <span className="text-xs text-muted-foreground">-</span>
         );
       },
       sortingFn: nullableNumberSort,
@@ -231,46 +227,32 @@ function buildPerformanceColumns({
         return value ? (
           <span className="text-xs">{Math.round(value)}ms</span>
         ) : (
-          <span className="text-xs text-base-content/40">-</span>
+          <span className="text-xs text-muted-foreground">-</span>
         );
       },
       sortingFn: nullableNumberSort,
     }),
     performanceColumnHelper.display({
       id: "issues",
-      header: () => t("Issues"),
+      header: () => "Issues",
       cell: ({ row }) =>
         row.original.r2Key && !isLighthouseFailure(row.original) ? (
-          <Link
-            className="btn btn-primary btn-xs"
-            to="/p/$projectId/audit/issues/$resultId"
-            params={{ projectId, resultId: row.original.id }}
-            search={{ auditId, category: "performance" }}
+          <Button
+            size="xs"
+            nativeButton={false}
+            render={
+              <Link
+                to="/p/$projectId/audit/issues/$resultId"
+                params={{ projectId, resultId: row.original.id }}
+                search={{ auditId, category: "performance" }}
+              />
+            }
           >
-            {t("View issues")}
-          </Link>
+            {translate("View issues")}
+          </Button>
         ) : (
-          <span className="text-xs text-base-content/40">-</span>
+          <span className="text-xs text-muted-foreground">-</span>
         ),
     }),
   ];
-}
-
-export function ExportDropdown({
-  onExport,
-}: {
-  onExport: (format: "csv" | "json" | "sheets") => void;
-}) {
-  const { t } = useLocale();
-  return (
-    <TableExportMenu
-      buttonClassName="btn btn-sm btn-ghost gap-1"
-      menuClassName="dropdown-content z-10 menu p-2 shadow-lg bg-base-100 border border-base-300 rounded-box w-52"
-      actions={[
-        { label: t("Export to Sheets"), onClick: () => onExport("sheets") },
-        { label: "CSV", onClick: () => onExport("csv") },
-        { label: "JSON", onClick: () => onExport("json") },
-      ]}
-    />
-  );
 }

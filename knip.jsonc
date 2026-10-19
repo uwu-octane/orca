@@ -1,56 +1,58 @@
 {
-  "entry": [
-    // Alchemy deploy stack (run by the alchemy CLI, not imported by the app)
-    "alchemy.run.ts",
-    "alchemy.preview-access.run.ts",
-    // Detect Tanstack Start Routes
-    "cli-auth.ts",
-    "src/start.ts",
-    "src/router.tsx",
-    "src/routes/**/*.ts",
-    "src/routes/**/*.tsx",
-    // Drizzle config (plugin disabled due to cloudflare:workers import issues)
-    "drizzle.config.ts",
-    "drizzle-pg.config.ts",
-    // DB schema — exports consumed via `import * as schema` / drizzle()
-    "src/db/index.ts",
-    "src/db/schema.ts",
-    "src/db/app.schema.ts",
-    "src/db/better-auth-schema.ts",
-    "src/db/pg/schema.ts",
-    // Standalone CLI/dev scripts, invoked via package.json scripts
-    "scripts/**",
-    // DataForSEO section barrel — consumed via the dynamic import in
-    // client.ts (loadDataforseoSections) + property access, which knip
-    // can't trace
-    "src/server/lib/dataforseo/sections.ts",
-  ],
-  // badseo/ is the standalone broken-SEO fixture worker (own deps/config),
-  // like web/ it isn't part of the app's module graph.
-  "project": [
-    "**/*.{js,mjs,ts,tsx}",
-    "!src/routeTree.gen.ts",
-    "!web/**",
-    // Alchemy state/bundle artifacts (gitignored)
-    "!.alchemy/**",
-    "!badseo/**",
-    // vendored cordis loader — typechecked by tsc, not analyzed by knip
-    "!vendor/**",
-  ],
-  "ignore": [
-    "drizzle-prod.config.ts",
-    // Ambient Context augmentation — applied through the tsc program, not
-    // imported at runtime.
-    "src/plugins/shared/types.ts",
-  ],
-  // Disable Drizzle plugin - it tries to load drizzle.config.ts which imports cloudflare:workers
+  "ignoreWorkspaces": ["vendor/loader"],
+  "workspaces": {
+    ".": {
+      "entry": [
+        // Alchemy deploy stack (run by the alchemy CLI, not imported by the app)
+        "deploy/alchemy/alchemy.run.ts",
+        "deploy/alchemy/alchemy.preview-access.run.ts",
+        // Site-audit aux worker entry (wrangler.audit.jsonc)
+        "src/audit-worker.ts",
+        // Lazy section exports are selected by property access in the provider.
+        "src/server/lib/dataforseo/sections.ts",
+        // Detect Tanstack Start Routes
+        "src/start.ts",
+        "src/router.tsx",
+        "src/routes/**/*.ts",
+        "src/routes/**/*.tsx",
+        // Drizzle config (plugin disabled due to cloudflare:workers import issues)
+        "drizzle/sqlite.config.ts",
+        "drizzle/pg.config.ts",
+        // DB schema — exports consumed via `import * as schema` / drizzle()
+        "src/db/index.ts",
+        "src/db/schema.ts",
+        "src/db/app.schema.ts",
+        "src/db/better-auth-schema.ts",
+        "src/db/pg/schema.ts",
+        // Standalone CLI/dev scripts, invoked via package.json scripts
+        "scripts/**",
+        // shadcn components are copied in whole; pages use only some exports
+        "src/client/components/ui/**",
+      ],
+      // tests/badseo/ is the standalone broken-SEO fixture worker (own deps/config),
+      // like web/ it isn't part of the app's module graph.
+      "project": [
+        "**/*.{js,mjs,ts,tsx}",
+        "!src/routeTree.gen.ts",
+        "!web/**",
+        // Alchemy state/bundle artifacts (gitignored)
+        "!.alchemy/**",
+        "!tests/badseo/**",
+        "!vendor/**",
+        // Skill-bundled scripts, run by hand from the skill's instructions
+        "!.agents/**",
+        "!.claude/**",
+      ],
+    },
+  },
+  "ignore": ["drizzle/remote-d1.config.ts", "src/plugins/shared/types.ts"],
+  // Disable Drizzle plugin - it tries to load drizzle/sqlite.config.ts which imports cloudflare:workers
   "drizzle": false,
   "ignoreDependencies": [
     // Tailwindcss used via @tailwindcss/vite plugin
     "tailwindcss",
-    "daisyui",
-    // Used by src/plugins/shared/*, but knip can't trace the usage because
-    // the package resolves into vendor/ which is excluded from its project.
-    "@orca/cordis-plugin-loader",
+    // Imported by app.css; shadcn is also the component CLI
+    "tw-animate-css",
+    "shadcn",
   ],
 }

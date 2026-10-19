@@ -1,14 +1,15 @@
-import { AlertCircle, Loader2 } from "lucide-react";
-import { Modal } from "@/client/components/Modal";
-// FORK: locale plugin — modal copy translates via the plugin tree.
+// FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
+import { AlertCircle } from "lucide-react";
+import { ConfirmDialog } from "@/client/components/ConfirmDialog";
+import { Alert, AlertDescription } from "@/client/components/ui/alert";
 
 export function RemoveSavedKeywordsError({ message }: { message: string }) {
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error">
-      <AlertCircle className="mt-0.5 size-4 shrink-0" />
-      <span>{message}</span>
-    </div>
+    <Alert variant="destructive">
+      <AlertCircle />
+      <AlertDescription>{message}</AlertDescription>
+    </Alert>
   );
 }
 
@@ -24,42 +25,19 @@ export function DeleteSavedKeywordsModal({
   onConfirm: () => void;
 }) {
   const { t } = useLocale();
+
+  const plural = selectedCount !== 1 ? "s" : "";
   return (
-    <Modal onClose={onClose} labelledBy="delete-keywords-title">
-      <h3 id="delete-keywords-title" className="text-lg font-semibold">
-        {t("Delete keywords?")}
-      </h3>
-      <p className="text-sm text-base-content/70">
-        {t(
-          selectedCount === 1
-            ? "This will permanently delete {count} saved keyword."
-            : "This will permanently delete {count} saved keywords.",
-          { count: selectedCount },
-        )}
-      </p>
-      <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          onClick={onClose}
-        >
-          {t("Cancel")}
-        </button>
-        <button
-          type="button"
-          className="btn btn-error btn-sm gap-1"
-          onClick={onConfirm}
-          disabled={isPending}
-        >
-          {isPending ? <Loader2 className="size-3 animate-spin" /> : null}
-          {t(
-            selectedCount === 1
-              ? "Delete {count} keyword"
-              : "Delete {count} keywords",
-            { count: selectedCount },
-          )}
-        </button>
-      </div>
-    </Modal>
+    <ConfirmDialog
+      title={t("Delete keywords?")}
+      confirmLabel={`Delete ${selectedCount} keyword${plural}`}
+      destructive
+      pending={isPending}
+      onClose={onClose}
+      onConfirm={onConfirm}
+    >
+      This will permanently delete {selectedCount} saved keyword{plural}
+      {t(".")}
+    </ConfirmDialog>
   );
 }

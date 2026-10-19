@@ -1,9 +1,17 @@
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import { useEffect } from "react";
 import { useLocation } from "@tanstack/react-router";
-import { Check, ExternalLink, X } from "lucide-react";
-import { Modal } from "@/client/components/Modal";
-// FORK: locale plugin — export modal copy translates via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
+import { Check, ExternalLink } from "lucide-react";
+import { Button } from "@/client/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/client/components/ui/dialog";
 import {
   closeExportToSheetsModal,
   openGoogleSheetsTab,
@@ -12,6 +20,7 @@ import {
 
 export function ExportToSheetsModal() {
   const { t } = useLocale();
+
   const state = useExportToSheetsModalState();
   // Close any stale modal when the user navigates away mid-flow. Deps must
   // be `[pathname]` only — adding `isOpen` would close the modal the instant
@@ -31,49 +40,31 @@ export function ExportToSheetsModal() {
   };
 
   return (
-    <Modal
-      maxWidth="max-w-md"
-      onClose={closeExportToSheetsModal}
-      labelledBy="export-to-sheets-title"
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) closeExportToSheetsModal();
+      }}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex size-8 items-center justify-center rounded-full bg-success/15 text-success">
-            <Check className="size-4" />
-          </span>
-          <h3 id="export-to-sheets-title" className="text-base font-semibold">
-            {t(
-              rowCount === 1
-                ? "Copied {count} row to your clipboard"
-                : "Copied {count} rows to your clipboard",
-              { count: rowCount },
-            )}
-          </h3>
-        </div>
-        <button
-          type="button"
-          className="btn btn-ghost btn-xs btn-square"
-          onClick={closeExportToSheetsModal}
-          aria-label={t("Close")}
-        >
-          <X className="size-4" />
-        </button>
-      </div>
-
-      <p className="text-sm text-base-content/75">
-        {t("Open a new Google Sheet and paste to fill it.")}
-      </p>
-
-      <div className="flex justify-end">
-        <button
-          type="button"
-          className="btn btn-primary btn-sm gap-1.5"
-          onClick={handleOpenSheet}
-        >
-          {t("Open new Google Sheet")}
-          <ExternalLink className="size-3.5" />
-        </button>
-      </div>
-    </Modal>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 pr-8 leading-snug">
+            <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
+              <Check className="size-4" />
+            </span>
+            Copied {rowCount} row{rowCount === 1 ? "" : "s"} to your clipboard
+          </DialogTitle>
+          <DialogDescription>
+            {t("Open a new Google Sheet and paste to fill it.")}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button onClick={handleOpenSheet}>
+            {t("Open new Google Sheet")}
+            <ExternalLink data-icon="inline-end" />
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

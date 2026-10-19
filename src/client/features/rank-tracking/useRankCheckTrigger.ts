@@ -1,10 +1,9 @@
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { triggerRankCheck } from "@/serverFunctions/rank-tracking";
-// FORK: locale plugin — toasts translate via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
 
 export function useRankCheckTrigger({
   configId,
@@ -18,6 +17,7 @@ export function useRankCheckTrigger({
   onSuccess: () => void;
 }) {
   const { t } = useLocale();
+
   const queryClient = useQueryClient();
 
   const triggerMutation = useMutation({
@@ -41,11 +41,6 @@ export function useRankCheckTrigger({
 
       captureClientEvent("rank_tracking:check_trigger");
       toast.success(t("Rank check started"));
-    },
-    onError: (error) => {
-      toast.error(
-        getStandardErrorMessage(error, t("Failed to start rank check"), t),
-      );
     },
   });
 

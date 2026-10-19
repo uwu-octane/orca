@@ -1,83 +1,117 @@
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import { Link } from "@tanstack/react-router";
+import type { UseQueryResult } from "@tanstack/react-query";
 import { ScanSearch, Trash2 } from "lucide-react";
 import type { getAuditHistory } from "@/serverFunctions/audit";
-import { PortalMenu } from "@/client/components/PortalMenu";
+import { EmptyState } from "@/client/components/EmptyState";
+import { QueryState } from "@/client/components/QueryState";
+import { RowActionsMenu } from "@/client/components/RowActionsMenu";
+import { DataTableToolbar } from "@/client/components/table/DataTableToolbar";
+import { Badge } from "@/client/components/ui/badge";
+import { Button } from "@/client/components/ui/button";
+import { DropdownMenuItem } from "@/client/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCard,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/client/components/ui/table";
 import { formatDate, StatusBadge } from "@/client/features/audit/shared";
-import { useLocale } from "@/plugins/client/context";
+
+type AuditHistory = Awaited<ReturnType<typeof getAuditHistory>>;
 
 export function AuditHistorySection({
   projectId,
-  history,
-  isLoading,
+  historyQuery,
   onDelete,
 }: {
   projectId: string;
-  history: Awaited<ReturnType<typeof getAuditHistory>>;
-  isLoading: boolean;
+  historyQuery: UseQueryResult<AuditHistory>;
+  onDelete: (auditId: string) => void;
+}) {
+  return (
+    <QueryState
+      query={historyQuery}
+      errorFallback="Failed to load audit history"
+    >
+      {(history) => (
+        <AuditHistoryTable
+          projectId={projectId}
+          history={history}
+          onDelete={onDelete}
+        />
+      )}
+    </QueryState>
+  );
+}
+
+function AuditHistoryTable({
+  projectId,
+  history,
+  onDelete,
+}: {
+  projectId: string;
+  history: AuditHistory;
   onDelete: (auditId: string) => void;
 }) {
   const { t } = useLocale();
-  if (history.length === 0 && !isLoading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-center text-base-content/40 space-y-3">
-          <ScanSearch className="size-12 mx-auto opacity-30" />
-          <p className="text-lg font-medium">{t("No audits yet")}</p>
-        </div>
-      </div>
-    );
+
+  if (history.length === 0) {
+    return <EmptyState icon={ScanSearch} title={t("No audits yet")} />;
   }
 
-  if (history.length === 0) return null;
-
   return (
-    <div className="card bg-base-100 border border-base-300">
-      <div className="card-body gap-3">
-        <h2 className="card-title text-base">{t("Previous Audits")}</h2>
-        <div className="overflow-x-auto">
-          <table className="table table-sm">
-            <thead>
-              <tr>
-                <th>{t("Date")}</th>
-                <th>{t("URL")}</th>
-                <th>{t("Status")}</th>
-                <th>{t("Pages")}</th>
-                <th>{t("Lighthouse")}</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((audit) => (
-                <tr key={audit.id} className="hover group">
-                  <td className="text-xs text-base-content/70">
-                    {formatDate(audit.startedAt)}
-                  </td>
-                  <td className="max-w-[220px] truncate">{audit.startUrl}</td>
-                  <td>
-                    <StatusBadge status={audit.status} />
-                  </td>
-                  <td>{audit.pagesTotal || audit.pagesCrawled}</td>
-                  <td>
-                    {audit.ranLighthouse ? (
-                      <span className="badge badge-ghost badge-xs">
-                        {t("Yes")}
-                      </span>
-                    ) : null}
-                  </td>
-                  <td>
-                    <HistoryActions
-                      projectId={projectId}
-                      auditId={audit.id}
-                      onDelete={onDelete}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <TableCard>
+      <DataTableToolbar>
+        <h2 className="text-sm font-semibold">{t("Previous Audits")}</h2>
+      </DataTableToolbar>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("Date")}</TableHead>
+            <TableHead>{t("URL")}</TableHead>
+            <TableHead>{t("Status")}</TableHead>
+            <TableHead>{t("Pages")}</TableHead>
+            <TableHead>{t("Lighthouse")}</TableHead>
+            <TableHead />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {history.map((audit) => (
+            <TableRow key={audit.id} className="group">
+              <TableCell className="text-xs text-muted-foreground">
+                {formatDate(audit.startedAt)}
+              </TableCell>
+              <TableCell className="max-w-[220px] truncate">
+                {audit.startUrl}
+              </TableCell>
+              <TableCell>
+                <StatusBadge status={audit.status} />
+              </TableCell>
+              <TableCell>{audit.pagesTotal || audit.pagesCrawled}</TableCell>
+              <TableCell>
+                {audit.ranLighthouse ? (
+                  <Badge variant="outline" size="sm">
+                    {t("Yes")}
+                  </Badge>
+                ) : null}
+              </TableCell>
+              <TableCell>
+                <HistoryActions
+                  projectId={projectId}
+                  auditId={audit.id}
+                  onDelete={onDelete}
+                />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableCard>
   );
 }
 
@@ -91,32 +125,31 @@ function HistoryActions({
   onDelete: (auditId: string) => void;
 }) {
   const { t } = useLocale();
+
   return (
-    <div className="flex items-center justify-end gap-2 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
-      <Link
-        to="/p/$projectId/audit"
-        params={{ projectId }}
-        search={{ auditId, tab: "pages" }}
-        className="btn btn-primary btn-xs"
+    <div className="flex items-center justify-end gap-2 reveal-on-hover">
+      <Button
+        size="xs"
+        nativeButton={false}
+        render={
+          <Link
+            to="/p/$projectId/audit"
+            params={{ projectId }}
+            search={{ auditId, tab: "pages" }}
+          />
+        }
       >
         {t("View")}
-      </Link>
-      <PortalMenu ariaLabel={t("Audit actions")}>
-        {(close) => (
-          <li>
-            <button
-              className="text-error"
-              onClick={() => {
-                close();
-                onDelete(auditId);
-              }}
-            >
-              <Trash2 className="size-3.5" />
-              {t("Delete audit")}
-            </button>
-          </li>
-        )}
-      </PortalMenu>
+      </Button>
+      <RowActionsMenu label={t("Audit actions")}>
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={() => onDelete(auditId)}
+        >
+          <Trash2 />
+          {t("Delete audit")}
+        </DropdownMenuItem>
+      </RowActionsMenu>
     </div>
   );
 }

@@ -1,8 +1,10 @@
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import * as React from "react";
+import { InlineConfirm } from "@/client/components/InlineConfirm";
 import { useQuery } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
-import { useLocale } from "@/plugins/client/context";
-import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { QueryState } from "@/client/components/QueryState";
 import { getProjectContext } from "@/serverFunctions/projectContext";
 import {
   PROJECT_CONTEXT_SECTION_KEYS,
@@ -13,17 +15,19 @@ import {
 import { CompetitorsSection } from "./CompetitorsSection";
 import { KeyPagesSection } from "./KeyPagesSection";
 import {
-  ConfirmDeleteButton,
-  EmptyState,
-  FormActions,
   listClass,
   Provenance,
   RowActions,
-  SectionHeader,
   projectContextQueryKey,
   useContextUpdate,
   type ProjectContextData,
 } from "./shared";
+import { EmptyState } from "@/client/components/EmptyState";
+import { FormActions } from "@/client/components/FormActions";
+import { SectionHeader } from "@/client/components/PageHeader";
+import { Button } from "@/client/components/ui/button";
+import { Input } from "@/client/components/ui/input";
+import { Textarea } from "@/client/components/ui/textarea";
 
 const SECTION_HINTS: Record<ProjectContextSectionKey, string> = {
   business_overview: "What you sell, who buys it, and where.",
@@ -44,7 +48,6 @@ const SECTION_PLACEHOLDERS: Record<ProjectContextSectionKey, string> = {
 };
 
 export function ProjectContextPage({ projectId }: { projectId: string }) {
-  const { t } = useLocale();
   const contextQuery = useQuery({
     queryKey: projectContextQueryKey(projectId),
     queryFn: () => getProjectContext({ data: { projectId } }),
@@ -53,60 +56,46 @@ export function ProjectContextPage({ projectId }: { projectId: string }) {
     staleTime: 0,
   });
 
-  if (contextQuery.isPending) {
-    return (
-      <div className="flex justify-center py-10">
-        <span className="loading loading-spinner loading-md" />
-      </div>
-    );
-  }
-
-  if (contextQuery.isError) {
-    return (
-      <div className="alert alert-error">
-        <span className="text-sm">
-          {getStandardErrorMessage(
-            contextQuery.error,
-            t("Failed to load project context"),
-            t,
-          )}
-        </span>
-      </div>
-    );
-  }
-
-  const context = contextQuery.data;
-
   return (
-    // key remounts the whole page when the project switches under it, so no
-    // draft, open form, or edit state can carry over to another project.
-    <div key={projectId} className="space-y-8">
-      <p className="text-sm text-base-content/70">
-        {t(
-          "What SAM, Claude Code, and any connected MCP client know about this project. They read it before they work and write back what they learn, so correct anything that looks wrong.",
-        )}
-      </p>
+    <QueryState
+      query={contextQuery}
+      errorFallback="Failed to load project context"
+    >
+      {(context) => (
+        // key remounts the whole page when the project switches under it, so no
+        // draft, open form, or edit state can carry over to another project.
+        <div key={projectId} className="space-y-8">
+          <p className="text-sm text-muted-foreground">
+            What Claude Code and any other connected MCP client know about this
+            project. They read it before they work and write back what they
+            learn, so correct anything that looks wrong.
+          </p>
 
-      <ProseSections
-        projectId={projectId}
-        sections={context.sections}
-        missingSections={context.missingSections}
-      />
+          <ProseSections
+            projectId={projectId}
+            sections={context.sections}
+            missingSections={context.missingSections}
+          />
 
-      <CompetitorsSection
-        projectId={projectId}
-        competitors={context.competitors}
-      />
+          <CompetitorsSection
+            projectId={projectId}
+            competitors={context.competitors}
+          />
 
-      <KeyPagesSection projectId={projectId} keyPages={context.keyPages} />
+          <KeyPagesSection projectId={projectId} keyPages={context.keyPages} />
 
-      <CustomSections
-        projectId={projectId}
-        customSections={context.customSections}
-      />
+          <CustomSections
+            projectId={projectId}
+            customSections={context.customSections}
+          />
 
-      <ResearchLog projectId={projectId} researchLog={context.researchLog} />
-    </div>
+          <ResearchLog
+            projectId={projectId}
+            researchLog={context.researchLog}
+          />
+        </div>
+      )}
+    </QueryState>
   );
 }
 
@@ -120,6 +109,7 @@ function ProseSections({
   missingSections: ProjectContextData["missingSections"];
 }) {
   const { t } = useLocale();
+
   const update = useContextUpdate(projectId);
   const stored = new Map(sections.map((section) => [section.key, section]));
   // Only the fields the user actually touched are pinned locally; the rest
@@ -165,11 +155,12 @@ function ProseSections({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {missingSections.length === PROJECT_CONTEXT_SECTION_KEYS.length ? (
-        <EmptyState>
-          {t(
-            "Nothing written down yet. Fill in what you can — or ask SAM to draft it from your site and confirm what it got right.",
-          )}
-        </EmptyState>
+        <EmptyState
+          size="sm"
+          icon={null}
+          title="Nothing written down yet"
+          description="Fill in what you can — or ask your agent to draft it from your site and confirm what it got right."
+        />
       ) : null}
 
       {PROJECT_CONTEXT_SECTION_KEYS.map((key) => {
@@ -179,22 +170,22 @@ function ProseSections({
             <div className="flex flex-wrap items-baseline justify-between gap-x-3">
               <label
                 htmlFor={`context-${key}`}
-                className="text-sm font-medium text-base-content"
+                className="text-sm font-medium text-foreground"
               >
                 {t(PROJECT_CONTEXT_SECTION_LABELS[key])}
               </label>
               {section ? (
                 <Provenance by={section.updatedBy} at={section.updatedAt} />
               ) : (
-                <span className="text-xs text-base-content/40">
+                <span className="text-xs text-muted-foreground">
                   {t("Empty")}
                 </span>
               )}
             </div>
-            <p className="text-xs text-base-content/50">
+            <p className="text-xs text-muted-foreground">
               {t(SECTION_HINTS[key])}
             </p>
-            <textarea
+            <Textarea
               id={`context-${key}`}
               value={draftOf(key)}
               onChange={(event) => {
@@ -213,20 +204,19 @@ function ProseSections({
               rows={4}
               maxLength={PROSE_MAX_CHARS}
               placeholder={t(SECTION_PLACEHOLDERS[key])}
-              className="textarea textarea-bordered w-full text-sm"
             />
           </div>
         );
       })}
 
       <div className="flex justify-end">
-        <button
+        <Button
           type="submit"
-          className="btn btn-primary btn-sm"
+          size="sm"
           disabled={update.isPending || changed.length === 0}
         >
           {t("Save changes")}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -240,6 +230,7 @@ function CustomSections({
   customSections: ProjectContextData["customSections"];
 }) {
   const { t } = useLocale();
+
   const update = useContextUpdate(projectId);
   const [editingSlug, setEditingSlug] = React.useState<string | null>(null);
 
@@ -247,17 +238,16 @@ function CustomSections({
     <section className="space-y-3">
       <SectionHeader
         title={t("Custom sections")}
-        hint={t(
-          "Anything an agent wrote down that didn't fit the sections above.",
-        )}
+        hint="Anything an agent wrote down that didn't fit the sections above."
       />
 
       {customSections.length === 0 ? (
-        <EmptyState>
-          {t(
-            "Nothing here yet. Agents add a section when they learn something important that has nowhere else to live.",
-          )}
-        </EmptyState>
+        <EmptyState
+          size="sm"
+          icon={null}
+          title="Nothing here yet"
+          description="Agents add a section when they learn something important that has nowhere else to live."
+        />
       ) : (
         <div className="space-y-3">
           {customSections.map((custom) =>
@@ -277,7 +267,7 @@ function CustomSections({
             ) : (
               <div
                 key={custom.slug}
-                className="space-y-2 rounded-lg border border-base-300 p-3"
+                className="space-y-2 rounded-lg border border-border bg-card p-3"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -287,20 +277,16 @@ function CustomSections({
                     <Provenance by={custom.updatedBy} at={custom.updatedAt} />
                   </div>
                   <RowActions>
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-xs"
-                      aria-label={t("Edit {title}", {
-                        title: custom.title ?? custom.slug,
-                      })}
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      aria-label={`Edit ${custom.title ?? custom.slug}`}
                       onClick={() => setEditingSlug(custom.slug)}
                     >
                       <Pencil className="size-3.5" />
-                    </button>
-                    <ConfirmDeleteButton
-                      label={t("Delete {title}", {
-                        title: custom.title ?? custom.slug,
-                      })}
+                    </Button>
+                    <InlineConfirm
+                      label={`Delete ${custom.title ?? custom.slug}`}
                       pending={update.isPending}
                       onConfirm={() =>
                         update.mutate([{ deleteCustomSection: custom.slug }])
@@ -308,7 +294,7 @@ function CustomSections({
                     />
                   </RowActions>
                 </div>
-                <p className="whitespace-pre-wrap text-sm text-base-content/70">
+                <p className="whitespace-pre-wrap text-sm text-muted-foreground">
                   {custom.content}
                 </p>
               </div>
@@ -332,39 +318,38 @@ function CustomSectionForm({
   onSave: (title: string, content: string) => void;
 }) {
   const { t } = useLocale();
+
   const [title, setTitle] = React.useState(custom.title ?? "");
   const [content, setContent] = React.useState(custom.content);
 
   return (
     <form
-      className="space-y-2 rounded-lg border border-base-300 bg-base-200/40 p-3"
+      className="space-y-2 rounded-lg border border-border bg-muted/40 p-3"
       onSubmit={(event) => {
         event.preventDefault();
         if (pending || !content.trim()) return;
         onSave(title.trim() || custom.slug, content);
       }}
     >
-      <input
-        type="text"
+      <Input
         value={title}
         onChange={(event) => setTitle(event.target.value)}
         placeholder={custom.slug}
         maxLength={120}
-        className="input input-bordered input-sm w-full"
         aria-label={t("Section title")}
       />
-      <textarea
+      <Textarea
         value={content}
         onChange={(event) => setContent(event.target.value)}
         rows={5}
         maxLength={PROSE_MAX_CHARS}
-        className="textarea textarea-bordered w-full text-sm"
         aria-label={t("Section content")}
       />
       <FormActions
         pending={pending}
         disabled={!content.trim()}
         onCancel={onCancel}
+        size="xs"
       />
     </form>
   );
@@ -378,23 +363,23 @@ function ResearchLog({
   researchLog: ProjectContextData["researchLog"];
 }) {
   const { t } = useLocale();
+
   const update = useContextUpdate(projectId);
 
   return (
     <section className="space-y-3">
       <SectionHeader
         title={t("Research log")}
-        hint={t(
-          "What's already been looked up, so nobody buys the same data twice.",
-        )}
+        hint="What's already been looked up, so nobody buys the same data twice."
       />
 
       {researchLog.length === 0 ? (
-        <EmptyState>
-          {t(
-            "Nothing logged yet. Agents record paid research here as they run it.",
-          )}
-        </EmptyState>
+        <EmptyState
+          size="sm"
+          icon={null}
+          title="Nothing logged yet"
+          description="Agents record paid research here as they run it."
+        />
       ) : (
         <ul className={listClass}>
           {researchLog.map((entry) => (
@@ -403,17 +388,15 @@ function ResearchLog({
               className="flex items-start justify-between gap-3 p-3"
             >
               <div className="min-w-0 space-y-0.5">
-                <p className="text-sm text-base-content/80">{entry.summary}</p>
-                <div className="flex flex-wrap items-baseline gap-x-2 text-xs text-base-content/40">
+                <p className="text-sm text-foreground">{entry.summary}</p>
+                <div className="flex flex-wrap items-baseline gap-x-2 text-xs text-muted-foreground">
                   <span>{entry.entryDate}</span>
                   <Provenance by={entry.createdBy} />
                 </div>
               </div>
               <RowActions>
-                <ConfirmDeleteButton
-                  label={t("Delete log entry from {date}", {
-                    date: entry.entryDate,
-                  })}
+                <InlineConfirm
+                  label={`Delete log entry from ${entry.entryDate}`}
                   pending={update.isPending}
                   onConfirm={() =>
                     update.mutate([{ removeResearchLog: [entry.id] }])

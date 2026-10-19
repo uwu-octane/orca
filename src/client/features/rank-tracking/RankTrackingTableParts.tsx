@@ -1,11 +1,10 @@
-// FORK: locale plugin — display formatting follows the active locale.
 import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
-import type { T } from "@/plugins/locale";
+// FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
+import { translate } from "@/plugins/locale";
 import { Sparkles } from "lucide-react";
-import { toast } from "sonner";
-import { buildCsv, downloadCsv } from "@/client/lib/csv";
-import { exportTableToSheets } from "@/client/lib/exportToSheets";
+import { Badge } from "@/client/components/ui/badge";
+import { exportRows } from "@/client/lib/exportRows";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { formatLocationLabel } from "@/shared/keyword-locations";
 import type {
@@ -40,19 +39,22 @@ const FEATURE_TOOLTIPS: Record<string, string> = {
 
 export function SerpFeatureTags({ features }: { features: string[] }) {
   const { t } = useLocale();
+
   const notable = features.filter((f) => f in FEATURE_SHORT_LABELS);
   if (notable.length === 0) return null;
   return (
     <div className="flex gap-1 flex-wrap">
       {notable.map((f) => (
-        <span
+        <Badge
           key={f}
-          className="badge badge-xs gap-0.5 cursor-help bg-base-300 border-0 text-base-content/70"
+          variant="secondary"
+          size="sm"
+          className="cursor-help"
           title={t(FEATURE_TOOLTIPS[f] ?? f)}
         >
-          {f === "ai_overview" && <Sparkles className="size-2.5" />}
+          {f === "ai_overview" && <Sparkles />}
           {t(FEATURE_SHORT_LABELS[f])}
-        </span>
+        </Badge>
       ))}
     </div>
   );
@@ -67,18 +69,18 @@ export function DeviceRankCell({
 
   // Nothing at all
   if (position === null && previousPosition === null) {
-    return <span className="text-base-content/40">-</span>;
+    return <span className="text-muted-foreground">-</span>;
   }
 
   // Was ranking, now lost
   if (position === null && previousPosition !== null) {
     return (
       <span className="inline-flex items-center gap-1.5">
-        <span className="font-mono text-xs text-base-content/40 w-6 text-right">
+        <span className="w-6 text-right font-mono text-xs text-muted-foreground">
           {previousPosition}
         </span>
-        <span className="text-base-content/30">→</span>
-        <span className="font-mono rounded px-1.5 py-0.5 text-xs font-semibold bg-error/20 text-error">
+        <span className="text-muted-foreground/60">→</span>
+        <span className="font-mono rounded px-1.5 py-0.5 text-xs font-semibold bg-destructive/15 text-destructive">
           lost
         </span>
       </span>
@@ -92,16 +94,16 @@ export function DeviceRankCell({
 
   // Both exist — show old → new with colored badge
   const change = previousPosition - position!;
-  let badgeClass = "bg-base-200 text-base-content";
+  let badgeClass = "bg-muted text-foreground";
   if (change > 0) badgeClass = "bg-success/20 text-success";
   if (change < 0) badgeClass = "bg-warning/20 text-warning";
 
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className="font-mono text-xs text-base-content/40 w-6 text-right">
+      <span className="w-6 text-right font-mono text-xs text-muted-foreground">
         {previousPosition}
       </span>
-      <span className="text-base-content/30">→</span>
+      <span className="text-muted-foreground/60">→</span>
       <span
         className={`font-mono rounded px-1.5 py-0.5 text-xs font-semibold ${badgeClass}`}
       >
@@ -119,14 +121,14 @@ export function DeviceUrlCell({
   domain: string;
 }) {
   if (!result.rankingUrl) {
-    return <span className="text-base-content/40 text-xs">-</span>;
+    return <span className="text-xs text-muted-foreground">-</span>;
   }
   return (
     <a
       href={toFullUrl(result.rankingUrl, domain)}
       target="_blank"
       rel="noopener noreferrer"
-      className="link link-hover block truncate text-xs"
+      className="block truncate text-xs hover:underline"
       title={result.rankingUrl}
     >
       {toPath(result.rankingUrl)}
@@ -134,37 +136,22 @@ export function DeviceUrlCell({
   );
 }
 
-const compactFormatter = new Intl.NumberFormat(
-  getIntlLocale(readActiveLocale()),
-  {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  },
-);
-
 export function VolumeCell({ value }: { value: number | null }) {
-  if (value == null) return <span className="text-base-content/40">-</span>;
+  const compactFormatter = new Intl.NumberFormat(
+    getIntlLocale(readActiveLocale()),
+    {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    },
+  );
+  if (value == null) return <span className="text-muted-foreground">-</span>;
   return (
     <span className="font-mono text-sm">{compactFormatter.format(value)}</span>
   );
 }
 
-export function DifficultyCell({ value }: { value: number | null }) {
-  if (value == null) return <span className="text-base-content/40">-</span>;
-  let badgeClass = "bg-success/20 text-success";
-  if (value > 60) badgeClass = "bg-error/20 text-error";
-  else if (value > 30) badgeClass = "bg-warning/20 text-warning";
-  return (
-    <span
-      className={`font-mono rounded px-1.5 py-0.5 text-xs font-semibold ${badgeClass}`}
-    >
-      {value}
-    </span>
-  );
-}
-
 export function CpcCell({ value }: { value: number | null }) {
-  if (value == null) return <span className="text-base-content/40">-</span>;
+  if (value == null) return <span className="text-muted-foreground">-</span>;
   return <span className="font-mono text-sm">${value.toFixed(2)}</span>;
 }
 
@@ -178,7 +165,7 @@ export function csvChange(
   return previous - current;
 }
 
-export function buildRankTrackingExport(
+function buildRankTrackingExport(
   sorted: RankTrackingRow[],
   showDesktop: boolean,
   showMobile: boolean,
@@ -189,7 +176,7 @@ export function buildRankTrackingExport(
     // Exports lack the table's tooltip, so name the city inline.
     locationName
       ? `Local volume (${formatLocationLabel(locationName, 2)})`
-      : "Volume",
+      : translate("Volume"),
     "KD",
     "CPC",
     ...(showDesktop
@@ -236,50 +223,43 @@ export function buildRankTrackingExport(
   return { headers, rows };
 }
 
-export function exportRankTrackingToSheets(
-  sorted: RankTrackingRow[],
-  showDesktop: boolean,
-  showMobile: boolean,
-  locationName: string | null | undefined,
-  t?: T,
-) {
-  const { headers, rows } = buildRankTrackingExport(
-    sorted,
-    showDesktop,
-    showMobile,
-    locationName,
-  );
-  void exportTableToSheets({ headers, rows, feature: "rank_tracking", t });
-}
-
-export function exportRankTrackingCsv(opts: {
-  sorted: RankTrackingRow[];
+export function exportRankTracking(args: {
+  format: "csv" | "sheets";
+  rows: RankTrackingRow[];
   showDesktop: boolean;
   showMobile: boolean;
   domain: string;
   locationName?: string | null;
-  t?: T;
+  scope?: "selection";
 }) {
-  const { sorted, showDesktop, showMobile, domain, locationName, t } = opts;
-  if (sorted.length === 0) {
-    toast.error(t ? t("No data to export") : "No data to export");
-    return;
-  }
+  const { format, scope } = args;
   const { headers, rows } = buildRankTrackingExport(
-    sorted,
-    showDesktop,
-    showMobile,
-    locationName,
+    args.rows,
+    args.showDesktop,
+    args.showMobile,
+    args.locationName,
   );
   // CSV file download keeps cents-formatted CPC for human readability;
   // clipboard/Sheets export uses raw numbers (see buildRankTrackingExport).
-  const csvRows = rows.map((row) =>
-    row.map((cell, idx) =>
-      idx === 3 && typeof cell === "number" ? cell.toFixed(2) : cell,
-    ),
-  );
-  downloadCsv(`rank-tracking-${domain}.csv`, buildCsv(headers, csvRows));
-  captureClientEvent("rank_tracking:export_csv");
+  const exportedRows =
+    format === "csv"
+      ? rows.map((row) =>
+          row.map((cell, idx) =>
+            idx === 3 && typeof cell === "number" ? cell.toFixed(2) : cell,
+          ),
+        )
+      : rows;
+  void exportRows({
+    format,
+    feature: "rank_tracking",
+    headers,
+    rows: exportedRows,
+    filename: `rank-tracking-${args.domain}${scope ? "-selected" : ""}`,
+    scope,
+  });
+  if (format === "csv" && rows.length > 0) {
+    captureClientEvent("rank_tracking:export_csv", scope ? { scope } : {});
+  }
 }
 
 function toPath(url: string): string {

@@ -1,3 +1,6 @@
+// FORK: plugin assembly and persisted locale bootstrap.
+import { CordisProvider } from "@/plugins/client/context";
+import { localeInitScript } from "@/plugins/locale/client/init-script";
 /// <reference types="vite/client" />
 import {
   ClientOnly,
@@ -9,9 +12,9 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { AutumnProvider } from "autumn-js/react";
 import * as React from "react";
 import { DefaultCatchBoundary } from "@/client/components/DefaultCatchBoundary";
+import { captureGoogleLinkError } from "@/client/features/integrations/googleLinkError";
 import { ExportToSheetsModal } from "@/client/components/table/ExportToSheetsModal";
 import { themePreferenceInitScript } from "@/client/lib/theme";
 import {
@@ -21,15 +24,17 @@ import {
   stopAnalyticsCapture,
 } from "@/client/lib/posthog";
 import { NotFound } from "@/client/components/NotFound";
+import { TooltipProvider } from "@/client/components/ui/tooltip";
 import appCss from "@/client/styles/app.css?url";
 import { useSession } from "@/lib/auth-client";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { Toaster } from "sonner";
 import { queryClient } from "@/client/tanstack-db";
 import { getActiveOrganizationId } from "@/lib/auth-session";
-// FORK: cordis plugin layer — client provider (mounted below, inside ClientOnly).
-import { CordisProvider } from "@/plugins/client/context";
-import { localeInitScript } from "@/plugins/locale/client/init-script";
+
+// Capture Google link error params before the router starts — a route loader
+// redirect would otherwise replace the URL and lose them. See googleLinkError.ts.
+captureGoogleLinkError();
 
 export const Route = createRootRoute({
   head: () => ({
@@ -134,21 +139,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script
           dangerouslySetInnerHTML={{ __html: themePreferenceInitScript }}
         />
-        {/* FORK: set <html lang> before paint from the locale preference. */}
         <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
         <HeadContent />
       </head>
       <body>
         <ClientOnly>
-          {/* Keep this the ONLY AutumnProvider. Each provider creates its own
-              customer cache (autumn-js bundles a private react-query, so it
-              never shares the app QueryClient), and every extra provider mount
-              pays its own ~1s getOrCreateCustomer round trip. It only provides
-              context — nothing fetches until a useCustomer consumer mounts. */}
-          <AutumnProvider>
+          <CordisProvider>
             <QueryClientProvider client={queryClient}>
-              {/* FORK: cordis plugin layer — client tree mounted once per app. */}
-              <CordisProvider>
+              <TooltipProvider>
                 <PostHogBootstrap />
                 {children}
                 <ExportToSheetsModal />
@@ -169,9 +167,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                     ]}
                   />
                 ) : null}
-              </CordisProvider>
+              </TooltipProvider>
             </QueryClientProvider>
-          </AutumnProvider>
+          </CordisProvider>
         </ClientOnly>
         <Scripts />
       </body>

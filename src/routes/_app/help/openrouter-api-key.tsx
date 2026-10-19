@@ -1,5 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+// FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
+import { createFileRoute } from "@tanstack/react-router";
+import {
+  helpLinkClassName,
+  SecretHelpPage,
+} from "@/client/features/help/SecretHelpPage";
 
 const OPENROUTER_KEYS_URL = "https://openrouter.ai/settings/keys";
 
@@ -11,102 +16,64 @@ function OpenrouterApiKeyHelpPage() {
   const { t } = useLocale();
 
   return (
-    <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
-      <div className="mx-auto max-w-3xl space-y-4">
-        <div className="card bg-base-100 border border-base-300">
-          <div className="card-body gap-3">
-            <h1 className="text-2xl font-semibold">
-              {t("Set up your OpenRouter API key")}
-            </h1>
-            <p className="text-sm text-base-content/70">
-              {t("Orca needs the")} <code>OPENROUTER_API_KEY</code>{" "}
-              {t(
-                "secret before AI features like SAM, the in-app SEO agent, can run. It is optional — everything else in Orca works without it.",
-              )}
-            </p>
-          </div>
-        </div>
-
-        <div className="card bg-base-100 border border-base-300">
-          <div className="card-body gap-4">
-            <h2 className="card-title text-base">{t("Steps")}</h2>
-            <ol className="list-decimal pl-5 text-sm space-y-3 text-base-content/80">
+    <SecretHelpPage
+      title={t("Set up your OpenRouter API key")}
+      intro={
+        <>
+          {t("Orca needs the")}
+          <code>OPENROUTER_API_KEY</code>{" "}
+          {t(
+            "secret before AI features like SAM, the in-app SEO agent, can run. It is optional — everything else in Orca works without it.",
+          )}
+        </>
+      }
+      secretName="OPENROUTER_API_KEY"
+      steps={
+        <>
+          <li>
+            {t("Create an account at")}{" "}
+            <a
+              className={helpLinkClassName}
+              href="https://openrouter.ai"
+              target="_blank"
+              rel="noreferrer"
+            >
+              openrouter.ai
+            </a>{" "}
+            {t("and add credits (pay-as-you-go, like DataForSEO).")}
+          </li>
+          <li>
+            {t("Go to")}{" "}
+            <a
+              className={helpLinkClassName}
+              href={OPENROUTER_KEYS_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              OpenRouter API Keys
+            </a>{" "}
+            {t('and click "Create API Key".')}
+          </li>
+          <li>
+            {t("Save the key as the")}
+            <code>OPENROUTER_API_KEY</code> {t("secret in your environment:")}
+            <ul className="mt-2 list-disc space-y-1 pl-5">
               <li>
-                {t("Create an account at")}{" "}
-                <a
-                  className="link link-primary"
-                  href="https://openrouter.ai"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  openrouter.ai
-                </a>{" "}
-                {t("and add credits (pay-as-you-go, like DataForSEO).")}
+                {t("Docker self-hosting:")}
+                <code>.env</code>
               </li>
+              <li>{t("Cloudflare: set it in the Workers UI (see below)")}</li>
               <li>
-                {t("Go to")}{" "}
-                <a
-                  className="link link-primary"
-                  href={OPENROUTER_KEYS_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  OpenRouter API Keys
-                </a>{" "}
-                {t('and click "Create API Key".')}
+                {t("Local development:")}
+                <code>.env.local</code>
               </li>
-              <li>
-                {t("Save the key as the")} <code>OPENROUTER_API_KEY</code>{" "}
-                {t("secret in your environment:")}
-                <ul className="list-disc pl-5 mt-2 space-y-1">
-                  <li>
-                    {t("Docker self-hosting:")} <code>.env</code>
-                  </li>
-                  <li>
-                    {t("Cloudflare: set it in the Workers UI (see below)")}
-                  </li>
-                  <li>
-                    {t("Local development:")} <code>.env.local</code>
-                  </li>
-                </ul>
-              </li>
-              <li>{t("Restart Orca.")}</li>
-            </ol>
-          </div>
-        </div>
-
-        <div className="card bg-base-100 border border-base-300">
-          <div className="card-body gap-2 text-sm text-base-content/75">
-            <h2 className="card-title text-base">
-              {t("Cloudflare Workers (Dashboard UI)")}
-            </h2>
-            <ol className="list-decimal pl-5 space-y-2 text-sm text-base-content/80">
-              <li>
-                {t("In Cloudflare, go to")} <code>Compute</code> -&gt;{" "}
-                <code>Workers &amp; Pages</code>
-                {t("and open your Orca Worker.")}
-              </li>
-              <li>
-                {t("Open")} <code>{t("Settings")}</code>.
-              </li>
-              <li>
-                {t("Go to")} <code>Variables &amp; Secrets</code>{" "}
-                {t("and add a new secret named")}
-                <code className="mx-1">OPENROUTER_API_KEY</code>.
-              </li>
-              <li>{t("Paste your OpenRouter API key and save.")}</li>
-            </ol>
-
-            <div className="divider my-1" />
-
-            <p>{t("Or set the same secret from your terminal with:")}</p>
-            <pre className="p-3 rounded bg-base-200 border border-base-300 overflow-x-auto text-xs">
-              <code>npx wrangler secret put OPENROUTER_API_KEY</code>
-            </pre>
-            <p>{t("Paste your OpenRouter API key when prompted.")}</p>
-          </div>
-        </div>
-      </div>
-    </div>
+            </ul>
+          </li>
+          <li>{t("Restart Orca.")}</li>
+        </>
+      }
+      dashboardPasteStep="Paste your OpenRouter API key and save."
+      terminalPromptHint="Paste your OpenRouter API key when prompted."
+    />
   );
 }

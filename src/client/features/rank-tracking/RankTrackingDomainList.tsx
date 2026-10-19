@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+// FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -10,23 +11,34 @@ import {
   Globe,
   Plus,
   ChevronRight,
-  Search,
 } from "lucide-react";
 import {
   getRankTrackingConfigSummaries,
   updateRankTrackingConfig,
 } from "@/serverFunctions/rank-tracking";
 import { devicesLabel, scheduleLabel } from "@/shared/rank-tracking";
+import { formatNextCheck } from "./scheduleTime";
 import { formatLocationLabel } from "@/shared/keyword-locations";
-import { Modal } from "@/client/components/Modal";
+import { ConfirmDialog } from "@/client/components/ConfirmDialog";
+import { EmptyState } from "@/client/components/EmptyState";
+import { Button } from "@/client/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardHeader,
+  CardTitle,
+} from "@/client/components/ui/card";
 import {
   applyDomainListFilters,
   countActiveDomainListFilters,
   DomainListFilterBar,
-  EMPTY_DOMAIN_LIST_FILTERS,
   getDomainListFilterOptions,
   type DomainListFilters,
 } from "./RankTrackingFilters";
+import { Skeleton } from "@/client/components/ui/skeleton";
+import { useDebouncedDraft } from "@/client/hooks/useDebouncedDraft";
+import type { RankTrackingListSearch } from "@/types/schemas/rank-tracking-search";
+import { QueryError } from "@/client/components/QueryState";
 
 type ConfigSummary = Awaited<
   ReturnType<typeof getRankTrackingConfigSummaries>
@@ -39,32 +51,71 @@ const FILTER_BAR_MIN_DOMAINS = 6;
 
 export function RankTrackingDomainList({
   projectId,
+  search,
+  onSearchChange,
   onAddDomain,
 }: {
   projectId: string;
+  search: RankTrackingListSearch;
+  onSearchChange: (next: RankTrackingListSearch) => void;
   onAddDomain: () => void;
 }) {
   const { t } = useLocale();
+
   const queryClient = useQueryClient();
   const [archiveTarget, setArchiveTarget] = useState<ConfigSummary | null>(
     null,
   );
-  const [filters, setFilters] = useState<DomainListFilters>(
-    EMPTY_DOMAIN_LIST_FILTERS,
+  const [query, setQuery] = useDebouncedDraft(search.q ?? "", (q) =>
+    onSearchChange({ ...search, q: q || undefined }),
   );
-  const { data: summaries, isPending } = useQuery({
+  const filters: DomainListFilters = {
+    query,
+    device: search.device ?? "all",
+    locationCode: search.loc ? String(search.loc) : "all",
+  };
+  const setFilters = (next: DomainListFilters) => {
+    setQuery(next.query);
+    if (
+      next.device === filters.device &&
+      next.locationCode === filters.locationCode
+    ) {
+      return;
+    }
+    // Carry the typed query too, so the navigation does not revert it.
+    onSearchChange({
+      q: next.query || undefined,
+      device: next.device === "all" ? undefined : next.device,
+      loc: next.locationCode === "all" ? undefined : Number(next.locationCode),
+    });
+  };
+  const clearFilters = () => {
+    setQuery("");
+    onSearchChange({});
+  };
+  const summariesQuery = useQuery({
     queryKey: ["rankTrackingConfigSummaries", projectId],
     queryFn: () => getRankTrackingConfigSummaries({ data: { projectId } }),
   });
+  const summaries = summariesQuery.data;
   const allSummaries = useMemo(() => summaries ?? [], [summaries]);
-  const filteredSummaries = useMemo(
-    () => applyDomainListFilters(allSummaries, filters),
-    [allSummaries, filters],
-  );
-  const filterOptions = useMemo(
-    () => getDomainListFilterOptions(allSummaries),
-    [allSummaries],
-  );
+  const filteredSummaries = applyDomainListFilters(allSummaries, filters);
+  const filterOptions = useMemo(() => {
+    const options = getDomainListFilterOptions(allSummaries);
+    // A shared link can filter on a value no tracked domain has. Show it so
+    // the select matches the URL.
+    const { device, loc } = search;
+    if (device && !options.devices.some((o) => o.value === device)) {
+      options.devices.push({ value: device, label: devicesLabel(device) });
+    }
+    if (loc && !options.locations.some((o) => o.value === String(loc))) {
+      options.locations.push({
+        value: String(loc),
+        label: LOCATIONS[loc] ?? String(loc),
+      });
+    }
+    return options;
+  }, [allSummaries, search]);
   const activeFilterCount = countActiveDomainListFilters(filters);
 
   const archiveMutation = useMutation({
@@ -85,118 +136,96 @@ export function RankTrackingDomainList({
   });
 
   return (
-    <div className="card bg-base-100 border border-base-300">
-      <div className="card-body gap-0 p-0">
-        <div className="flex items-center justify-between px-5 pt-4 pb-3">
+    <Card className="gap-0 py-0">
+      <CardHeader className="px-5 pt-4 pb-3">
+        <CardTitle>
           <h2 className="text-sm font-semibold">{t("Tracked Domains")}</h2>
-          <button
-            className="btn btn-primary btn-sm gap-1"
-            onClick={onAddDomain}
-          >
-            <Plus className="size-3.5" />
+        </CardTitle>
+        <CardAction className="self-center">
+          <Button size="sm" onClick={onAddDomain}>
+            <Plus data-icon="inline-start" />
             {t("Add Domain")}
-          </button>
-        </div>
-        {(allSummaries.length >= FILTER_BAR_MIN_DOMAINS ||
-          activeFilterCount > 0) && (
-          <DomainListFilterBar
-            filters={filters}
-            options={filterOptions}
-            activeFilterCount={activeFilterCount}
-            onChange={setFilters}
-            onReset={() => setFilters(EMPTY_DOMAIN_LIST_FILTERS)}
-          />
+          </Button>
+        </CardAction>
+      </CardHeader>
+      {(allSummaries.length >= FILTER_BAR_MIN_DOMAINS ||
+        activeFilterCount > 0) && (
+        <DomainListFilterBar
+          filters={filters}
+          options={filterOptions}
+          activeFilterCount={activeFilterCount}
+          onChange={setFilters}
+          onReset={clearFilters}
+        />
+      )}
+      <div className="divide-y divide-border border-t border-border">
+        {summariesQuery.isError && (
+          <div className="px-5 py-4">
+            <QueryError
+              error={summariesQuery.error}
+              fallback="Failed to load tracked domains"
+              onRetry={() => void summariesQuery.refetch()}
+              isRetrying={summariesQuery.isFetching}
+            />
+          </div>
         )}
-        <div className="divide-y divide-base-300 border-t border-base-300">
-          {isPending ? (
-            <div className="space-y-4 px-5 py-4" aria-busy>
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="skeleton h-4 w-48" />
-                  <div className="skeleton h-3 w-72" />
-                </div>
-              ))}
-            </div>
-          ) : allSummaries.length === 0 ? (
-            <div className="px-5 py-10 text-center space-y-2">
-              <div className="mx-auto flex size-10 items-center justify-center rounded-xl bg-base-200">
-                <Globe className="size-5 text-base-content/40" />
+        {summariesQuery.isPending ? (
+          <div className="space-y-4 px-5 py-4" aria-busy>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="space-y-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-3 w-72" />
               </div>
-              <p className="text-sm font-medium text-base-content/70">
-                {t("No tracked domains yet")}
-              </p>
-              <p className="text-xs text-base-content/40">
-                {t(
-                  "Add a domain to start monitoring keyword rankings over time.",
-                )}
-              </p>
-            </div>
-          ) : filteredSummaries.length === 0 ? (
-            <div className="px-5 py-10 text-center space-y-3">
-              <div className="mx-auto flex size-10 items-center justify-center rounded-xl bg-base-200">
-                <Search className="size-5 text-base-content/40" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-base-content/70">
-                  {t("No matching tracked domains")}
-                </p>
-                <p className="text-xs text-base-content/40">
-                  {t("Try clearing search or adjusting filters.")}
-                </p>
-              </div>
-              <button
-                className="btn btn-ghost btn-xs"
-                onClick={() => setFilters(EMPTY_DOMAIN_LIST_FILTERS)}
-                disabled={activeFilterCount === 0}
-              >
+            ))}
+          </div>
+        ) : !summaries ? null : summaries.length === 0 ? (
+          <EmptyState
+            variant="plain"
+            icon={Globe}
+            title={t("No tracked domains yet")}
+            description={t(
+              "Add a domain to start monitoring keyword rankings over time.",
+            )}
+          />
+        ) : filteredSummaries.length === 0 ? (
+          <EmptyState
+            variant="plain"
+            kind="filtered"
+            title={t("No matching tracked domains")}
+            description={t("Try clearing search or adjusting filters.")}
+            action={
+              <Button variant="outline" size="sm" onClick={clearFilters}>
                 {t("Clear filters")}
-              </button>
-            </div>
-          ) : (
-            filteredSummaries.map((summary) => (
-              <DomainRow
-                key={summary.id}
-                projectId={projectId}
-                summary={summary}
-                onArchive={() => setArchiveTarget(summary)}
-              />
-            ))
-          )}
-        </div>
+              </Button>
+            }
+          />
+        ) : (
+          filteredSummaries.map((summary) => (
+            <DomainRow
+              key={summary.id}
+              projectId={projectId}
+              summary={summary}
+              onArchive={() => setArchiveTarget(summary)}
+            />
+          ))
+        )}
       </div>
 
       {archiveTarget && (
-        <Modal
+        <ConfirmDialog
+          title={`Archive ${archiveTarget.domain}?`}
+          confirmLabel="Archive"
+          destructive
+          pending={archiveMutation.isPending}
+          onConfirm={() => archiveMutation.mutate(archiveTarget.id)}
           onClose={() => setArchiveTarget(null)}
-          labelledBy="archive-domain-title"
         >
-          <h3 id="archive-domain-title" className="text-lg font-semibold">
-            {t("Archive {domain}?", { domain: archiveTarget.domain })}
-          </h3>
-          <p className="text-sm text-base-content/70">
-            {t(
-              "Scheduled checks will stop and this domain will be hidden from the list. Ranking history is preserved.",
-            )}
-          </p>
-          <div className="flex justify-end gap-2">
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={() => setArchiveTarget(null)}
-            >
-              {t("Cancel")}
-            </button>
-            <button
-              className="btn btn-error btn-sm gap-1"
-              onClick={() => archiveMutation.mutate(archiveTarget.id)}
-              disabled={archiveMutation.isPending}
-            >
-              <Archive className="size-3.5" />
-              {t("Archive")}
-            </button>
-          </div>
-        </Modal>
+          {t(
+            "Scheduled checks will stop and this domain will be hidden from the list. Ranking history is preserved.",
+          )}
+        </ConfirmDialog>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -210,26 +239,30 @@ function DomainRow({
   onArchive: () => void;
 }) {
   const { t } = useLocale();
+
   return (
-    <div className="relative flex w-full items-center gap-4 px-5 py-3.5 transition-colors hover:bg-base-200/50">
+    <div className="relative flex w-full items-center gap-4 px-5 py-3.5 transition-colors hover:bg-foreground/[0.03]">
       <Link
         to="/p/$projectId/rank-tracking/$configId"
         params={{ projectId, configId: summary.id }}
         className="absolute inset-0 z-0"
-        aria-label={t("Open {domain}", { domain: summary.domain })}
+        aria-label={`Open ${summary.domain}`}
       />
       <div className="min-w-0 flex-1 pointer-events-none">
         <p className="font-medium truncate">{summary.domain}</p>
-        <p className="text-xs text-base-content/60">
+        <p className="text-xs text-muted-foreground">
           {summary.locationName
             ? formatLocationLabel(summary.locationName, 2)
             : (LOCATIONS[summary.locationCode] ?? "US")}{" "}
           &middot; {t(devicesLabel(summary.devices))} &middot;{" "}
           {t(scheduleLabel(summary.scheduleInterval))}
+          {summary.scheduleInterval !== "manual" && summary.nextCheckAt && (
+            <> &middot; Next: {formatNextCheck(summary.nextCheckAt)}</>
+          )}
           {summary.lastRunCompletedAt && (
             <>
               {" "}
-              &middot; {t("Last:")}{" "}
+              &middot; Last:{" "}
               {new Date(summary.lastRunCompletedAt).toLocaleDateString()}
             </>
           )}
@@ -250,17 +283,19 @@ function DomainRow({
       <div className="hidden sm:flex items-center gap-6 text-sm pointer-events-none">
         {summary.keywordCount > 0 && (
           <div className="text-center">
-            <p className="text-xs uppercase tracking-wide text-base-content/60">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
               {t("Keywords")}
             </p>
             <p className="font-mono font-medium">{summary.keywordCount}</p>
           </div>
         )}
       </div>
-      <button
-        type="button"
-        className="btn btn-ghost btn-xs text-base-content/40 hover:text-error relative z-10"
-        title={t("Archive domain")}
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        className="relative z-10 text-muted-foreground hover:text-destructive"
+        title="Archive domain"
+        aria-label={`Archive ${summary.domain}`}
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -268,8 +303,8 @@ function DomainRow({
         }}
       >
         <Archive className="size-4" />
-      </button>
-      <ChevronRight className="size-4 shrink-0 text-base-content/40 pointer-events-none" />
+      </Button>
+      <ChevronRight className="size-4 shrink-0 text-muted-foreground pointer-events-none" />
     </div>
   );
 }

@@ -1,12 +1,14 @@
-import { useState } from "react";
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
+import { useId, useState } from "react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { addTrackingKeywords } from "@/serverFunctions/rank-tracking";
 import { MAX_TRACKED_KEYWORD_LENGTH } from "@/shared/rank-tracking";
-import { getStandardErrorMessage } from "@/client/lib/error-messages";
-import { Loader2 } from "lucide-react";
-// FORK: locale plugin — toasts translate via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
+import { Button } from "@/client/components/ui/button";
+import { Checkbox } from "@/client/components/ui/checkbox";
+import { Label } from "@/client/components/ui/label";
+import { Textarea } from "@/client/components/ui/textarea";
 
 export function AddKeywordsPanel({
   configId,
@@ -16,37 +18,59 @@ export function AddKeywordsPanel({
 }: {
   configId: string;
   projectId: string;
-  onSuccess: (result: { added: number; checkTriggered: boolean }) => void;
+  onSuccess: (result: {
+    added: number;
+    checkTriggered: boolean;
+    checkScheduledSoon: boolean;
+  }) => void;
   onCancel: () => void;
 }) {
   const { t } = useLocale();
+
+  const matchCaseId = useId();
   const [keywordInput, setKeywordInput] = useState("");
+  const [matchCase, setMatchCase] = useState(false);
   const mutation = useMutation({
     mutationFn: (kws: string[]) =>
-      addTrackingKeywords({ data: { projectId, configId, keywords: kws } }),
+      addTrackingKeywords({
+        data: { projectId, configId, keywords: kws, matchCase },
+      }),
     onSuccess: (result) => {
       setKeywordInput("");
       onSuccess(result);
     },
-    onError: (error) => {
-      toast.error(
-        getStandardErrorMessage(error, t("Failed to add keywords"), t),
-      );
-    },
   });
   const isPending = mutation.isPending;
   return (
-    <div className="flex gap-2 items-end">
-      <textarea
-        className="textarea textarea-bordered textarea-sm flex-1"
-        rows={3}
-        placeholder={t("Enter keywords, one per line")}
-        value={keywordInput}
-        onChange={(e) => setKeywordInput(e.target.value)}
-      />
+    <div className="flex items-end gap-2">
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <Textarea
+          rows={3}
+          // The field grows with its text; a long line must wrap, not widen the card.
+          className="min-w-0"
+          aria-label="Keywords to add"
+          placeholder={t("Enter keywords, one per line")}
+          value={keywordInput}
+          onChange={(e) => setKeywordInput(e.target.value)}
+        />
+        <div
+          className="flex w-fit items-center gap-2"
+          title="Track these keywords exactly as typed instead of lowercasing them. Google can return different results for a capitalized brand name."
+        >
+          <Checkbox
+            id={matchCaseId}
+            checked={matchCase}
+            onCheckedChange={(checked) => setMatchCase(checked)}
+          />
+          <Label htmlFor={matchCaseId} className="text-xs font-normal">
+            Match case
+          </Label>
+        </div>
+      </div>
       <div className="flex flex-col gap-1">
-        <button
-          className="btn btn-primary btn-sm"
+        <Button
+          size="sm"
+          pending={isPending}
           onClick={() => {
             const lines = keywordInput
               .split("\n")
@@ -54,22 +78,19 @@ export function AddKeywordsPanel({
               .filter(Boolean);
             if (lines.some((l) => l.length > MAX_TRACKED_KEYWORD_LENGTH)) {
               toast.error(
-                t("Keywords must be {max} characters or fewer.", {
-                  max: MAX_TRACKED_KEYWORD_LENGTH,
-                }),
+                `Keywords must be ${MAX_TRACKED_KEYWORD_LENGTH} characters or fewer.`,
               );
               return;
             }
             if (lines.length > 0) mutation.mutate(lines);
           }}
-          disabled={isPending || !keywordInput.trim()}
+          disabled={!keywordInput.trim()}
         >
-          {isPending && <Loader2 className="size-3 animate-spin" />}
           {t("Add")}
-        </button>
-        <button className="btn btn-ghost btn-sm" onClick={onCancel}>
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
           {t("Cancel")}
-        </button>
+        </Button>
       </div>
     </div>
   );

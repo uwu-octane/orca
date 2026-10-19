@@ -12,7 +12,10 @@ import { parseTaskItems } from "@/server/lib/dataforseo/envelope";
 
 const state = vi.hoisted(() => ({
   loads: 0,
-  gate: vi.fn(async () => ({ monthlyRemaining: 1000 })),
+  gate: vi.fn(async () => ({
+    holds: [{ callIndexes: [0] }],
+    refusedCalls: [],
+  })),
   track: vi.fn(),
   live: vi.fn(),
   overview: vi.fn(),
@@ -28,8 +31,8 @@ vi.mock("@/server/billing/subscription", () => ({
   getOrCreateOrganizationCustomer: async (customer: {
     organizationId: string;
   }) => ({ id: customer.organizationId }),
-  assertUsageCreditsAvailable: state.gate,
-  trackUsageCreditSpend: state.track,
+  reserveUsageCredits: state.gate,
+  settleUsageCredits: state.track,
 }));
 vi.mock("@/server/lib/dataforseo/sections", () => {
   state.loads++;
@@ -74,12 +77,14 @@ describe("installed DataForSEO plugin", () => {
       { type: "organic", rank_group: 1, rank_absolute: 2 },
     ]);
     expect(state.loads).toBe(1);
-    expect(state.gate).toHaveBeenCalledWith("org_1");
+    expect(state.gate).toHaveBeenCalledWith(
+      expect.objectContaining({ customerId: "org_1", customer }),
+    );
     expect(state.track).toHaveBeenCalledOnce();
     expect(state.track).toHaveBeenCalledWith(
       expect.objectContaining({
         customer,
-        costUsd: 0.03,
+        costs: [billing],
         creditFeature: "keyword_research",
       }),
     );
@@ -115,7 +120,9 @@ describe("installed DataForSEO plugin", () => {
       searchVolume: 42,
       keywordDifficulty: null,
     });
-    expect(state.gate).toHaveBeenLastCalledWith("org_2");
+    expect(state.gate).toHaveBeenLastCalledWith(
+      expect.objectContaining({ customerId: "org_2", customer: otherCustomer }),
+    );
     expect(state.track).toHaveBeenCalledTimes(2);
     expect(state.track).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -164,7 +171,7 @@ describe("installed DataForSEO plugin", () => {
     expect(state.gate).toHaveBeenCalledOnce();
     expect(state.track).toHaveBeenCalledOnce();
     expect(state.track).toHaveBeenCalledWith(
-      expect.objectContaining({ customer, costUsd: billing.costUsd }),
+      expect.objectContaining({ customer, costs: [billing] }),
     );
   });
 });

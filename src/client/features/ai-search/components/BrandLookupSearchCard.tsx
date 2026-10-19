@@ -1,10 +1,12 @@
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
 import type { FormEvent } from "react";
-import { Search } from "lucide-react";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { applyBillingMarkupUsd } from "@/shared/billing";
 import { ResearchScopeSelect } from "@/client/components/ResearchScopeSelect";
-// FORK: locale plugin — search card copy translates via the plugin tree.
-import { useLocale } from "@/plugins/client/context";
+import { SearchCard, SearchInput } from "@/client/components/SearchCard";
+import { Field, FieldDescription } from "@/client/components/ui/field";
+import { Input } from "@/client/components/ui/input";
 import type { ResearchScope } from "@/shared/researchScope";
 import { BRAND_LOOKUP_MAX_INPUT_LENGTH } from "@/types/schemas/ai-search";
 
@@ -59,100 +61,73 @@ export function BrandLookupSearchCard({
   validationError,
 }: Props) {
   const { t } = useLocale();
+
   const hasCompetitors = competitors.trim().length > 0;
   const queryError = validationError?.field === "query";
   const competitorsError = validationError?.field === "competitors";
 
   return (
-    <div className="card border border-base-300 bg-base-100">
-      <div className="card-body gap-4">
-        <form onSubmit={onSubmit} className="flex flex-col gap-3">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <label
-              className={`input input-bordered flex flex-1 items-center gap-2 ${
-                queryError ? "input-error" : ""
-              }`}
-            >
-              <Search className="size-4 text-base-content/60" />
-              <input
-                type="text"
-                placeholder={t("Enter a brand name or domain")}
-                value={query}
-                maxLength={BRAND_LOOKUP_MAX_INPUT_LENGTH}
-                onChange={(event) => onQueryChange(event.target.value)}
-                aria-invalid={queryError || undefined}
-                aria-describedby={
-                  queryError ? "brand-lookup-input-error" : undefined
-                }
-                autoComplete="off"
-                spellCheck={false}
-                className="grow"
-              />
-            </label>
-
-            <ResearchScopeSelect
-              value={scope}
-              onChange={onScopeChange}
-              disabledReason={scopeDisabledReason}
-            />
-
-            <button
-              type="submit"
-              className="btn btn-primary shrink-0 px-6"
-              disabled={isLoading}
-            >
-              {t(isLoading ? "Looking up..." : "Look up")}
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <input
-              type="text"
+    <SearchCard
+      onSubmit={onSubmit}
+      pending={isLoading}
+      error={validationError?.message}
+      errorId="brand-lookup-input-error"
+      secondRow={
+        <>
+          <Field>
+            <Input
               placeholder={t("Add competitors (comma-separated)")}
               value={competitors}
               onChange={(event) => onCompetitorsChange(event.target.value)}
               autoComplete="off"
               spellCheck={false}
-              className={`input input-bordered w-full ${
-                competitorsError ? "input-error" : ""
-              }`}
               aria-label={t("Competitors")}
               aria-invalid={competitorsError || undefined}
               aria-describedby={
                 competitorsError ? "brand-lookup-input-error" : undefined
               }
             />
-            <p className="text-xs text-base-content/60">
+            <FieldDescription>
               {t(
                 "Add up to 5 competitor brands or domains to see your Share of Voice.",
               )}
-            </p>
-          </div>
-        </form>
-
-        {validationError ? (
-          <p id="brand-lookup-input-error" className="text-sm text-error">
-            {validationError.message}
-          </p>
-        ) : null}
-
-        <div className="flex flex-wrap items-center gap-3 text-xs text-base-content/60">
-          <p className="tabular-nums">
+            </FieldDescription>
+          </Field>
+          <p className="text-xs text-muted-foreground tabular-nums">
             {t("Est.")}{" "}
-            <span className="font-medium text-base-content/80">
+            <span className="font-medium text-foreground">
               ${BRAND_LOOKUP_DISPLAYED_COST_USD.toFixed(2)}
             </span>
             {hasCompetitors ? (
               <span>
                 {" "}
-                {t("plus ~{cost} to compare competitors", {
-                  cost: `$${BRAND_LOOKUP_COMPETITOR_DISPLAYED_COST_USD.toFixed(2)}`,
-                })}
+                plus ~$
+                {BRAND_LOOKUP_COMPETITOR_DISPLAYED_COST_USD.toFixed(2)} to
+                compare competitors
               </span>
             ) : null}
           </p>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <SearchInput
+        placeholder={t("Enter a brand name or domain")}
+        aria-label="Brand name or domain"
+        value={query}
+        maxLength={BRAND_LOOKUP_MAX_INPUT_LENGTH}
+        onChange={(event) => onQueryChange(event.target.value)}
+        aria-invalid={queryError || undefined}
+        aria-describedby={queryError ? "brand-lookup-input-error" : undefined}
+        autoComplete="off"
+        spellCheck={false}
+      />
+
+      <ResearchScopeSelect
+        value={scope}
+        className="w-full lg:w-40"
+        onChange={onScopeChange}
+        disabledReason={scopeDisabledReason}
+      />
+    </SearchCard>
   );
 }

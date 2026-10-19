@@ -1,5 +1,12 @@
-import { DomainFilterPanel } from "@/client/features/domain/components/DomainFilterPanel";
+// FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
+import { useId } from "react";
+import { Link, Link2, Unlink } from "lucide-react";
+import { SegmentedToggle } from "@/client/components/SegmentedToggle";
+import { DataTableFilterGroup } from "@/client/components/table/DataTableToolbar";
+import { Checkbox } from "@/client/components/ui/checkbox";
+import { Label } from "@/client/components/ui/label";
+import { DomainFilterPanel } from "@/client/features/domain/components/DomainFilterPanel";
 import type { BacklinksTab } from "@/types/schemas/backlinks";
 import {
   BACKLINKS_FILTER_FIELDS,
@@ -29,12 +36,12 @@ export function BacklinksFilterPanel({
   maxConditions?: number;
 }) {
   const { t } = useLocale();
+
   if (activeTab === "backlinks") {
     const state = filters.backlinks;
     return (
       <DomainFilterPanel
         key="backlinks"
-        debugName="BacklinksFilterPanel"
         appliedFilters={state.values}
         fields={BACKLINKS_FILTER_FIELDS}
         activeFilterCount={state.activeFilterCount}
@@ -90,7 +97,6 @@ export function BacklinksFilterPanel({
     return (
       <DomainFilterPanel
         key="domains"
-        debugName="ReferringDomainsFilterPanel"
         appliedFilters={state.values}
         fields={REFERRING_DOMAINS_FILTER_FIELDS}
         activeFilterCount={state.activeFilterCount}
@@ -138,7 +144,6 @@ export function BacklinksFilterPanel({
   return (
     <DomainFilterPanel
       key="pages"
-      debugName="TopPagesFilterPanel"
       appliedFilters={state.values}
       fields={TOP_PAGES_FILTER_FIELDS}
       activeFilterCount={state.activeFilterCount}
@@ -181,6 +186,12 @@ export function BacklinksFilterPanel({
   );
 }
 
+const LINK_TYPE_ITEMS = [
+  { value: "all", icon: <Link2 />, label: "All" },
+  { value: "dofollow", icon: <Link />, label: "Dofollow" },
+  { value: "nofollow", icon: <Unlink />, label: "Nofollow" },
+];
+
 function BacklinksToggleControls({
   draft,
   setValue,
@@ -189,59 +200,58 @@ function BacklinksToggleControls({
   setValue: (key: keyof BacklinksTabFilterValues, value: string) => void;
 }) {
   const { t } = useLocale();
-  return (
-    <div className="flex flex-wrap items-center gap-4">
-      <div className="space-y-1.5">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-          {t("Link Type")}
-        </p>
-        <div className="flex items-center gap-1">
-          {(["", "dofollow", "nofollow"] as const).map((value) => (
-            <button
-              key={value || "all"}
-              type="button"
-              className={`btn btn-xs ${draft.linkType === value ? "btn-soft" : "btn-ghost"}`}
-              onClick={() => setValue("linkType", value)}
-            >
-              {value === ""
-                ? t("All")
-                : value === "dofollow"
-                  ? t("Dofollow")
-                  : t("Nofollow")}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      <div className="space-y-1.5">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-          {t("Visibility")}
-        </p>
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-1.5 cursor-pointer">
-            <input
-              type="checkbox"
-              className="checkbox checkbox-xs"
-              checked={draft.hideLost === "true"}
-              onChange={(event) =>
-                setValue("hideLost", event.target.checked ? "true" : "")
-              }
-            />
-            <span className="text-xs">{t("Hide lost")}</span>
-          </label>
-          <label className="flex items-center gap-1.5 cursor-pointer">
-            <input
-              type="checkbox"
-              className="checkbox checkbox-xs"
-              checked={draft.hideBroken === "true"}
-              onChange={(event) =>
-                setValue("hideBroken", event.target.checked ? "true" : "")
-              }
-            />
-            <span className="text-xs">{t("Hide broken")}</span>
-          </label>
+  return (
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <DataTableFilterGroup label={t("Link Type")}>
+        <SegmentedToggle
+          showLabels
+          items={LINK_TYPE_ITEMS}
+          value={draft.linkType || "all"}
+          onChange={(value) =>
+            setValue("linkType", value === "all" ? "" : value)
+          }
+        />
+      </DataTableFilterGroup>
+
+      <DataTableFilterGroup label={t("Visibility")}>
+        <div className="flex h-7 items-center gap-4">
+          <VisibilityCheckbox
+            label={t("Hide lost")}
+            checked={draft.hideLost === "true"}
+            onCheckedChange={(checked) =>
+              setValue("hideLost", checked ? "true" : "")
+            }
+          />
+          <VisibilityCheckbox
+            label={t("Hide broken")}
+            checked={draft.hideBroken === "true"}
+            onCheckedChange={(checked) =>
+              setValue("hideBroken", checked ? "true" : "")
+            }
+          />
         </div>
-      </div>
+      </DataTableFilterGroup>
+    </div>
+  );
+}
+
+function VisibilityCheckbox({
+  label,
+  checked,
+  onCheckedChange,
+}: {
+  label: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  const id = useId();
+  return (
+    <div className="flex items-center gap-2">
+      <Checkbox id={id} checked={checked} onCheckedChange={onCheckedChange} />
+      <Label htmlFor={id} className="text-xs font-normal">
+        {label}
+      </Label>
     </div>
   );
 }

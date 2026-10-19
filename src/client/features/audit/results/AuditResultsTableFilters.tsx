@@ -1,10 +1,24 @@
-import { RotateCcw, SlidersHorizontal } from "lucide-react";
-import type { ReactNode } from "react";
+// FORK: retain locale subscriptions across upstream component changes.
+import { useLocale } from "@/plugins/client/context";
+import {
+  DataTableFilterGroup,
+  DataTableFilterPanel,
+  DataTableFilterToggle,
+  DataTableRangeFilter,
+  DataTableToolbar,
+} from "@/client/components/table/DataTableToolbar";
+import { Input } from "@/client/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/client/components/ui/select";
 import type {
   PagesFilters,
   PerformanceFilters,
 } from "@/client/features/audit/results/AuditResultsTableFilterLogic";
-import { useLocale } from "@/plugins/client/context";
 
 export function PagesFilterBar({
   filters,
@@ -17,17 +31,19 @@ export function PagesFilterBar({
   activeFilterCount: number;
   onReset: () => void;
 }) {
+  const { t } = useLocale();
+
   return (
-    <FilterPanel activeFilterCount={activeFilterCount} onReset={onReset}>
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+    <DataTableFilterPanel activeCount={activeFilterCount} onReset={onReset}>
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
         <TextFilter
-          label="Search"
+          label={t("Search")}
           value={filters.query}
-          placeholder="URL, title, meta"
+          placeholder={t("URL, title, meta")}
           onChange={(query) => onChange({ ...filters, query })}
         />
         <SelectFilter
-          label="Status"
+          label={t("Status")}
           value={filters.status}
           onChange={(status) => onChange({ ...filters, status })}
           options={[
@@ -39,7 +55,19 @@ export function PagesFilterBar({
           ]}
         />
         <SelectFilter
-          label="Alt text"
+          label="Crawl result"
+          value={filters.fetchClass}
+          onChange={(fetchClass) => onChange({ ...filters, fetchClass })}
+          options={[
+            ["all", "All"],
+            ["ok", "Read"],
+            ["error", "Failed"],
+            ["blocked", "Blocked"],
+            ["rate_limited", "Rate limited"],
+          ]}
+        />
+        <SelectFilter
+          label={t("Alt text")}
           value={filters.missingAlt}
           onChange={(missingAlt) => onChange({ ...filters, missingAlt })}
           options={[
@@ -51,14 +79,14 @@ export function PagesFilterBar({
       </div>
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
         <RangeFilter
-          label="Words"
+          label={t("Words")}
           min={filters.minWords}
           max={filters.maxWords}
           onMinChange={(minWords) => onChange({ ...filters, minWords })}
           onMaxChange={(maxWords) => onChange({ ...filters, maxWords })}
         />
         <RangeFilter
-          label="Speed ms"
+          label={t("Speed ms")}
           min={filters.minResponseMs}
           max={filters.maxResponseMs}
           onMinChange={(minResponseMs) =>
@@ -69,7 +97,7 @@ export function PagesFilterBar({
           }
         />
       </div>
-    </FilterPanel>
+    </DataTableFilterPanel>
   );
 }
 
@@ -84,17 +112,19 @@ export function PerformanceFilterBar({
   activeFilterCount: number;
   onReset: () => void;
 }) {
+  const { t } = useLocale();
+
   return (
-    <FilterPanel activeFilterCount={activeFilterCount} onReset={onReset}>
+    <DataTableFilterPanel activeCount={activeFilterCount} onReset={onReset}>
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
         <TextFilter
-          label="Search"
+          label={t("Search")}
           value={filters.query}
-          placeholder="URL"
+          placeholder={t("URL")}
           onChange={(query) => onChange({ ...filters, query })}
         />
         <SelectFilter
-          label="Device"
+          label={t("Device")}
           value={filters.device}
           onChange={(device) => onChange({ ...filters, device })}
           options={[
@@ -104,7 +134,7 @@ export function PerformanceFilterBar({
           ]}
         />
         <SelectFilter
-          label="Status"
+          label={t("Status")}
           value={filters.status}
           onChange={(status) => onChange({ ...filters, status })}
           options={[
@@ -114,7 +144,7 @@ export function PerformanceFilterBar({
           ]}
         />
         <TextFilter
-          label="Max LCP s"
+          label={t("Max LCP s")}
           value={filters.maxLcpSeconds}
           placeholder="2.5"
           type="number"
@@ -123,32 +153,26 @@ export function PerformanceFilterBar({
       </div>
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
         <RangeFilter
-          label="Perf"
+          label={t("Perf")}
           min={filters.minPerf}
           max={filters.maxPerf}
           onMinChange={(minPerf) => onChange({ ...filters, minPerf })}
           onMaxChange={(maxPerf) => onChange({ ...filters, maxPerf })}
         />
         <RangeFilter
-          label="SEO"
+          label={t("SEO")}
           min={filters.minSeo}
           max={filters.maxSeo}
           onMinChange={(minSeo) => onChange({ ...filters, minSeo })}
           onMaxChange={(maxSeo) => onChange({ ...filters, maxSeo })}
         />
       </div>
-    </FilterPanel>
+    </DataTableFilterPanel>
   );
 }
 
-export function EmptyTableMessage({ label }: { label: string }) {
-  const { t } = useLocale();
-  return (
-    <div className="py-6 text-center text-base-content/60">{t(label)}</div>
-  );
-}
-
-export function TableFilterToggle({
+/** The toolbar above a results table: the filter toggle and the row count. */
+export function ResultsTableToolbar({
   showFilters,
   onToggle,
   activeFilterCount,
@@ -161,30 +185,20 @@ export function TableFilterToggle({
   resultCount: number;
   totalCount: number;
 }) {
-  const { t } = useLocale();
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 px-4 py-2.5">
-      <button
-        className={`btn btn-ghost btn-sm gap-1.5 ${showFilters ? "btn-active" : ""}`}
-        onClick={onToggle}
-        title={t("Toggle filters")}
-        type="button"
-      >
-        <SlidersHorizontal className="size-3.5" />
-        {t("Filters")}
-        {activeFilterCount > 0 ? (
-          <span className="badge badge-xs badge-primary border-0 text-primary-content">
-            {activeFilterCount}
-          </span>
-        ) : null}
-      </button>
-      <span className="text-sm tabular-nums text-base-content/60">
-        {t("{count} of {total}", {
-          count: resultCount.toLocaleString(),
-          total: totalCount.toLocaleString(),
-        })}
-      </span>
-    </div>
+    <DataTableToolbar
+      actions={
+        <span className="text-sm tabular-nums text-muted-foreground">
+          {resultCount.toLocaleString()} of {totalCount.toLocaleString()}
+        </span>
+      }
+    >
+      <DataTableFilterToggle
+        open={showFilters}
+        activeCount={activeFilterCount}
+        onToggle={onToggle}
+      />
+    </DataTableToolbar>
   );
 }
 
@@ -196,42 +210,6 @@ export function countActiveFilters<TFilters extends Record<string, string>>(
     const filterKey = key as keyof TFilters;
     return filters[filterKey] !== emptyFilters[filterKey] ? count + 1 : count;
   }, 0);
-}
-
-function FilterPanel({
-  activeFilterCount,
-  onReset,
-  children,
-}: {
-  activeFilterCount: number;
-  onReset: () => void;
-  children: ReactNode;
-}) {
-  const { t } = useLocale();
-  return (
-    <div className="space-y-3 border-b border-base-300 bg-gradient-to-b from-base-100 to-base-200/30 px-4 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold">{t("Refine results")}</p>
-          {activeFilterCount > 0 ? (
-            <span className="badge badge-xs badge-primary border-0 text-primary-content">
-              {t("{count} active", { count: activeFilterCount })}
-            </span>
-          ) : null}
-        </div>
-        <button
-          type="button"
-          className="btn btn-xs btn-ghost gap-1"
-          onClick={onReset}
-          disabled={activeFilterCount === 0}
-        >
-          <RotateCcw className="size-3" />
-          {t("Clear all")}
-        </button>
-      </div>
-      {children}
-    </div>
-  );
 }
 
 function TextFilter({
@@ -248,19 +226,17 @@ function TextFilter({
   onChange: (value: string) => void;
 }) {
   const { t } = useLocale();
+
   return (
-    <label className="form-control gap-1.5">
-      <span className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-        {t(label)}
-      </span>
-      <input
-        className="input input-bordered input-sm w-full bg-base-100"
+    <DataTableFilterGroup label={t(label)}>
+      <Input
+        aria-label={t(label)}
         type={type}
         value={value}
         placeholder={t(placeholder)}
         onChange={(event) => onChange(event.target.value)}
       />
-    </label>
+    </DataTableFilterGroup>
   );
 }
 
@@ -278,28 +254,13 @@ function RangeFilter({
   onMaxChange: (value: string) => void;
 }) {
   const { t } = useLocale();
+
   return (
-    <div className="space-y-2 rounded-lg border border-base-300 bg-base-100 p-2.5">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-        {t(label)}
-      </p>
-      <div className="grid grid-cols-2 gap-2">
-        <input
-          className="input input-bordered input-xs bg-base-100"
-          type="number"
-          value={min}
-          placeholder={t("Min")}
-          onChange={(event) => onMinChange(event.target.value)}
-        />
-        <input
-          className="input input-bordered input-xs bg-base-100"
-          type="number"
-          value={max}
-          placeholder={t("Max")}
-          onChange={(event) => onMaxChange(event.target.value)}
-        />
-      </div>
-    </div>
+    <DataTableRangeFilter
+      label={t(label)}
+      min={{ value: min, onChange: (event) => onMinChange(event.target.value) }}
+      max={{ value: max, onChange: (event) => onMaxChange(event.target.value) }}
+    />
   );
 }
 
@@ -315,27 +276,31 @@ function SelectFilter<T extends string>({
   onChange: (value: T) => void;
 }) {
   const { t } = useLocale();
+
+  const items = options.map(([optionValue, optionLabel]) => ({
+    value: optionValue,
+    label: optionLabel,
+  }));
   return (
-    <label className="form-control gap-1.5">
-      <span className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
-        {t(label)}
-      </span>
-      <select
-        className="select select-bordered select-sm w-full bg-base-100"
+    <DataTableFilterGroup label={t(label)}>
+      <Select
+        items={items}
         value={value}
-        onChange={(event) => {
-          const selected = options.find(
-            ([optionValue]) => optionValue === event.target.value,
-          )?.[0];
-          if (selected != null) onChange(selected);
+        onValueChange={(next) => {
+          if (next !== null) onChange(next);
         }}
       >
-        {options.map(([optionValue, optionLabel]) => (
-          <option key={optionValue} value={optionValue}>
-            {t(optionLabel)}
-          </option>
-        ))}
-      </select>
-    </label>
+        <SelectTrigger aria-label={t(label)} className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {items.map((item) => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </DataTableFilterGroup>
   );
 }

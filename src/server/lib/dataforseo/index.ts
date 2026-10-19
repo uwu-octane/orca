@@ -19,6 +19,8 @@ export {
   type LlmPlatform,
 } from "@/server/lib/dataforseo/shared";
 
+export { SERP_ANALYSIS_DEPTH } from "@/server/lib/dataforseo/serp";
+
 export { normalizeBacklinksTarget } from "@/server/lib/dataforseoBacklinksTarget";
 
 /** Lazy wrappers for the section fetchers called outside the metered client.
@@ -49,6 +51,7 @@ export type {
 export type { AdsKeywordIdeaItem } from "@/server/lib/dataforseo/google-ads";
 
 export type {
+  LocalSerpTaskOutcome,
   SerpLiveItem,
   RankCheckResult,
   RankCheckTaskInput,
@@ -67,3 +70,12 @@ export type {
 export const fetchSerpLocationsForCountry: DataforseoProvider["serpLocations"] =
   async (countryCode) =>
     (await getDataforseoProvider()).serpLocations(countryCode);
+
+export const fetchLocalSerpTaskResult: DataforseoProvider["collectLocalTask"] =
+  async (input) => (await getDataforseoProvider()).collectLocalTask(input);
+export const fetchAiTrackingTaskResult: DataforseoProvider["collectAiTrackingTask"] =
+  async (input) => (await getDataforseoProvider()).collectAiTrackingTask(input);
+export type {
+  AiTrackingAnswer,
+  PostedAiTrackingTask,
+} from "@/server/lib/dataforseo/ai-tracking";

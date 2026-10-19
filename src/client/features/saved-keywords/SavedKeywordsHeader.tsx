@@ -1,12 +1,11 @@
-import {
-  ChevronDown,
-  Download,
-  FileDown,
-  Loader2,
-  RefreshCw,
-  Sheet,
-} from "lucide-react";
+// FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
+import { useState } from "react";
+import { RefreshCw } from "lucide-react";
+import { ConfirmDialog } from "@/client/components/ConfirmDialog";
+import { ExportMenu } from "@/client/components/ExportMenu";
+import { PageHeader } from "@/client/components/PageHeader";
+import { Button } from "@/client/components/ui/button";
 
 export function SavedKeywordsHeader({
   totalCount,
@@ -24,97 +23,59 @@ export function SavedKeywordsHeader({
   onRefreshMetrics: () => void;
 }) {
   const { t } = useLocale();
+
+  const [confirmingRefresh, setConfirmingRefresh] = useState(false);
   const disabled = totalCount === 0 || exporting != null;
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <h1 className="text-2xl font-semibold">{t("Saved Keywords")}</h1>
-        <p className="text-sm text-base-content/70">
-          {t(
-            "Save keyword ideas from research, organize them with tags, and revisit when you're ready to act.",
-          )}
-        </p>
-      </div>
+    <>
+      <PageHeader
+        title={t("Saved Keywords")}
+        description={t(
+          "Save keyword ideas from research, organize them with tags, and revisit when you're ready to act.",
+        )}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              title="Fetch new volume, difficulty, and CPC"
+              disabled={disabled || metricsRefreshing}
+              onClick={() => setConfirmingRefresh(true)}
+            >
+              <RefreshCw
+                data-icon="inline-start"
+                className={metricsRefreshing ? "animate-spin" : ""}
+              />
+              {metricsRefreshing ? t("Updating...") : t("Update keyword stats")}
+            </Button>
 
-      <div className="flex items-center gap-2">
-        <div className="dropdown dropdown-end">
-          <button
-            type="button"
-            tabIndex={0}
-            disabled={disabled || metricsRefreshing}
-            aria-haspopup="menu"
-            className={`btn btn-ghost btn-sm gap-1.5 ${disabled || metricsRefreshing ? "btn-disabled" : ""}`}
-          >
-            <RefreshCw
-              className={`size-4 ${metricsRefreshing ? "animate-spin" : ""}`}
+            <ExportMenu
+              actions={["sheets", "csv"]}
+              busy={exporting != null}
+              disabled={disabled}
+              onExport={(action) =>
+                action === "sheets" ? onExportSheets() : onExportCsv()
+              }
             />
-            {metricsRefreshing ? t("Updating...") : t("Actions")}
-            <ChevronDown className="size-3 opacity-60" />
-          </button>
-          <ul
-            tabIndex={0}
-            role="menu"
-            className="dropdown-content menu z-10 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
-          >
-            <li>
-              <button
-                type="button"
-                onClick={onRefreshMetrics}
-                disabled={disabled || metricsRefreshing}
-              >
-                <RefreshCw className="size-4" />
-                <span className="flex flex-col items-start">
-                  <span>{t("Update keyword stats")}</span>
-                  <span className="text-xs text-base-content/50">
-                    {t("Volume, difficulty & CPC")}
-                  </span>
-                </span>
-              </button>
-            </li>
-          </ul>
-        </div>
+          </>
+        }
+      />
 
-        <div className="dropdown dropdown-end">
-          <button
-            type="button"
-            tabIndex={0}
-            disabled={disabled}
-            aria-haspopup="menu"
-            className={`btn btn-ghost btn-sm gap-1.5 ${disabled ? "btn-disabled" : ""}`}
-          >
-            {exporting != null ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Download className="size-4" />
-            )}
-            {t("Export")}
-            <ChevronDown className="size-3 opacity-60" />
-          </button>
-          <ul
-            tabIndex={0}
-            role="menu"
-            className="dropdown-content menu z-10 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
-          >
-            <li>
-              <button
-                type="button"
-                onClick={onExportSheets}
-                disabled={disabled}
-              >
-                <Sheet className="size-4" />
-                {t("Export to Sheets")}
-              </button>
-            </li>
-            <li>
-              <button type="button" onClick={onExportCsv} disabled={disabled}>
-                <FileDown className="size-4" />
-                {t("Export CSV")}
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+      {confirmingRefresh ? (
+        <ConfirmDialog
+          title="Update keyword stats?"
+          confirmLabel="Update stats"
+          onConfirm={() => {
+            setConfirmingRefresh(false);
+            onRefreshMetrics();
+          }}
+          onClose={() => setConfirmingRefresh(false)}
+        >
+          This fetches new volume, difficulty, and CPC for every saved keyword
+          in this project. Each keyword uses credits.
+        </ConfirmDialog>
+      ) : null}
+    </>
   );
 }

@@ -34,8 +34,11 @@ export const keywordMetricsResultSchema = z.array(keywordMetricSchema);
 export type KeywordMetricsInput = z.infer<typeof keywordMetricsInputSchema>;
 export type KeywordMetric = z.infer<typeof keywordMetricSchema>;
 
-/** Existing live query semantics: Google, desktop/Windows, depth 100. */
+/** Existing live query semantics: Google, desktop/Windows; upstream default depth 20. */
 export const serpLiveInputSchema = z.strictObject({
+  depth: z.number().optional(),
+  locationName: z.string().optional(),
+  device: z.enum(["desktop", "mobile"]).optional(),
   keyword: z.string(),
   locationCode: z.number().int().positive(),
   languageCode: z.string().min(1),
