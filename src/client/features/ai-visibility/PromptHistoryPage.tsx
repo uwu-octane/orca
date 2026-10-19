@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Play } from "lucide-react";
@@ -23,6 +24,8 @@ export function PromptHistoryPage({
   projectId: string;
   promptId: string;
 }) {
+  const { t } = useLocale();
+
   const queryClient = useQueryClient();
   const trackerQuery = useAiVisibilityTracker(projectId);
   const [checking, setChecking] = useState(false);
@@ -50,16 +53,18 @@ export function PromptHistoryPage({
       <PageHeader
         backLink={
           <BackLink to="/p/$projectId/ai-visibility" params={{ projectId }}>
-            All tracked prompts
+            {t("All tracked prompts")}
           </BackLink>
         }
         title={
           <span className="whitespace-pre-wrap" data-ph-mask>
-            {prompt?.text ?? retainedPrompt ?? "Prompt analysis"}
+            {prompt?.text ?? retainedPrompt ?? t("Prompt analysis")}
           </span>
         }
         description={
-          prompt ? `${prompt.topic} · Prompt analysis` : "Prompt analysis"
+          prompt
+            ? t("{topic} · Prompt analysis", { topic: prompt.topic })
+            : t("Prompt analysis")
         }
         actions={
           state?.tracker &&
@@ -71,7 +76,7 @@ export function PromptHistoryPage({
               onClick={() => setChecking(true)}
             >
               <Play />
-              Run now
+              {t("Run now")}
             </Button>
           )
         }

@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { CalendarDays } from "lucide-react";
 import { Input } from "@/client/components/ui/input";
 import {
@@ -21,14 +22,6 @@ interface PromptPeriod {
   start: string;
   end: string;
 }
-
-const options = [
-  { value: PromptRange.Last7, label: "Last 7 days" },
-  { value: PromptRange.Last28, label: "Last 28 days" },
-  { value: PromptRange.Last90, label: "Last 90 days" },
-  { value: PromptRange.All, label: "All available history" },
-  { value: PromptRange.Custom, label: "Custom range" },
-];
 
 function localDate(value: Date) {
   return [
@@ -66,6 +59,16 @@ export function PromptDateRange({
   value: PromptPeriod;
   onChange: (period: PromptPeriod) => void;
 }) {
+  const { t } = useLocale();
+
+  const options = [
+    { value: PromptRange.Last7, label: t("Last 7 days") },
+    { value: PromptRange.Last28, label: t("Last 28 days") },
+    { value: PromptRange.Last90, label: t("Last 90 days") },
+    { value: PromptRange.All, label: t("All available history") },
+    { value: PromptRange.Custom, label: t("Custom range") },
+  ];
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Select
@@ -81,7 +84,7 @@ export function PromptDateRange({
             );
         }}
       >
-        <SelectTrigger size="sm" aria-label="Analysis date range">
+        <SelectTrigger size="sm" aria-label={t("Analysis date range")}>
           <CalendarDays className="size-3.5" />
           <SelectValue />
         </SelectTrigger>
@@ -97,7 +100,7 @@ export function PromptDateRange({
         <>
           <Input
             type="date"
-            aria-label="Period start date"
+            aria-label={t("Period start date")}
             className="h-7 w-36 text-xs"
             value={value.start}
             max={value.end || undefined}
@@ -105,10 +108,10 @@ export function PromptDateRange({
               onChange({ ...value, start: event.target.value })
             }
           />
-          <span className="text-xs text-muted-foreground">to</span>
+          <span className="text-xs text-muted-foreground">{t("to")}</span>
           <Input
             type="date"
-            aria-label="Period end date"
+            aria-label={t("Period end date")}
             className="h-7 w-36 text-xs"
             value={value.end}
             min={value.start || undefined}
@@ -118,7 +121,7 @@ export function PromptDateRange({
           />
           {(!value.start || !value.end || value.start > value.end) && (
             <p role="alert" className="w-full text-xs text-destructive">
-              Choose a start date on or before the end date.
+              {t("Choose a start date on or before the end date.")}
             </p>
           )}
         </>

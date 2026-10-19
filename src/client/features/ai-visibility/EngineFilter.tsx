@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { Menu } from "@base-ui/react/menu";
 import { Check, ChevronDown } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
@@ -20,6 +21,8 @@ export function EngineFilter({
   onChange: (value: AiEngine[]) => void;
   label: string;
 }) {
+  const { t } = useLocale();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -29,9 +32,9 @@ export function EngineFilter({
         {value.length === 1 ? (
           <EngineLabel engine={value[0]} />
         ) : value.length ? (
-          `${value.length} engines`
+          t("{count} engines", { count: value.length })
         ) : (
-          "No engines"
+          t("No engines")
         )}
         <ChevronDown className="size-4 text-muted-foreground" />
       </DropdownMenuTrigger>

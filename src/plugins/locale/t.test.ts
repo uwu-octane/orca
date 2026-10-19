@@ -1,4 +1,14 @@
-import { setAiScheduleSchema } from "@/types/schemas/ai-visibility";
+import { aiObservations } from "@/db/ai-visibility.schema";
+import {
+  aiNoAnswerLabel,
+  aiObservationStatusLabel,
+} from "@/shared/ai-visibility";
+import { PROMPT_TRACKING_TABS } from "@/client/features/ai-visibility/PromptTrackingTabs";
+import { trendSeries } from "@/client/features/ai-visibility/VisibilityTrendChart";
+import {
+  aiEngineSchema,
+  setAiScheduleSchema,
+} from "@/types/schemas/ai-visibility";
 import { scheduleLabel } from "@/shared/rank-tracking";
 import { WEEKDAYS } from "@/client/features/rank-tracking/scheduleTime";
 import { TAG_COLOR_KEYS } from "@/shared/tag-colors";
@@ -85,6 +95,21 @@ describe("translate", () => {
       expect(translate(color), `untranslated tag color: ${color}`).not.toBe(
         color,
       );
+    }
+  });
+
+  it("translates AI result tabs, chart legends, and collection labels", () => {
+    const labels = [
+      ...PROMPT_TRACKING_TABS.map((tab) => tab.label),
+      ...trendSeries.map((series) => series.label),
+      ...aiObservations.status.enumValues.map(aiObservationStatusLabel),
+      ...aiEngineSchema.options.map(aiNoAnswerLabel),
+    ];
+    for (const label of labels) {
+      expect(
+        translate(label),
+        `untranslated AI result label: ${label}`,
+      ).not.toBe(label);
     }
   });
 

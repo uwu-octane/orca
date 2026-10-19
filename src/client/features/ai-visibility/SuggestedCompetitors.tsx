@@ -44,7 +44,7 @@ export function SuggestedCompetitors({
       });
     },
     onSuccess: (_, domain) => {
-      toast.success(`${domain} added as a competitor`);
+      toast.success(t("{domain} added as a competitor", { domain }));
       void Promise.all([
         queryClient.invalidateQueries({ queryKey: aiVisibilityKey(projectId) }),
         queryClient.invalidateQueries({
@@ -65,9 +65,9 @@ export function SuggestedCompetitors({
   const top = rows.slice(0, 5);
   return (
     <div className="space-y-3 border-t border-border p-4">
-      <h2 className="text-sm font-semibold">Suggested competitors</h2>
+      <h2 className="text-sm font-semibold">{t("Suggested competitors")}</h2>
       <p className="text-xs text-muted-foreground">
-        Other sites AI answers cite most for your prompts.
+        {t("Other sites AI answers cite most for your prompts.")}
       </p>
       <div className="divide-y divide-border">
         {top.map((row) => (
@@ -79,8 +79,9 @@ export function SuggestedCompetitors({
               <DomainFavicon domain={row.domain} />
               {row.domain}
               <span className="ml-2 text-xs text-muted-foreground">
-                cited in {row.answerCount}{" "}
-                {row.answerCount === 1 ? "answer" : "answers"}
+                {row.answerCount === 1
+                  ? t("cited in {count} answer", { count: row.answerCount })
+                  : t("cited in {count} answers", { count: row.answerCount })}
               </span>
             </span>
             <Button

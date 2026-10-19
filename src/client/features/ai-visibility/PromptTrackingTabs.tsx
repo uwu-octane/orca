@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useNavigate } from "@tanstack/react-router";
 import { DataTableTabs } from "@/client/components/table/DataTableToolbar";
 import { TabsTrigger } from "@/client/components/ui/tabs";
@@ -26,6 +27,7 @@ export function PromptTrackingTabs({
   projectId: string;
   tab: PromptTrackingTab;
 }) {
+  const { t } = useLocale();
   const navigate = useNavigate();
   return (
     <div className="border-t border-border">
@@ -49,7 +51,7 @@ export function PromptTrackingTabs({
       >
         {PROMPT_TRACKING_TABS.map((item) => (
           <TabsTrigger key={item.value} value={item.value}>
-            {item.label}
+            {t(item.label)}
           </TabsTrigger>
         ))}
       </DataTableTabs>

@@ -1,3 +1,5 @@
+import { translate } from "@/plugins/locale";
+import { useLocale } from "@/plugins/client/context";
 // FORK: retain locale subscriptions across upstream component changes.
 
 import { useState } from "react";
@@ -20,12 +22,6 @@ import { EngineLabel } from "./EngineLabel";
 import { trendSeries, VisibilityTrendChart } from "./VisibilityTrendChart";
 import { AiQueryError, type AiTrendDays, aiTrendQueryOptions } from "./shared";
 
-const periods = [
-  { value: "7", icon: null, label: "7d" },
-  { value: "28", icon: null, label: "28d" },
-  { value: "90", icon: null, label: "90d" },
-];
-
 const rate = (value: number | null) =>
   value === null ? "—" : `${Math.round(value)}%`;
 
@@ -33,13 +29,21 @@ function notice(trend: AiTrend, collecting: boolean) {
   const { days } = trend;
   switch (trend.comparison) {
     case "incomplete":
-      return `Fewer than 90% of planned answers were collected in one period, so no change is shown. Failed collections never count as lost visibility.`;
+      return translate(
+        "Fewer than 90% of planned answers were collected in one period, so no change is shown. Failed collections never count as lost visibility.",
+      );
     case "scope_changed":
-      return `No prompt and engine has answers for the same market and brand in both periods. The tracked scope changed, so the periods cannot be compared.`;
+      return translate(
+        "No prompt and engine has answers for the same market and brand in both periods. The tracked scope changed, so the periods cannot be compared.",
+      );
     case "no_data":
       return collecting
-        ? "Collecting answers. Visibility appears here when the run finishes."
-        : `There are no finished runs in the last ${days} days.`;
+        ? translate(
+            "Collecting answers. Visibility appears here when the run finishes.",
+          )
+        : translate("There are no finished runs in the last {days} days.", {
+            days,
+          });
     default:
       return null;
   }
@@ -53,6 +57,14 @@ export function VisibilityTrend({
   projectId: string;
   collecting: boolean;
 }) {
+  const { t } = useLocale();
+
+  const periods = [
+    { value: "7", icon: null, label: t("7d") },
+    { value: "28", icon: null, label: t("28d") },
+    { value: "90", icon: null, label: t("90d") },
+  ];
+
   const [days, setDays] = useState<AiTrendDays>(7);
   const query = useQuery(aiTrendQueryOptions(projectId, days));
   const trend = query.data;
@@ -64,7 +76,7 @@ export function VisibilityTrend({
     <div className="px-4 pt-2 pb-6">
       <section className="space-y-3 rounded-lg border border-border p-3">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-sm font-medium">Visibility over time</h2>
+          <h2 className="text-sm font-medium">{t("Visibility over time")}</h2>
           <SegmentedToggle
             showLabels
             items={periods}
@@ -98,7 +110,7 @@ export function VisibilityTrend({
                           className="size-2 rounded-sm"
                           style={{ backgroundColor: series.color }}
                         />
-                        {series.label}
+                        {t(series.label)}
                       </span>
                     ))}
                   </div>
@@ -144,10 +156,12 @@ function Change({ metric }: { metric: AiTrendMetric }) {
  * engines first, then one row per engine.
  */
 function TrendSummary({ trend }: { trend: AiTrend }) {
+  const { t } = useLocale();
+
   const rows = [
     {
       key: "all",
-      label: <span className="font-medium">All engines</span>,
+      label: <span className="font-medium">{t("All engines")}</span>,
       mentions: trend.mentions,
       citations: trend.citations,
     },
@@ -165,8 +179,8 @@ function TrendSummary({ trend }: { trend: AiTrend }) {
       <TableHeader>
         <TableRow>
           <TableHead />
-          <TableHead>Brand mentions</TableHead>
-          <TableHead>Owned citations</TableHead>
+          <TableHead>{t("Brand mentions")}</TableHead>
+          <TableHead>{t("Owned citations")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

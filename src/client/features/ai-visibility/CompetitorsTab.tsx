@@ -1,4 +1,5 @@
 // FORK: retain locale subscriptions across upstream component changes.
+import { translate } from "@/plugins/locale";
 import { useLocale } from "@/plugins/client/context";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -68,13 +69,13 @@ export function CompetitorsTab({
             nativeButton={false}
             render={<Link to="/p/$projectId/context" params={{ projectId }} />}
           >
-            Manage competitors
+            {t("Manage competitors")}
           </Button>
         }
       >
         {runId && state.engines.length > 1 && (
           <EngineFilter
-            label="Filter engine"
+            label={t("Filter engine")}
             engines={state.engines}
             value={engines}
             onChange={setSelectedEngines}
@@ -88,17 +89,17 @@ export function CompetitorsTab({
       ) : runId && !rows.length ? (
         <p className="p-10 text-center text-sm text-muted-foreground">
           {collecting
-            ? "Collecting answers. Brands appear here as answers arrive."
-            : "No answers match these filters."}
+            ? t("Collecting answers. Brands appear here as answers arrive.")
+            : t("No answers match these filters.")}
         </p>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Brand</TableHead>
-              <TableHead>Mentioned in</TableHead>
-              <TableHead>Cited in</TableHead>
-              <TableHead>Avg. position</TableHead>
+              <TableHead>{t("Brand")}</TableHead>
+              <TableHead>{t("Mentioned in")}</TableHead>
+              <TableHead>{t("Cited in")}</TableHead>
+              <TableHead>{t("Avg. position")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -134,7 +135,9 @@ export function CompetitorsTab({
                   colSpan={4}
                   className="py-8 text-center text-muted-foreground"
                 >
-                  No competitors saved yet. Use Manage competitors to add them.
+                  {t(
+                    "No competitors saved yet. Use Manage competitors to add them.",
+                  )}
                 </TableCell>
               </TableRow>
             )}
@@ -149,9 +152,9 @@ export function CompetitorsTab({
             params={{ projectId }}
             className="text-foreground underline underline-offset-4"
           >
-            prompt tracking
+            {t("prompt tracking")}
           </Link>{" "}
-          to see how often AI answers mention and cite your competitors.
+          {t("to see how often AI answers mention and cite your competitors.")}
         </p>
       )}
       {runId && (
@@ -168,5 +171,5 @@ export function CompetitorsTab({
 function share(count: number, total: number) {
   return total
     ? `${count} / ${total} (${Math.round((count / total) * 100)}%)`
-    : "No answers";
+    : translate("No answers");
 }

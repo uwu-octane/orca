@@ -49,6 +49,13 @@ export function CitationsTab({
 }) {
   const { t } = useLocale();
 
+  const OWNERSHIP_ITEMS = [
+    { value: "all", label: t("All ownership") },
+    { value: "own", label: t("Your domains") },
+    { value: "competitor", label: t("Competitor domains") },
+    { value: "other", label: t("Third-party domains") },
+  ] as const;
+
   const [groupBy, setGroupBy] = useState<"url" | "domain">("url");
   const [ownership, setOwnership] = useState<
     "all" | "own" | "competitor" | "other"
@@ -91,7 +98,7 @@ export function CitationsTab({
             showLabels
             items={[
               { value: "url", label: t("Pages"), icon: null },
-              { value: "domain", label: "Domains", icon: null },
+              { value: "domain", label: t("Domains"), icon: null },
             ]}
             value={groupBy}
             onChange={(value) => {
@@ -110,7 +117,7 @@ export function CitationsTab({
               reset();
             }}
           >
-            <SelectTrigger size="sm" aria-label="Filter source ownership">
+            <SelectTrigger size="sm" aria-label={t("Filter source ownership")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -123,7 +130,7 @@ export function CitationsTab({
           </Select>
           {state.engines.length > 1 && (
             <EngineFilter
-              label="Filter sources by engine"
+              label={t("Filter sources by engine")}
               engines={state.engines}
               value={engines}
               onChange={(next) => {
@@ -142,9 +149,9 @@ export function CitationsTab({
             params={{ projectId }}
             className="text-foreground underline underline-offset-4"
           >
-            prompt tracking
+            {t("prompt tracking")}
           </Link>{" "}
-          to see which pages AI answers cite.
+          {t("to see which pages AI answers cite.")}
         </p>
       ) : query.isPending ? (
         <SkeletonTableRows rows={6} columns={5} className="p-4" />
@@ -158,8 +165,10 @@ export function CitationsTab({
       ) : !query.data.rows.length ? (
         <p className="p-10 text-center text-sm text-muted-foreground">
           {collecting
-            ? "Collecting answers. Cited pages appear here as answers arrive."
-            : "No citations match these filters."}
+            ? t(
+                "Collecting answers. Cited pages appear here as answers arrive.",
+              )
+            : t("No citations match these filters.")}
         </p>
       ) : (
         <SourcesTable
@@ -178,7 +187,7 @@ export function CitationsTab({
             disabled={!cursor}
             onClick={() => setCursor(undefined)}
           >
-            First page
+            {t("First page")}
           </Button>
           <Button
             variant="ghost"
@@ -194,13 +203,6 @@ export function CitationsTab({
     </>
   );
 }
-
-const OWNERSHIP_ITEMS = [
-  { value: "all", label: "All ownership" },
-  { value: "own", label: "Your domains" },
-  { value: "competitor", label: "Competitor domains" },
-  { value: "other", label: "Third-party domains" },
-] as const;
 
 function SourcesTable({
   projectId,
@@ -223,12 +225,12 @@ function SourcesTable({
       <TableHeader>
         <TableRow>
           <TableHead>
-            {groupBy === "domain" ? t("Domain") : "Cited page"}
+            {groupBy === "domain" ? t("Domain") : t("Cited page")}
           </TableHead>
-          <TableHead>Ownership</TableHead>
-          <TableHead>Answers</TableHead>
-          <TableHead>Prompts</TableHead>
-          <TableHead>Engines</TableHead>
+          <TableHead>{t("Ownership")}</TableHead>
+          <TableHead>{t("Answers")}</TableHead>
+          <TableHead>{t("Prompts")}</TableHead>
+          <TableHead>{t("Engines")}</TableHead>
           <TableHead />
         </TableRow>
       </TableHeader>
@@ -266,6 +268,8 @@ function SourceRow({
   expanded: boolean;
   onExpand: () => void;
 }) {
+  const { t } = useLocale();
+
   return (
     <>
       <TableRow
@@ -286,10 +290,10 @@ function SourceRow({
         </TableCell>
         <TableCell className="whitespace-nowrap text-xs">
           {row.ownership === "own"
-            ? "Your domain"
+            ? t("Your domain")
             : row.ownership === "competitor"
-              ? "Competitor"
-              : "Third party"}
+              ? t("Competitor")
+              : t("Third party")}
         </TableCell>
         <TableCell>{row.answerCount}</TableCell>
         <TableCell>{row.promptCount}</TableCell>
@@ -318,7 +322,9 @@ function SourceRow({
             variant="ghost"
             size="icon-sm"
             aria-expanded={expanded}
-            aria-label={`Show prompts that cited ${row.title || row.url || row.domain}`}
+            aria-label={t("Show prompts that cited {source}", {
+              source: row.title || row.url || row.domain,
+            })}
           >
             {expanded ? <ChevronDown /> : <ChevronRight />}
           </Button>

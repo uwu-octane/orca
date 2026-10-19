@@ -36,14 +36,14 @@ export function PromptSummary({ summaries }: { summaries: AiBrandSummary[] }) {
   return (
     <div className="overflow-hidden rounded-lg border bg-card border-border">
       <h2 className="border-b px-4 py-2 text-sm font-medium border-border">
-        Brand comparison
+        {t("Brand comparison")}
       </h2>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Brand</TableHead>
-            <TableHead>Mentioned</TableHead>
-            <TableHead>Cited</TableHead>
+            <TableHead>{t("Brand")}</TableHead>
+            <TableHead>{t("Mentioned")}</TableHead>
+            <TableHead>{t("Cited")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -62,23 +62,35 @@ export function PromptSummary({ summaries }: { summaries: AiBrandSummary[] }) {
               </TableCell>
               <TableCell
                 className="tabular-nums"
-                title={`${brand.mentions} of ${brand.answers} answers`}
+                title={t("{count} of {total} answers", {
+                  count: brand.mentions,
+                  total: brand.answers,
+                })}
               >
                 {aiRate(brand.mentions, brand.answers)}
                 {brand.answers > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    {brand.mentions} of {brand.answers}
+                    {t("{count} of {total}", {
+                      count: brand.mentions,
+                      total: brand.answers,
+                    })}
                   </p>
                 )}
               </TableCell>
               <TableCell
                 className="tabular-nums"
-                title={`${brand.citations} of ${brand.answers} answers`}
+                title={t("{count} of {total} answers", {
+                  count: brand.citations,
+                  total: brand.answers,
+                })}
               >
                 {aiRate(brand.citations, brand.answers)}
                 {brand.answers > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    {brand.citations} of {brand.answers}
+                    {t("{count} of {total}", {
+                      count: brand.citations,
+                      total: brand.answers,
+                    })}
                   </p>
                 )}
               </TableCell>
@@ -87,7 +99,7 @@ export function PromptSummary({ summaries }: { summaries: AiBrandSummary[] }) {
           {!summaries.length && (
             <TableRow>
               <TableCell colSpan={3} className="py-4 text-muted-foreground">
-                No brand evidence is available for this period yet.
+                {t("No brand evidence is available for this period yet.")}
               </TableCell>
             </TableRow>
           )}
@@ -101,7 +113,7 @@ export function PromptSummary({ summaries }: { summaries: AiBrandSummary[] }) {
             className="h-auto px-0 text-muted-foreground hover:text-foreground"
             onClick={() => setExpanded(true)}
           >
-            Show {hiddenCount} more
+            {t("Show {count} more", { count: hiddenCount })}
           </Button>
         </div>
       )}

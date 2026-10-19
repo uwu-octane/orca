@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { Line, LineChart } from "recharts";
 import {
   ChartGrid,
@@ -17,13 +18,6 @@ export const trendSeries = [
   { key: "citationRate", label: "Owned citations", color: "#14b8a6" },
 ] as const;
 
-const chartConfig: ChartConfig = Object.fromEntries(
-  trendSeries.map((series) => [
-    series.key,
-    { label: series.label, color: series.color },
-  ]),
-);
-
 const shortDate = (value: string | number) =>
   new Date(value).toLocaleDateString(undefined, {
     month: "short",
@@ -36,6 +30,15 @@ const shortDate = (value: string | number) =>
  * leaves a gap, not a zero.
  */
 export function VisibilityTrendChart({ trend }: { trend: AiTrend }) {
+  const { t } = useLocale();
+
+  const chartConfig: ChartConfig = Object.fromEntries(
+    trendSeries.map((series) => [
+      series.key,
+      { label: t(series.label), color: series.color },
+    ]),
+  );
+
   const start = Date.parse(trend.current.start);
   const latestByDay = new Map<string, AiTrend["runs"][number]>();
   // Runs arrive oldest first; a later run replaces that day's earlier point.
@@ -47,13 +50,16 @@ export function VisibilityTrendChart({ trend }: { trend: AiTrend }) {
     time: Date.parse(run.createdAt),
     mentionRate: run.mentionRate,
     citationRate: run.citationRate,
-    collected: `${run.coverage.answered} of ${run.coverage.expected} answers collected`,
+    collected: t("{completed} of {expected} answers collected", {
+      completed: run.coverage.answered,
+      expected: run.coverage.expected,
+    }),
   }));
   return (
     <ChartContainer
       config={chartConfig}
       className="h-[220px]"
-      aria-label="Daily brand mention and owned citation rate"
+      aria-label={t("Daily brand mention and owned citation rate")}
     >
       <LineChart data={data} margin={{ left: 0, right: 12, top: 8, bottom: 0 }}>
         <ChartGrid />

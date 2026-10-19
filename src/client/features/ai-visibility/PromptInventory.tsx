@@ -5,8 +5,6 @@ import { cn } from "cn";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import {
-  AI_ENGINE_LABELS,
-  aiNoAnswerLabel,
   type AiEngine,
   type AiObservationRow,
   type AiPrompt,
@@ -23,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/client/components/ui/table";
-import { EngineLabel } from "./EngineLabel";
+import { EngineResult } from "./EngineResult";
 import { PromptActionsMenu } from "./PromptActions";
 import { RenameTopicDialog } from "./RenameTopicDialog";
 import { aiRate } from "./shared";
@@ -60,6 +58,8 @@ export function PromptInventory({
   onReduce: (patch: AiTrackerPatch) => void;
   onReview: (patch: AiTrackerPatch) => void;
 }) {
+  const { t } = useLocale();
+
   const [collapsed, setCollapsed] = useState<string[]>([]);
   const [archiving, setArchiving] = useState<{
     kind: "prompt" | "topic";
@@ -73,7 +73,7 @@ export function PromptInventory({
   if (!prompts.some(matches))
     return (
       <p className="p-8 text-center text-sm text-muted-foreground">
-        No matching prompts. Add prompts or adjust your search.
+        {t("No matching prompts. Add prompts or adjust your search.")}
       </p>
     );
   return (
@@ -81,12 +81,12 @@ export function PromptInventory({
       <Table className="min-w-[900px]">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-full">Prompts by topic</TableHead>
-            <TableHead>Engines</TableHead>
-            <TableHead>Brand mentions</TableHead>
-            <TableHead>Owned citations</TableHead>
+            <TableHead className="w-full">{t("Prompts by topic")}</TableHead>
+            <TableHead>{t("Engines")}</TableHead>
+            <TableHead>{t("Brand mentions")}</TableHead>
+            <TableHead>{t("Owned citations")}</TableHead>
             <TableHead>
-              <span className="sr-only">Manage tracking</span>
+              <span className="sr-only">{t("Manage tracking")}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -122,9 +122,12 @@ export function PromptInventory({
                     <span className="inline-flex items-center gap-2">
                       {topic}
                       <span className="text-xs font-normal text-muted-foreground">
-                        {shownPrompts.length}{" "}
-                        {shownPrompts.length === 1 ? "prompt" : "prompts"}
-                        {paused ? " · Paused" : ""}
+                        {shownPrompts.length === 1
+                          ? t("{count} prompt", { count: shownPrompts.length })
+                          : t("{count} prompts", {
+                              count: shownPrompts.length,
+                            })}
+                        {paused ? t(" · Paused") : ""}
                       </span>
                     </span>
                   </Button>
@@ -142,7 +145,7 @@ export function PromptInventory({
                 <TableCell>
                   <div className="flex justify-end">
                     <PromptActionsMenu
-                      label={`Actions for topic ${topic}`}
+                      label={t("Actions for topic {topic}", { topic })}
                       kind="topic"
                       paused={paused}
                       scheduled={scheduled}
@@ -207,11 +210,11 @@ export function PromptInventory({
                         <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                           {running && <Spinner className="size-3" />}
                           {running
-                            ? "Collecting answers"
+                            ? t("Collecting answers")
                             : prompt.paused
-                              ? "Paused"
-                              : "Active"}{" "}
-                          · {prompt.branded ? "Branded" : "Non-branded"}
+                              ? t("Paused")
+                              : t("Active")}{" "}
+                          · {prompt.branded ? t("Branded") : t("Non-branded")}
                         </p>
                       </TableCell>
                       <TableCell className={dim}>
@@ -244,7 +247,9 @@ export function PromptInventory({
                       <TableCell>
                         <div className="flex justify-end">
                           <PromptActionsMenu
-                            label={`Actions for ${prompt.text}`}
+                            label={t("Actions for {prompt}", {
+                              prompt: prompt.text,
+                            })}
                             kind="prompt"
                             paused={prompt.paused}
                             scheduled={scheduled}
@@ -301,8 +306,12 @@ export function PromptInventory({
       )}
       {archiving && (
         <ConfirmDialog
-          title={`Archive ${archiving.kind}?`}
-          confirmLabel="Archive"
+          title={
+            archiving.kind === "topic"
+              ? t("Archive topic?")
+              : t("Archive prompt?")
+          }
+          confirmLabel={t("Archive")}
           destructive
           onConfirm={() => {
             onReduce({ archivePromptIds: archiving.promptIds });
@@ -311,10 +320,13 @@ export function PromptInventory({
           onClose={() => setArchiving(null)}
         >
           {archiving.kind === "topic"
-            ? `This stops tracking every prompt in "${archiving.name}".`
-            : `This stops tracking "${archiving.name}".`}{" "}
-          You can't view archived prompts yet. Their answer history is kept and
-          returns if you add the same prompt again.
+            ? t('This stops tracking every prompt in "{name}".', {
+                name: archiving.name,
+              })
+            : t('This stops tracking "{name}".', { name: archiving.name })}{" "}
+          {t(
+            "You can't view archived prompts yet. Their answer history is kept and returns if you add the same prompt again.",
+          )}
         </ConfirmDialog>
       )}
     </>
@@ -346,6 +358,8 @@ function PromptRate({
   kind: "mentioned" | "cited";
   loading: boolean;
 }) {
+  const { t } = useLocale();
+
   if (loading) return <Skeleton className="h-4 w-10" />;
   const eligible =
     rows?.filter(
@@ -361,49 +375,19 @@ function PromptRate({
       className="flex flex-col text-sm tabular-nums"
       title={
         rows
-          ? `${count} of ${eligible.length} eligible answers`
-          : "No results available"
+          ? t("{count} of {total} eligible answers", {
+              count,
+              total: eligible.length,
+            })
+          : t("No results available")
       }
     >
       {aiRate(count, eligible.length)}
       {eligible.length > 0 && (
         <span className="text-xs text-muted-foreground">
-          {count} of {eligible.length}
+          {t("{count} of {total}", { count, total: eligible.length })}
         </span>
       )}
-    </span>
-  );
-}
-
-function EngineResult({
-  engine,
-  row,
-}: {
-  engine: AiEngine;
-  row: AiObservationRow | undefined;
-}) {
-  const { t } = useLocale();
-
-  const own = row?.brands.find((brand) => brand.own);
-  const result = !row
-    ? "No result available"
-    : row.status === "failed"
-      ? t("Failed")
-      : row.status === "pending"
-        ? t("Running")
-        : row.answerStatus === "no_answer"
-          ? aiNoAnswerLabel(engine)
-          : row.answerStatus !== "answered"
-            ? "Answer unavailable"
-            : own?.mentioned
-              ? "Mentioned"
-              : "Not mentioned";
-  return (
-    <span
-      title={`${AI_ENGINE_LABELS[engine]}: ${result}`}
-      className={`inline-flex h-6 items-center text-xs ${result === "Mentioned" ? "text-success" : result === "Failed" ? "text-destructive" : "text-muted-foreground"}`}
-    >
-      <EngineLabel engine={engine} />
     </span>
   );
 }
