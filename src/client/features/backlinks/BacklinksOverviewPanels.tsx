@@ -15,18 +15,20 @@ import { formatRelativeTimestamp } from "./backlinksPageUtils";
 
 type SummaryStat = { label: string; value: string; description: string };
 
-const SCOPE_NOTES: Partial<Record<BacklinksOverviewData["scope"], string>> = {
-  exact_url:
-    "Showing backlinks for this exact page. Switch the scope to Domain or Subdomains for site-wide results — trend charts need one of those.",
-  subfolder:
-    "Showing backlinks pointing into this subfolder. Counts come from filtered backlink totals; rank, trends, and the referring-domains breakdown need Domain or Subdomains scope.",
-};
-
 export function BacklinksScopeAlert({
   scope,
 }: {
   scope: BacklinksOverviewData["scope"];
 }) {
+  const { t } = useLocale();
+  const SCOPE_NOTES: Partial<Record<BacklinksOverviewData["scope"], string>> = {
+    exact_url: t(
+      "Showing backlinks for this exact page. Switch the scope to Domain or Subdomains for site-wide results — trend charts need one of those.",
+    ),
+    subfolder: t(
+      "Showing backlinks pointing into this subfolder. Counts come from filtered backlink totals; rank, trends, and the referring-domains breakdown need Domain or Subdomains scope.",
+    ),
+  };
   const note = SCOPE_NOTES[scope];
   if (!note) return null;
   return (
@@ -59,8 +61,7 @@ export function BacklinksOverviewPanels({
           </Badge>
         </div>
         <p className="ml-auto text-xs text-muted-foreground">
-          {t("Updated")}
-          {formatRelativeTimestamp(data.fetchedAt)}
+          {t("Updated")} {formatRelativeTimestamp(data.fetchedAt)}
         </p>
       </div>
       <div className="px-4 pb-4">
@@ -92,7 +93,7 @@ function OverviewGrid({
         <MetricsTable
           rows={summaryStats.map((item) => ({
             label: (
-              <HelpLabel label={t(item.label)} helpText={item.description} />
+              <HelpLabel label={t(item.label)} helpText={t(item.description)} />
             ),
             value: item.value,
           }))}
@@ -104,7 +105,7 @@ function OverviewGrid({
             title={t("Backlink growth")}
             description={
               data.scope === "domain"
-                ? "Last year · Includes subdomains"
+                ? t("Last year · Includes subdomains")
                 : t("Backlinks and referring domains over the last year")
             }
           >

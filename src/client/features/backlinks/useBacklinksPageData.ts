@@ -50,7 +50,7 @@ function getBacklinksErrorMessage(
     return translate("Enter a valid domain or page URL.");
   }
 
-  return getStandardErrorMessage(error, fallback);
+  return getStandardErrorMessage(error, translate(fallback), translate);
 }
 
 /**

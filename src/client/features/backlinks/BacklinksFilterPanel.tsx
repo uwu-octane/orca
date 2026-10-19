@@ -186,12 +186,6 @@ export function BacklinksFilterPanel({
   );
 }
 
-const LINK_TYPE_ITEMS = [
-  { value: "all", icon: <Link2 />, label: "All" },
-  { value: "dofollow", icon: <Link />, label: "Dofollow" },
-  { value: "nofollow", icon: <Unlink />, label: "Nofollow" },
-];
-
 function BacklinksToggleControls({
   draft,
   setValue,
@@ -200,6 +194,11 @@ function BacklinksToggleControls({
   setValue: (key: keyof BacklinksTabFilterValues, value: string) => void;
 }) {
   const { t } = useLocale();
+  const LINK_TYPE_ITEMS = [
+    { value: "all", icon: <Link2 />, label: t("All") },
+    { value: "dofollow", icon: <Link />, label: t("Dofollow") },
+    { value: "nofollow", icon: <Unlink />, label: t("Nofollow") },
+  ];
 
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

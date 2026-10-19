@@ -1,3 +1,7 @@
+import {
+  buildSummaryStats,
+  TAB_DESCRIPTIONS,
+} from "@/client/features/backlinks/backlinksPageUtils";
 import { WEB_SEARCH_COUNTRY_CODES } from "@/shared/prompt-search-countries";
 import { formatCountryLabel } from "@/shared/prompt-explorer-labels";
 import { RESEARCH_SCOPE_LABELS } from "@/shared/researchScope";
@@ -187,6 +191,41 @@ describe("translate", () => {
       expect(
         translate(label),
         `untranslated research option: ${label}`,
+      ).not.toBe(label);
+    }
+  });
+
+  it("translates backlink summary labels, explanations, and tab descriptions", () => {
+    const stats = buildSummaryStats({
+      target: "example.com",
+      displayTarget: "example.com",
+      scope: "domain",
+      fetchedAt: "2026-10-19T00:00:00Z",
+      trends: [],
+      newLostTrends: [],
+      summary: {
+        rank: null,
+        backlinks: null,
+        referringPages: null,
+        referringDomains: null,
+        brokenBacklinks: null,
+        brokenPages: null,
+        backlinksSpamScore: null,
+        targetSpamScore: null,
+        newBacklinks: null,
+        lostBacklinks: null,
+        newReferringDomains: null,
+        lostReferringDomains: null,
+      },
+    });
+    const labels = [
+      ...stats.flatMap((stat) => [stat.label, stat.description]),
+      ...Object.values(TAB_DESCRIPTIONS),
+    ];
+    for (const label of labels) {
+      expect(
+        translate(label),
+        `untranslated backlink label: ${label}`,
       ).not.toBe(label);
     }
   });

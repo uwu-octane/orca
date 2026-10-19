@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { Link2 } from "lucide-react";
@@ -64,6 +65,8 @@ export function BacklinksBody({
   onViewChange,
   onHideSpamChange,
 }: BacklinksBodyProps) {
+  const { t } = useLocale();
+
   const overviewData = data.overviewQuery.data;
   const backlinksRowsPage = data.rowsQuery.data;
   const referringDomainsPage = data.referringDomainsQuery.data;
@@ -99,7 +102,7 @@ export function BacklinksBody({
         loaded={historyLoaded}
         onRemove={onRemoveHistoryItem}
         emptyIcon={Link2}
-        emptyTitle="Enter a domain or URL to get started"
+        emptyTitle={t("Enter a domain or URL to get started")}
         getTitle={(item) => item.target}
         getSubtitle={(item) => RESEARCH_SCOPE_LABELS[item.scope]}
         renderLink={(item, props) => (
@@ -140,10 +143,10 @@ export function BacklinksBody({
       <>
         {tabControls}
         <QueryError
-          title="Could not load backlinks"
+          title={t("Could not load backlinks")}
           cause={data.overviewQuery.error}
           fallback={
-            data.overviewErrorMessage ?? "Please try again in a moment."
+            data.overviewErrorMessage ?? t("Please try again in a moment.")
           }
           onRetry={() => void data.overviewQuery.refetch()}
           isRetrying={data.overviewQuery.isFetching}

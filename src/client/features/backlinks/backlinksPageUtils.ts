@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 import type { BacklinksTab } from "@/types/schemas/backlinks";
 import type { BacklinksOverviewData } from "./backlinksPageTypes";
 
@@ -96,7 +97,7 @@ export function formatMonthLabel(value: string) {
 
 export function formatRelativeTimestamp(value: string) {
   const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "recently";
+  if (Number.isNaN(parsed.getTime())) return translate("recently");
   return parsed.toLocaleString(undefined, {
     month: "short",
     day: "numeric",

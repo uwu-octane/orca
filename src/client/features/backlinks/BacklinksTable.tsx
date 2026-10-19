@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useMemo } from "react";
 import type { OnChangeFn, Row, SortingState } from "@tanstack/react-table";
 import {
@@ -96,6 +97,7 @@ export function BacklinksTable({
   /** Present in the one-per-domain view; null when listing all links. */
   expansion: BacklinksDomainExpansion | null;
 }) {
+  const { t } = useLocale();
   const columns = useMemo(
     () =>
       buildBacklinksColumns(domainRatings, expansion?.toggleDomain).map(
@@ -123,7 +125,7 @@ export function BacklinksTable({
   return (
     <DataTable
       table={table}
-      empty={{ title: "No backlinks found for this target." }}
+      empty={{ title: t("No backlinks found for this target.") }}
       {...frame}
     />
   );

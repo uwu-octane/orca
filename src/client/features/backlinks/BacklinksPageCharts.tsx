@@ -21,16 +21,6 @@ import {
   formatTooltipValue,
 } from "./backlinksPageUtils";
 
-const trendChartConfig = {
-  backlinks: { label: "Backlinks", color: "#2563eb" },
-  referringDomains: { label: "Referring domains", color: "#14b8a6" },
-} satisfies ChartConfig;
-
-const newLostChartConfig = {
-  lostBacklinks: { label: "Lost backlinks", color: "#ef4444" },
-  newBacklinks: { label: "New backlinks", color: "#16a34a" },
-} satisfies ChartConfig;
-
 const tooltip = (
   <ChartTooltip
     content={
@@ -50,6 +40,10 @@ export function BacklinksTrendChart({
   data: BacklinksOverviewData["trends"];
 }) {
   const { t } = useLocale();
+  const trendChartConfig = {
+    backlinks: { label: t("Backlinks"), color: "#2563eb" },
+    referringDomains: { label: t("Referring domains"), color: "#14b8a6" },
+  } satisfies ChartConfig;
 
   if (data.length === 0) {
     return <EmptyChartState />;
@@ -104,6 +98,10 @@ export function BacklinksNewLostChart({
   data: BacklinksOverviewData["newLostTrends"];
 }) {
   const { t } = useLocale();
+  const newLostChartConfig = {
+    lostBacklinks: { label: t("Lost backlinks"), color: "#ef4444" },
+    newBacklinks: { label: t("New backlinks"), color: "#16a34a" },
+  } satisfies ChartConfig;
 
   if (data.length === 0) {
     return <EmptyChartState />;

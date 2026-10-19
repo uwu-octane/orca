@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { translate } from "@/plugins/locale";
 import { createColumnHelper } from "@tanstack/react-table";
 import type { OnChangeFn, SortingState } from "@tanstack/react-table";
@@ -31,7 +32,7 @@ const baseColumns = [
       <SortableHeader
         column={column}
         label={translate("Domain")}
-        helpText="The referring site linking to your target."
+        helpText={translate("The referring site linking to your target.")}
       />
     ),
     cell: ({ getValue }) => {
@@ -52,7 +53,7 @@ const baseColumns = [
       <SortableHeader
         column={column}
         label={translate("Backlinks")}
-        helpText="Total backlinks found from this domain."
+        helpText={translate("Total backlinks found from this domain.")}
       />
     ),
     cell: ({ getValue }) => formatNumber(getValue()),
@@ -63,8 +64,10 @@ const baseColumns = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label="Referring Pages"
-        helpText="Unique pages on this domain that link to your target."
+        label={translate("Referring Pages")}
+        helpText={translate(
+          "Unique pages on this domain that link to your target.",
+        )}
       />
     ),
     cell: ({ getValue }) => formatNumber(getValue()),
@@ -76,7 +79,7 @@ const baseColumns = [
       <SortableHeader
         column={column}
         label={translate("Rank")}
-        helpText="Authority score for the referring domain."
+        helpText={translate("Authority score for the referring domain.")}
       />
     ),
     cell: ({ getValue }) => formatNumber(getValue()),
@@ -88,7 +91,7 @@ const baseColumns = [
       <SortableHeader
         column={column}
         label={translate("Spam")}
-        helpText="Spam risk score for this referring domain."
+        helpText={translate("Spam risk score for this referring domain.")}
       />
     ),
     cell: ({ getValue }) => formatDecimal(getValue()),
@@ -100,7 +103,9 @@ const baseColumns = [
       <SortableHeader
         column={column}
         label={translate("First Seen")}
-        helpText="When this domain was first discovered linking to your target."
+        helpText={translate(
+          "When this domain was first discovered linking to your target.",
+        )}
       />
     ),
     cell: ({ getValue }) => formatCompactDate(getValue()),
@@ -112,14 +117,22 @@ const baseColumns = [
       <SortableHeader
         column={column}
         label={translate("Issues")}
-        helpText="Broken link and broken page counts tied to this domain."
+        helpText={translate(
+          "Broken link and broken page counts tied to this domain.",
+        )}
       />
     ),
     cell: ({ row }) => (
       <div className="text-sm">
-        <div>Broken links: {formatNumber(row.original.brokenBacklinks)}</div>
+        <div>
+          {translate("Broken links: {count}", {
+            count: formatNumber(row.original.brokenBacklinks),
+          })}
+        </div>
         <div className="text-muted-foreground">
-          Broken pages: {formatNumber(row.original.brokenPages)}
+          {translate("Broken pages: {count}", {
+            count: formatNumber(row.original.brokenPages),
+          })}
         </div>
       </div>
     ),
@@ -142,7 +155,9 @@ function buildReferringDomainColumns(domainRatings: DomainRatings | null) {
     header: () => (
       <HelpLabel
         label="Ahrefs DR"
-        helpText="Ahrefs Domain Rating (0-100) for this referring domain."
+        helpText={translate(
+          "Ahrefs Domain Rating (0-100) for this referring domain.",
+        )}
       />
     ),
     cell: ({ row }) => {
@@ -180,6 +195,7 @@ export function ReferringDomainsTable({
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
 }) {
+  const { t } = useLocale();
   const columns = useMemo(
     () => buildReferringDomainColumns(domainRatings),
     [domainRatings],
@@ -196,7 +212,7 @@ export function ReferringDomainsTable({
   return (
     <DataTable
       table={table}
-      empty={{ title: "No referring domains found for this target." }}
+      empty={{ title: t("No referring domains found for this target.") }}
       {...frame}
     />
   );

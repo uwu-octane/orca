@@ -1,3 +1,5 @@
+import { useLocale } from "@/plugins/client/context";
+import { translate } from "@/plugins/locale";
 import { createColumnHelper } from "@tanstack/react-table";
 import type { OnChangeFn, SortingState } from "@tanstack/react-table";
 import { SafeExternalLink } from "@/client/components/SafeExternalLink";
@@ -23,8 +25,8 @@ const columns = [
     meta: { cellClassName: "min-w-80" },
     header: () => (
       <HelpLabel
-        label="Page"
-        helpText="Page on the target site receiving backlinks."
+        label={translate("Page")}
+        helpText={translate("Page on the target site receiving backlinks.")}
       />
     ),
     cell: ({ getValue }) => {
@@ -45,8 +47,8 @@ const columns = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label="Backlinks"
-        helpText="Total backlinks pointing to this page."
+        label={translate("Backlinks")}
+        helpText={translate("Total backlinks pointing to this page.")}
       />
     ),
     cell: ({ getValue }) => formatNumber(getValue()),
@@ -57,8 +59,8 @@ const columns = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label="Referring Domains"
-        helpText="Unique domains linking to this page."
+        label={translate("Referring Domains")}
+        helpText={translate("Unique domains linking to this page.")}
       />
     ),
     cell: ({ getValue }) => formatNumber(getValue()),
@@ -69,8 +71,8 @@ const columns = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label="Rank"
-        helpText="Authority score for this target page."
+        label={translate("Rank")}
+        helpText={translate("Authority score for this target page.")}
       />
     ),
     cell: ({ getValue }) => formatNumber(getValue()),
@@ -81,8 +83,10 @@ const columns = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label="Broken Backlinks"
-        helpText="Backlinks pointing here that are currently broken."
+        label={translate("Broken Backlinks")}
+        helpText={translate(
+          "Backlinks pointing here that are currently broken.",
+        )}
       />
     ),
     cell: ({ getValue }) => formatNumber(getValue()),
@@ -100,6 +104,7 @@ export function TopPagesTable({
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
 }) {
+  const { t } = useLocale();
   const table = useDataTable({
     data: rows,
     columns,
@@ -111,7 +116,7 @@ export function TopPagesTable({
   return (
     <DataTable
       table={table}
-      empty={{ title: "No top pages found for this target." }}
+      empty={{ title: t("No top pages found for this target.") }}
       {...frame}
     />
   );

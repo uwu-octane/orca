@@ -86,14 +86,14 @@ export function BacklinksSearchCard({
         event.preventDefault();
         void form.handleSubmit();
       }}
-      error={targetError}
+      error={targetError ? t(targetError) : targetError}
       errorId="backlinks-target-error"
     >
       <form.Field name="target">
         {(field) => (
           <SearchInput
             placeholder={t("Enter a domain or URL")}
-            aria-label="Domain or URL"
+            aria-label={t("Domain or URL")}
             value={field.state.value}
             onChange={(event) => {
               const nextTarget = event.target.value;

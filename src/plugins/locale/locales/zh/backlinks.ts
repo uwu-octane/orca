@@ -114,4 +114,54 @@ export const backlinksZh = {
     "查看链接到目标的唯一域名,按站点级别而非单条链接分组。",
   "See which pages on the target site attract the most backlinks and referring domains.":
     "查看目标网站上吸引最多反链和引用域名的页面。",
+  "Domain or URL": "域名或 URL",
+  "Spam score unknown": "垃圾风险评分未知",
+  "Best links: On": "优质链接：已开启",
+  "Best links: Off": "优质链接：已关闭",
+  "Best links only": "仅显示优质链接",
+  "Scores below {threshold} or unknown":
+    "垃圾风险评分低于 {threshold} 或评分未知",
+  "All links (spammy included)": "全部链接（含垃圾链接）",
+  "Includes scores {threshold} or higher":
+    "包含垃圾风险评分不低于 {threshold} 的链接",
+  "Referring Pages": "引用页面",
+  "Broken Backlinks": "失效反链",
+  "Broken Pages": "失效页面",
+  "Backlink Spam Score": "反链垃圾风险评分",
+  "Target Spam Score": "目标垃圾风险评分",
+  "Top Pages": "热门页面",
+  "Total links pointing to this site or page.": "指向此网站或页面的链接总数。",
+  "Unique domains linking to this site or page.":
+    "链接到此网站或页面的独立域名数量。",
+  "Unique pages linking to this site or page.":
+    "链接到此网站或页面的独立页面数量。",
+  "DataForSEO's 0-100 authority score.":
+    "DataForSEO 的权威度评分，范围为 0–100。",
+  "Estimated spam risk of links pointing here.":
+    "指向此处的链接的预估垃圾风险。",
+  "Links pointing to broken pages here.": "指向此处失效页面的链接。",
+  "Broken pages here that still have backlinks.":
+    "此处仍有反链指向的失效页面。",
+  "Estimated spam risk of this site or page.": "此网站或页面的预估垃圾风险。",
+  "Last year · Includes subdomains": "过去一年 · 包含子域名",
+  "Current page · selected view": "当前页 · 所选视图",
+  "No backlinks found for this target.": "未找到此目标的反链。",
+  "No referring domains found for this target.":
+    "未找到链接到此目标的引用域名。",
+  "No top pages found for this target.": "未找到此目标的热门页面。",
+  "Page on the target site receiving backlinks.": "目标网站中获得反链的页面。",
+  "Total backlinks pointing to this page.": "指向此页面的反链总数。",
+  "Unique domains linking to this page.": "链接到此页面的独立域名数量。",
+  "Authority score for this target page.": "此目标页面的权威度评分。",
+  "Backlinks pointing here that are currently broken.":
+    "指向此处且当前已失效的反链。",
+  "Broken link and broken page counts tied to this domain.":
+    "与此域名相关的失效链接和失效页面数量。",
+  "Could not load backlinks data.": "无法加载反链数据。",
+  "Could not load this tab.": "无法加载此标签页。",
+  recently: "最近",
+  "These filters exceed the {limit}-condition limit for this view. Remove conditions in Filters or choose All links (spammy included) from Best links. Your filters have been kept.":
+    "筛选条件超出当前视图的 {limit} 个条件上限。请在“筛选”中删减条件，或在“优质链接”中选择“全部链接（含垃圾链接）”。现有筛选条件已保留。",
+  "These filters exceed the {limit}-condition limit for this view. Remove conditions in Filters. Your filters have been kept.":
+    "筛选条件超出当前视图的 {limit} 个条件上限。请在“筛选”中删减条件。现有筛选条件已保留。",
 } satisfies Record<string, string>;
