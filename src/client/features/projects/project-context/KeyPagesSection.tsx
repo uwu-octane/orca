@@ -74,10 +74,14 @@ export function KeyPagesSection({
   return (
     <EditableListSection
       title={t("Key pages")}
-      hint="A shortlist of the pages that carry the site — not an inventory."
-      addLabel="Add page"
-      emptyTitle="No key pages yet"
-      emptyDescription="Add the handful that has to rank, or let an agent propose them from your last site audit."
+      hint={t(
+        "A shortlist of the pages that carry the site — not an inventory.",
+      )}
+      addLabel={t("Add page")}
+      emptyTitle={t("No key pages yet")}
+      emptyDescription={t(
+        "Add the handful that has to rank, or let an agent propose them from your last site audit.",
+      )}
       items={keyPages}
       getId={(item) => item.id}
       getLabel={(item) => item.url}
@@ -88,12 +92,12 @@ export function KeyPagesSection({
           <div className="flex flex-wrap items-baseline gap-x-2">
             <span className="truncate text-sm font-medium">{item.url}</span>
             <Badge variant="secondary" size="sm">
-              {ROLE_LABELS[item.role]}
+              {t(ROLE_LABELS[item.role])}
             </Badge>
           </div>
           {item.topic ? (
             <p className="text-sm text-muted-foreground">
-              Target: {item.topic}
+              {t("Target: {topic}", { topic: item.topic })}
             </p>
           ) : null}
           {item.notes ? (
@@ -153,7 +157,7 @@ function KeyPageForm({
       />
       <div className="grid gap-2 sm:grid-cols-2">
         <Select
-          items={roleItems}
+          items={roleItems.map((item) => ({ ...item, label: t(item.label) }))}
           value={draft.role}
           onValueChange={(role) => {
             if (role !== null) setDraft({ ...draft, role });

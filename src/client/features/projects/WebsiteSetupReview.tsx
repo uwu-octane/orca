@@ -74,25 +74,27 @@ export function WebsiteSetupReview({
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
               {research.preserveCompetitors
-                ? "Complete project setup"
-                : "Edit competitors"}
+                ? t("Complete project setup")
+                : t("Edit competitors")}
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              You can edit your{" "}
+              {t("You can edit your")}{" "}
               <Link
                 to="/p/$projectId/context"
                 params={{ projectId }}
                 className="text-foreground underline underline-offset-4"
               >
-                project context
+                {t("project context")}
               </Link>{" "}
-              at any time.
+              {t("at any time.")}
             </p>
           </div>
           <fieldset disabled={saving} className="min-w-0 space-y-5">
             {research.preserveCompetitors ? (
               <p className="text-sm text-muted-foreground">
-                We’ll use the competitors already saved in your project context.
+                {t(
+                  "We’ll use the competitors already saved in your project context.",
+                )}
               </p>
             ) : (
               <div className="overflow-hidden rounded-lg border border-border">
@@ -100,7 +102,7 @@ export function WebsiteSetupReview({
                   <TableHeader>
                     <TableRow>
                       <TableHead>{t("Name")}</TableHead>
-                      <TableHead>Website</TableHead>
+                      <TableHead>{t("Website")}</TableHead>
                       <TableHead>
                         <span className="sr-only">{t("Actions")}</span>
                       </TableHead>
@@ -161,15 +163,16 @@ export function WebsiteSetupReview({
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>
-                  We couldn’t save your project. Check the competitor names and
-                  websites, then try again.
+                  {t(
+                    "We couldn’t save your project. Check the competitor names and websites, then try again.",
+                  )}
                 </AlertDescription>
               </Alert>
             )}
             <div className="flex items-center justify-between gap-3">
               {onBack ? (
                 <Button type="button" variant="outline" onClick={onBack}>
-                  Back
+                  {t("Back")}
                 </Button>
               ) : (
                 <span />

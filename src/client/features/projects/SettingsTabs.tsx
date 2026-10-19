@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { NavTab, NavTabs } from "@/client/components/NavTabs";
 
 const tabs = [
@@ -6,8 +7,10 @@ const tabs = [
 ];
 
 export function SettingsTabs({ projectId }: { projectId: string }) {
+  const { t } = useLocale();
+
   return (
-    <NavTabs label="Project settings sections">
+    <NavTabs label={t("Project settings sections")}>
       {tabs.map((tab) => (
         <NavTab
           key={tab.to}
@@ -15,7 +18,7 @@ export function SettingsTabs({ projectId }: { projectId: string }) {
           params={{ projectId }}
           activeOptions={{ exact: tab.exact ?? false }}
         >
-          {tab.label}
+          {t(tab.label)}
         </NavTab>
       ))}
     </NavTabs>

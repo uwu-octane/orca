@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useEffect, useState } from "react";
 import { Circle, CircleCheck, Loader2 } from "lucide-react";
 
@@ -15,10 +16,11 @@ export function WebsiteResearchProgress({
   missingCompetitors: boolean;
   note?: string;
 }) {
+  const { t } = useLocale();
   const steps = [
-    ...(missingOverview ? ["Researching your website"] : []),
-    ...(missingCompetitors ? ["Finding competitors"] : []),
-    "Preparing topics and prompts",
+    ...(missingOverview ? [t("Researching your website")] : []),
+    ...(missingCompetitors ? [t("Finding competitors")] : []),
+    t("Preparing topics and prompts"),
   ];
   const [current, setCurrent] = useState(0);
   useEffect(() => {
@@ -36,7 +38,10 @@ export function WebsiteResearchProgress({
           aria-atomic="true"
           className="text-xs font-medium text-muted-foreground"
         >
-          Step {current + 1} of {steps.length}
+          {t("Step {step} of {total}", {
+            step: current + 1,
+            total: steps.length,
+          })}
           <span className="sr-only">: {steps[current]}</span>
         </p>
       )}
@@ -59,7 +64,8 @@ export function WebsiteResearchProgress({
         ))}
       </ol>
       <p className="max-w-sm text-xs text-muted-foreground">
-        This can take up to a minute.{note ? ` ${note}` : ""}
+        {t("This can take up to a minute.")}
+        {note ? ` ${note}` : ""}
       </p>
     </div>
   );

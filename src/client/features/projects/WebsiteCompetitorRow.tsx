@@ -38,7 +38,7 @@ export function WebsiteCompetitorRow({
           {editing ? (
             <Input
               autoFocus
-              aria-label={`Competitor ${index + 1} name`}
+              aria-label={t("Competitor {number} name", { number: index + 1 })}
               placeholder={t("Competitor name")}
               required
               maxLength={120}
@@ -55,7 +55,7 @@ export function WebsiteCompetitorRow({
       <TableCell>
         {editing ? (
           <Input
-            aria-label={`Competitor ${index + 1} website`}
+            aria-label={t("Competitor {number} website", { number: index + 1 })}
             placeholder="example.com"
             required
             maxLength={255}
@@ -75,7 +75,9 @@ export function WebsiteCompetitorRow({
             variant="ghost"
             size="icon-sm"
             aria-label={
-              editing ? "Done editing competitor" : `Edit ${competitor.name}`
+              editing
+                ? t("Done editing competitor")
+                : t("Edit {title}", { title: competitor.name })
             }
             disabled={
               editing && (!competitor.name.trim() || !competitor.domain.trim())
@@ -92,7 +94,11 @@ export function WebsiteCompetitorRow({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label={`Remove ${competitor.name || `competitor ${index + 1}`}`}
+            aria-label={t("Remove {name}", {
+              name:
+                competitor.name ||
+                t("competitor {number}", { number: index + 1 }),
+            })}
             onClick={onRemove}
           >
             <Trash2 className="size-4" />

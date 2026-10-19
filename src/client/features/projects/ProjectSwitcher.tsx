@@ -118,7 +118,7 @@ export function ProjectSwitcher({
           >
             <span className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-medium">
-                {activeProject?.name ?? "Select project"}
+                {activeProject?.name ?? t("Select project")}
               </span>
               {activeProject?.domain ? (
                 <span className="truncate text-xs text-muted-foreground">
@@ -159,7 +159,7 @@ export function ProjectSwitcher({
             />
           ) : null}
           {projects.length > 0 ? (
-            <ComboboxEmpty>No projects match.</ComboboxEmpty>
+            <ComboboxEmpty>{t("No projects match.")}</ComboboxEmpty>
           ) : null}
           <ComboboxList className="max-h-[min(60vh,21rem)]">
             {(project: ProjectSummary) => (

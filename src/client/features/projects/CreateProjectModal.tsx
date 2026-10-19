@@ -98,7 +98,7 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
         if (fields) {
           formApi.setErrorMap({ onSubmit: { fields } });
         } else {
-          toast.error(getStandardErrorMessage(error));
+          toast.error(getStandardErrorMessage(error, undefined, t));
         }
       }
     },
@@ -130,8 +130,9 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
             </form.AppField>
 
             <p className="text-sm text-muted-foreground">
-              Adding your website starts a 50-page scan with JavaScript
-              rendering. Rendering uses your credits.
+              {t(
+                "Adding your website starts a 50-page scan with JavaScript rendering. Rendering uses your credits.",
+              )}
             </p>
             <form.AppField name="domain">
               {(field) => (
@@ -163,9 +164,9 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
                 )}
               </form.Field>
               <FieldDescription>
-                Keyword, SERP, and domain data uses this country and language
-                unless a call asks for a different one. Change it later in
-                project settings.
+                {t(
+                  "Keyword, SERP, and domain data uses this country and language unless a call asks for a different one. Change it later in project settings.",
+                )}
               </FieldDescription>
             </div>
 

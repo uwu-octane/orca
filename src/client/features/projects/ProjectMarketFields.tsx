@@ -40,7 +40,7 @@ export function ProjectMarketFields({
   const countryId = useId();
   const languageId = useId();
   const languageItems = getLanguageOptions(value.locationCode).map(
-    (option) => ({ value: option.code, label: option.label }),
+    (option) => ({ value: option.code, label: t(option.label) }),
   );
   // Most countries have exactly one language DataForSEO serves, so the
   // select is only a real choice where there's more than one.

@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { projectsQueryOptions } from "@/client/features/projects/projectQueries";
@@ -12,12 +13,14 @@ export function ProjectWebsiteGate({
   projectId: string;
   children: ReactNode;
 }) {
+  const { t } = useLocale();
+
   const query = useQuery(projectsQueryOptions());
   if (query.isPending) return <SkeletonPageContent />;
   if (query.isError)
     return (
       <QueryError
-        fallback="Couldn't load your project."
+        fallback={t("Couldn't load your project.")}
         error={query.error}
         onRetry={() => void query.refetch()}
         isRetrying={query.isFetching}

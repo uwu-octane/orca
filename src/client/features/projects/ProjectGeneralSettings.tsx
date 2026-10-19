@@ -20,17 +20,19 @@ import { archiveProject, updateProject } from "@/serverFunctions/projects";
 import type { ProjectSummary } from "./types";
 
 export function ProjectGeneralSettings({ projectId }: { projectId: string }) {
+  const { t } = useLocale();
+
   const projectsQuery = useQuery(projectsQueryOptions());
 
   return (
     <QueryState
       query={projectsQuery}
-      errorFallback="Failed to load the project"
+      errorFallback={t("Failed to load the project")}
     >
       {(projects) => {
         const project = projects.find((entry) => entry.id === projectId);
         if (!project) {
-          return <QueryError fallback="This project was not found." />;
+          return <QueryError fallback={t("This project was not found.")} />;
         }
         return (
           <div className="space-y-8">
@@ -112,8 +114,9 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
           </form.AppField>
 
           <p className="text-sm text-muted-foreground">
-            Adding your website starts a 50-page scan with JavaScript rendering.
-            Rendering uses your credits.
+            {t(
+              "Adding your website starts a 50-page scan with JavaScript rendering. Rendering uses your credits.",
+            )}
           </p>
           <form.AppField name="domain">
             {(field) => (
@@ -193,14 +196,16 @@ function DangerSection({
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
           {canArchive
-            ? "Archiving removes the project from your workspace and stops its scheduled rank tracking. You can restore it later from the Projects page."
+            ? t(
+                "Archiving removes the project from your workspace and stops its scheduled rank tracking. You can restore it later from the Projects page.",
+              )
             : t("You can't archive your only project.")}
         </p>
         <div className="flex shrink-0 gap-2">
           <InlineConfirm
-            label={`Archive ${project.name}`}
-            triggerLabel="Archive project"
-            confirmLabel="Yes, archive project"
+            label={t("Archive {name}", { name: project.name })}
+            triggerLabel={t("Archive project")}
+            confirmLabel={t("Yes, archive project")}
             pending={archiveMutation.isPending}
             disabled={!canArchive}
             onConfirm={() => archiveMutation.mutate()}

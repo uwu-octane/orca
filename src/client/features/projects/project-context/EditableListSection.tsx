@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useState, type ReactNode } from "react";
 import { Pencil, Plus } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
@@ -34,6 +35,7 @@ export function EditableListSection<T>({
   onRemove: (item: T) => void;
   pending: boolean;
 }) {
+  const { t } = useLocale();
   const [editing, setEditing] = useState<string | null>(null);
   const close = () => setEditing(null);
 
@@ -83,13 +85,13 @@ export function EditableListSection<T>({
                     variant="ghost"
                     size="icon-xs"
                     disabled={pending}
-                    aria-label={`Edit ${getLabel(item)}`}
+                    aria-label={t("Edit {title}", { title: getLabel(item) })}
                     onClick={() => setEditing(id)}
                   >
                     <Pencil className="size-3.5" />
                   </Button>
                   <InlineConfirm
-                    label={`Remove ${getLabel(item)}`}
+                    label={t("Remove {name}", { name: getLabel(item) })}
                     pending={pending}
                     onConfirm={() => onRemove(item)}
                   />

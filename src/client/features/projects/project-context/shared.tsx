@@ -55,11 +55,15 @@ const AUTHOR_LABELS: Record<ContextAuthor, string> = {
 };
 
 export function Provenance({ by, at }: { by: ContextAuthor; at?: string }) {
+  const { t } = useLocale();
   return (
     <span className="text-xs text-muted-foreground">
       {at
-        ? `Updated by ${AUTHOR_LABELS[by]} · ${formatRelativeTime(at)}`
-        : `Added by ${AUTHOR_LABELS[by]}`}
+        ? t("Updated by {author} · {time}", {
+            author: t(AUTHOR_LABELS[by]),
+            time: formatRelativeTime(at),
+          })
+        : t("Added by {author}", { author: t(AUTHOR_LABELS[by]) })}
     </span>
   );
 }

@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Sparkles } from "lucide-react";
@@ -22,6 +23,8 @@ import type {
 } from "@/types/schemas/projectWebsite";
 
 export function ProjectWebsiteSetup({ projectId }: { projectId: string }) {
+  const { t } = useLocale();
+
   const queryClient = useQueryClient();
   const [website, setWebsite] = useState("");
   const [research, setResearch] = useState<WebsiteResearch | null>(null);
@@ -52,7 +55,7 @@ export function ProjectWebsiteSetup({ projectId }: { projectId: string }) {
           queryKey: ["aiVisibility", projectId],
         }),
       ]);
-      toast.success("Project context saved");
+      toast.success(t("Project context saved"));
     },
   });
   if (research)
@@ -95,20 +98,23 @@ export function ProjectWebsiteSetup({ projectId }: { projectId: string }) {
               <Sparkles className="size-5" />
             </div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              Set up AI visibility
+              {t("Set up AI visibility")}
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              We’ll research your brand and find the most relevant topics to
-              monitor.
+              {t(
+                "We’ll research your brand and find the most relevant topics to monitor.",
+              )}
             </p>
           </div>
           <Field>
-            <FieldLabel htmlFor="project-website">Website URL</FieldLabel>
+            <FieldLabel htmlFor="project-website">
+              {t("Website URL")}
+            </FieldLabel>
             <Input
               id="project-website"
               inputMode="url"
               autoComplete="url"
-              placeholder="Enter your website URL"
+              placeholder={t("Enter your website URL")}
               value={website}
               onChange={(event) => setWebsite(event.target.value)}
               required
@@ -117,8 +123,9 @@ export function ProjectWebsiteSetup({ projectId }: { projectId: string }) {
           {researchMutation.isError && (
             <Alert variant="destructive">
               <AlertDescription>
-                We couldn’t research this website. Check the URL, provider
-                settings, and available usage credits, then try again.
+                {t(
+                  "We couldn’t research this website. Check the URL, provider settings, and available usage credits, then try again.",
+                )}
               </AlertDescription>
             </Alert>
           )}
@@ -129,11 +136,12 @@ export function ProjectWebsiteSetup({ projectId }: { projectId: string }) {
               disabled={!website.trim()}
               className="w-full"
             >
-              Start research
+              {t("Start research")}
             </Button>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Research and a first run of your prompts use a small amount of
-              usage credits.
+              {t(
+                "Research and a first run of your prompts use a small amount of usage credits.",
+              )}
             </p>
           </div>
         </form>

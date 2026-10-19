@@ -48,6 +48,8 @@ const SECTION_PLACEHOLDERS: Record<ProjectContextSectionKey, string> = {
 };
 
 export function ProjectContextPage({ projectId }: { projectId: string }) {
+  const { t } = useLocale();
+
   const contextQuery = useQuery({
     queryKey: projectContextQueryKey(projectId),
     queryFn: () => getProjectContext({ data: { projectId } }),
@@ -59,16 +61,16 @@ export function ProjectContextPage({ projectId }: { projectId: string }) {
   return (
     <QueryState
       query={contextQuery}
-      errorFallback="Failed to load project context"
+      errorFallback={t("Failed to load project context")}
     >
       {(context) => (
         // key remounts the whole page when the project switches under it, so no
         // draft, open form, or edit state can carry over to another project.
         <div key={projectId} className="space-y-8">
           <p className="text-sm text-muted-foreground">
-            What Claude Code and any other connected MCP client know about this
-            project. They read it before they work and write back what they
-            learn, so correct anything that looks wrong.
+            {t(
+              "What Claude Code and any other connected MCP client know about this project. They read it before they work and write back what they learn, so correct anything that looks wrong.",
+            )}
           </p>
 
           <ProseSections
@@ -158,8 +160,10 @@ function ProseSections({
         <EmptyState
           size="sm"
           icon={null}
-          title="Nothing written down yet"
-          description="Fill in what you can — or ask your agent to draft it from your site and confirm what it got right."
+          title={t("Nothing written down yet")}
+          description={t(
+            "Fill in what you can — or ask your agent to draft it from your site and confirm what it got right.",
+          )}
         />
       ) : null}
 
@@ -238,15 +242,19 @@ function CustomSections({
     <section className="space-y-3">
       <SectionHeader
         title={t("Custom sections")}
-        hint="Anything an agent wrote down that didn't fit the sections above."
+        hint={t(
+          "Anything an agent wrote down that didn't fit the sections above.",
+        )}
       />
 
       {customSections.length === 0 ? (
         <EmptyState
           size="sm"
           icon={null}
-          title="Nothing here yet"
-          description="Agents add a section when they learn something important that has nowhere else to live."
+          title={t("Nothing here yet")}
+          description={t(
+            "Agents add a section when they learn something important that has nowhere else to live.",
+          )}
         />
       ) : (
         <div className="space-y-3">
@@ -280,13 +288,17 @@ function CustomSections({
                     <Button
                       variant="ghost"
                       size="icon-xs"
-                      aria-label={`Edit ${custom.title ?? custom.slug}`}
+                      aria-label={t("Edit {title}", {
+                        title: custom.title ?? custom.slug,
+                      })}
                       onClick={() => setEditingSlug(custom.slug)}
                     >
                       <Pencil className="size-3.5" />
                     </Button>
                     <InlineConfirm
-                      label={`Delete ${custom.title ?? custom.slug}`}
+                      label={t("Delete {title}", {
+                        title: custom.title ?? custom.slug,
+                      })}
                       pending={update.isPending}
                       onConfirm={() =>
                         update.mutate([{ deleteCustomSection: custom.slug }])
@@ -370,15 +382,17 @@ function ResearchLog({
     <section className="space-y-3">
       <SectionHeader
         title={t("Research log")}
-        hint="What's already been looked up, so nobody buys the same data twice."
+        hint={t(
+          "What's already been looked up, so nobody buys the same data twice.",
+        )}
       />
 
       {researchLog.length === 0 ? (
         <EmptyState
           size="sm"
           icon={null}
-          title="Nothing logged yet"
-          description="Agents record paid research here as they run it."
+          title={t("Nothing logged yet")}
+          description={t("Agents record paid research here as they run it.")}
         />
       ) : (
         <ul className={listClass}>
@@ -396,7 +410,9 @@ function ResearchLog({
               </div>
               <RowActions>
                 <InlineConfirm
-                  label={`Delete log entry from ${entry.entryDate}`}
+                  label={t("Delete log entry from {date}", {
+                    date: entry.entryDate,
+                  })}
                   pending={update.isPending}
                   onConfirm={() =>
                     update.mutate([{ removeResearchLog: [entry.id] }])

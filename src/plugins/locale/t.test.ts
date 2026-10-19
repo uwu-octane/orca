@@ -1,4 +1,9 @@
 import {
+  LOCATION_OPTIONS,
+  getLanguageOptions,
+} from "@/shared/keyword-locations";
+import { PROJECT_CONTEXT_SECTION_LABELS } from "@/types/schemas/projectContext";
+import {
   buildSummaryStats,
   TAB_DESCRIPTIONS,
 } from "@/client/features/backlinks/backlinksPageUtils";
@@ -226,6 +231,21 @@ describe("translate", () => {
       expect(
         translate(label),
         `untranslated backlink label: ${label}`,
+      ).not.toBe(label);
+    }
+  });
+
+  it("translates project context sections and every selectable market language", () => {
+    const labels = new Set([
+      ...Object.values(PROJECT_CONTEXT_SECTION_LABELS),
+      ...LOCATION_OPTIONS.flatMap((location) =>
+        getLanguageOptions(location.code).map((language) => language.label),
+      ),
+    ]);
+    for (const label of labels) {
+      expect(
+        translate(label),
+        `untranslated project option: ${label}`,
       ).not.toBe(label);
     }
   });

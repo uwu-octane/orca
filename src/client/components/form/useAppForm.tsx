@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useId, type ComponentProps, type ReactNode } from "react";
 import { createFormHook } from "@tanstack/react-form";
 import { Button } from "@/client/components/ui/button";
@@ -45,6 +46,7 @@ type BoundProps =
 
 /** One id, label, hint and error wiring for every field component. */
 function useFieldControl(description: ReactNode) {
+  const { t } = useLocale();
   const field = useFieldContext<unknown>();
   const id = useId();
   const error = getFieldError(field.state.meta.errors);
@@ -60,7 +62,7 @@ function useFieldControl(description: ReactNode) {
         {description ? (
           <FieldDescription id={descriptionId}>{description}</FieldDescription>
         ) : null}
-        {error ? <FieldError id={errorId}>{error}</FieldError> : null}
+        {error ? <FieldError id={errorId}>{t(error)}</FieldError> : null}
       </>
     ),
     controlProps: {

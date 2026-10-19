@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 import { toast } from "sonner";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 
@@ -9,9 +10,13 @@ export function toastInitialAudit(
     | null,
 ) {
   if (initialAudit?.status === "unavailable")
-    toast.warning("Website saved. The first scan could not start.", {
-      description: getStandardErrorMessage(new Error(initialAudit.code)),
+    toast.warning(translate("Website saved. The first scan could not start."), {
+      description: getStandardErrorMessage(
+        new Error(initialAudit.code),
+        undefined,
+        translate,
+      ),
     });
   else if (initialAudit?.status === "started")
-    toast.success("Your 50-page site scan is running");
+    toast.success(translate("Your 50-page site scan is running"));
 }
