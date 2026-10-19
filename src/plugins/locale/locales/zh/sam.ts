@@ -34,4 +34,29 @@ export const samZh = {
     "找出我已经获得排名的快速见效关键词",
   "Ask SAM to research, analyze, or track anything…":
     "让 SAM 研究、分析或追踪任何内容…",
+  Stop: "停止",
+  "Sam is in beta": "Sam 处于测试阶段",
+  "Sam is the Orca MCP and skills wrapped in a chat window. The agent you already use, like Claude Code, ChatGPT, Grok Bot, or Hermes, runs that same toolset on a much more capable harness. We recommend using Orca there.":
+    "Sam 将 Orca MCP 和技能集成在一个聊天窗口中。你常用的智能体，如 Claude Code、ChatGPT、Grok Bot 或 Hermes，能以更强大的运行环境使用同一套工具。我们建议在这些智能体中使用 Orca。",
+  "You can still use Sam, but it is early and has rough edges.":
+    "你仍然可以使用 Sam，但它尚处于早期阶段，还有不完善的地方。",
+  "Use Sam anyway": "仍然使用 Sam",
+  "Failed to load your chats.": "无法加载你的对话。",
+  "Failed to start a new chat.": "无法创建新对话。",
+  "This chat was archived or does not exist.": "此对话已归档或不存在。",
+  "Go to your latest chat": "前往最新对话",
+  "Saving the reply that got cut off…": "正在保存中断的回复…",
+  "SAM stopped before finishing this reply.": "SAM 在完成这条回复前停止了。",
+  "Lost the connection to SAM.": "与 SAM 的连接已断开。",
+  "Reconnecting…": "正在重新连接…",
+  "Couldn't change the conversation. Try again.": "无法修改对话，请重试。",
+  "SAM, Orca's in-app AI agent, needs an OpenRouter API key. Create a key on OpenRouter, set it as the":
+    "SAM 是 Orca 的应用内 AI 智能体，需要 OpenRouter API 密钥。请在 OpenRouter 创建密钥，将其设置为",
+  "Your chats will show here once you opt in to the beta.":
+    "启用测试版后，你的对话会显示在这里。",
+  "Failed to load chats.": "无法加载对话。",
+  "Message copied": "消息已复制",
+  "{count}m": "{count} 分钟",
+  "{count}h": "{count} 小时",
+  "{count}d": "{count} 天",
 } satisfies Record<string, string>;

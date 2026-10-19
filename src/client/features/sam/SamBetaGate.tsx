@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { Link } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 import { GateCard } from "@/client/components/GateCard";
@@ -10,28 +11,31 @@ import { Button } from "@/client/components/ui/button";
  * points there and Sam is the explicit fallback.
  */
 export function SamBetaGate({ onContinue }: { onContinue: () => void }) {
+  const { t } = useLocale();
+
   return (
     <GateCard
       icon={Sparkles}
-      title="Sam is in beta"
+      title={t("Sam is in beta")}
       description={
         <>
           <p>
-            Sam is the Orca MCP and skills wrapped in a chat window. The agent
-            you already use, like Claude Code, ChatGPT, Grok Bot, or Hermes,
-            runs that same toolset on a much more capable harness. We recommend
-            using Orca there.
+            {t(
+              "Sam is the Orca MCP and skills wrapped in a chat window. The agent you already use, like Claude Code, ChatGPT, Grok Bot, or Hermes, runs that same toolset on a much more capable harness. We recommend using Orca there.",
+            )}
           </p>
-          <p>You can still use Sam, but it is early and has rough edges.</p>
+          <p>
+            {t("You can still use Sam, but it is early and has rough edges.")}
+          </p>
         </>
       }
       actions={
         <>
           <Button size="lg" nativeButton={false} render={<Link to="/ai" />}>
-            Set up your agent
+            {t("Set up your agent")}
           </Button>
           <Button size="lg" variant="ghost" onClick={onContinue}>
-            Use Sam anyway
+            {t("Use Sam anyway")}
           </Button>
         </>
       }

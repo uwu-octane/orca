@@ -113,7 +113,7 @@ export function SamChat({
       <StatusScreen>
         <QueryError
           error={access.error}
-          fallback="Could not load AI agent setup status."
+          fallback={t("Could not load AI agent setup status.")}
           onRetry={access.onRetry}
           isRetrying={access.isRetrying}
         />
@@ -144,14 +144,14 @@ export function SamChat({
         {loadFailed ? (
           <QueryError
             error={sessionsQuery.error}
-            fallback="Failed to load your chats."
+            fallback={t("Failed to load your chats.")}
             onRetry={() => void sessionsQuery.refetch()}
             isRetrying={sessionsQuery.isFetching}
           />
         ) : createError ? (
           <QueryError
             error={createError}
-            fallback="Failed to start a new chat."
+            fallback={t("Failed to start a new chat.")}
             onRetry={startChat}
           />
         ) : null}
@@ -173,15 +173,19 @@ export function SamChat({
         <StatusScreen>
           <QueryError
             error={sessionsQuery.error}
-            fallback="Failed to load your chats."
+            fallback={t("Failed to load your chats.")}
             onRetry={() => void refetchSessions()}
           />
         </StatusScreen>
       );
     }
     return (
-      <StatusScreen description="This chat was archived or does not exist.">
-        <Button onClick={() => goToSession()}>Go to your latest chat</Button>
+      <StatusScreen
+        description={t("This chat was archived or does not exist.")}
+      >
+        <Button onClick={() => goToSession()}>
+          {t("Go to your latest chat")}
+        </Button>
       </StatusScreen>
     );
   }

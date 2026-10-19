@@ -61,7 +61,7 @@ export function ChatComposer({
               variant="secondary"
               size="icon-sm"
               className="rounded-full"
-              aria-label="Stop"
+              aria-label={t("Stop")}
               onClick={onStop}
             >
               <Square className="size-3.5 fill-current" />

@@ -57,4 +57,19 @@ export const onboardingZh = {
   "Google OAuth client not configured": "Google OAuth 客户端未配置",
   "Add your Google client ID and secret to this Orca deployment before connecting {integrationName}.":
     "连接 {integrationName} 前,请将 Google 客户端 ID 和密钥添加到此 Orca 部署中。",
+  "Onboarding steps": "入门步骤",
+  "Step {step}: {label}": "第 {step} 步：{label}",
+  "What’s your website?": "你的网站是什么？",
+  "We’ll start a site audit for you.": "我们会为你启动一次站点审计。",
+  "Enter your website.": "请输入你的网站。",
+  "Choose default country & language": "选择默认国家和语言",
+  "Save and continue": "保存并继续",
+  "Connect Google Search Console": "连接 Google Search Console",
+  "See which Google searches bring people to your site.":
+    "了解用户通过哪些 Google 搜索访问你的网站。",
+  "Couldn't check your Google connection.": "无法检查你的 Google 连接状态。",
+  "Connected to": "已连接到",
+  Finish: "完成",
+  "Set up your agent": "设置你的智能体",
+  "or any MCP client": "或任何 MCP 客户端",
 } satisfies Record<string, string>;

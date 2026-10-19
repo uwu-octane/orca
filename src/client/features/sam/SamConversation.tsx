@@ -111,7 +111,7 @@ export function SamConversation({
       body: JSON.stringify({ messageId }),
     }).catch(() => null);
     if (!response?.ok) {
-      toast.error("Couldn't change the conversation. Try again.");
+      toast.error(t("Couldn't change the conversation. Try again."));
       return false;
     }
     const fresh = await fetch(
@@ -230,14 +230,14 @@ export function SamConversation({
 
           {isRecovering ? (
             <p className="text-xs text-muted-foreground">
-              Saving the reply that got cut off…
+              {t("Saving the reply that got cut off…")}
             </p>
           ) : null}
 
           {status === "error" ? (
             <ErrorState
               variant="inline"
-              message="SAM stopped before finishing this reply."
+              message={t("SAM stopped before finishing this reply.")}
               onRetry={lastUserMessage ? retryLast : undefined}
               isRetrying={isBusy}
             />
@@ -267,20 +267,22 @@ export function SamConversation({
             <div className="mb-2">
               <ErrorState
                 variant="inline"
-                message="Lost the connection to SAM."
+                message={t("Lost the connection to SAM.")}
                 action={
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => agent.reconnect()}
                   >
-                    Reconnect
+                    {t("Reconnect")}
                   </Button>
                 }
               />
             </div>
           ) : isReconnecting ? (
-            <p className="mb-2 text-xs text-muted-foreground">Reconnecting…</p>
+            <p className="mb-2 text-xs text-muted-foreground">
+              {t("Reconnecting…")}
+            </p>
           ) : null}
           <ChatComposer
             busy={isBusy}

@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import type { ReactNode } from "react";
 import { OnboardingCard } from "./OnboardingCard";
 import { ONBOARDING_STEPS } from "./onboardingModel";
@@ -29,12 +30,13 @@ export function PostSignupOnboarding({
   accountMenu,
   suggestedDomain,
 }: PostSignupOnboardingProps) {
+  const { t } = useLocale();
   return (
     <>
       {accountMenu}
       <OnboardingCard
         step={step + 1}
-        steps={["Website", "Google Search Console", "Agent setup"]}
+        steps={[t("Website"), "Google Search Console", t("Agent setup")]}
         onStepChange={onStepChange}
         disabled={isSaving}
       >

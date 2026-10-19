@@ -1,3 +1,4 @@
+import { AGENT_SETUP_DESCRIPTION } from "@/client/features/ai-mcp/AgentSetupPanel";
 import {
   BASE_PLAN_OFFER,
   YC_PLAN_OFFER,
@@ -163,6 +164,7 @@ describe("translate", () => {
   it("translates setup steps and search intent labels", () => {
     const labels = [
       ...setupSteps.flatMap((step) => [step.label, step.detail]),
+      AGENT_SETUP_DESCRIPTION,
       ...Object.values(INTENT_LABELS),
     ];
     for (const label of labels) {

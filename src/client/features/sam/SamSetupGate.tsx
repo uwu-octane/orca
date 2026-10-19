@@ -25,8 +25,9 @@ export function SamSetupGate({
       description={
         <>
           <p>
-            SAM, Orca&apos;s in-app AI agent, needs an OpenRouter API key.
-            Create a key on OpenRouter, set it as the{" "}
+            {t(
+              "SAM, Orca's in-app AI agent, needs an OpenRouter API key. Create a key on OpenRouter, set it as the",
+            )}{" "}
             <code>OPENROUTER_API_KEY</code>{" "}
             {t("environment variable, restart Orca, then confirm here.")}
           </p>

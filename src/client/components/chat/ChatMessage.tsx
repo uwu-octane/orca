@@ -91,7 +91,7 @@ function MessageActions({
     >
       <CopyButton
         value={messageText(message)}
-        successMessage="Message copied"
+        successMessage={t("Message copied")}
         label={t("Copy message")}
         variant="ghost"
         size="icon-xs"
@@ -164,10 +164,15 @@ function ToolBadge({
   part: UIMessage["parts"][number];
   live: boolean;
 }) {
+  const { t } = useLocale();
   const label = humanizeToolLabel(part.type);
   const skillName = skillNameFromPart(part);
-  const runningText = skillName ? `Activating ${skillName}` : label;
-  const doneText = skillName ? `Skill: ${skillName}` : label;
+  const runningText = skillName
+    ? t("Activating {skill}", { skill: skillName })
+    : label;
+  const doneText = skillName
+    ? t("Skill: {skill}", { skill: skillName })
+    : label;
   const state = "state" in part ? part.state : undefined;
   const isDone = state === "output-available";
   // A "running" part in a message that is no longer being generated never

@@ -1,4 +1,5 @@
 // FORK: retain locale subscriptions across upstream component changes.
+import { translate } from "@/plugins/locale";
 import { useLocale } from "@/plugins/client/context";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -74,10 +75,10 @@ function ageLabel(timestamp: string): string {
   const then = new Date(iso.replace(" ", "T")).getTime();
   if (Number.isNaN(then)) return "";
   const minutes = Math.max(0, Math.floor((Date.now() - then) / 60_000));
-  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 60) return translate("{count}m", { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  return `${Math.floor(hours / 24)}d`;
+  if (hours < 24) return translate("{count}h", { count: hours });
+  return translate("{count}d", { count: Math.floor(hours / 24) });
 }
 
 /** The chat list's rows while the chats load. */
@@ -134,7 +135,7 @@ export function SamSidebarPanel({
   if (!optedIn) {
     return (
       <p className="px-4 py-6 text-center text-xs text-muted-foreground">
-        Your chats will show here once you opt in to the beta.
+        {t("Your chats will show here once you opt in to the beta.")}
       </p>
     );
   }
@@ -159,7 +160,7 @@ export function SamSidebarPanel({
       <div className="min-h-0 flex-1 overflow-y-auto px-2 py-1">
         <QueryState
           query={sessionsQuery}
-          errorFallback="Failed to load chats."
+          errorFallback={t("Failed to load chats.")}
           loading={<SamChatListSkeleton />}
         >
           {(loadedSessions) =>

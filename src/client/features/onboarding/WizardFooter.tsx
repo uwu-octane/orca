@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import type { ReactNode, Ref } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "cn";
@@ -24,6 +25,7 @@ export function WizardFooter({
   continueRef?: Ref<HTMLButtonElement>;
   className?: string;
 }) {
+  const { t } = useLocale();
   return (
     <div
       className={cn(
@@ -38,7 +40,7 @@ export function WizardFooter({
           className="gap-1.5 px-0 text-xs font-normal text-muted-foreground hover:bg-transparent"
           onClick={onBack}
         >
-          <ArrowLeft className="size-3.5" /> Back
+          <ArrowLeft className="size-3.5" /> {t("Back")}
         </Button>
       ) : (
         <span />
@@ -51,7 +53,7 @@ export function WizardFooter({
             className="h-8 px-3 text-xs font-semibold text-foreground/55"
             onClick={onSkip}
           >
-            {skipLabel}
+            {t(skipLabel)}
           </Button>
         ) : null}
         {continueAction ?? (
@@ -62,7 +64,7 @@ export function WizardFooter({
             onClick={onContinue}
             disabled={continueDisabled || !onContinue}
           >
-            {continueLabel}
+            {t(continueLabel)}
             <ArrowRight className="size-4" />
           </Button>
         )}

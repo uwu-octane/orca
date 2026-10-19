@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { ArrowRight } from "lucide-react";
 import { AgentList } from "./AgentList";
 import { AgentSetupPanel, AGENT_SETUP_DESCRIPTION } from "./AgentSetupPanel";
@@ -15,16 +16,17 @@ export function AgentSetup({
   onBack: () => void;
   disabled?: boolean;
 }) {
+  const { t } = useLocale();
   const prompt = getAgentSetupPrompt(window.location.origin);
 
   return (
     <fieldset disabled={disabled}>
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">
-          Set up your agent
+          {t("Set up your agent")}
         </h1>
         <p className="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground">
-          {AGENT_SETUP_DESCRIPTION}
+          {t(AGENT_SETUP_DESCRIPTION)}
         </p>
         <AgentList />
       </div>
@@ -43,7 +45,8 @@ export function AgentSetup({
               className="h-8 gap-2 px-3 text-xs font-semibold"
               onClick={onNext}
             >
-              Finish <ArrowRight className="size-4" />
+              {t("Finish")}
+              <ArrowRight className="size-4" />
             </Button>
           }
         />
