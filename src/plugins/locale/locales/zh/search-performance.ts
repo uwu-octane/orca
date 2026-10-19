@@ -27,4 +27,26 @@ export const searchPerformanceZh = {
   query: "查询",
   queries: "查询",
   "Save as keywords": "保存为关键词",
+  Contains: "包含",
+  "Exactly matches": "完全匹配",
+  "Page match": "页面匹配方式",
+  "Page URL filter": "页面网址筛选",
+  "URL or subfolder": "网址或子目录",
+  "Query match": "查询匹配方式",
+  "Query filter": "查询筛选",
+  "Search term": "搜索词",
+  "All filters must match. Contains ignores case and matches text anywhere, including a subfolder. Exactly matches compares the full URL or query, including case.":
+    "结果必须满足所有筛选条件。“包含”不区分大小写，可匹配任意位置的文本，包括子目录。“完全匹配”会比较完整的网址或查询词，并区分大小写。",
+  "Failed to load Search Console data": "无法加载 Search Console 数据",
+  "Loading matching results…": "正在加载匹配结果…",
+  "Compared with {start} to {end}": "与 {start} 至 {end} 相比",
+  "No rows on this page": "此页没有记录",
+  "This page is past the end of the results.": "此页已超出结果范围。",
+  "Go to first page": "返回第一页",
+  "No Search Console data yet": "暂无 Search Console 数据",
+  "Search Console data can take a few days to appear.":
+    "Search Console 数据可能需要几天才会显示。",
+  "No striking-distance queries": "暂无临界排名查询",
+  "Queries ranking at positions 5 to 20 will appear here.":
+    "排名在第 5 至 20 位的查询词会显示在这里。",
 } satisfies Record<string, string>;

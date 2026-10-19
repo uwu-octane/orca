@@ -15,11 +15,6 @@ import {
 } from "@/client/components/ui/select";
 import type { searchPerformanceInputSchema } from "@/types/schemas/search-performance";
 
-const MATCH_ITEMS = [
-  { value: "contains", label: "Contains" },
-  { value: "equals", label: "Exactly matches" },
-];
-
 export type TextFilters = Pick<
   z.infer<typeof searchPerformanceInputSchema>,
   "pageFilter" | "queryFilter"
@@ -37,6 +32,10 @@ export function SearchPerformanceTextFilters({
   onReset: () => void;
 }) {
   const { t } = useLocale();
+  const MATCH_ITEMS = [
+    { value: "contains", label: t("Contains") },
+    { value: "equals", label: t("Exactly matches") },
+  ];
 
   const [page, setPage] = useState(value.pageFilter?.expression ?? "");
   const [query, setQuery] = useState(value.queryFilter?.expression ?? "");
@@ -85,11 +84,13 @@ export function SearchPerformanceTextFilters({
         <div className="flex items-center gap-2">
           <p className="text-sm font-semibold">{t("Refine table results")}</p>
           {activeFilterCount > 0 ? (
-            <Badge size="sm">{activeFilterCount} active</Badge>
+            <Badge size="sm">
+              {t("{count} active", { count: activeFilterCount })}
+            </Badge>
           ) : null}
           {dirtyCount > 0 ? (
             <Badge variant="warning" size="sm">
-              {dirtyCount} unapplied
+              {t("{count} unapplied", { count: dirtyCount })}
             </Badge>
           ) : null}
         </div>
@@ -126,7 +127,7 @@ export function SearchPerformanceTextFilters({
               <SelectTrigger
                 size="sm"
                 className="w-full sm:w-44 sm:shrink-0"
-                aria-label="Page match"
+                aria-label={t("Page match")}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -140,11 +141,11 @@ export function SearchPerformanceTextFilters({
             </Select>
             <Input
               className="h-7 w-full min-w-0 sm:flex-1"
-              aria-label="Page URL filter"
+              aria-label={t("Page URL filter")}
               value={page}
               maxLength={4096}
               onChange={(event) => setPage(event.target.value)}
-              placeholder="URL or subfolder"
+              placeholder={t("URL or subfolder")}
             />
           </div>
         </div>
@@ -163,7 +164,7 @@ export function SearchPerformanceTextFilters({
               <SelectTrigger
                 size="sm"
                 className="w-full sm:w-44 sm:shrink-0"
-                aria-label="Query match"
+                aria-label={t("Query match")}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -177,19 +178,19 @@ export function SearchPerformanceTextFilters({
             </Select>
             <Input
               className="h-7 w-full min-w-0 sm:flex-1"
-              aria-label="Query filter"
+              aria-label={t("Query filter")}
               value={query}
               maxLength={4096}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search term"
+              placeholder={t("Search term")}
             />
           </div>
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        All filters must match. Contains ignores case and matches text anywhere,
-        including a subfolder. Exactly matches compares the full URL or query,
-        including case.
+        {t(
+          "All filters must match. Contains ignores case and matches text anywhere, including a subfolder. Exactly matches compares the full URL or query, including case.",
+        )}
       </p>
       <div className="flex items-center justify-end gap-2 pt-1">
         <Button

@@ -1,5 +1,5 @@
 // FORK: locale plugin — display formatting follows the active locale.
-import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
+import { translate, getIntlLocale, readActiveLocale } from "@/plugins/locale";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { MutableRefObject } from "react";
 import { makeSelectionColumn } from "@/client/components/table/DataTable";
@@ -58,28 +58,44 @@ export function buildDimensionColumns(
     }),
     dimensionHelper.accessor("clicks", {
       header: ({ column }) => (
-        <SortableHeader column={column} label="Clicks" align="right" />
+        <SortableHeader
+          column={column}
+          label={translate("Clicks")}
+          align="right"
+        />
       ),
       cell: ({ getValue }) => formatCount(getValue()),
       meta: rightAligned,
     }),
     dimensionHelper.accessor("impressions", {
       header: ({ column }) => (
-        <SortableHeader column={column} label="Impressions" align="right" />
+        <SortableHeader
+          column={column}
+          label={translate("Impressions")}
+          align="right"
+        />
       ),
       cell: ({ getValue }) => formatCount(getValue()),
       meta: rightAligned,
     }),
     dimensionHelper.accessor("ctr", {
       header: ({ column }) => (
-        <SortableHeader column={column} label="CTR" align="right" />
+        <SortableHeader
+          column={column}
+          label={translate("CTR")}
+          align="right"
+        />
       ),
       cell: ({ getValue }) => formatCtr(getValue()),
       meta: rightAligned,
     }),
     dimensionHelper.accessor("position", {
       header: ({ column }) => (
-        <SortableHeader column={column} label="Position" align="right" />
+        <SortableHeader
+          column={column}
+          label={translate("Position")}
+          align="right"
+        />
       ),
       cell: ({ getValue }) => formatPosition(getValue()),
       meta: rightAligned,
@@ -96,7 +112,7 @@ export function buildStrikingColumns(
     makeSelectionColumn<StrikingRow>(anchorRef),
     strikingHelper.accessor("query", {
       enableSorting: false,
-      header: () => "Query",
+      header: () => translate("Query"),
       cell: ({ getValue }) => (
         <span className="block max-w-xs truncate" title={getValue()}>
           {getValue()}
@@ -105,7 +121,7 @@ export function buildStrikingColumns(
     }),
     strikingHelper.accessor("page", {
       enableSorting: false,
-      header: () => "Page",
+      header: () => translate("Page"),
       // GSC page keys are canonical http(s) URLs of the verified property;
       // the scheme check is defense-in-depth before rendering an href.
       cell: ({ getValue }) => (
@@ -122,21 +138,33 @@ export function buildStrikingColumns(
     }),
     strikingHelper.accessor("impressions", {
       header: ({ column }) => (
-        <SortableHeader column={column} label="Impressions" align="right" />
+        <SortableHeader
+          column={column}
+          label={translate("Impressions")}
+          align="right"
+        />
       ),
       cell: ({ getValue }) => formatCount(getValue()),
       meta: rightAligned,
     }),
     strikingHelper.accessor("clicks", {
       header: ({ column }) => (
-        <SortableHeader column={column} label="Clicks" align="right" />
+        <SortableHeader
+          column={column}
+          label={translate("Clicks")}
+          align="right"
+        />
       ),
       cell: ({ getValue }) => formatCount(getValue()),
       meta: rightAligned,
     }),
     strikingHelper.accessor("position", {
       header: ({ column }) => (
-        <SortableHeader column={column} label="Position" align="right" />
+        <SortableHeader
+          column={column}
+          label={translate("Position")}
+          align="right"
+        />
       ),
       cell: ({ getValue }) => formatPosition(getValue()),
       meta: rightAligned,

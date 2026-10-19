@@ -15,29 +15,8 @@ import {
   SelectValue,
 } from "@/client/components/ui/select";
 
-const RANGE_LABELS: Record<SearchPerformanceDateRange, string> = {
-  last_7_days: "Last 7 days",
-  last_28_days: "Last 28 days",
-  last_3_months: "Last 3 months",
-};
-const RANGE_OPTIONS = SEARCH_PERFORMANCE_RANGES.map((value) => ({
-  value,
-  label: RANGE_LABELS[value],
-}));
-
-const DEVICE_LABELS: Record<SearchPerformanceDevice, string> = {
-  DESKTOP: "Desktop",
-  MOBILE: "Mobile",
-  TABLET: "Tablet",
-};
-const DEVICE_OPTIONS = GSC_DEVICES.map((value) => ({
-  value,
-  label: DEVICE_LABELS[value],
-}));
-
 // Sentinel for "no filter" in the selects; never written to the URL.
 const ALL = "ALL";
-const DEVICE_ITEMS = [{ value: ALL, label: "All devices" }, ...DEVICE_OPTIONS];
 
 function isDateRange(value: string): value is SearchPerformanceDateRange {
   return SEARCH_PERFORMANCE_RANGES.some((option) => option === value);
@@ -58,6 +37,30 @@ export function SearchPerformanceSelects({
   onSearchChange: (update: Partial<SearchPerformanceSearch>) => void;
 }) {
   const { t } = useLocale();
+  const RANGE_LABELS: Record<SearchPerformanceDateRange, string> = {
+    last_7_days: t("Last 7 days"),
+    last_28_days: t("Last 28 days"),
+    last_3_months: t("Last 3 months"),
+  };
+  const RANGE_OPTIONS = SEARCH_PERFORMANCE_RANGES.map((value) => ({
+    value,
+    label: RANGE_LABELS[value],
+  }));
+
+  const DEVICE_LABELS: Record<SearchPerformanceDevice, string> = {
+    DESKTOP: t("Desktop"),
+    MOBILE: t("Mobile"),
+    TABLET: t("Tablet"),
+  };
+  const DEVICE_OPTIONS = GSC_DEVICES.map((value) => ({
+    value,
+    label: DEVICE_LABELS[value],
+  }));
+
+  const DEVICE_ITEMS = [
+    { value: ALL, label: t("All devices") },
+    ...DEVICE_OPTIONS,
+  ];
 
   const device = search.device ?? ALL;
   const country = search.country ?? ALL;

@@ -173,7 +173,7 @@ export function SearchPerformancePage({
       });
       await exportDimensionRows(dimension, data.rows, report.range, target);
     } catch (error) {
-      toast.error(getStandardErrorMessage(error, t("Export failed")));
+      toast.error(getStandardErrorMessage(error, t("Export failed"), t));
     } finally {
       setIsExporting(false);
     }
@@ -194,7 +194,7 @@ export function SearchPerformancePage({
   const reportError = (
     <QueryError
       error={reportQuery.error}
-      fallback="Failed to load Search Console data"
+      fallback={t("Failed to load Search Console data")}
       onRetry={() => void reportQuery.refetch()}
       isRetrying={reportQuery.isFetching}
     />
@@ -228,8 +228,9 @@ export function SearchPerformancePage({
               {t("Search Performance")}
             </h1>
             <p className="text-sm text-muted-foreground">
-              See your site&apos;s clicks, impressions, CTR, and position from
-              Google Search Console.
+              {t(
+                "See your site's clicks, impressions, CTR, and position from Google Search Console.",
+              )}
             </p>
           </div>
           {report?.connected ? (
@@ -283,8 +284,10 @@ export function SearchPerformancePage({
               >
                 <TabsTrigger value="striking">
                   {reportQuery.isPlaceholderData
-                    ? "Striking distance"
-                    : `Striking distance (${report.strikingDistance.length})`}
+                    ? t("Striking distance")
+                    : t("Striking distance ({count})", {
+                        count: report.strikingDistance.length,
+                      })}
                 </TabsTrigger>
                 <TabsTrigger value="queries">{t("Queries")}</TabsTrigger>
                 <TabsTrigger value="pages">{t("Pages")}</TabsTrigger>
@@ -318,7 +321,7 @@ export function SearchPerformancePage({
               {showFilters ? filtersPanel : null}
               {reportQuery.isPlaceholderData ? (
                 <div className="p-8 text-sm" role="status">
-                  Loading matching results…
+                  {t("Loading matching results…")}
                 </div>
               ) : tab === "striking" ? (
                 <StrikingDistanceTable

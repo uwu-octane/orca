@@ -136,7 +136,10 @@ export function TotalsTable({ report }: { report: Report }) {
   const { t } = useLocale();
 
   const { totals, prevTotals, range } = report;
-  const deltaTitle = `Compared with ${range.prevStartDate} to ${range.prevEndDate}`;
+  const deltaTitle = t("Compared with {start} to {end}", {
+    start: range.prevStartDate,
+    end: range.prevEndDate,
+  });
   const metrics = [
     {
       label: t("Clicks"),
@@ -149,12 +152,12 @@ export function TotalsTable({ report }: { report: Report }) {
       delta: percentDelta(totals.impressions, prevTotals.impressions),
     },
     {
-      label: "Click-through rate",
+      label: t("Click-through rate"),
       value: formatCtr(totals.ctr),
       delta: percentDelta(totals.ctr, prevTotals.ctr),
     },
     {
-      label: "Average position",
+      label: t("Average position"),
       value: formatPosition(totals.position),
       delta: positionDelta(totals.position, prevTotals.position),
     },
@@ -164,10 +167,10 @@ export function TotalsTable({ report }: { report: Report }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-full">Metric</TableHead>
-            <TableHead className="min-w-32 text-right">Value</TableHead>
+            <TableHead className="w-full">{t("Metric")}</TableHead>
+            <TableHead className="min-w-32 text-right">{t("Value")}</TableHead>
             <TableHead className="min-w-32 text-right" title={deltaTitle}>
-              Change
+              {t("Change")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -205,6 +208,7 @@ export function DimensionTable({
   onClearFilters: () => void;
   onFirstPage: () => void;
 }) {
+  const { t } = useLocale();
   const columns = useMemo(() => buildDimensionColumns(keyLabel), [keyLabel]);
   const table = useDataTable({
     data: rows,
@@ -220,17 +224,19 @@ export function DimensionTable({
       empty={
         isPastEnd
           ? {
-              title: "No rows on this page",
-              description: "This page is past the end of the results.",
+              title: t("No rows on this page"),
+              description: t("This page is past the end of the results."),
               action: (
                 <Button variant="outline" size="sm" onClick={onFirstPage}>
-                  Go to first page
+                  {t("Go to first page")}
                 </Button>
               ),
             }
           : {
-              title: "No Search Console data yet",
-              description: "Search Console data can take a few days to appear.",
+              title: t("No Search Console data yet"),
+              description: t(
+                "Search Console data can take a few days to appear.",
+              ),
             }
       }
     />
@@ -291,7 +297,9 @@ export function StrikingDistanceTable({
         .join("\n");
       await navigator.clipboard.writeText(text);
       toast.success(
-        `Copied ${selectedQueries.length} ${selectedQueries.length === 1 ? "keyword" : "keywords"}`,
+        selectedQueries.length === 1
+          ? t("Copied {count} keyword", { count: selectedQueries.length })
+          : t("Copied {count} keywords", { count: selectedQueries.length }),
       );
     } catch {
       toast.error(t("Couldn't copy to clipboard"));
@@ -310,7 +318,9 @@ export function StrikingDistanceTable({
         queryKey: ["savedKeywords", projectId],
       });
       toast.success(
-        `Saved ${keywords.length} ${keywords.length === 1 ? "keyword" : "keywords"}`,
+        keywords.length === 1
+          ? t("Saved {count} keyword", { count: keywords.length })
+          : t("Saved {count} keywords", { count: keywords.length }),
       );
       setRowSelection({});
     },
@@ -331,22 +341,23 @@ export function StrikingDistanceTable({
           empty={
             isPastEnd
               ? {
-                  title: "No rows on this page",
-                  description: "This page is past the end of the results.",
+                  title: t("No rows on this page"),
+                  description: t("This page is past the end of the results."),
                   action: (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => onPageChange(1)}
                     >
-                      Go to first page
+                      {t("Go to first page")}
                     </Button>
                   ),
                 }
               : {
-                  title: "No striking-distance queries",
-                  description:
+                  title: t("No striking-distance queries"),
+                  description: t(
                     "Queries ranking at positions 5 to 20 will appear here.",
+                  ),
                 }
           }
         />
