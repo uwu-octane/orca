@@ -119,14 +119,14 @@ git merge main          # resolve conflicts here
 
 Upstream moves fast (~3 commits/day). Merge weekly so each merge is small, and keep customizations additive:
 
-- **UI**: prefer daisyUI themes and `@theme` tokens over editing shared components.
+- **UI**: prefer Base UI/shadcn components and `@theme` tokens over editing shared components.
 - **Logic**: prefer new files, new routes, and env-flag switches over rewriting upstream code.
 - When editing a shared upstream file is unavoidable, keep the edit small and mark it with a `// FORK:` comment.
 - **Never hand-resolve generated files** — regenerate instead:
   - `src/routeTree.gen.ts` → run `vite dev` (auto-regenerates)
-  - `worker-configuration.d.ts` → `pnpm cf-typegen`
+  - `src/worker-configuration.d.ts` → `pnpm cf-typegen`
   - `pnpm-lock.yaml` → `git checkout --theirs pnpm-lock.yaml && pnpm install`
-  - Drizzle migrations → never edit upstream migration files; add new migration files for fork schema changes (`drizzle/` and `drizzle-pg/`, keeping both dialects in sync)
+  - Drizzle migrations → never edit upstream migration files; add new migration files for fork schema changes (`drizzle/sqlite/` and `drizzle/pg/`, keeping both dialects in sync)
 - After every merge: `pnpm ci:check && pnpm test`.
 - If the merge added files under `drizzle/`, apply them to local D1: `pnpm db:migrate:local`.
 
