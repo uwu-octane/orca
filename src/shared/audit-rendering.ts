@@ -1,3 +1,4 @@
+import type { T } from "@/plugins/locale";
 import {
   autumnSeoDataCreditsToUsd,
   creditsForProviderUsd,
@@ -54,12 +55,31 @@ function formatRenderingUsd(credits: number) {
 }
 
 /** Why a hosted account cannot start a rendered audit of `maxPages` pages. */
-export function renderingCreditsNeededText(maxPages: number) {
+export function renderingCreditsNeededText(maxPages: number, t?: T) {
   const { high } = estimateRenderingCredits(maxPages);
+  if (t) {
+    return t(
+      "Rendering up to {pages} pages needs {cost} of credits available. Lower the page limit or add credits.",
+      {
+        pages: maxPages.toLocaleString("en-US"),
+        cost: formatRenderingUsd(high),
+      },
+    );
+  }
   return `Rendering up to ${maxPages.toLocaleString("en-US")} pages needs ${formatRenderingUsd(high)} of credits available. Lower the page limit or add credits.`;
 }
 
-export function renderingEstimateText(maxPages: number) {
+export function renderingEstimateText(maxPages: number, t?: T) {
   const { low, high } = estimateRenderingCredits(maxPages);
+  if (t) {
+    return t(
+      "Estimated {low} to {high} for up to {pages} pages. Sites with aggressive bot detection need our more capable renderer and cost more.",
+      {
+        low: formatRenderingUsd(low),
+        high: formatRenderingUsd(high),
+        pages: maxPages.toLocaleString("en-US"),
+      },
+    );
+  }
   return `Estimated ${formatRenderingUsd(low)} to ${formatRenderingUsd(high)} for up to ${maxPages.toLocaleString("en-US")} pages. Sites with aggressive bot detection need our more capable renderer and cost more.`;
 }

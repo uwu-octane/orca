@@ -26,12 +26,16 @@ export function RenderingWarnings({ data }: { data: AuditResultsData }) {
         <Alert variant="warning">
           <ShieldAlert />
           <AlertTitle>
-            Some pages may need JavaScript to show their content.
+            {t("Some pages may need JavaScript to show their content.")}
           </AlertTitle>
           <AlertDescription>
             {rendered
-              ? "They were still loading after rendering, so we couldn't check them."
-              : "Turn on Render JavaScript and run the audit again to check them."}
+              ? t(
+                  "They were still loading after rendering, so we couldn't check them.",
+                )
+              : t(
+                  "Turn on Render JavaScript and run the audit again to check them.",
+                )}
           </AlertDescription>
         </Alert>
       )}
@@ -40,19 +44,19 @@ export function RenderingWarnings({ data }: { data: AuditResultsData }) {
         <Alert variant="warning">
           <ShieldAlert />
           <AlertTitle>
-            We couldn't read {unreadCount}{" "}
-            {unreadCount === 1 ? "page" : "pages"}
-            {t(".")}
+            {unreadCount === 1
+              ? t("We couldn't read {count} page.", { count: unreadCount })
+              : t("We couldn't read {count} pages.", { count: unreadCount })}
           </AlertTitle>
           <AlertDescription>
-            To see them, open Pages and filter Crawl result by Failed.
+            {t("To see them, open Pages and filter Crawl result by Failed.")}
           </AlertDescription>
         </Alert>
       )}
 
       {rendered && (
         <p className="text-sm text-muted-foreground">
-          JavaScript rendering was enabled for this audit.
+          {t("JavaScript rendering was enabled for this audit.")}
         </p>
       )}
     </>

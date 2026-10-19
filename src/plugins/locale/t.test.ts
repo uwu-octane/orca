@@ -1,3 +1,9 @@
+import { auditLighthouseResults } from "@/db/audit.schema";
+import { AUDIT_ISSUE_TYPES } from "@/shared/audit-issues";
+import {
+  renderingEstimateText,
+  renderingCreditsNeededText,
+} from "@/shared/audit-rendering";
 import { aiObservations } from "@/db/ai-visibility.schema";
 import {
   aiNoAnswerLabel,
@@ -141,6 +147,31 @@ describe("translate", () => {
     ];
     for (const label of labels) {
       expect(translate(label), `untranslated label: ${label}`).not.toBe(label);
+    }
+  });
+
+  it("translates audit descriptors and Lighthouse devices", () => {
+    const labels = [
+      ...Object.values(AUDIT_ISSUE_TYPES).flatMap((issue) => [
+        issue.title,
+        issue.explanation,
+        issue.howToFix,
+      ]),
+      ...auditLighthouseResults.strategy.enumValues,
+    ];
+    for (const label of labels) {
+      expect(translate(label), `untranslated audit label: ${label}`).not.toBe(
+        label,
+      );
+    }
+  });
+
+  it("keeps rendering prices and page limits in localized billing messages", () => {
+    for (const message of [renderingEstimateText, renderingCreditsNeededText]) {
+      const english = message(1000);
+      const chinese = message(1000, translate);
+      expect(chinese).toContain("1,000 个页面");
+      expect(chinese.match(/\$[\d.]+/g)).toEqual(english.match(/\$[\d.]+/g));
     }
   });
 

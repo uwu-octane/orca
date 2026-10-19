@@ -191,7 +191,7 @@ function IssueRow({ group }: { group: IssueGroup }) {
           )}
           {group.howToFix && (
             <p className="text-sm max-w-prose">
-              <span className="font-medium">{t("How to fix:")}</span>
+              <span className="font-medium">{t("How to fix:")}</span>{" "}
               <span className="text-foreground/80">{t(group.howToFix)}</span>
             </p>
           )}
@@ -203,6 +203,8 @@ function IssueRow({ group }: { group: IssueGroup }) {
 }
 
 function AffectedUrlList({ issues }: { issues: AuditIssueRow[] }) {
+  const { t } = useLocale();
+
   const rendered = issues.slice(0, MAX_RENDERED_URLS);
   const remaining = issues.length - rendered.length;
 
@@ -227,7 +229,9 @@ function AffectedUrlList({ issues }: { issues: AuditIssueRow[] }) {
       ))}
       {remaining > 0 && (
         <div className="px-3 py-2 text-xs text-muted-foreground">
-          …and {remaining} more — export the issues CSV for the full list.
+          {t("…and {count} more — export the issues CSV for the full list.", {
+            count: remaining,
+          })}
         </div>
       )}
     </div>

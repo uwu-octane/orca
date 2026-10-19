@@ -112,8 +112,8 @@ export function useLaunchController({
         const message =
           value.renderJavaScript &&
           getErrorCode(error) === "INSUFFICIENT_CREDITS"
-            ? renderingCreditsNeededText(effectiveMaxPages)
-            : getStandardErrorMessage(error, t("Failed to start audit"));
+            ? renderingCreditsNeededText(effectiveMaxPages, t)
+            : getStandardErrorMessage(error, t("Failed to start audit"), t);
         formApi.setErrorMap({
           onSubmit: createFormValidationErrors({ form: message }),
         });

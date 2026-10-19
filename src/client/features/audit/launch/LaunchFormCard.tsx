@@ -68,7 +68,7 @@ export function LaunchFormCard({
               return (
                 <Input
                   className="lg:col-span-9"
-                  aria-label="Site URL"
+                  aria-label={t("Site URL")}
                   aria-invalid={urlError ? true : undefined}
                   placeholder="https://example.com"
                   value={field.state.value}
@@ -153,10 +153,13 @@ function LaunchOptions({
         )}
       </launchForm.Field>
       <FieldDescription>
-        Enter any value from {MIN_PAGES} to {maxPagesLimit.toLocaleString()}
+        {t("Enter any value from {min} to {max}", {
+          min: MIN_PAGES,
+          max: maxPagesLimit.toLocaleString(),
+        })}
         {t(".")}
         {maxPagesLimit === RENDERED_MAX_AUDIT_PAGES
-          ? " Audits that render JavaScript are limited to this many pages."
+          ? t(" Audits that render JavaScript are limited to this many pages.")
           : null}
         {maxPagesLimit < paidMaxPagesLimit ? (
           <>
@@ -164,7 +167,9 @@ function LaunchOptions({
             <Link to={SUBSCRIBE_ROUTE} search={{ upgrade: true }}>
               {t("Upgrade")}
             </Link>{" "}
-            to crawl up to {paidMaxPagesLimit.toLocaleString()} pages.
+            {t("to crawl up to {count} pages.", {
+              count: paidMaxPagesLimit.toLocaleString(),
+            })}
           </>
         ) : null}
       </FieldDescription>
@@ -236,9 +241,9 @@ function RenderingOptions({
         </launchForm.Field>
         <FieldLabel
           htmlFor="audit-render-javascript"
-          title="Loads each page in a browser before auditing it. Slower."
+          title={t("Loads each page in a browser before auditing it. Slower.")}
         >
-          Render JavaScript
+          {t("Render JavaScript")}
         </FieldLabel>
       </div>
 
@@ -254,6 +259,7 @@ function RenderingOptions({
               <FieldDescription>
                 {renderingEstimateText(
                   clampMaxPagesInput(maxPagesInput, maxPagesLimit),
+                  t,
                 )}
               </FieldDescription>
             ) : null
@@ -262,9 +268,11 @@ function RenderingOptions({
       )}
       {canRenderJavaScript === false && (
         <FieldDescription>
-          This deployment has no browser, so rendering needs a Context.dev API
-          key. Set <code>CONTEXT_API_KEY</code>, restart Orca, then reload this
-          page.{" "}
+          {t(
+            "This deployment has no browser, so rendering needs a Context.dev API key. Set",
+          )}{" "}
+          <code>CONTEXT_API_KEY</code>
+          {t(", restart Orca, then reload this page.")}{" "}
           <a
             href="https://github.com/every-app/open-seo/blob/main/docs/SELF_HOSTING_CLOUDFLARE_OPERATIONS.md#render-javascript-in-site-audits"
             target="_blank"

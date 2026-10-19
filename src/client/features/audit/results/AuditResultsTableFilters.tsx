@@ -47,23 +47,23 @@ export function PagesFilterBar({
           value={filters.status}
           onChange={(status) => onChange({ ...filters, status })}
           options={[
-            ["all", "All"],
+            ["all", t("All")],
             ["ok", "2xx"],
             ["redirect", "3xx"],
             ["error", "4xx/5xx"],
-            ["missing", "Missing"],
+            ["missing", t("Missing")],
           ]}
         />
         <SelectFilter
-          label="Crawl result"
+          label={t("Crawl result")}
           value={filters.fetchClass}
           onChange={(fetchClass) => onChange({ ...filters, fetchClass })}
           options={[
-            ["all", "All"],
-            ["ok", "Read"],
-            ["error", "Failed"],
-            ["blocked", "Blocked"],
-            ["rate_limited", "Rate limited"],
+            ["all", t("All")],
+            ["ok", t("Read")],
+            ["error", t("Failed")],
+            ["blocked", t("Blocked")],
+            ["rate_limited", t("Rate limited")],
           ]}
         />
         <SelectFilter
@@ -71,9 +71,9 @@ export function PagesFilterBar({
           value={filters.missingAlt}
           onChange={(missingAlt) => onChange({ ...filters, missingAlt })}
           options={[
-            ["all", "All"],
-            ["yes", "Missing alt"],
-            ["no", "No missing alt"],
+            ["all", t("All")],
+            ["yes", t("Missing alt")],
+            ["no", t("No missing alt")],
           ]}
         />
       </div>
@@ -128,9 +128,9 @@ export function PerformanceFilterBar({
           value={filters.device}
           onChange={(device) => onChange({ ...filters, device })}
           options={[
-            ["all", "All"],
-            ["desktop", "Desktop"],
-            ["mobile", "Mobile"],
+            ["all", t("All")],
+            ["desktop", t("Desktop")],
+            ["mobile", t("Mobile")],
           ]}
         />
         <SelectFilter
@@ -138,9 +138,9 @@ export function PerformanceFilterBar({
           value={filters.status}
           onChange={(status) => onChange({ ...filters, status })}
           options={[
-            ["all", "All"],
-            ["ok", "OK"],
-            ["failed", "Failed"],
+            ["all", t("All")],
+            ["ok", t("OK")],
+            ["failed", t("Failed")],
           ]}
         />
         <TextFilter
@@ -185,11 +185,16 @@ export function ResultsTableToolbar({
   resultCount: number;
   totalCount: number;
 }) {
+  const { t } = useLocale();
+
   return (
     <DataTableToolbar
       actions={
         <span className="text-sm tabular-nums text-muted-foreground">
-          {resultCount.toLocaleString()} of {totalCount.toLocaleString()}
+          {t("{count} of {total}", {
+            count: resultCount.toLocaleString(),
+            total: totalCount.toLocaleString(),
+          })}
         </span>
       }
     >

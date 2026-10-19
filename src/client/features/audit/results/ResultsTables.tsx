@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { translate } from "@/plugins/locale";
 import { useMemo, useState, type ReactNode } from "react";
 import {
@@ -45,6 +46,8 @@ export function PerformanceTable({
   pages: AuditResultsData["pages"];
   tabs: ReactNode;
 }) {
+  const { t } = useLocale();
+
   const [filters, setFilters] = useState<PerformanceFilters>(
     EMPTY_PERFORMANCE_FILTERS,
   );
@@ -90,7 +93,7 @@ export function PerformanceTable({
   return (
     <DataTable
       table={table}
-      empty={{ title: "No Lighthouse results" }}
+      empty={{ title: t("No Lighthouse results") }}
       isFiltered={activeFilterCount > 0}
       onClearFilters={resetFilters}
       toolbar={
@@ -140,7 +143,7 @@ function buildPerformanceColumns({
         <SortableHeader column={column} label={translate("Device")} />
       ),
       cell: ({ getValue }) => (
-        <span className="capitalize text-xs">{getValue()}</span>
+        <span className="capitalize text-xs">{translate(getValue())}</span>
       ),
     }),
     performanceColumnHelper.display({
@@ -151,13 +154,14 @@ function buildPerformanceColumns({
       cell: ({ row }) => {
         const isFailed = isLighthouseFailure(row.original);
         const failureMessage =
-          row.original.errorMessage ?? "Lighthouse returned no category scores";
+          row.original.errorMessage ??
+          translate("Lighthouse returned no category scores");
         return isFailed ? (
           <Badge variant="destructive" title={failureMessage}>
-            {"failed"}
+            {translate("failed")}
           </Badge>
         ) : (
-          <Badge variant="success">{"ok"}</Badge>
+          <Badge variant="success">{translate("ok")}</Badge>
         );
       },
       enableSorting: true,
@@ -173,7 +177,9 @@ function buildPerformanceColumns({
       sortingFn: nullableNumberSort,
     }),
     performanceColumnHelper.accessor("accessibilityScore", {
-      header: ({ column }) => <SortableHeader column={column} label="A11y" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} label={translate("A11y")} />
+      ),
       cell: ({ getValue }) => <LighthouseScoreBadge score={getValue()} />,
       sortingFn: nullableNumberSort,
     }),
@@ -234,7 +240,7 @@ function buildPerformanceColumns({
     }),
     performanceColumnHelper.display({
       id: "issues",
-      header: () => "Issues",
+      header: () => translate("Issues"),
       cell: ({ row }) =>
         row.original.r2Key && !isLighthouseFailure(row.original) ? (
           <Button

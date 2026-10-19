@@ -106,9 +106,13 @@ export function ResultsView({
         <Alert variant="warning">
           <ShieldAlert />
           <AlertTitle>
-            Bot protection blocked our crawler on {blockedCount}{" "}
-            {blockedCount === 1 ? "page" : "pages"}
-            {t(".")}
+            {blockedCount === 1
+              ? t("Bot protection blocked our crawler on {count} page.", {
+                  count: blockedCount,
+                })
+              : t("Bot protection blocked our crawler on {count} pages.", {
+                  count: blockedCount,
+                })}
           </AlertTitle>
           <AlertDescription>
             <BotProtectionAdvice
@@ -124,15 +128,26 @@ export function ResultsView({
           <ShieldAlert />
           <AlertTitle>
             {crawlStopped
-              ? "The crawl stopped early because of the site’s rate limit."
-              : `The site rate limited us on ${rateLimitedCount} ${rateLimitedCount === 1 ? "page" : "pages"}.`}
+              ? t("The crawl stopped early because of the site’s rate limit.")
+              : rateLimitedCount === 1
+                ? t("The site rate limited us on {count} page.", {
+                    count: rateLimitedCount,
+                  })
+                : t("The site rate limited us on {count} pages.", {
+                    count: rateLimitedCount,
+                  })}
           </AlertTitle>
           <AlertDescription>
             {crawlStopped
-              ? "The requested cooldown exceeded the audit time limit, so some URLs were left unvisited. This report is incomplete. "
-              : "Pages that returned 429 Too Many Requests could not be audited. "}
-            Re-run the audit after the rate limit resets, or ask the site owner
-            to allow the "Orca-Audit" crawler.
+              ? t(
+                  "The requested cooldown exceeded the audit time limit, so some URLs were left unvisited. This report is incomplete. ",
+                )
+              : t(
+                  "Pages that returned 429 Too Many Requests could not be audited. ",
+                )}
+            {t(
+              'Re-run the audit after the rate limit resets, or ask the site owner to allow the "Orca-Audit" crawler.',
+            )}
           </AlertDescription>
         </Alert>
       )}
@@ -230,14 +245,16 @@ function ResultsHeader({
   onTabChange: (tab: ResultsTab) => void;
   onExport: (format: "csv" | "json" | "sheets") => void;
 }) {
+  const { t } = useLocale();
+
   const tabs: Array<{ tab: ResultsTab; label: string }> = [
-    { tab: "issues", label: `Issues (${issueCount})` },
-    { tab: "pages", label: `Pages (${pageCount})` },
+    { tab: "issues", label: t("Issues ({count})", { count: issueCount }) },
+    { tab: "pages", label: t("Pages ({count})", { count: pageCount }) },
     ...(hasPerformanceTab
       ? [
           {
             tab: "performance" as const,
-            label: `Performance (${lighthouseCount})`,
+            label: t("Performance ({count})", { count: lighthouseCount }),
           },
         ]
       : []),
@@ -311,7 +328,13 @@ function StatsStrip({
               <SeverityBadge
                 key={severity}
                 severity={severity}
-                title={severity}
+                title={
+                  severity === "critical"
+                    ? t("Critical")
+                    : severity === "warning"
+                      ? t("Warning")
+                      : t("Info")
+                }
               >
                 {severity === "critical"
                   ? t("Critical")
@@ -325,14 +348,14 @@ function StatsStrip({
         </span>
       ),
     },
-    { label: "Average response time", value: `${averageResponseMs}ms` },
+    { label: t("Average response time"), value: `${averageResponseMs}ms` },
   ];
 
   if (totalLighthouse > 0) {
     items.push(
       { label: t("Lighthouse tests"), value: String(totalLighthouse) },
       {
-        label: "Lighthouse performance",
+        label: t("Lighthouse performance"),
         value:
           lighthouseSummary.avgPerformance == null
             ? "-"
@@ -340,7 +363,7 @@ function StatsStrip({
         valueClass: scoreClass(lighthouseSummary.avgPerformance),
       },
       {
-        label: "Lighthouse SEO",
+        label: t("Lighthouse SEO"),
         value:
           lighthouseSummary.avgSeo == null
             ? "-"
@@ -348,7 +371,7 @@ function StatsStrip({
         valueClass: scoreClass(lighthouseSummary.avgSeo),
       },
       {
-        label: "Lighthouse accessibility",
+        label: t("Lighthouse accessibility"),
         value:
           lighthouseSummary.avgAccessibility == null
             ? "-"

@@ -33,10 +33,12 @@ export function AuditHistorySection({
   historyQuery: UseQueryResult<AuditHistory>;
   onDelete: (auditId: string) => void;
 }) {
+  const { t } = useLocale();
+
   return (
     <QueryState
       query={historyQuery}
-      errorFallback="Failed to load audit history"
+      errorFallback={t("Failed to load audit history")}
     >
       {(history) => (
         <AuditHistoryTable

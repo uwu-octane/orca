@@ -51,13 +51,15 @@ export function LaunchView({
 
         {controller.largeCrawlPages != null ? (
           <ConfirmDialog
-            title="Start a large audit?"
-            confirmLabel="Continue"
+            title={t("Start a large audit?")}
+            confirmLabel={t("Continue")}
             onConfirm={controller.confirmLargeCrawl}
             onClose={controller.cancelLargeCrawl}
           >
-            You are about to crawl {controller.largeCrawlPages.toLocaleString()}{" "}
-            pages. This is okay, but it may take a while. Continue?
+            {t(
+              "You are about to crawl {count} pages. This is okay, but it may take a while. Continue?",
+              { count: controller.largeCrawlPages.toLocaleString() },
+            )}
           </ConfirmDialog>
         ) : null}
       </div>

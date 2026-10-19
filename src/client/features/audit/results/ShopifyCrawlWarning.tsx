@@ -100,7 +100,7 @@ export function ShopifyCrawlWarning({
       disabled={isSaving}
       onClick={() => rerunMutation.mutate()}
     >
-      {rerunMutation.isPending ? "Starting…" : "Re-run audit"}
+      {rerunMutation.isPending ? t("Starting…") : t("Re-run audit")}
     </Button>
   );
 
@@ -116,23 +116,26 @@ export function ShopifyCrawlWarning({
         <AlertDescription className="text-foreground">
           {signedAndStillLimited ? (
             <>
-              Shopify limited this crawl despite your signature. To check that
-              it was created for <span className="font-mono">{host}</span>,
-              paste it again in{" "}
+              {t(
+                "Shopify limited this crawl despite your signature. To check that it was created for",
+              )}{" "}
+              <span className="font-mono">{host}</span>
+              {t(", paste it again in")}{" "}
               <Link
                 to="/p/$projectId/settings/integrations"
                 params={{ projectId }}
               >
                 {t("Project settings")}
               </Link>
-              . If it was, Shopify is still throttling this store: re-run the
-              audit later or with fewer pages.
+              {t(
+                ". If it was, Shopify is still throttling this store: re-run the audit later or with fewer pages.",
+              )}
             </>
           ) : (
             <>
-              Crawler access is saved for{" "}
-              <span className="font-mono">{host}</span>. Re-run the audit to
-              crawl with it.
+              {t("Crawler access is saved for")}{" "}
+              <span className="font-mono">{host}</span>
+              {t(". Re-run the audit to crawl with it.")}
             </>
           )}
         </AlertDescription>
@@ -148,37 +151,41 @@ export function ShopifyCrawlWarning({
         {expiredCredential?.expiresAt ? (
           <>
             <AlertTitle>
-              Your Shopify signature for this store has expired.
+              {t("Your Shopify signature for this store has expired.")}
             </AlertTitle>
             <p className="text-muted-foreground">
-              It ran out on{" "}
-              {new Date(expiredCredential.expiresAt).toLocaleDateString()}, so
-              requests after that went out unsigned and Shopify limited them.
-              Signatures can't be renewed: create a fresh one in Shopify admin
-              and paste it below to replace the stored values.
+              {t(
+                "It ran out on {date}, so requests after that went out unsigned and Shopify limited them. Signatures can't be renewed: create a fresh one in Shopify admin and paste it below to replace the stored values.",
+                {
+                  date: new Date(
+                    expiredCredential.expiresAt,
+                  ).toLocaleDateString(),
+                },
+              )}
             </p>
           </>
         ) : (
           <>
-            <AlertTitle>Shopify limited this crawl.</AlertTitle>
+            <AlertTitle>{t("Shopify limited this crawl.")}</AlertTitle>
             <p className="text-muted-foreground">
-              Shopify rate-limits crawlers it hasn't authorized, so parts of
-              this report are missing. If you own this store, authorizing Orca
-              takes about a minute.
+              {t(
+                "Shopify rate-limits crawlers it hasn't authorized, so parts of this report are missing. If you own this store, authorizing Orca takes about a minute.",
+              )}
             </p>
           </>
         )}
 
         <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
           <li>
-            In Shopify admin, go to Online Store &rarr; Preferences &rarr;
-            Crawler access and click Create signature.
+            {t(
+              "In Shopify admin, go to Online Store → Preferences → Crawler access and click Create signature.",
+            )}
           </li>
           <li>
-            Pick the domain <span className="font-mono">{host}</span> and an
-            expiry (up to 3 months).
+            {t("Pick the domain")} <span className="font-mono">{host}</span>{" "}
+            {t("and an expiry (up to 3 months).")}
           </li>
-          <li>Paste the two values below.</li>
+          <li>{t("Paste the two values below.")}</li>
         </ol>
 
         {/* Keyed by host: the report stays mounted when the audit changes. */}
@@ -197,7 +204,7 @@ export function ShopifyCrawlWarning({
             target="_blank"
             rel="noreferrer"
           >
-            Shopify's crawler access guide
+            {t("Shopify's crawler access guide")}
           </a>
         </div>
       </div>

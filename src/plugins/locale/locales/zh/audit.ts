@@ -216,4 +216,128 @@ export const auditZh = {
     "页面距离首页需要 5 次以上点击。深层页面被爬取频率更低,获得的链接权重也更少。",
   "Add links from higher-level pages (hubs, category pages, navigation) to flatten the path to this page.":
     "从更高级别的页面(枢纽页、类别页、导航)添加链接,以缩短到达此页面的路径。",
+  "Failed to load the audit results": "无法加载审计结果",
+  "Failed to load audit history": "无法加载审计历史",
+  "Site audit · Started {date}": "站点审计 · 开始时间：{date}",
+  "This audit stopped before it crawled any pages.":
+    "此次审计尚未抓取任何页面就已停止。",
+  "This site's bot protection blocked our crawler.":
+    "此网站的机器人防护拦截了我们的爬虫。",
+  "This audit stopped early after {count} page.":
+    "此次审计抓取 {count} 个页面后提前停止。",
+  "This audit stopped early after {count} pages.":
+    "此次审计抓取 {count} 个页面后提前停止。",
+  "The results below cover everything crawled before it stopped. Run a new audit to try again, or email":
+    "以下结果涵盖停止前抓取的全部内容。请重新审计，或发送邮件至",
+  "{done} / {total} checks": "{done} / {total} 项检查",
+  "{done} / {total} pages": "{done} / {total} 个页面",
+  "Enter any value from {min} to {max}": "请输入 {min} 到 {max} 之间的数值",
+  " Audits that render JavaScript are limited to this many pages.":
+    " 启用 JavaScript 渲染的审计最多支持此数量的页面。",
+  "to crawl up to {count} pages.": "后最多可抓取 {count} 个页面。",
+  "Loads each page in a browser before auditing it. Slower.":
+    "先在浏览器中加载每个页面，再进行审计。速度较慢。",
+  "Render JavaScript": "渲染 JavaScript",
+  "This deployment has no browser, so rendering needs a Context.dev API key. Set":
+    "当前部署没有浏览器，渲染需要 Context.dev API 密钥。请设置",
+  ", restart Orca, then reload this page.": "，重启 Orca 后重新加载此页面。",
+  "Start a large audit?": "开始大规模审计？",
+  "Crawl result": "抓取结果",
+  Read: "已读取",
+  Blocked: "被拦截",
+  "Rate limited": "触发限流",
+  "Fetching or rendering failed, so this page was not checked for content issues.":
+    "抓取或渲染失败，因此未检查此页面的内容问题。",
+  Images: "图片",
+  Speed: "响应时间",
+  missing: "缺失",
+  redirect: "重定向",
+  "No pages crawled": "尚未抓取页面",
+  "Some pages may need JavaScript to show their content.":
+    "部分页面可能需要 JavaScript 才能显示内容。",
+  "They were still loading after rendering, so we couldn't check them.":
+    "渲染后这些页面仍在加载，因此未能检查。",
+  "Turn on Render JavaScript and run the audit again to check them.":
+    "启用“渲染 JavaScript”并重新审计，以检查这些页面。",
+  "We couldn't read {count} page.": "无法读取 {count} 个页面。",
+  "We couldn't read {count} pages.": "无法读取 {count} 个页面。",
+  "To see them, open Pages and filter Crawl result by Failed.":
+    "打开“页面”，将“抓取结果”筛选为“失败”即可查看。",
+  "JavaScript rendering was enabled for this audit.":
+    "此次审计已启用 JavaScript 渲染。",
+  "No Lighthouse results": "暂无 Lighthouse 结果",
+  A11y: "无障碍",
+  "Bot protection blocked our crawler on {count} page.":
+    "机器人防护在 {count} 个页面上拦截了我们的爬虫。",
+  "Bot protection blocked our crawler on {count} pages.":
+    "机器人防护在 {count} 个页面上拦截了我们的爬虫。",
+  "The crawl stopped early because of the site’s rate limit.":
+    "由于网站限流，抓取提前停止。",
+  "The site rate limited us on {count} page.":
+    "网站对 {count} 个页面的抓取进行了限流。",
+  "The site rate limited us on {count} pages.":
+    "网站对 {count} 个页面的抓取进行了限流。",
+  "The requested cooldown exceeded the audit time limit, so some URLs were left unvisited. This report is incomplete. ":
+    "网站要求的等待时间超过审计时限，因此部分网址未被访问，此报告不完整。 ",
+  "Pages that returned 429 Too Many Requests could not be audited. ":
+    "返回 429 Too Many Requests 的页面无法审计。 ",
+  'Re-run the audit after the rate limit resets, or ask the site owner to allow the "Orca-Audit" crawler.':
+    "请在限流解除后重新审计，或请网站所有者允许“Orca-Audit”爬虫访问。",
+  "Average response time": "平均响应时间",
+  "Lighthouse performance": "Lighthouse 性能",
+  "Lighthouse SEO": "Lighthouse SEO",
+  "Lighthouse accessibility": "Lighthouse 无障碍",
+  "Starting…": "正在启动…",
+  "Re-run audit": "重新审计",
+  "Shopify limited this crawl despite your signature. To check that it was created for":
+    "尽管已使用签名，Shopify 仍限制了此次抓取。要确认签名是否为以下域名创建：",
+  ", paste it again in": "，请将其重新粘贴到",
+  ". If it was, Shopify is still throttling this store: re-run the audit later or with fewer pages.":
+    "。如果签名对应此域名，说明 Shopify 仍在限制此商店的抓取速度；请稍后重试，或减少审计页面数。",
+  "Crawler access is saved for": "已保存以下域名的爬虫访问授权：",
+  ". Re-run the audit to crawl with it.": "。请重新审计以使用该授权抓取。",
+  "Your Shopify signature for this store has expired.":
+    "此商店的 Shopify 签名已过期。",
+  "It ran out on {date}, so requests after that went out unsigned and Shopify limited them. Signatures can't be renewed: create a fresh one in Shopify admin and paste it below to replace the stored values.":
+    "签名已于 {date} 过期，此后的请求未附带签名，因此被 Shopify 限制。签名无法续期；请在 Shopify 后台创建新签名，并粘贴到下方以替换已保存的值。",
+  "Shopify limited this crawl.": "Shopify 限制了此次抓取。",
+  "Shopify rate-limits crawlers it hasn't authorized, so parts of this report are missing. If you own this store, authorizing Orca takes about a minute.":
+    "Shopify 会对未经授权的爬虫限流，因此此报告缺少部分内容。如果你是店主，为 Orca 授权大约需要一分钟。",
+  "In Shopify admin, go to Online Store → Preferences → Crawler access and click Create signature.":
+    "在 Shopify 后台，前往在线商店（Online Store）→ 偏好设置（Preferences）→ 爬虫访问（Crawler access），点击创建签名（Create signature）。",
+  "Pick the domain": "选择域名",
+  "and an expiry (up to 3 months).": "并设置有效期（最长 3 个月）。",
+  "Paste the two values below.": "将这两个值粘贴到下方。",
+  "Shopify's crawler access guide": "Shopify 爬虫访问指南",
+  "Turn on Render JavaScript and run the audit again. To avoid the extra cost, use a free desktop crawler like":
+    "启用“渲染 JavaScript”后重新审计。如需避免额外费用，可使用免费的桌面爬虫，例如",
+  "Rendering couldn't get past it. ": "启用渲染后仍未能通过防护。 ",
+  "Try a free desktop crawler like": "可尝试免费的桌面爬虫，例如",
+  "Rendering up to {pages} pages needs {cost} of credits available. Lower the page limit or add credits.":
+    "渲染最多 {pages} 个页面需要 {cost} 的可用额度。请降低页面上限或增加额度。",
+  "Estimated {low} to {high} for up to {pages} pages. Sites with aggressive bot detection need our more capable renderer and cost more.":
+    "渲染最多 {pages} 个页面预计花费 {low} 至 {high}。机器人检测严格的网站需要使用能力更强的渲染器，费用会更高。",
+  desktop: "桌面端",
+  mobile: "移动端",
+  "The site returned a bot challenge or access denial (e.g. a Cloudflare challenge or a 403) instead of the page. We report this honestly rather than pretending the page is broken — but it means this page could not be audited, and other crawlers like search engines may face similar friction.":
+    "网站返回了机器人验证或访问拒绝（例如 Cloudflare 验证或 403），而非页面内容。我们如实报告此情况，不将其误报为页面损坏。这意味着无法审计该页面，搜索引擎等其他爬虫也可能遇到类似阻碍。",
+  'If you own this site, allowlist the "OpenSEO-Audit" user agent in your WAF/bot-protection settings (on Cloudflare: a WAF custom rule that skips bot protection when the user agent contains "OpenSEO-Audit"; on some free tiers you may need to relax bot protection). Then re-run the audit. On Shopify, use Crawler access instead (Online Store → Preferences → Crawler access) and paste the signature into OpenSEO under Settings → Crawler access.':
+    "如果你拥有此网站，请在 WAF 或机器人防护设置中放行“OpenSEO-Audit”用户代理。在 Cloudflare 中，可创建 WAF 自定义规则：当用户代理包含“OpenSEO-Audit”时跳过机器人防护；部分免费套餐可能需要放宽防护。然后重新审计。Shopify 商店请使用“在线商店 → 偏好设置 → 爬虫访问”，并将签名粘贴到 Orca 的“设置 → 爬虫访问”中。",
+  "Content may require JavaScript": "内容可能需要 JavaScript",
+  "The page's HTML contains a JavaScript app container with very little readable content and no headings, links, or images. The page may load its content in the browser, or it was still loading when rendered. Content checks were skipped because this HTML may not represent the complete page.":
+    "页面 HTML 包含 JavaScript 应用容器，但可读文本很少，且没有标题、链接或图片。页面内容可能需要在浏览器中加载，或在渲染时仍未加载完成。由于这份 HTML 可能不是完整页面，已跳过内容检查。",
+  'If this audit did not render JavaScript, start a new audit with "Render JavaScript" enabled to check the loaded content. For reliable crawling, serve important content and navigation in the initial HTML using server-side rendering or prerendering. This warning does not prove that search engines cannot index the page.':
+    "如果此次审计未渲染 JavaScript，请启用“渲染 JavaScript”后重新审计，以检查加载完成后的内容。为确保可靠抓取，请通过服务端渲染或预渲染，在初始 HTML 中提供重要内容和导航。此警告并不证明搜索引擎无法索引该页面。",
+  "Rate limited (429)": "触发限流（429）",
+  "The server answered 429 Too Many Requests, so this page could not be audited. The crawler waits before retrying when the site's cooldown fits within the audit time limit.":
+    "服务器返回了 429 Too Many Requests，因此无法审计此页面。如果网站要求的等待时间未超出审计时限，爬虫会等待后重试。",
+  'Raise the rate limit for crawlers, or allowlist the "OpenSEO-Audit" user agent in your rate-limiting rules (on Cloudflare: a rate-limiting rule exception matching that user agent). Then re-run the audit. Re-running with fewer pages also helps if the limit is strict. On Shopify, use Crawler access instead (Online Store → Preferences → Crawler access) and paste the signature into OpenSEO under Settings → Crawler access.':
+    "请提高对爬虫的速率限制，或在限流规则中放行“OpenSEO-Audit”用户代理。在 Cloudflare 中，可添加匹配该用户代理的限流规则例外，然后重新审计。如果限流严格，也可减少审计页面数后重试。Shopify 商店请使用“在线商店 → 偏好设置 → 爬虫访问”，并将签名粘贴到 Orca 的“设置 → 爬虫访问”中。",
+  "Crawl stopped early: rate limit": "抓取提前停止：触发限流",
+  "The site asked the crawler to wait longer than the audit time limit allowed. We stopped requesting pages. This report is incomplete; URLs we did not fetch are not recorded as broken or rate limited.":
+    "网站要求的等待时间超过审计时限，因此我们停止了页面请求。此报告不完整；未抓取的网址不会被记为损坏或触发限流。",
+  "Re-run the audit after the site's rate limit resets, or ask the site owner to allow the OpenSEO-Audit crawler. On Shopify, use Crawler access instead (Online Store → Preferences → Crawler access) and paste the signature into OpenSEO under Settings → Crawler access.":
+    "请在网站限流解除后重新审计，或请网站所有者允许 OpenSEO-Audit 爬虫访问。Shopify 商店请使用“在线商店 → 偏好设置 → 爬虫访问”，并将签名粘贴到 Orca 的“设置 → 爬虫访问”中。",
+  'Add descriptive alt text to meaningful images; use an empty alt (alt="") only for purely decorative ones.':
+    '为有意义的图片添加描述性替代文本；仅对纯装饰性图片使用空 alt 属性（alt=""）。',
 } satisfies Record<string, string>;

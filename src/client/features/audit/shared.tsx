@@ -190,7 +190,7 @@ export function BotProtectionAdvice({
       >
         LibreCrawl
       </a>{" "}
-      {"or"}{" "}
+      {t("or")}{" "}
       <a
         href="https://www.screamingfrog.co.uk/seo-spider/"
         target="_blank"
@@ -204,16 +204,18 @@ export function BotProtectionAdvice({
   if (!rendered && canRender) {
     return (
       <>
-        Turn on Render JavaScript and run the audit again. To avoid the extra
-        cost, use a free desktop crawler like {desktopCrawlers}
+        {t(
+          "Turn on Render JavaScript and run the audit again. To avoid the extra cost, use a free desktop crawler like",
+        )}{" "}
+        {desktopCrawlers}
         {t(".")}
       </>
     );
   }
   return (
     <>
-      {rendered ? "Rendering couldn't get past it. " : null}
-      Try a free desktop crawler like {desktopCrawlers}
+      {rendered ? t("Rendering couldn't get past it. ") : null}
+      {t("Try a free desktop crawler like")} {desktopCrawlers}
       {t(".")}
     </>
   );
