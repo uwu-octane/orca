@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 import { useEffect } from "react";
 import { useAppForm } from "@/client/components/form/useAppForm";
 import {
@@ -40,7 +41,7 @@ function getKeywordSearchValidationErrors(
     if (!validateEmptyKeyword) return null;
     return createFormValidationErrors({
       fields: {
-        keyword: "Please enter at least one keyword.",
+        keyword: translate("Please enter at least one keyword."),
       },
     });
   }
@@ -50,7 +51,10 @@ function getKeywordSearchValidationErrors(
   if (keywords.length > MAX_KEYWORDS_PER_SUBMIT) {
     return createFormValidationErrors({
       fields: {
-        keyword: `Please enter no more than ${MAX_KEYWORDS_PER_SUBMIT} keywords (one per line).`,
+        keyword: translate(
+          "Please enter no more than {count} keywords (one per line).",
+          { count: MAX_KEYWORDS_PER_SUBMIT },
+        ),
       },
     });
   }

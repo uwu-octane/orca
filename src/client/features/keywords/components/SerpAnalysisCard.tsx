@@ -1,4 +1,5 @@
 // FORK: retain locale subscriptions across upstream component changes.
+import { translate } from "@/plugins/locale";
 import { useLocale } from "@/plugins/client/context";
 import { useMemo } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -26,7 +27,7 @@ const columns = [
   }),
   columnHelper.display({
     id: "page",
-    header: "Page",
+    header: () => translate("Page"),
     cell: ({ row }) => {
       const label = row.original.title || row.original.url;
       // Provider URLs are untrusted: only http(s) links become clickable.
@@ -99,7 +100,7 @@ export function SerpAnalysisCard({
 
   const retryButton = onRetry ? (
     <Button variant="outline" size="sm" pending={retrying} onClick={onRetry}>
-      {deepFetchFailed ? "Show top 20" : t("Retry")}
+      {deepFetchFailed ? t("Show top 20") : t("Retry")}
     </Button>
   ) : null;
 
@@ -118,7 +119,7 @@ export function SerpAnalysisCard({
                     void exportRows({
                       format,
                       feature: "serp_analysis",
-                      headers: ["Rank", "Title", "URL", "Domain"],
+                      headers: [t("Rank"), t("Title"), t("URL"), t("Domain")],
                       rows: items.map((item) => [
                         item.rank,
                         item.title ?? "",
@@ -144,7 +145,7 @@ export function SerpAnalysisCard({
               </h3>
               {hasItems ? (
                 <span className="text-xs text-muted-foreground">
-                  {items.length} organic results
+                  {t("{count} organic results", { count: items.length })}
                 </span>
               ) : null}
             </div>
@@ -179,7 +180,7 @@ export function SerpAnalysisCard({
             isLoading={loadingMore}
             // Past the loaded results, "Next" buys a deeper crawl. The button
             // says so rather than spending silently.
-            loadMoreLabel={canLoadMore ? "Load top 100" : undefined}
+            loadMoreLabel={canLoadMore ? t("Load top 100") : undefined}
             onPageChange={(nextPage) => onPageChange(nextPage - 1)}
           />
         ) : null

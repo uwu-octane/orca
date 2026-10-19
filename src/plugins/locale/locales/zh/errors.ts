@@ -151,4 +151,18 @@ export const errorsZh = {
   // SERP location combobox (src/client/components/SerpLocationCombobox.tsx)
   "Unable to load locations": "无法加载地点",
   'No locations found for "{query}"': "没有找到与 “{query}” 匹配的地点",
+  "Something went wrong on our end. Please try again, and contact support if it keeps happening.":
+    "服务出现问题，请重试。如果问题持续，请联系支持团队。",
+  "Something went wrong. Please try again, or check the server logs for details.":
+    "出现问题，请重试，或查看服务器日志了解详情。",
+  "You don't have enough credits for this. Upgrade your plan or buy more credits to keep going.":
+    "当前额度不足，请升级套餐或购买更多额度后继续。",
+  "JavaScript rendering is not configured on this deployment. Ask your administrator to enable a renderer.":
+    "当前部署未配置 JavaScript 渲染，请联系管理员启用渲染服务。",
+  "You've reached the limit of audits running at once. Wait for one to finish or delete it before starting another.":
+    "同时运行的审计数量已达上限。请等待其中一项完成，或删除一项后再启动新的审计。",
+  "We couldn't find that city, county, or region. Pick a location from the list, or clear the field to search the whole country.":
+    "未找到该城市、县或地区。请从列表中选择，或清空此字段以查询全国数据。",
+  "The AI visibility request could not be completed. Review the tracking settings and try again.":
+    "无法完成 AI 可见性请求，请检查追踪设置后重试。",
 } satisfies Record<string, string>;

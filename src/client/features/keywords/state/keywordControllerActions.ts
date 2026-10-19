@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import type { CsvValue } from "@/client/lib/csv";
@@ -99,6 +100,7 @@ export function getNextSortParams(
 }
 
 export function useSaveAndExportActions(params: SaveExportActionParams) {
+  const { t } = useLocale();
   const {
     selectedRows,
     filteredRows,
@@ -147,7 +149,7 @@ export function useSaveAndExportActions(params: SaveExportActionParams) {
             source_feature: "keyword_research",
             keyword_count: count,
           });
-          toast.success(`Saved ${count} keywords`);
+          toast.success(t("Saved {count} keywords", { count }));
           setShowSaveDialog(false);
         },
       },

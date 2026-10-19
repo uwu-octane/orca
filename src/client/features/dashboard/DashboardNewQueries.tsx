@@ -38,7 +38,7 @@ export function DashboardNewQueries({
   });
   if (!connected) return null;
   return (
-    <QueryState query={query} errorFallback="Could not load new keywords">
+    <QueryState query={query} errorFallback={t("Could not load new keywords")}>
       {(data) =>
         !data.value.connected ? (
           <GoogleConnectionCard
@@ -48,13 +48,18 @@ export function DashboardNewQueries({
           />
         ) : (
           <CardShell
-            title="New keywords"
+            title={t("New keywords")}
             titleInfo={
-              <DashboardInfo label="About new keywords">
-                <p>Searches where your website recently appeared on Google.</p>
+              <DashboardInfo label={t("About new keywords")}>
+                <p>
+                  {t(
+                    "Searches where your website recently appeared on Google.",
+                  )}
+                </p>
                 <p className="mt-2">
-                  We saw these in the latest week of Search Console data, but
-                  not in the previous four weeks.
+                  {t(
+                    "We saw these in the latest week of Search Console data, but not in the previous four weeks.",
+                  )}
                 </p>
               </DashboardInfo>
             }
@@ -65,7 +70,7 @@ export function DashboardNewQueries({
                 search={{ tab: "keywords" }}
                 className={moreDetailsClass}
               >
-                View all →
+                {t("View all →")}
               </Link>
             }
           >
@@ -94,20 +99,24 @@ export function DashboardNewQueries({
                 <Search className="size-7 text-muted-foreground" />
                 <h3 className="font-medium">
                   {data.value.hasSearchData
-                    ? "No new keywords this week"
-                    : "No search data yet"}
+                    ? t("No new keywords this week")
+                    : t("No search data yet")}
                 </h3>
                 <p className="max-w-sm text-sm text-muted-foreground">
                   {data.value.hasSearchData
-                    ? "Your existing queries can still be gaining clicks. See how they're performing."
-                    : "Google hasn't reported searches for your website yet. Check your connected property in Search Console."}
+                    ? t(
+                        "Your existing queries can still be gaining clicks. See how they're performing.",
+                      )
+                    : t(
+                        "Google hasn't reported searches for your website yet. Check your connected property in Search Console.",
+                      )}
                 </p>
                 <Link
                   to="/p/$projectId/search-performance"
                   params={{ projectId }}
                   className="text-sm text-primary hover:underline"
                 >
-                  View full GSC insights →
+                  {t("View full GSC insights →")}
                 </Link>
               </div>
             )}

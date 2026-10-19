@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/client/components/ui/button";
 import { getSearchPerformanceReport } from "@/serverFunctions/searchPerformance";
@@ -33,6 +34,8 @@ export function DashboardKeywords({
   connected: boolean;
   siteUrl: string | null;
 }) {
+  const { t } = useLocale();
+
   const [source, setSource] = useState<Source>("new");
   const emerging = useQuery({
     queryKey: ["dashboardEmergingQueries", projectId, siteUrl],
@@ -89,7 +92,7 @@ export function DashboardKeywords({
         query.isError ? (
           <QueryError
             error={query.error}
-            fallback="Could not load keywords"
+            fallback={t("Could not load keywords")}
             onRetry={() => void query.refetch()}
             isRetrying={query.isFetching}
           />
@@ -100,12 +103,12 @@ export function DashboardKeywords({
           ? {
               title:
                 emerging.data?.value.hasSearchData === false
-                  ? "No search data yet"
-                  : "No new keywords this week",
+                  ? t("No search data yet")
+                  : t("No new keywords this week"),
             }
           : source === "striking"
-            ? { title: "No keywords at positions 5–20 in this period" }
-            : { title: "No keywords yet" }
+            ? { title: t("No keywords at positions 5–20 in this period") }
+            : { title: t("No keywords yet") }
       }
       tabs={
         <DataTableTabs
@@ -126,19 +129,19 @@ export function DashboardKeywords({
                 />
               }
             >
-              View full GSC insights →
+              {t("View full GSC insights →")}
             </Button>
           }
           description={
             <>
-              {DESCRIPTIONS[source]}
+              {t(DESCRIPTIONS[source])}
               {cached ? <Freshness {...cached} /> : null}
             </>
           }
         >
-          <TabsTrigger value="new">New keywords</TabsTrigger>
-          <TabsTrigger value="top">Top keywords</TabsTrigger>
-          <TabsTrigger value="striking">Striking distance</TabsTrigger>
+          <TabsTrigger value="new">{t("New keywords")}</TabsTrigger>
+          <TabsTrigger value="top">{t("Top keywords")}</TabsTrigger>
+          <TabsTrigger value="striking">{t("Striking distance")}</TabsTrigger>
         </DataTableTabs>
       }
     />

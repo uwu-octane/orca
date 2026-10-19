@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useState } from "react";
 import { SerpLocationCombobox } from "@/client/components/SerpLocationCombobox";
 import { usePrewarmSerpLocations } from "@/client/components/usePrewarmSerpLocations";
@@ -17,6 +18,8 @@ type Props = {
  * that never use the field cost nothing.
  */
 export function KeywordAreaField({ locationCode, value, onChange }: Props) {
+  const { t } = useLocale();
+
   const [focused, setFocused] = useState(false);
   const countryCode = getIsoCountryCode(locationCode);
   usePrewarmSerpLocations(countryCode, focused);
@@ -25,13 +28,15 @@ export function KeywordAreaField({ locationCode, value, onChange }: Props) {
     <div
       className="col-span-2 w-full lg:w-44 lg:shrink-0"
       onFocus={() => setFocused(true)}
-      title="Get search volume for one city, county, or region. Leave empty for the whole country."
+      title={t(
+        "Get search volume for one city, county, or region. Leave empty for the whole country.",
+      )}
     >
       <SerpLocationCombobox
         value={value}
         onChange={onChange}
         countryCode={countryCode}
-        placeholder="City (optional)"
+        placeholder={t("City (optional)")}
       />
     </div>
   );
@@ -42,12 +47,15 @@ export function KeywordAreaField({ locationCode, value, onChange }: Props) {
  * marked-up price; self-hosted deployments pay DataForSEO directly.
  */
 export function LocalVolumeCostNote() {
+  const { t } = useLocale();
   const costUsd = isHostedClientAuthMode()
     ? applyBillingMarkupUsd(LOCAL_VOLUME_COST_USD)
     : LOCAL_VOLUME_COST_USD;
   return (
     <span className="text-xs text-muted-foreground">
-      Local volume adds ~${costUsd.toFixed(2)} per search.
+      {t("Local volume adds ~${cost} per search.", {
+        cost: costUsd.toFixed(2),
+      })}
     </span>
   );
 }

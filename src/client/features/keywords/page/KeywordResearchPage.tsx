@@ -319,7 +319,9 @@ function KeywordSaveDialog({
 
   return (
     <FormDialog
-      title={`Save ${controller.selectedKeywordRows.length} Keywords`}
+      title={t("Save {count} Keywords", {
+        count: controller.selectedKeywordRows.length,
+      })}
       onClose={() => controller.setShowSaveDialog(false)}
       actions={
         <>
@@ -342,8 +344,10 @@ function KeywordSaveDialog({
         <p>{t("These keywords will be saved to your current project.")}</p>
         {controller.locationName ? (
           <p>
-            Saved keywords show national metrics. The local volume for{" "}
-            {formatLocationLabel(controller.locationName)} is not saved.
+            {t(
+              "Saved keywords show national metrics. The local volume for {location} is not saved.",
+              { location: formatLocationLabel(controller.locationName) },
+            )}
           </p>
         ) : null}
       </div>

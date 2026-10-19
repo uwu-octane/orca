@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import type { ReactNode } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import {
@@ -36,6 +37,8 @@ export function QueryError({
   variant?: "inline" | "card" | "page";
   title?: string;
 }) {
+  const { t } = useLocale();
+
   if (getErrorCode(error ?? cause) === "INSUFFICIENT_CREDITS") {
     return <InsufficientCreditsError variant={variant} title={title} />;
   }
@@ -43,7 +46,7 @@ export function QueryError({
     <ErrorState
       variant={variant}
       title={title}
-      message={getStandardErrorMessage(error, fallback)}
+      message={getStandardErrorMessage(error, fallback, t)}
       onRetry={onRetry}
       isRetrying={isRetrying}
     />

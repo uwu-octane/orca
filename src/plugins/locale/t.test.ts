@@ -1,8 +1,15 @@
+import { countBy } from "remeda";
 import { beforeEach, describe, expect, it } from "vitest";
 import { LOCALE_STORAGE_KEY } from "./locale-settings";
 import { setLocaleStorageForTesting, type LocaleStorage } from "./store";
 import { translate } from "./t";
 import { zh } from "./locales/zh";
+import {
+  connectNavGroup,
+  getProjectNavGroups,
+} from "@/client/navigation/items";
+import { setupSteps } from "@/client/features/dashboard/dashboardSteps";
+import { INTENT_LABELS } from "@/client/features/keywords/components/IntentBadge";
 
 function memoryStorage(entries: Record<string, string>): LocaleStorage {
   const data = new Map(Object.entries(entries));
@@ -10,6 +17,10 @@ function memoryStorage(entries: Record<string, string>): LocaleStorage {
     get: (key) => data.get(key) ?? null,
     set: (key, value) => void data.set(key, value),
   };
+}
+
+function placeholders(text: string) {
+  return countBy([...text.matchAll(/\{(\w+)\}/g)], (match) => match[1]);
 }
 
 describe("translate", () => {
@@ -51,31 +62,35 @@ describe("translate", () => {
     );
   });
 
-  it("keeps the shell dictionary complete for the nav labels it covers", () => {
-    // Dynamic call sites (t(item.label)) are not type-checked; this test
-    // guards the dictionary against drift in src/client/navigation/items.ts.
-    const navLabels = [
-      "AI & MCP",
-      "Backlinks",
-      "Brand Lookup",
-      "Connect",
-      "Dashboard",
-      "Domain Overview",
-      "GSC Insights",
-      "Keyword Research",
-      "My Site",
-      "Overview",
-      "Prompt Explorer",
-      "Rank Tracking",
-      "Research",
-      "Saved Keywords",
-      "Site Audit",
-    ] as const;
-    for (const label of navLabels) {
-      expect(
-        zh[label],
-        `missing zh entry for nav label "${label}"`,
-      ).toBeTruthy();
+  it("translates all current navigation labels and groups", () => {
+    const groups = [...getProjectNavGroups("test-project"), connectNavGroup];
+    for (const group of groups) {
+      for (const label of [
+        group.label,
+        ...group.items.map((item) => item.label),
+      ]) {
+        expect(translate(label), `untranslated navigation: ${label}`).not.toBe(
+          label,
+        );
+      }
+    }
+  });
+
+  it("translates setup steps and search intent labels", () => {
+    const labels = [
+      ...setupSteps.flatMap((step) => [step.label, step.detail]),
+      ...Object.values(INTENT_LABELS),
+    ];
+    for (const label of labels) {
+      expect(translate(label), `untranslated label: ${label}`).not.toBe(label);
+    }
+  });
+
+  it("preserves interpolation parameters in every Chinese translation", () => {
+    for (const [key, value] of Object.entries(zh)) {
+      expect(placeholders(value), `translation parameters: ${key}`).toEqual(
+        placeholders(key),
+      );
     }
   });
 });

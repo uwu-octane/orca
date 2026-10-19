@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
@@ -13,6 +14,8 @@ import {
 // visibility (AUTH_MODE is a runtime var there); hosted builds skip the query
 // entirely since the mode is known at build time.
 export function WorkspaceMergeBanner() {
+  const { t } = useLocale();
+
   const queryClient = useQueryClient();
 
   const statusQuery = useQuery({
@@ -25,7 +28,14 @@ export function WorkspaceMergeBanner() {
     mutationFn: () => mergeLegacyWorkspaces(),
     onSuccess: ({ mergedWorkspaces }) => {
       toast.success(
-        `Migrated ${mergedWorkspaces} organization${mergedWorkspaces === 1 ? "" : "s"} into the shared organization.`,
+        t(
+          mergedWorkspaces === 1
+            ? "Migrated {count} organization into the shared organization."
+            : "Migrated {count} organizations into the shared organization.",
+          {
+            count: mergedWorkspaces,
+          },
+        ),
       );
       // The merge changes projects, connections, and the banner's own status —
       // refetch everything rather than enumerating keys.
@@ -40,10 +50,9 @@ export function WorkspaceMergeBanner() {
   return (
     <Alert variant="warning" className="p-5">
       <AlertDescription className="max-w-3xl text-foreground">
-        When self-hosting on Cloudflare, there was a bug where each user had
-        their own workspace. It was intended for all users to be in one
-        workspace. Clicking the button below will migrate everyone&apos;s
-        previous work into this shared workspace.
+        {t(
+          "When self-hosting on Cloudflare, there was a bug where each user had their own workspace. It was intended for all users to be in one workspace. Clicking the button below will migrate everyone's previous work into this shared workspace.",
+        )}
       </AlertDescription>
       <Button
         size="sm"
@@ -51,7 +60,7 @@ export function WorkspaceMergeBanner() {
         pending={mergeMutation.isPending}
         onClick={() => mergeMutation.mutate()}
       >
-        {mergeMutation.isPending ? "Migrating…" : "Migrate organizations"}
+        {mergeMutation.isPending ? t("Migrating…") : t("Migrate organizations")}
       </Button>
     </Alert>
   );

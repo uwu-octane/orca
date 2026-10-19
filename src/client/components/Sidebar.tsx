@@ -175,13 +175,13 @@ export function Sidebar({
           )
         ) : (
           <nav
-            aria-label="Main navigation"
+            aria-label={t("Main navigation")}
             aria-busy={navPlaceholder || undefined}
           >
             {navGroups.map((group) => (
               <SidebarGroup key={group.label} className="py-1">
                 <SidebarGroupLabel className="h-7 uppercase tracking-wider text-sidebar-foreground/40">
-                  {group.label}
+                  {t(group.label)}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>

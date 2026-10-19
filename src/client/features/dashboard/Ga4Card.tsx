@@ -81,11 +81,11 @@ export function Ga4Card({
       }
     >
       <p className="mb-4 text-sm text-muted-foreground">
-        Google Analytics · Last 28 days
+        {t("Google Analytics · Last 28 days")}
       </p>
       {reportQuery.isError ? (
         <p className="text-sm text-muted-foreground">
-          Couldn&rsquo;t load Google Analytics data. Try again shortly.
+          {t("Couldn’t load Google Analytics data. Try again shortly.")}
         </p>
       ) : !report ? (
         <div className="space-y-3" aria-busy>
@@ -150,7 +150,16 @@ export function Ga4Card({
                 ),
             }))}
           />
-          <ChartContainer config={sessionsChartConfig} className="h-24">
+          <ChartContainer
+            config={{
+              ...sessionsChartConfig,
+              sessions: {
+                ...sessionsChartConfig.sessions,
+                label: t("Sessions"),
+              },
+            }}
+            className="h-24"
+          >
             <AreaChart
               data={report.trend}
               margin={{ top: 4, right: 0, bottom: 0, left: 0 }}

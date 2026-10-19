@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import type { KeywordIntent } from "@/types/keywords";
 import { Badge } from "@/client/components/ui/badge";
 import {
@@ -66,6 +67,7 @@ const DESCRIPTIONS: Record<
 };
 
 export function IntentBadge({ intent }: { intent: KeywordIntent }) {
+  const { t, active } = useLocale();
   const details = DESCRIPTIONS[intent];
 
   return (
@@ -79,13 +81,13 @@ export function IntentBadge({ intent }: { intent: KeywordIntent }) {
             className="h-6 min-w-11 cursor-help font-semibold"
           />
         }
-        aria-label={`${details.label} search intent`}
+        aria-label={t("{intent} search intent", { intent: t(details.label) })}
       >
-        {SHORT_LABELS[intent]}
+        {active === "zh" ? t(INTENT_LABELS[intent]) : SHORT_LABELS[intent]}
       </TooltipTrigger>
       <TooltipContent className="flex-col items-start gap-1">
-        <span className="font-semibold">{details.label}</span>
-        <span>{details.description}</span>
+        <span className="font-semibold">{t(details.label)}</span>
+        <span>{t(details.description)}</span>
       </TooltipContent>
     </Tooltip>
   );

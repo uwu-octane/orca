@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { Area, AreaChart } from "recharts";
 import {
   ChartGrid,
@@ -27,11 +28,14 @@ export type SortDir = "asc" | "desc";
 
 export function AreaTrendChart({
   trend,
-  label = "Search volume",
+  label,
 }: {
   trend: MonthlySearch[];
   label?: string;
 }) {
+  const { t } = useLocale();
+  const chartLabel = label ?? t("Search volume");
+
   const last12 = lastTwelveMonths(trend);
   if (last12.length === 0) return null;
 
@@ -44,11 +48,11 @@ export function AreaTrendChart({
     <ChartContainer
       config={
         {
-          searchVolume: { label, color: "var(--color-primary)" },
+          searchVolume: { label: chartLabel, color: "var(--color-primary)" },
         } satisfies ChartConfig
       }
       className="h-[210px]"
-      aria-label={`${label} trend chart`}
+      aria-label={t("{label} trend chart", { label: chartLabel })}
     >
       <AreaChart
         data={data}

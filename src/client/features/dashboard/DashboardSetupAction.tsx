@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -45,6 +46,8 @@ export function DashboardSetupAction({
   domain: string | null;
   onComplete: () => void;
 }) {
+  const { t } = useLocale();
+
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
@@ -76,10 +79,12 @@ export function DashboardSetupAction({
   if (step === "competitor")
     return (
       <StepInputForm
-        description="Explore a competitor’s domain to discover the topics they rank for and the websites linking to them."
-        label="Competitor website"
+        description={t(
+          "Explore a competitor’s domain to discover the topics they rank for and the websites linking to them.",
+        )}
+        label={t("Competitor website")}
         placeholder="competitor.com"
-        submitLabel="Explore competitor"
+        submitLabel={t("Explore competitor")}
         validate={validateDomain}
         pending={clickThrough.isPending}
         onSubmit={(value) =>
@@ -93,12 +98,14 @@ export function DashboardSetupAction({
   if (step === "keywords")
     return (
       <StepInputForm
-        description="Start from one keyword that describes what you offer. You’ll get related searches with volume and difficulty."
-        label="Seed keyword"
-        placeholder="e.g. running shoes"
-        submitLabel="Get keyword ideas"
+        description={t(
+          "Start from one keyword that describes what you offer. You’ll get related searches with volume and difficulty.",
+        )}
+        label={t("Seed keyword")}
+        placeholder={t("e.g. running shoes")}
+        submitLabel={t("Get keyword ideas")}
         validate={(value) =>
-          value.trim() ? undefined : "Enter a keyword to start from"
+          value.trim() ? undefined : t("Enter a keyword to start from")
         }
         pending={clickThrough.isPending}
         onSubmit={(value) =>
@@ -109,11 +116,13 @@ export function DashboardSetupAction({
   if (step === "audit")
     return (
       <StepInputForm
-        description="Crawl your site to find broken links, missing tags, and pages search engines can’t index. You can adjust the crawl size before it starts."
-        label="Site URL"
+        description={t(
+          "Crawl your site to find broken links, missing tags, and pages search engines can’t index. You can adjust the crawl size before it starts.",
+        )}
+        label={t("Site URL")}
         placeholder="https://example.com"
         defaultValue={domain ? `https://${domain}` : ""}
-        submitLabel="Set up audit"
+        submitLabel={t("Set up audit")}
         validate={validateDomain}
         pending={false}
         onSubmit={(value) => {
@@ -130,7 +139,7 @@ export function DashboardSetupAction({
     return (
       <div className="max-w-2xl space-y-4">
         <p className="text-sm leading-relaxed text-muted-foreground">
-          {AGENT_SETUP_DESCRIPTION}
+          {t(AGENT_SETUP_DESCRIPTION)}
         </p>
         <AgentSetupPanel
           prompt={getAgentSetupPrompt(
@@ -156,29 +165,29 @@ export function DashboardSetupAction({
   if (!canManage)
     return org.isPending ? (
       <p className="text-sm text-muted-foreground">
-        Checking workspace permissions…
+        {t("Checking workspace permissions…")}
       </p>
     ) : org.isError ? (
       <p className="text-sm text-muted-foreground">
-        {getStandardErrorMessage(org.error)}
+        {getStandardErrorMessage(org.error, undefined, t)}
       </p>
     ) : (
-      <PermissionHint action="help with this step" />
+      <PermissionHint action={t("help with this step")} />
     );
   if (step === "project")
     return (
       <div className="space-y-4">
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Keep each website’s research, rankings, and connections in its own
-          project. Use the project switcher in the sidebar → New project
-          anytime.
+          {t(
+            "Keep each website’s research, rankings, and connections in its own project. Use the project switcher in the sidebar → New project anytime.",
+          )}
         </p>
         <Button onClick={() => setShowModal(true)}>
-          Create another project
+          {t("Create another project")}
         </Button>
         <Collapsible className="rounded-lg border border-border p-4">
           <CollapsibleTrigger className="cursor-pointer text-sm font-medium">
-            Have a list of websites? Let your agent set them up.
+            {t("Have a list of websites? Let your agent set them up.")}
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-3 space-y-3">
             <p className="text-sm text-muted-foreground">
@@ -186,17 +195,17 @@ export function DashboardSetupAction({
                 to="/ai"
                 className="text-primary underline-offset-4 hover:underline"
               >
-                Connect your agent
+                {t("Connect your agent")}
               </Link>
-              , then paste this prompt with your list of websites.
+              {t(", then paste this prompt with your list of websites.")}
             </p>
             <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed text-muted-foreground">
-              {projectPrompt}
+              {t(projectPrompt)}
             </pre>
             <CopyButton
-              value={projectPrompt}
-              label="Copy project prompt"
-              successMessage="Project prompt copied"
+              value={t(projectPrompt)}
+              label={t("Copy project prompt")}
+              successMessage={t("Project prompt copied")}
             />
           </CollapsibleContent>
         </Collapsible>
@@ -208,10 +217,13 @@ export function DashboardSetupAction({
   return (
     <div className="space-y-4">
       <p className="text-sm leading-relaxed text-muted-foreground">
-        Bring a teammate into your workspace to share projects, research, and
-        results.
+        {t(
+          "Bring a teammate into your workspace to share projects, research, and results.",
+        )}
       </p>
-      <Button onClick={() => setShowModal(true)}>Invite a teammate</Button>
+      <Button onClick={() => setShowModal(true)}>
+        {t("Invite a teammate")}
+      </Button>
       {showModal && (
         <InviteTeammateModal
           onClose={() => setShowModal(false)}

@@ -14,8 +14,9 @@ export function PermissionHint({
 
   return (
     <p className={cn("text-sm text-muted-foreground", className)}>
-      Ask an organization owner or admin to {action}
-      {t(".")}
+      {t("Ask an organization owner or admin to {action}.", {
+        action: t(action),
+      })}
     </p>
   );
 }

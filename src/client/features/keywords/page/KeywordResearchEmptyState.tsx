@@ -36,19 +36,13 @@ function NoResultsState({
         variant="card"
         icon={Globe}
         title={t("Not enough keyword data for this query yet")}
-        description={
-          <>
-            We could not find keyword opportunities for
-            <span className="font-medium text-foreground">
-              {` "${lastSearchKeyword}" `}
-            </span>
-            in
-            <span className="font-medium text-foreground">
-              {` ${LOCATIONS[lastSearchLocationCode] || "this location"}`}
-            </span>
-            {t(".")}
-          </>
-        }
+        description={t(
+          "We could not find keyword opportunities for {keyword} in {location}.",
+          {
+            keyword: lastSearchKeyword,
+            location: LOCATIONS[lastSearchLocationCode] || t("this location"),
+          },
+        )}
       />
     </div>
   );
@@ -61,6 +55,8 @@ function SearchHistoryState({
   controller: KeywordResearchControllerState;
   projectId: string;
 }) {
+  const { t } = useLocale();
+
   return (
     <div className="pt-1">
       <RecentSearches
@@ -68,8 +64,10 @@ function SearchHistoryState({
         loaded={controller.historyLoaded}
         onRemove={controller.removeHistoryItem}
         emptyIcon={Search}
-        emptyTitle="Enter a keyword to get started"
-        emptyDescription="Search for any keyword to see volume, difficulty, CPC, and related keyword ideas."
+        emptyTitle={t("Enter a keyword to get started")}
+        emptyDescription={t(
+          "Search for any keyword to see volume, difficulty, CPC, and related keyword ideas.",
+        )}
         getTitle={(item) => item.keyword}
         getSubtitle={(item) => item.locationName}
         renderLink={(item, props) => (

@@ -39,7 +39,7 @@ export function FilterIntentSelect({ form }: { form: FiltersForm }) {
                     )
                   }
                 >
-                  {INTENT_LABELS[intent]}
+                  {t(INTENT_LABELS[intent])}
                 </Toggle>
               ))}
             </div>

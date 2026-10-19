@@ -39,7 +39,7 @@ export function DashboardDataTable<T>({
   resetKey,
   isLoading,
   error,
-  empty = { title: "No results yet" },
+  empty,
 }: {
   rows: T[];
   columns: ColumnDef<T>[];
@@ -84,7 +84,7 @@ export function DashboardDataTable<T>({
       onClearFilters={clear}
       isLoading={isLoading}
       error={error}
-      empty={empty}
+      empty={empty ?? { title: t("No results yet") }}
       toolbar={
         <>
           {tabs}
@@ -135,7 +135,7 @@ export function DashboardDataTable<T>({
                         <Select
                           items={[
                             { value: "all", label: t("All links") },
-                            { value: "Follow", label: "Follow" },
+                            { value: "Follow", label: t("Follow") },
                             { value: "Nofollow", label: t("Nofollow") },
                           ]}
                           value={typeof value === "string" ? value : "all"}
@@ -150,7 +150,9 @@ export function DashboardDataTable<T>({
                             <SelectItem value="all">
                               {t("All links")}
                             </SelectItem>
-                            <SelectItem value="Follow">Follow</SelectItem>
+                            <SelectItem value="Follow">
+                              {t("Follow")}
+                            </SelectItem>
                             <SelectItem value="Nofollow">
                               {t("Nofollow")}
                             </SelectItem>
@@ -159,7 +161,7 @@ export function DashboardDataTable<T>({
                       ) : (
                         <Input
                           aria-label={filter.label}
-                          placeholder="Contains…"
+                          placeholder={t("Contains…")}
                           value={typeof value === "string" ? value : ""}
                           onChange={(e) =>
                             column.setFilterValue(e.target.value)

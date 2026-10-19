@@ -148,4 +148,27 @@ export const shellZh = {
   "Select country": "选择国家/地区",
   "Search countries": "搜索国家/地区",
   "No countries match “{query}”": "没有匹配 “{query}” 的国家/地区",
+  "Prompt Tracking": "提示词追踪",
+  "Prompt Research": "提示词研究",
+  Reports: "报告",
+  "Agent setup": "智能体设置",
+  "AI Tools": "AI 工具",
+  "AI Visibility": "AI 可见性",
+  "No results yet": "暂无结果",
+  Title: "标题",
+  "Main navigation": "主导航",
+  "Ask an organization owner or admin to {action}.":
+    "请联系组织所有者或管理员{action}。",
+  "Paste this prompt into your agent to automatically configure Orca for you.":
+    "将此提示词粘贴到智能体中，即可自动配置 Orca。",
+  "Orca plugin": "Orca 插件",
+  "MCP connection + SEO skills": "MCP 连接与 SEO 技能",
+  "Copy setup prompt": "复制设置提示词",
+  "Setup prompt copied": "已复制设置提示词",
+  "Manual setup": "手动设置",
+  "Anchor text": "锚文本",
+  "invite or remove teammates": "邀请或移除团队成员",
+  "change this project's connection": "更改此项目的连接",
+  "Migrated {count} organization into the shared organization.":
+    "已将 {count} 个组织迁移至共享组织。",
 } satisfies Record<string, string>;

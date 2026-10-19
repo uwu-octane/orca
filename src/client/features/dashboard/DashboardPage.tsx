@@ -168,10 +168,10 @@ export function DashboardPage({
               {t("Your website")}
             </p>
             <h1 className="text-2xl font-semibold">
-              {activation.domain || "Dashboard"}
+              {activation.domain || t("Dashboard")}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Search visibility, links and site health in one place.
+              {t("Search visibility, links and site health in one place.")}
             </p>
           </div>
           <Button
@@ -189,7 +189,7 @@ export function DashboardPage({
         {activationQuery.isError ? (
           <QueryError
             error={activationQuery.error}
-            fallback="Failed to refresh dashboard"
+            fallback={t("Failed to refresh dashboard")}
             onRetry={() => void activationQuery.refetch()}
             isRetrying={activationQuery.isFetching}
           />
@@ -198,7 +198,7 @@ export function DashboardPage({
         {overviewQuery.isError ? (
           <QueryError
             error={overviewQuery.error}
-            fallback="Failed to load site health"
+            fallback={t("Failed to load site health")}
             onRetry={() => void overviewQuery.refetch()}
             isRetrying={overviewQuery.isFetching}
           />
@@ -218,12 +218,12 @@ export function DashboardPage({
           }}
           className="gap-4"
         >
-          <TabsList aria-label="Your website dashboard" className="h-9">
+          <TabsList aria-label={t("Your website dashboard")} className="h-9">
             {(
               [
-                ["overview", "Overview"],
-                ["keywords", "Keywords"],
-                ["backlinks", "Backlinks"],
+                ["overview", t("Overview")],
+                ["keywords", t("Keywords")],
+                ["backlinks", t("Backlinks")],
               ] as const
             ).map(([value, label]) => (
               <TabsTrigger key={value} value={value} className="px-3">
@@ -264,8 +264,10 @@ export function DashboardPage({
               <EmptyState
                 variant="card"
                 icon={Link2}
-                title="See who links to your website"
-                description="Add your website to track new and lost backlinks and the sites sending them."
+                title={t("See who links to your website")}
+                description={t(
+                  "Add your website to track new and lost backlinks and the sites sending them.",
+                )}
                 action={
                   <Button
                     nativeButton={false}
@@ -276,7 +278,7 @@ export function DashboardPage({
                       />
                     }
                   >
-                    Add your website
+                    {t("Add your website")}
                   </Button>
                 }
               />

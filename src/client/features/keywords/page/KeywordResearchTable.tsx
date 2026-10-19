@@ -89,7 +89,13 @@ export function KeywordResearchTable({
               className={`block whitespace-normal break-words capitalize md:truncate ${row.original.parentKeyword ? "font-normal" : "font-medium"}`}
               title={
                 row.original.parentKeyword
-                  ? `${row.original.keyword}: matching reported volume with ${row.original.parentKeyword}. Shared volumes may overlap.`
+                  ? t(
+                      "{keyword}: matching reported volume with {parentKeyword}. Shared volumes may overlap.",
+                      {
+                        keyword: row.original.keyword,
+                        parentKeyword: row.original.parentKeyword,
+                      },
+                    )
                   : row.original.keyword
               }
             >
@@ -125,7 +131,7 @@ export function KeywordResearchTable({
           <SortableHeader
             column={sortColumn("cpc")}
             label={t("CPC")}
-            helpText="Cost per click in USD."
+            helpText={t("Cost per click in USD.")}
             align="right"
           />
         ),
@@ -144,8 +150,10 @@ export function KeywordResearchTable({
         header: () => (
           <SortableHeader
             column={sortColumn("competition")}
-            label="Comp."
-            helpText="Paid-search competition from Google Ads (0-1): higher means more advertisers bidding."
+            label={t("Comp.")}
+            helpText={t(
+              "Paid-search competition from Google Ads (0-1): higher means more advertisers bidding.",
+            )}
             align="right"
           />
         ),
@@ -165,7 +173,9 @@ export function KeywordResearchTable({
           <SortableHeader
             column={sortColumn("keywordDifficulty")}
             label={t("Score")}
-            helpText="Organic ranking difficulty (0-100): higher means harder to reach Google's top 10."
+            helpText={t(
+              "Organic ranking difficulty (0-100): higher means harder to reach Google's top 10.",
+            )}
             align="right"
           />
         ),
@@ -173,7 +183,7 @@ export function KeywordResearchTable({
         meta: { headerClassName: "text-right", cellClassName: "text-right" },
       }),
       keywordColumnHelper.accessor("intent", {
-        header: "Intent",
+        header: () => t("Intent"),
         cell: ({ getValue }) => <IntentBadge intent={getValue()} />,
         meta: {
           headerClassName: "text-center",
@@ -206,7 +216,7 @@ export function KeywordResearchTable({
       table={table}
       toolbar={toolbar}
       footer={footer}
-      empty={{ title: "No keywords" }}
+      empty={{ title: t("No keywords") }}
       isFiltered={isFiltered}
       onClearFilters={resetFilters}
       onRowClick={(row) => handleRowClick(row.original)}

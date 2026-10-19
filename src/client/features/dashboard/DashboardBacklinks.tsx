@@ -44,7 +44,7 @@ export function DashboardBacklinks({
         query.isError ? (
           <QueryError
             error={query.error}
-            fallback="Could not load backlinks"
+            fallback={t("Could not load backlinks")}
             onRetry={() => void query.refetch()}
             isRetrying={query.isFetching}
           />
@@ -59,14 +59,14 @@ export function DashboardBacklinks({
           }}
           description={
             <>
-              {DESCRIPTIONS[kind]}
+              {t(DESCRIPTIONS[kind])}
               {query.data ? <Freshness {...query.data} /> : null}
             </>
           }
         >
-          <TabsTrigger value="new">New this week</TabsTrigger>
+          <TabsTrigger value="new">{t("New this week")}</TabsTrigger>
           <TabsTrigger value="lost">{t("Lost links")}</TabsTrigger>
-          <TabsTrigger value="all">Active links</TabsTrigger>
+          <TabsTrigger value="all">{t("Active links")}</TabsTrigger>
         </DataTableTabs>
       }
     />
@@ -94,7 +94,7 @@ function DashboardBacklinkTable({
       id: "urlFrom",
       accessorFn: (row) => `${row.domainFrom ?? ""} ${row.urlFrom ?? ""}`,
       header: ({ column }) => (
-        <SortableHeader column={column} label="Referring page" />
+        <SortableHeader column={column} label={t("Referring page")} />
       ),
       cell: ({ row }) => (
         <ExternalPage
@@ -106,7 +106,7 @@ function DashboardBacklinkTable({
     },
     {
       accessorKey: "anchor",
-      header: "Anchor",
+      header: t("Anchor"),
       cell: ({ row }) => (
         <span
           className="block max-w-48 truncate"
@@ -119,20 +119,21 @@ function DashboardBacklinkTable({
     },
     {
       accessorKey: "urlTo",
-      header: "Target page",
+      header: t("Target page"),
       cell: ({ row }) => <ExternalPage url={row.original.urlTo} />,
       filterFn: "includesString",
     },
     {
       id: "follow",
-      accessorFn: (row) => (row.isDofollow ? "Follow" : t("Nofollow")),
-      header: "Link type",
+      accessorFn: (row) => (row.isDofollow ? "Follow" : "Nofollow"),
+      header: t("Link type"),
+      cell: ({ getValue }) => t(String(getValue())),
       filterFn: "equalsString",
     },
     {
       accessorKey: "domainFromRank",
       header: ({ column }) => (
-        <SortableHeader column={column} label="Domain rank" />
+        <SortableHeader column={column} label={t("Domain rank")} />
       ),
       filterFn: "inNumberRange",
       cell: ({ getValue }) => getValue() ?? "—",
@@ -140,7 +141,7 @@ function DashboardBacklinkTable({
     {
       accessorKey: "spamScore",
       header: ({ column }) => (
-        <SortableHeader column={column} label="Spam score" />
+        <SortableHeader column={column} label={t("Spam score")} />
       ),
       filterFn: "inNumberRange",
       cell: ({ getValue }) => getValue() ?? "—",
@@ -152,7 +153,7 @@ function DashboardBacklinkTable({
       header: ({ column }) => (
         <SortableHeader
           column={column}
-          label={kind === "lost" ? "Last checked" : "First discovered"}
+          label={kind === "lost" ? t("Last checked") : t("First discovered")}
         />
       ),
     },
@@ -165,19 +166,19 @@ function DashboardBacklinkTable({
       empty={{
         title:
           kind === "new"
-            ? "No new backlinks this week"
+            ? t("No new backlinks this week")
             : kind === "lost"
-              ? "No lost backlinks found"
-              : "No active backlinks found yet",
+              ? t("No lost backlinks found")
+              : t("No active backlinks found yet"),
       }}
       columns={columns}
       filters={[
-        { id: "urlFrom", label: "Referring page", kind: "text" },
-        { id: "anchor", label: "Anchor text", kind: "text" },
-        { id: "urlTo", label: "Target page", kind: "text" },
-        { id: "follow", label: "Link type", kind: "follow" },
-        { id: "domainFromRank", label: "Domain rank", kind: "number" },
-        { id: "spamScore", label: "Spam score", kind: "number" },
+        { id: "urlFrom", label: t("Referring page"), kind: "text" },
+        { id: "anchor", label: t("Anchor text"), kind: "text" },
+        { id: "urlTo", label: t("Target page"), kind: "text" },
+        { id: "follow", label: t("Link type"), kind: "follow" },
+        { id: "domainFromRank", label: t("Domain rank"), kind: "number" },
+        { id: "spamScore", label: t("Spam score"), kind: "number" },
       ]}
     />
   );

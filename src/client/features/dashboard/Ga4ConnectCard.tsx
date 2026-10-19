@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CardShell } from "@/client/components/CardShell";
@@ -14,14 +15,17 @@ export function Ga4ConnectCard({
   projectId: string;
   connected: boolean;
 }) {
+  const { t } = useLocale();
+
   const queryClient = useQueryClient();
   const [usesGa4, setUsesGa4] = useState(false);
   const dismissMutation = useMutation({
     mutationFn: () => dismissDashboardGa4Card({ data: { projectId } }),
     onSuccess: () => {
-      toast.success("Use another analytics provider?", {
-        description:
+      toast.success(t("Use another analytics provider?"), {
+        description: t(
           "Connect its MCP server to your AI agent to work with your analytics data.",
+        ),
         duration: 10000,
       });
       void queryClient.invalidateQueries({
@@ -32,12 +36,14 @@ export function Ga4ConnectCard({
 
   if (!connected && !usesGa4)
     return (
-      <CardShell title="Do you use Google Analytics 4?">
+      <CardShell title={t("Do you use Google Analytics 4?")}>
         <p className="text-sm text-muted-foreground">
-          Bring your organic traffic and conversions into your dashboard.
+          {t("Bring your organic traffic and conversions into your dashboard.")}
         </p>
         <div className="mt-6 flex flex-wrap gap-2">
-          <Button onClick={() => setUsesGa4(true)}>Yes, connect GA4</Button>
+          <Button onClick={() => setUsesGa4(true)}>
+            {t("Yes, connect GA4")}
+          </Button>
           <Button
             variant="outline"
             disabled={dismissMutation.isPending}
@@ -46,7 +52,7 @@ export function Ga4ConnectCard({
               dismissMutation.mutate();
             }}
           >
-            No
+            {t("No")}
           </Button>
         </div>
       </CardShell>

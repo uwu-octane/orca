@@ -14,7 +14,7 @@ export const keywordsZh = {
   "Please enter at least one keyword.": "请至少输入一个关键词。",
   "Please enter no more than 5 keywords (one per line).":
     "每次最多输入 5 个关键词,每行一个。",
-  "Clickstream-refined volumes": "经 Clickstream 修正的搜索量",
+  "Clickstream-refined volumes": "点击流修正搜索量",
   "Google reports one combined search volume for similar keywords (e.g. 'seo tool' and 'seo tools'). Turn this on to estimate each keyword's own volume. Costs 2x the credits.":
     "Google 会为相似关键词报告合并后的搜索量(例如 'seo tool' 和 'seo tools')。开启此选项可估算每个关键词自身的搜索量,但会消耗 2 倍额度。",
   "Keyword data for this country comes from Google Ads — search volume, CPC, and trends are available, but difficulty and intent are not.":
@@ -40,7 +40,7 @@ export const keywordsZh = {
   Difficulty: "难度",
   "Last 12 available months": "最近 12 个可用月份",
   "Search Trends": "搜索趋势",
-  "SERP Analysis": "SERP 分析",
+  "SERP Analysis": "搜索结果分析",
   "Keywords ({count})": "关键词({count})",
   "{count} selected": "已选择 {count} 个",
   "Showing {filtered} of {total}": "显示 {filtered} / {total}",
@@ -54,7 +54,7 @@ export const keywordsZh = {
   "Min difficulty": "最小难度",
   "Max difficulty": "最大难度",
   Retry: "重试",
-  "{count} organic results": "{count} 个自然结果",
+  "{count} organic results": "{count} 条自然搜索结果",
   Page: "页面",
   Prev: "上一页",
   Next: "下一页",
@@ -73,4 +73,59 @@ export const keywordsZh = {
   "No keywords match your current filters.": "没有关键词符合你当前的筛选条件。",
   "Search trend chart": "搜索趋势图",
   "Search volume": "搜索量",
+  Options: "选项",
+  "Search options": "搜索选项",
+  Results: "结果数量",
+  "Keyword source": "关键词来源",
+  "Phrase match": "词组匹配",
+  "Category ideas": "同类关键词",
+  "People also search for": "相关搜索",
+  "Group keywords": "合并相似关键词",
+  "Not available for countries served from Google Ads data.":
+    "使用 Google Ads 数据的国家/地区不支持此选项。",
+  "Not available for local results. Clickstream data covers whole countries only.":
+    "地区级结果不支持此选项，点击流数据仅覆盖国家级搜索量。",
+  "Google reports one combined volume for similar keywords. This estimates each keyword's own volume. Costs 2x the credits.":
+    "Google 会合并统计相似关键词的搜索量。开启后可估算每个词各自的搜索量，消耗的额度为原来的 2 倍。",
+  "Get search volume for one city, county, or region. Leave empty for the whole country.":
+    "查询某个城市、县或地区的搜索量。留空则查询全国数据。",
+  "City (optional)": "城市（可选）",
+  "Local volume adds ~${cost} per search.":
+    "查询地区搜索量，每次约额外收费 ${cost}。",
+  "Saved keywords show national metrics. The local volume for {location} is not saved.":
+    "保存的关键词使用国家级指标，不会保存 {location} 的地区搜索量。",
+  "Comp.": "广告竞争度",
+  "Cost per click in USD.": "每次点击费用，单位为美元。",
+  "Paid-search competition from Google Ads (0-1): higher means more advertisers bidding.":
+    "Google Ads 广告竞争度（0–1）：数值越高，参与竞价的广告主越多。",
+  "Organic ranking difficulty (0-100): higher means harder to reach Google's top 10.":
+    "自然搜索排名难度（0–100）：数值越高，进入 Google 前 10 名越难。",
+  "{keyword}: matching reported volume with {parentKeyword}. Shared volumes may overlap.":
+    "{keyword}：与 {parentKeyword} 的报告搜索量相同，搜索量可能存在重叠。",
+  "No keywords": "暂无关键词",
+  "Show top 20": "显示前 20 条",
+  "Load top 100": "加载前 100 条",
+  Informational: "信息型",
+  Commercial: "商业调研型",
+  Transactional: "交易型",
+  Navigational: "导航型",
+  Unknown: "未知",
+  Comm: "商业",
+  Trans: "交易",
+  Nav: "导航",
+  "{intent} search intent": "{intent}搜索意图",
+  "The searcher wants information or answers. Use this for educational content, guides, and comparison-light explainers.":
+    "用户希望获取信息或答案。适合知识介绍、指南及以讲解为主、较少涉及对比的内容。",
+  "The searcher is researching options before a purchase. Treat this as buying intent for comparisons, alternatives, and product-led pages.":
+    "用户正在购买前比较不同选择。适合产品对比、替代方案和产品介绍页面。",
+  "The searcher is ready to complete an action, often a purchase. Prioritize clear offers, pricing, trials, or conversion paths.":
+    "用户已准备采取行动，通常是购买。应优先提供明确的产品方案、价格、试用或转化入口。",
+  "The searcher is looking for a specific site, brand, or page. These queries usually reward matching the expected destination.":
+    "用户正在寻找特定网站、品牌或页面。这类搜索通常更适合指向用户期望到达的页面。",
+  "Intent was not available for this keyword, so avoid making content strategy decisions from this badge alone.":
+    "暂无此关键词的意图数据，请勿仅凭该标签决定内容策略。",
+  "{label} trend chart": "{label}趋势图",
+  "Saved {count} keywords": "已保存 {count} 个关键词",
+  "Please enter no more than {count} keywords (one per line).":
+    "每次最多输入 {count} 个关键词，每行一个。",
 } satisfies Record<string, string>;

@@ -31,7 +31,7 @@ const columns: ColumnDef<Keyword>[] = [
             column={column}
             label={
               id === "position"
-                ? "Avg. position"
+                ? translate("Avg. position")
                 : id === "clicks"
                   ? translate("Clicks")
                   : translate("Impressions")
@@ -68,7 +68,7 @@ export function DashboardKeywordTable({
 
   const pageColumn: ColumnDef<Keyword> = {
     accessorKey: "page",
-    header: "Page",
+    header: t("Page"),
     filterFn: "includesString",
     cell: ({ row }) => <ExternalPage url={row.original.page ?? null} />,
   };
@@ -87,7 +87,7 @@ export function DashboardKeywordTable({
           : []),
         { id: "impressions", label: t("Impressions"), kind: "number" },
         { id: "clicks", label: t("Clicks"), kind: "number" },
-        { id: "position", label: "Average position", kind: "number" },
+        { id: "position", label: t("Average position"), kind: "number" },
       ]}
     />
   );
