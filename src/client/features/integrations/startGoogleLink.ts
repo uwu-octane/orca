@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 import { toast } from "sonner";
 import { useSyncExternalStore } from "react";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
@@ -64,7 +65,7 @@ export async function startGoogleLink(
     }, 15_000);
     return true;
   } catch (error) {
-    toast.error(getStandardErrorMessage(error));
+    toast.error(getStandardErrorMessage(error, undefined, translate));
     return false;
   } finally {
     // Single release point: any exit that didn't hand off to the browser

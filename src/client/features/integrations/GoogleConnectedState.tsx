@@ -49,12 +49,12 @@ export function GoogleConnectedState({
         >
           <Button variant="outline" size="sm" onClick={onChange}>
             {canManage
-              ? "Change property or account"
-              : "Manage Google accounts"}
+              ? t("Change property or account")
+              : t("Manage Google accounts")}
           </Button>
           {canManage ? (
             <Button variant="destructive" size="sm" onClick={onDisconnect}>
-              {disconnecting ? t("Disconnecting…") : "Disconnect project"}
+              {disconnecting ? t("Disconnecting…") : t("Disconnect project")}
             </Button>
           ) : null}
         </fieldset>

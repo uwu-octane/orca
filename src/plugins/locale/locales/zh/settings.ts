@@ -66,4 +66,7 @@ export const settingsZh = {
   "Shopify also shows a Signature-Agent value. You don't need to paste it: Orca sends it with every request.":
     "Shopify 还会显示 Signature-Agent 值，无需粘贴，Orca 会随每次请求自动发送。",
   "Save signature": "保存签名",
+  Personal: "个人",
+  Organization: "组织",
+  "Settings sections": "设置分类",
 } satisfies Record<string, string>;

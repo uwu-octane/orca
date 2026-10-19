@@ -23,9 +23,10 @@ export function GoogleOAuthSetupWarning({
       <AlertTitle>{t("Google OAuth client not configured")}</AlertTitle>
       <AlertDescription>
         <p>
-          Add your Google client ID and secret to this Orca deployment before
-          connecting {integrationName}
-          {t(".")}
+          {t(
+            "Add your Google client ID and secret to this Orca deployment before connecting {name}.",
+            { name: integrationName },
+          )}
         </p>
         <SafeExternalLink
           url={docsUrl}

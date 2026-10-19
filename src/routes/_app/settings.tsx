@@ -16,10 +16,10 @@ function SettingsLayout() {
   const { t } = useLocale();
 
   const tabs = [
-    { to: "/settings" as const, label: "Personal", exact: true },
+    { to: "/settings" as const, label: t("Personal"), exact: true },
     // Self-host has no memberships — the organization tab would 404.
     ...(isHostedClientAuthMode()
-      ? [{ to: "/settings/organization" as const, label: "Organization" }]
+      ? [{ to: "/settings/organization" as const, label: t("Organization") }]
       : []),
   ];
 
@@ -28,7 +28,7 @@ function SettingsLayout() {
       <div className="mx-auto max-w-7xl space-y-8">
         <div className="space-y-4">
           <PageHeader title={t("Settings")} />
-          <NavTabs label="Settings sections">
+          <NavTabs label={t("Settings sections")}>
             {tabs.map((tab) => (
               <NavTab
                 key={tab.to}

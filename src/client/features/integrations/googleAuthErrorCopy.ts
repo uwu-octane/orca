@@ -1,3 +1,5 @@
+import { translate } from "@/plugins/locale";
+
 /**
  * Plain-language copy for Google OAuth failures, shared by the connect-surface
  * inline alert (GoogleLinkErrorAlert) and the /auth-error fallback page.
@@ -12,37 +14,46 @@ export function googleAuthErrorCopy(
   code: string,
   providerLabel?: string,
 ): { title: string; description: string } {
-  const what = providerLabel ? `${providerLabel} connection` : "Google sign-in";
+  const what = providerLabel
+    ? translate("{provider} connection", { provider: providerLabel })
+    : translate("Google sign-in");
 
   switch (code) {
     case "state_mismatch":
       return {
-        title: `${what} didn't finish`,
-        description:
+        title: translate("{what} didn't finish", { what }),
+        description: translate(
           "The attempt expired or was interrupted. Try again in a single browser tab and finish the Google steps within 10 minutes. If it keeps happening, make sure your browser allows cookies for this site.",
+        ),
       };
     case "access_denied":
       return {
-        title: `${what} was canceled`,
-        description:
+        title: translate("{what} was canceled", { what }),
+        description: translate(
           "Google's permission screen was closed or declined. Try again whenever you're ready.",
+        ),
       };
     case "scope_not_granted":
       return {
-        title: `${what} is missing a permission`,
-        description: `Orca didn't get access to your ${providerLabel ?? "Google"} data because a box on Google's permission screen wasn't checked. Try again and check every box before you continue.`,
+        title: translate("{what} is missing a permission", { what }),
+        description: translate(
+          "Orca didn't get access to your {provider} data because a box on Google's permission screen wasn't checked. Try again and check every box before you continue.",
+          { provider: providerLabel ?? "Google" },
+        ),
       };
     case "connection_save_failed":
       return {
-        title: `${what} didn't finish`,
-        description:
+        title: translate("{what} didn't finish", { what }),
+        description: translate(
           "We couldn't save the connection. Please try again — if it keeps failing, contact support.",
+        ),
       };
     default:
       return {
-        title: `${what} didn't finish`,
-        description:
+        title: translate("{what} didn't finish", { what }),
+        description: translate(
           "Something went wrong while talking to Google. Please try again — if it keeps failing, contact support.",
+        ),
       };
   }
 }

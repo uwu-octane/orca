@@ -114,7 +114,7 @@ export function GoogleConnectionCard({
           current ? { ...current, ...saved } : current,
       );
       captureClientEvent(`${provider}:property_select`);
-      toast.success(`${config.name} connected`);
+      toast.success(t("{name} connected", { name: config.name }));
       afterChange();
     },
   });
@@ -122,7 +122,9 @@ export function GoogleConnectionCard({
     meta: { errorToast: false },
     mutationFn: () => config.disconnect(projectId),
     onSuccess: () => {
-      toast.success(`${config.name} disconnected from this project`);
+      toast.success(
+        t("{name} disconnected from this project", { name: config.name }),
+      );
       queryClient.setQueryData(
         connectionKey,
         (current: GoogleConnection | undefined) =>
@@ -172,7 +174,7 @@ export function GoogleConnectionCard({
       {connectionQuery.isPending ? (
         <div
           role="status"
-          aria-label="Loading connection"
+          aria-label={t("Loading connection")}
           className="space-y-3"
         >
           <Skeleton className="h-4 w-2/3" />
@@ -181,7 +183,7 @@ export function GoogleConnectionCard({
       ) : connectionUnavailable ? (
         <QueryError
           error={connectionQuery.error}
-          fallback="Couldn't check this project's connection."
+          fallback={t("Couldn't check this project's connection.")}
           onRetry={() => void connectionQuery.refetch()}
           isRetrying={connectionQuery.isFetching}
         />
@@ -252,12 +254,14 @@ export function GoogleConnectionCard({
         <p role="alert" className="mt-3 text-sm text-destructive">
           {getStandardErrorMessage(
             setPropertyMutation.error ?? disconnectMutation.error,
+            undefined,
+            t,
           )}
         </p>
       ) : null}
       {connectionQuery.isSuccess && !needsGoogleOAuthSetup && !canManage ? (
         <PermissionHint
-          action="change this project's connection"
+          action={t("change this project's connection")}
           className="mt-3"
         />
       ) : null}
@@ -282,8 +286,8 @@ function ConnectionStatusPill({
       {connected
         ? t("Connected")
         : setupRequired
-          ? "Setup required"
-          : "Not connected"}
+          ? t("Setup required")
+          : t("Not connected")}
     </Badge>
   );
 }

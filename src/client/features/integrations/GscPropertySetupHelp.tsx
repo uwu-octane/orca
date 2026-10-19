@@ -31,24 +31,30 @@ export function GscPropertySetupHelp({
     <>
       {emptyGsc ? (
         <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4 text-sm">
-          <h2 className="font-semibold">We couldn’t find your website</h2>
+          <h2 className="font-semibold">
+            {t("We couldn’t find your website")}
+          </h2>
           <p className="break-words text-muted-foreground">
-            We checked{" "}
-            {accounts
-              .map(
-                (account) =>
-                  account.email ??
-                  `Google account · ${account.accountId.slice(-6)}`,
-              )
-              .join(", ")}
-            {t(".")}
+            {t("We checked {accounts}.", {
+              accounts: accounts
+                .map(
+                  (account) =>
+                    account.email ??
+                    t("Google account · {id}", {
+                      id: account.accountId.slice(-6),
+                    }),
+                )
+                .join(", "),
+            })}
           </p>
           <p className="text-muted-foreground">
-            Add your site to Search Console, or ask whoever manages it to give
             {accounts.length === 1
-              ? " this account"
-              : " one of these accounts"}{" "}
-            access.
+              ? t(
+                  "Add your site to Search Console, or ask whoever manages it to give this account access.",
+                )
+              : t(
+                  "Add your site to Search Console, or ask whoever manages it to give one of these accounts access.",
+                )}
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             <a
@@ -57,7 +63,7 @@ export function GscPropertySetupHelp({
               rel="noopener noreferrer"
               className="underline underline-offset-4"
             >
-              Open Search Console ↗
+              {t("Open Search Console ↗")}
             </a>
             <a
               href="https://openseo.so/blogs/google-search-console-setup"
@@ -73,7 +79,7 @@ export function GscPropertySetupHelp({
       <div className="space-y-2">
         {error ? (
           <QueryError
-            fallback="Couldn't load Search Console websites."
+            fallback={t("Couldn't load Search Console websites.")}
             onRetry={onRetry}
           />
         ) : null}
@@ -85,7 +91,7 @@ export function GscPropertySetupHelp({
               onClick={onRetry}
               disabled={loading || busy}
             >
-              {loading ? "Refreshing…" : "Refresh"}
+              {loading ? t("Refreshing…") : t("Refresh")}
             </Button>
             <Button
               variant="ghost"
@@ -94,7 +100,9 @@ export function GscPropertySetupHelp({
               disabled={loading || busy}
               pending={linking}
             >
-              {linking ? "Opening Google…" : "Use a different Google account"}
+              {linking
+                ? t("Opening Google…")
+                : t("Use a different Google account")}
             </Button>
           </div>
         ) : null}
@@ -110,25 +118,27 @@ export function EmptyAccountMessage({
   provider: "gsc" | "ga4";
   filtered: boolean;
 }) {
+  const { t } = useLocale();
+
   return (
     <>
       {filtered ? (
-        "No matching properties in this account"
+        t("No matching properties in this account")
       ) : provider === "gsc" ? (
         <>
-          No websites found for this account.{" "}
+          {t("No websites found for this account.")}{" "}
           <a
             href="https://openseo.so/blogs/google-search-console-setup"
             target="_blank"
             rel="noopener noreferrer"
             className="underline underline-offset-4"
           >
-            Add a website or get access
+            {t("Add a website or get access")}
           </a>
-          , then refresh the list.
+          {t(", then refresh the list.")}
         </>
       ) : (
-        "No properties available"
+        t("No properties available")
       )}
     </>
   );
