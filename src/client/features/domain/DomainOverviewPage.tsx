@@ -533,7 +533,7 @@ export function DomainOverviewPage({
   const overviewError = state.overviewQuery.isError ? (
     <QueryError
       error={state.overviewQuery.error}
-      fallback="Lookup failed."
+      fallback={t("Lookup failed.")}
       onRetry={() => void state.overviewQuery.refetch()}
       isRetrying={state.overviewQuery.isFetching}
     />
@@ -603,9 +603,9 @@ export function DomainOverviewPage({
               loaded={state.historyLoaded}
               onRemove={state.removeHistoryItem}
               emptyIcon={Globe}
-              emptyTitle="Enter a domain to get started"
+              emptyTitle={t("Enter a domain to get started")}
               getTitle={(item) => item.domain}
-              getSubtitle={(item) => RESEARCH_SCOPE_LABELS[item.scope]}
+              getSubtitle={(item) => t(RESEARCH_SCOPE_LABELS[item.scope])}
               renderLink={(item, props) => (
                 <button
                   type="button"
@@ -646,11 +646,11 @@ export function DomainOverviewPage({
                       {
                         label: overviewMetricsHint ? (
                           <HelpLabel
-                            label="Estimated organic traffic"
+                            label={t("Estimated organic traffic")}
                             helpText={overviewMetricsHint}
                           />
                         ) : (
-                          "Estimated organic traffic"
+                          t("Estimated organic traffic")
                         ),
                         value: formatMetric(
                           state.overview.organicTraffic,
@@ -660,11 +660,11 @@ export function DomainOverviewPage({
                       {
                         label: overviewMetricsHint ? (
                           <HelpLabel
-                            label="Organic keywords"
+                            label={t("Organic keywords")}
                             helpText={overviewMetricsHint}
                           />
                         ) : (
-                          "Organic keywords"
+                          t("Organic keywords")
                         ),
                         value: formatMetric(
                           state.overview.organicKeywords,

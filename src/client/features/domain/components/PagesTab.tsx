@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { QueryError } from "@/client/components/QueryState";
 import { TablePagination } from "@/client/components/table/TablePagination";
@@ -80,6 +81,8 @@ export function PagesTab({
   onPageChange,
   onPageSizeChange,
 }: Props) {
+  const { t } = useLocale();
+
   const [showFilters, setShowFilters] = useState(false);
   // Scope filters consume part of DataForSEO's fixed filter budget.
   const maxConditions =
@@ -176,7 +179,7 @@ export function PagesTab({
         query.isError ? (
           <QueryError
             error={query.error}
-            fallback="Failed to load pages."
+            fallback={t("Failed to load pages.")}
             onRetry={() => void query.refetch()}
             isRetrying={isFetching}
           />
@@ -190,7 +193,7 @@ export function PagesTab({
             showFilters={showFilters}
             onToggleFilters={() => setShowFilters((prev) => !prev)}
             activeFilterCount={activeFilterCount}
-            countLabel="pages"
+            countLabel={t("pages")}
             totalCount={totalCount}
             fallbackCount={rows.length}
             onExport={exportAll}

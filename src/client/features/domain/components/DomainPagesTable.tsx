@@ -45,7 +45,7 @@ export function DomainPagesTable({
     () => [
       pageColumnHelper.display({
         id: "page",
-        header: () => "Page",
+        header: () => t("Page"),
         cell: ({ row }) => (
           <ExternalUrlCell
             value={row.original.page}

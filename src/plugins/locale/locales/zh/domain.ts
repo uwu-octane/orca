@@ -62,4 +62,10 @@ export const domainZh = {
   Page: "页面",
   "Organic Traffic": "自然流量",
   keywords: "关键词",
+  "Estimated organic traffic": "预估自然流量",
+  "Organic keywords": "自然搜索关键词",
+  "Sort keywords": "关键词排序",
+  "Failed to load keywords.": "关键词加载失败。",
+  "Failed to load pages.": "页面加载失败。",
+  pages: "个页面",
 } satisfies Record<string, string>;

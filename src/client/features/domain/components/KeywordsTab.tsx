@@ -280,7 +280,7 @@ export function KeywordsTab({
           query.isError ? (
             <QueryError
               error={query.error}
-              fallback="Failed to load keywords."
+              fallback={t("Failed to load keywords.")}
               onRetry={() => void query.refetch()}
               isRetrying={isFetching}
             />
@@ -294,7 +294,7 @@ export function KeywordsTab({
               showFilters={showFilters}
               onToggleFilters={() => setShowFilters((prev) => !prev)}
               activeFilterCount={activeFilterCount}
-              countLabel="keywords"
+              countLabel={t("keywords")}
               totalCount={totalCount}
               fallbackCount={rows.length}
               onExport={exportAll}
@@ -315,7 +315,7 @@ export function KeywordsTab({
               <span className="text-sm text-muted-foreground">
                 ·{" "}
                 {selectedKeywords.size > 0
-                  ? `${selectedKeywords.size} selected`
+                  ? t("{count} selected", { count: selectedKeywords.size })
                   : t("Select keywords to save")}
               </span>
             </DomainTableToolbar>

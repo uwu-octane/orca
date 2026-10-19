@@ -19,14 +19,6 @@ import {
 } from "@/client/components/ui/select";
 import type { ResearchScope } from "@/shared/researchScope";
 
-const SORT_ITEMS: { value: DomainSortMode; label: string }[] = [
-  { value: "rank", label: "By Rank" },
-  { value: "traffic", label: "By Traffic" },
-  { value: "volume", label: "By Volume" },
-  { value: "score", label: "By Score" },
-  { value: "cpc", label: "By CPC" },
-];
-
 type Props = {
   controlsForm: DomainOverviewControlsForm;
   isLoading: boolean;
@@ -47,6 +39,13 @@ export function DomainSearchCard({
   onLocationChange,
 }: Props) {
   const { t } = useLocale();
+  const SORT_ITEMS: { value: DomainSortMode; label: string }[] = [
+    { value: "rank", label: t("By Rank") },
+    { value: "traffic", label: t("By Traffic") },
+    { value: "volume", label: t("By Volume") },
+    { value: "score", label: t("By Score") },
+    { value: "cpc", label: t("By CPC") },
+  ];
 
   const domainError = useStore(controlsForm.store, (state) =>
     getFieldError(state.fieldMeta.domain?.errors ?? []),
@@ -56,14 +55,14 @@ export function DomainSearchCard({
     <SearchCard
       onSubmit={onSubmit}
       pending={isLoading}
-      error={domainError}
+      error={domainError ? t(domainError) : domainError}
       errorId="domain-input-error"
     >
       <controlsForm.Field name="domain">
         {(field) => (
           <SearchInput
             placeholder={t("Enter a domain or URL")}
-            aria-label="Domain or URL"
+            aria-label={t("Domain or URL")}
             value={field.state.value}
             onChange={(event) => {
               field.handleChange(event.target.value);
@@ -114,7 +113,7 @@ export function DomainSearchCard({
             }}
           >
             <SelectTrigger
-              aria-label="Sort keywords"
+              aria-label={t("Sort keywords")}
               className="w-full shrink-0 lg:w-36"
             >
               <SelectValue />

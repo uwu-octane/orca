@@ -65,7 +65,7 @@ export function DomainKeywordsTable({
     () => [
       makeSelectionColumn<KeywordRow>(selectAnchorRef),
       keywordColumnHelper.accessor("keyword", {
-        header: () => "Keyword",
+        header: () => t("Keyword"),
         cell: ({ getValue }) => (
           <span className="font-medium">{getValue()}</span>
         ),
@@ -113,7 +113,7 @@ export function DomainKeywordsTable({
         header: () => (
           <SortableHeader
             label={t("CPC")}
-            helpText="Cost per click in USD."
+            helpText={t("Cost per click in USD.")}
             column={domainSortColumn(sortMode === "cpc", currentSortOrder, () =>
               onSortClick("cpc"),
             )}
@@ -142,7 +142,9 @@ export function DomainKeywordsTable({
         header: () => (
           <SortableHeader
             label={t("Score")}
-            helpText="Organic ranking difficulty (0-100): higher means harder to reach Google's top 10."
+            helpText={t(
+              "Organic ranking difficulty (0-100): higher means harder to reach Google's top 10.",
+            )}
             column={domainSortColumn(
               sortMode === "score",
               currentSortOrder,

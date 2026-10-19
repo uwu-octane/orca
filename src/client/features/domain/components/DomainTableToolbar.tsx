@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import type { ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 import { ExportMenu } from "@/client/components/ExportMenu";
@@ -35,6 +36,7 @@ export function DomainTableToolbar({
   filterPanel,
   children,
 }: Props) {
+  const { t } = useLocale();
   return (
     <>
       <DataTableToolbar
@@ -61,8 +63,10 @@ export function DomainTableToolbar({
           <Alert variant="warning">
             <AlertTriangle />
             <AlertDescription className="text-foreground">
-              Saved filters exceed this scope&apos;s {overBudgetLimit}-condition
-              limit and were not applied. Open Filters to trim them.
+              {t(
+                "Saved filters exceed this scope's {max}-condition limit and were not applied. Open Filters to trim them.",
+                { max: overBudgetLimit },
+              )}
             </AlertDescription>
           </Alert>
         </div>
