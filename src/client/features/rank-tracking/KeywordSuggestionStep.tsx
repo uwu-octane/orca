@@ -222,7 +222,9 @@ export function KeywordSuggestionStep({
     mutationFn: (keywords: string[]) =>
       addTrackingKeywords({ data: { projectId, configId, keywords } }),
     onSuccess: (result) => {
-      toast.success(`Added ${result.added} keywords for tracking`);
+      toast.success(
+        t("Added {count} keywords for tracking", { count: result.added }),
+      );
       onDone(configId);
     },
   });
@@ -268,7 +270,9 @@ export function KeywordSuggestionStep({
       <>
         <StepHeader
           title={t("Couldn't fetch keywords")}
-          description="You can skip this step and add keywords manually later."
+          description={t(
+            "You can skip this step and add keywords manually later.",
+          )}
         />
         <DialogFooter>
           <Button onClick={onClose}>{t("Skip")}</Button>
@@ -282,7 +286,10 @@ export function KeywordSuggestionStep({
       <>
         <StepHeader
           title={t("No rankings found")}
-          description={`We couldn't find any keywords ${domain} currently ranks for. You can add keywords manually.`}
+          description={t(
+            "We couldn't find any keywords {domain} currently ranks for. You can add keywords manually.",
+            { domain },
+          )}
         />
         <DialogFooter>
           <Button onClick={onClose}>{t("Skip")}</Button>
@@ -295,12 +302,15 @@ export function KeywordSuggestionStep({
     <>
       <StepHeader
         title={t("Choose keywords to track")}
-        description={`We found ${data.length} keywords ${domain} ranks for.`}
+        description={t("We found {count} keywords {domain} ranks for.", {
+          count: data.length,
+          domain,
+        })}
       />
 
       <DataTable
         table={table}
-        empty={{ title: "No keywords" }}
+        empty={{ title: t("No keywords") }}
         scrollClassName="max-h-[400px]"
         onRowClick={(row, event) => {
           if (applyShiftRangeSelection(event, row, table, selectAnchorRef)) {
@@ -312,7 +322,10 @@ export function KeywordSuggestionStep({
 
       <DialogFooter className="items-center sm:justify-between">
         <p className="text-xs text-muted-foreground">
-          {selectedCount} of {data.length} {"selected"}
+          {t("{count} of {total} selected", {
+            count: selectedCount,
+            total: data.length,
+          })}
         </p>
         <div className="flex items-center gap-2">
           <Button variant="ghost" onClick={onClose}>

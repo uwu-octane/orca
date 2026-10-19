@@ -46,8 +46,8 @@ export function RankTrackingHistoryMatrix({
     return (
       <EmptyState
         kind="filtered"
-        title="No keywords match these filters"
-        description="Change or clear the filters to see more keywords."
+        title={t("No keywords match these filters")}
+        description={t("Change or clear the filters to see more keywords.")}
         action={
           <Button variant="outline" size="sm" onClick={onClearFilters}>
             {t("Clear filters")}
@@ -112,13 +112,15 @@ export function RankTrackingHistoryMatrix({
 }
 
 function NotCheckedCell() {
+  const { t } = useLocale();
+
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           // An icon fits the numeric column.
           <span
-            aria-label="Not checked"
+            aria-label={t("Not checked")}
             className="inline-flex cursor-help align-middle text-muted-foreground"
           />
         }
@@ -126,7 +128,7 @@ function NotCheckedCell() {
         <CircleSlash className="size-3.5" aria-hidden />
       </TooltipTrigger>
       <TooltipContent>
-        Not checked: check failed, no position recorded.
+        {t("Not checked: check failed, no position recorded.")}
       </TooltipContent>
     </Tooltip>
   );

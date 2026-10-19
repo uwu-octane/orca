@@ -156,10 +156,12 @@ export function TrendRangeToggle({
   value: number;
   onChange: (sinceDays: number) => void;
 }) {
+  const { t } = useLocale();
+
   return (
     <SegmentedToggle
       showLabels
-      items={TREND_RANGES}
+      items={TREND_RANGES.map((item) => ({ ...item, label: t(item.label) }))}
       value={String(value)}
       onChange={(next) => onChange(Number(next))}
     />
@@ -168,15 +170,17 @@ export function TrendRangeToggle({
 
 /** Shown instead of a trend chart until there are two checks to connect. */
 export function TrendEmptyState({ checks }: { checks: number }) {
+  const { t } = useLocale();
+
   return (
     <EmptyState
       icon={TrendingUp}
       size="sm"
-      title={checks === 0 ? "No history yet" : "Only 1 check so far"}
+      title={checks === 0 ? t("No history yet") : t("Only 1 check so far")}
       description={
         checks === 0
-          ? "Run a check to start tracking positions over time."
-          : "The trend fills in after the next check."
+          ? t("Run a check to start tracking positions over time.")
+          : t("The trend fills in after the next check.")
       }
     />
   );

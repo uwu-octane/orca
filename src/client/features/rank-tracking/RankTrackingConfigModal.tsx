@@ -1,3 +1,5 @@
+import { RankCheckCostEstimate } from "./RankCheckCostEstimate";
+import { translate } from "@/plugins/locale";
 // FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
 
@@ -19,7 +21,7 @@ import {
 import { Field, FieldLabel } from "@/client/components/ui/field";
 import type { RankTrackingConfig } from "@/types/schemas/rank-tracking";
 import { domainField, normalizeDomain } from "@/types/schemas/domain";
-import { pagesToDepth, estimateRankCheckCredits } from "@/shared/rank-tracking";
+import { pagesToDepth } from "@/shared/rank-tracking";
 import { getLanguageCode } from "@/client/features/keywords/locations";
 import {
   SERP_LANGUAGE_OPTIONS,
@@ -68,22 +70,17 @@ const DEVICE_ITEMS: { value: SaveConfigInput["devices"]; label: string }[] = [
   { value: "mobile", label: "Mobile only" },
 ];
 
-const DEPTH_ITEMS = Array.from({ length: 10 }, (_, i) => i + 1).map(
-  (pages) => ({
-    value: pagesToDepth(pages),
-    label: `${pages} ${pages === 1 ? "page" : "pages"} (top ${pages * 10} results)`,
-  }),
-);
-
 function validateConfig(values: ConfigFormValues) {
   const fields: Partial<Record<keyof ConfigFormValues, string>> = {};
   if (!values.domain.trim()) {
-    fields.domain = "Enter a domain";
+    fields.domain = translate("Enter a domain");
   } else if (!domainField.safeParse(values.domain).success) {
-    fields.domain = "Enter a valid domain, like example.com";
+    fields.domain = translate("Enter a valid domain, like example.com");
   }
   if (values.targetingMode === "local" && !values.locationName) {
-    fields.locationName = "Select a city or region for local targeting";
+    fields.locationName = translate(
+      "Select a city or region for local targeting",
+    );
   }
   return Object.keys(fields).length > 0 ? { fields } : undefined;
 }
@@ -124,7 +121,7 @@ export function RankTrackingConfigModal({
             ) : (
               <QueryError
                 error={projectsQuery.error}
-                fallback="Failed to load the project."
+                fallback={t("Failed to load the project.")}
                 onRetry={() => void projectsQuery.refetch()}
                 isRetrying={projectsQuery.isFetching}
               />
@@ -156,6 +153,17 @@ function RankTrackingConfigModalContent({
   onConfigCreated,
 }: Props & { initialMarket: ProjectMarket }) {
   const { t } = useLocale();
+  const depthItems = Array.from({ length: 10 }, (_, i) => i + 1).map(
+    (pages) => ({
+      value: pagesToDepth(pages),
+      label: t(
+        pages === 1
+          ? "{count} page (top {top} results)"
+          : "{count} pages (top {top} results)",
+        { count: pages, top: pages * 10 },
+      ),
+    }),
+  );
 
   const countryId = useId();
   const isEdit = !!existingConfig;
@@ -328,7 +336,10 @@ function RankTrackingConfigModalContent({
                   {(field) => (
                     <field.SelectField
                       label={t("Devices")}
-                      items={DEVICE_ITEMS}
+                      items={DEVICE_ITEMS.map((item) => ({
+                        ...item,
+                        label: t(item.label),
+                      }))}
                       description={t(
                         "Most Google searches come from mobile, but select this based on your customer.",
                       )}
@@ -362,7 +373,7 @@ function RankTrackingConfigModalContent({
                 {(field) => (
                   <field.SelectField
                     label={t("Search Depth")}
-                    items={DEPTH_ITEMS}
+                    items={depthItems}
                     description={t(
                       "10 pages is ~8x more expensive than 1 page",
                     )}
@@ -370,7 +381,7 @@ function RankTrackingConfigModalContent({
                 )}
               </form.AppField>
 
-              <CostEstimate
+              <RankCheckCostEstimate
                 devices={values.devices}
                 serpDepth={values.serpDepth}
                 schedule={values.schedule}
@@ -394,43 +405,5 @@ function RankTrackingConfigModalContent({
         )}
       </DialogContent>
     </Dialog>
-  );
-}
-
-function CostEstimate({
-  devices,
-  serpDepth,
-  schedule,
-}: Pick<ConfigFormValues, "devices" | "serpDepth" | "schedule">) {
-  const { t } = useLocale();
-
-  // Scheduled checks run through the cheaper task queue; manual configs only
-  // ever pay the live price.
-  const { costUsd: costPerKeyword } = estimateRankCheckCredits(
-    ["plain keyword"],
-    devices,
-    serpDepth,
-    schedule === "manual" ? "live" : "queued",
-  );
-  const checksPerMonth =
-    schedule === "daily" ? 30 : schedule === "weekly" ? 4 : 1;
-  return (
-    <div className="space-y-0.5 rounded-lg bg-muted px-3 py-2.5 text-xs text-muted-foreground">
-      <div>
-        <span className="font-mono font-semibold text-foreground">
-          ~${costPerKeyword.toFixed(4)}
-        </span>{" "}
-        {t("per keyword per check")}
-      </div>
-      {schedule !== "manual" && (
-        <div>
-          {t("50 keywords would cost")}{" "}
-          <span className="font-mono font-semibold text-foreground">
-            ~${(costPerKeyword * 50 * checksPerMonth).toFixed(2)}
-          </span>
-          {t("/month")}
-        </div>
-      )}
-    </div>
   );
 }

@@ -76,7 +76,7 @@ export function ScheduleField({
     <Field>
       <FieldLabel htmlFor={id}>{t("Schedule")}</FieldLabel>
       <Select
-        items={items}
+        items={items.map((item) => ({ ...item, label: t(item.label) }))}
         value={schedule}
         onValueChange={(value) => {
           if (value) onScheduleChange(value);
@@ -88,7 +88,7 @@ export function ScheduleField({
         <SelectContent>
           {items.map((item) => (
             <SelectItem key={item.value} value={item.value}>
-              {item.label}
+              {t(item.label)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -106,7 +106,7 @@ export function ScheduleField({
                 className="h-auto p-0 text-xs"
                 onClick={() => setShowScheduleTime(true)}
               >
-                change
+                {t("change")}
               </Button>
             </>
           )}
@@ -117,7 +117,10 @@ export function ScheduleField({
           <div className="flex gap-2">
             {schedule === "weekly" && (
               <Select
-                items={WEEKDAY_ITEMS}
+                items={WEEKDAY_ITEMS.map((item) => ({
+                  ...item,
+                  label: t(item.label),
+                }))}
                 value={scheduleTime.weekday}
                 onValueChange={(weekday) => {
                   if (weekday !== null) {
@@ -125,13 +128,13 @@ export function ScheduleField({
                   }
                 }}
               >
-                <SelectTrigger aria-label="Day of week">
+                <SelectTrigger aria-label={t("Day of week")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {WEEKDAY_ITEMS.map((item) => (
                     <SelectItem key={item.value} value={item.value}>
-                      {item.label}
+                      {t(item.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -140,7 +143,7 @@ export function ScheduleField({
             <Input
               type="time"
               className="w-auto"
-              aria-label="Time of day"
+              aria-label={t("Time of day")}
               value={`${String(scheduleTime.hour).padStart(2, "0")}:${String(scheduleTime.minute).padStart(2, "0")}`}
               onChange={(e) => {
                 const [hour, minute] = e.target.value.split(":").map(Number);
@@ -151,7 +154,9 @@ export function ScheduleField({
             />
           </div>
           <FieldDescription>
-            In your local timezone: {browserTimeZoneLabel()}
+            {t("In your local timezone: {timezone}", {
+              timezone: browserTimeZoneLabel(),
+            })}
           </FieldDescription>
         </>
       )}

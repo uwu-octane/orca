@@ -170,16 +170,20 @@ export function RankTrackingDomainDetail({
     setShowAddKeywords(false);
     captureClientEvent("rank_tracking:keywords_add");
     toast.success(
-      `${result.added} keyword${result.added !== 1 ? "s" : ""} added`,
+      result.added === 1
+        ? t("{count} keyword added", { count: result.added })
+        : t("{count} keywords added", { count: result.added }),
     );
     if (result.checkScheduledSoon) {
-      toast.info("The scheduled check within the hour covers these keywords");
+      toast.info(
+        t("The scheduled check within the hour covers these keywords"),
+      );
     } else if (
       !result.checkTriggered &&
       result.added > 0 &&
       planStatus === "paid"
     ) {
-      toast.info("Use 'Check rankings' to check these keywords");
+      toast.info(t("Use 'Check rankings' to check these keywords"));
     }
   };
 
@@ -351,7 +355,7 @@ export function RankTrackingDomainDetail({
           ) : (
             <QueryState
               query={resultsQuery}
-              errorFallback="Failed to load rank data"
+              errorFallback={t("Failed to load rank data")}
               loading={<SkeletonCard />}
             >
               {(results) => (

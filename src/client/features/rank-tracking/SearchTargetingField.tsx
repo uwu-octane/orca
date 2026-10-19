@@ -82,7 +82,7 @@ export function SearchTargetingField({
       {mode === "local" && (
         <>
           <FieldLabel htmlFor={`${id}-city`} className="sr-only">
-            City or region
+            {t("City or region")}
           </FieldLabel>
           <SerpLocationCombobox
             id={`${id}-city`}

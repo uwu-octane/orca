@@ -57,6 +57,11 @@ export function RankTrackingDetailHeader({
 }) {
   const { t } = useLocale();
 
+  const compareItems = COMPARE_ITEMS.map((item) => ({
+    ...item,
+    label: t(item.label),
+  }));
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 px-4 pt-4 pb-3">
       <div>
@@ -67,7 +72,7 @@ export function RankTrackingDetailHeader({
             : (LOCATIONS[config.locationCode] ?? "US")}{" "}
           &middot;{" "}
           {config.devices === "desktop" ? (
-            devicesLabel(config.devices)
+            t(devicesLabel(config.devices))
           ) : (
             <Tooltip>
               <TooltipTrigger
@@ -79,23 +84,35 @@ export function RankTrackingDetailHeader({
                 {t(devicesLabel(config.devices))}
               </TooltipTrigger>
               <TooltipContent>
-                Mobile results often differ from desktop. Search Console
-                averages both, so its positions may not match.
+                {t(
+                  "Mobile results often differ from desktop. Search Console averages both, so its positions may not match.",
+                )}
               </TooltipContent>
             </Tooltip>
           )}{" "}
           &middot; {t(scheduleLabel(config.scheduleInterval))}
           {config.scheduleInterval !== "manual" && config.nextCheckAt && (
-            <> &middot; Next: {formatNextCheck(config.nextCheckAt)}</>
+            <>
+              {" "}
+              &middot;{" "}
+              {t("Next: {date}", { date: formatNextCheck(config.nextCheckAt) })}
+            </>
           )}
           {run?.lastCheckedAt && (
             <>
               {" "}
-              &middot; Last: {new Date(run.lastCheckedAt).toLocaleDateString()}
+              &middot;{" "}
+              {t("Last: {date}", {
+                date: new Date(run.lastCheckedAt).toLocaleDateString(),
+              })}
             </>
           )}
           {costEstimate && costEstimate.keywordCount > 0 && (
-            <> &middot; ~${costEstimate.costUsd.toFixed(2)}/check</>
+            <>
+              {" "}
+              &middot;{" "}
+              {t("~${cost}/check", { cost: costEstimate.costUsd.toFixed(2) })}
+            </>
           )}
         </p>
       </div>
@@ -119,7 +136,7 @@ export function RankTrackingDetailHeader({
           />
         )}
         <Select
-          items={COMPARE_ITEMS}
+          items={compareItems}
           value={comparePeriod}
           onValueChange={(value) => {
             const parsed = comparePeriodSchema.safeParse(value);
@@ -135,7 +152,7 @@ export function RankTrackingDetailHeader({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {COMPARE_ITEMS.map((item) => (
+            {compareItems.map((item) => (
               <SelectItem key={item.value} value={item.value}>
                 {item.label}
               </SelectItem>

@@ -49,8 +49,11 @@ function makeVolumeColumn(locationLabel?: string): ColumnDef<RankTrackingRow> {
         label={locationLabel ? translate("Local volume") : translate("Volume")}
         title={
           locationLabel
-            ? `Estimated monthly searches in ${locationLabel} from Google Ads`
-            : HEADER_TOOLTIPS.volume
+            ? translate(
+                "Estimated monthly searches in {location} from Google Ads",
+                { location: locationLabel },
+              )
+            : translate(HEADER_TOOLTIPS.volume)
         }
         className={RANK_TRACKING_HEADER_CLASS}
       />
@@ -69,8 +72,8 @@ const kdColumn: ColumnDef<RankTrackingRow> = {
   header: ({ column }) => (
     <SortableHeader
       column={column}
-      label="KD"
-      title={HEADER_TOOLTIPS.kd}
+      label={translate("KD")}
+      title={translate(HEADER_TOOLTIPS.kd)}
       className={RANK_TRACKING_HEADER_CLASS}
     />
   ),
@@ -88,7 +91,7 @@ const cpcColumn: ColumnDef<RankTrackingRow> = {
     <SortableHeader
       column={column}
       label={translate("CPC")}
-      title={HEADER_TOOLTIPS.cpc}
+      title={translate(HEADER_TOOLTIPS.cpc)}
       className={RANK_TRACKING_HEADER_CLASS}
     />
   ),
@@ -119,7 +122,7 @@ function makeKeywordColumn(
       <SortableHeader
         column={column}
         label={translate("Keyword")}
-        title={HEADER_TOOLTIPS.keyword}
+        title={translate(HEADER_TOOLTIPS.keyword)}
         className={RANK_TRACKING_HEADER_CLASS}
       />
     ),
@@ -147,7 +150,7 @@ function makeKeywordColumn(
             variant="secondary"
             size="sm"
             className="cursor-help"
-            title="Tracked exactly as typed, not lowercased"
+            title={translate("Tracked exactly as typed, not lowercased")}
           >
             Aa
           </Badge>
@@ -167,15 +170,15 @@ function PinButton({
 }) {
   const { t } = useLocale();
 
-  const label = pinned ? "Unpin keyword" : "Pin keyword to top";
+  const label = pinned ? t("Unpin keyword") : t("Pin keyword to top");
   return (
     <Button
       variant="ghost"
       size="icon-xs"
       onClick={onClick}
-      aria-label={t(label)}
+      aria-label={label}
       aria-pressed={pinned}
-      title={t(label)}
+      title={label}
       className={
         pinned ? "text-amber-500 hover:text-amber-600" : "text-muted-foreground"
       }
@@ -196,7 +199,7 @@ function makeDeviceColumn(
       <SortableHeader
         column={column}
         label={translate("Position")}
-        title={HEADER_TOOLTIPS[id]}
+        title={translate(HEADER_TOOLTIPS[id])}
         className={RANK_TRACKING_HEADER_CLASS}
       />
     ),

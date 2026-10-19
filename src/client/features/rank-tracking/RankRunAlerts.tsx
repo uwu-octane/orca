@@ -34,9 +34,13 @@ export function RankRunAlerts({
         <AlertTriangle />
         <AlertDescription className="text-foreground">
           <p>
-            <span className="font-medium">Last check failed.</span>{" "}
+            <span className="font-medium">{t("Last check failed.")}</span>{" "}
             {run.errorMessage &&
-              getStandardErrorMessage(new Error(run.errorMessage))}
+              getStandardErrorMessage(
+                new Error(run.errorMessage),
+                undefined,
+                t,
+              )}
           </p>
         </AlertDescription>
       </Alert>
@@ -50,9 +54,12 @@ export function RankRunAlerts({
         <AlertTriangle />
         <AlertDescription className="text-foreground">
           <p>
-            <span className="font-medium">Your last check was incomplete.</span>{" "}
-            Our search data provider had errors, so some keywords will show
-            their previous position.
+            <span className="font-medium">
+              {t("Your last check was incomplete.")}
+            </span>{" "}
+            {t(
+              "Our search data provider had errors, so some keywords will show their previous position.",
+            )}
           </p>
         </AlertDescription>
       </Alert>

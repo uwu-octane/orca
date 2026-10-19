@@ -94,13 +94,19 @@ export function RankTrackingTableToolbar({
           <span>
             {latestRun.status === "pending"
               ? t("Preparing...")
-              : `Getting rankings for ${latestRun.keywordsTotal || "?"} keyword${latestRun.keywordsTotal !== 1 ? "s" : ""}...`}{" "}
+              : latestRun.keywordsTotal === 1
+                ? t("Getting rankings for {count} keyword...", {
+                    count: latestRun.keywordsTotal,
+                  })
+                : t("Getting rankings for {count} keywords...", {
+                    count: latestRun.keywordsTotal || "?",
+                  })}{" "}
             {latestRun.keywordsChecked}/{latestRun.keywordsTotal || "?"}
           </span>
           {latestRun.keywordsTotal > 0 && (
             <Progress
               className="w-24"
-              aria-label="Rank check progress"
+              aria-label={t("Rank check progress")}
               value={latestRun.keywordsChecked}
               max={latestRun.keywordsTotal}
             />
@@ -108,7 +114,7 @@ export function RankTrackingTableToolbar({
         </div>
       ) : (
         <span className="text-sm text-muted-foreground">
-          {keywordCount} {"keywords"}
+          {t("{count} keywords", { count: keywordCount })}
         </span>
       )}
 
@@ -116,7 +122,7 @@ export function RankTrackingTableToolbar({
 
       <ExportMenu
         actions={["sheets", "csv", "copy-list"]}
-        copyListLabel="Copy keywords"
+        copyListLabel={t("Copy keywords")}
         onExport={onExport}
         disabled={!hasData}
       />

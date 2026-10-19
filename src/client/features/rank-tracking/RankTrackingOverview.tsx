@@ -44,10 +44,6 @@ const BUCKETS = [
   },
 ] as const;
 
-const chartConfig: ChartConfig = Object.fromEntries(
-  BUCKETS.map((b) => [b.key, { label: b.label, color: b.color }]),
-);
-
 export function RankTrackingOverview({
   device,
   projectId,
@@ -58,6 +54,9 @@ export function RankTrackingOverview({
   configId: string;
 }) {
   const { t } = useLocale();
+  const chartConfig: ChartConfig = Object.fromEntries(
+    BUCKETS.map((b) => [b.key, { label: t(b.label), color: b.color }]),
+  );
 
   const [sinceDays, setSinceDays] = useState(730);
 
@@ -113,7 +112,7 @@ export function RankTrackingOverview({
                     {t(b.label)}
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>{b.hint}</TooltipContent>
+                <TooltipContent>{t(b.hint)}</TooltipContent>
               </Tooltip>
             ) : (
               <span key={b.key} className={className}>
@@ -126,7 +125,7 @@ export function RankTrackingOverview({
 
         <QueryState
           query={trendQuery}
-          errorFallback="Failed to load position history"
+          errorFallback={t("Failed to load position history")}
           loading={<Skeleton className="h-[220px] w-full" />}
         >
           {() =>

@@ -146,7 +146,9 @@ export function RankTrackingTable({
         queryKey: ["rankTrackingCostEstimate", projectId, configId],
       });
       toast.success(
-        `${result.removed} keyword${result.removed !== 1 ? "s" : ""} removed`,
+        result.removed === 1
+          ? t("{count} keyword removed", { count: result.removed })
+          : t("{count} keywords removed", { count: result.removed }),
       );
     },
   });
@@ -186,15 +188,25 @@ export function RankTrackingTable({
       {showConfirm && (
         <ConfirmDialog
           title={t("Remove keywords?")}
-          confirmLabel={`Remove ${selectedCount} keyword${selectedCount !== 1 ? "s" : ""}`}
+          confirmLabel={
+            selectedCount === 1
+              ? t("Remove {count} keyword", { count: selectedCount })
+              : t("Remove {count} keywords", { count: selectedCount })
+          }
           destructive
           pending={removeMutation.isPending}
           onConfirm={() => removeMutation.mutate(selectedRows.map((r) => r.id))}
           onClose={() => setShowConfirm(false)}
         >
-          This will stop tracking {selectedCount} {"keyword"}
-          {selectedCount !== 1 ? "s" : ""}. Historical ranking data is preserved
-          but won't appear in the table.
+          {selectedCount === 1
+            ? t(
+                "This will stop tracking {count} keyword. Historical ranking data is preserved but won't appear in the table.",
+                { count: selectedCount },
+              )
+            : t(
+                "This will stop tracking {count} keywords. Historical ranking data is preserved but won't appear in the table.",
+                { count: selectedCount },
+              )}
         </ConfirmDialog>
       )}
 
@@ -217,8 +229,8 @@ export function RankTrackingTable({
         isFiltered={totalCount > 0}
         onClearFilters={onClearFilters}
         empty={{
-          title: "No keywords yet",
-          description: "Add the keywords you want to track for this domain.",
+          title: t("No keywords yet"),
+          description: t("Add the keywords you want to track for this domain."),
           action: (
             <Button size="sm" onClick={onAddKeywords}>
               <Plus data-icon="inline-start" />
@@ -229,7 +241,10 @@ export function RankTrackingTable({
         footer={
           rows.length > 0 ? (
             <p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
-              {rows.length} of {totalCount} {"keywords"}
+              {t("{count} of {total} keywords", {
+                count: rows.length,
+                total: totalCount,
+              })}
             </p>
           ) : null
         }

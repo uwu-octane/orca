@@ -65,6 +65,8 @@ export function DeviceRankCell({
 }: {
   result: RankTrackingDeviceResult;
 }) {
+  const { t } = useLocale();
+
   const { position, previousPosition } = result;
 
   // Nothing at all
@@ -81,7 +83,7 @@ export function DeviceRankCell({
         </span>
         <span className="text-muted-foreground/60">→</span>
         <span className="font-mono rounded px-1.5 py-0.5 text-xs font-semibold bg-destructive/15 text-destructive">
-          lost
+          {t("lost")}
         </span>
       </span>
     );

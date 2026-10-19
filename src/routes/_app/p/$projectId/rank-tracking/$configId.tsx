@@ -70,8 +70,10 @@ function RankTrackingConfigRoute() {
     return (
       <EmptyState
         kind="no-data"
-        title="Domain configuration not found"
-        description="This domain was archived or does not exist in this project."
+        title={t("Domain configuration not found")}
+        description={t(
+          "This domain was archived or does not exist in this project.",
+        )}
         action={
           <Button variant="outline" size="sm" onClick={handleBack}>
             {t("Back to domains")}

@@ -49,7 +49,9 @@ export function FilterPanel({
         <div className="flex items-center gap-2">
           <p className="text-sm font-semibold">{t("Refine results")}</p>
           {activeFilterCount > 0 && (
-            <Badge size="sm">{activeFilterCount} active</Badge>
+            <Badge size="sm">
+              {t("{count} active", { count: activeFilterCount })}
+            </Badge>
           )}
         </div>
         <Button
@@ -264,7 +266,7 @@ function RangeFilter({
         <Input
           className="h-7"
           placeholder={t("Min")}
-          aria-label={`${title} min`}
+          aria-label={t("{title} min", { title })}
           type="number"
           value={minValue}
           onChange={(e) => onMinChange(e.target.value)}
@@ -272,7 +274,7 @@ function RangeFilter({
         <Input
           className="h-7"
           placeholder={t("Max")}
-          aria-label={`${title} max`}
+          aria-label={t("{title} max", { title })}
           type="number"
           value={maxValue}
           onChange={(e) => onMaxChange(e.target.value)}

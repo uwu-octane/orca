@@ -1,3 +1,4 @@
+import { WEEKDAYS } from "@/client/features/rank-tracking/scheduleTime";
 import { TAG_COLOR_KEYS } from "@/shared/tag-colors";
 import { countBy } from "remeda";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -82,6 +83,16 @@ describe("translate", () => {
       expect(translate(color), `untranslated tag color: ${color}`).not.toBe(
         color,
       );
+    }
+  });
+
+  it("translates schedule weekdays and UTC abbreviations", () => {
+    for (const day of WEEKDAYS) {
+      for (const label of [day, day.slice(0, 3)]) {
+        expect(translate(label), `untranslated weekday: ${label}`).not.toBe(
+          label,
+        );
+      }
     }
   });
 

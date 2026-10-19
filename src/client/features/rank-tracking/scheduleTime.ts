@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 import type {
   RankCheckScheduleTime,
   RankTrackingConfig,
@@ -84,15 +85,22 @@ export function describeSchedule(
   });
   const utcWeekday =
     interval === "weekly" && date.getUTCDay() !== date.getDay()
-      ? `${WEEKDAYS[date.getUTCDay()].slice(0, 3)} `
+      ? `${translate(WEEKDAYS[date.getUTCDay()].slice(0, 3))} `
       : "";
   const when =
     interval === "daily"
-      ? "daily"
+      ? translate("daily")
       : interval === "weekly"
-        ? `weekly on ${WEEKDAYS[time.weekday]}s`
-        : "on the last day of each month";
-  return `Runs ${when} at ${localTime} (${utcWeekday}${utcTime} UTC)`;
+        ? translate("weekly on {day}s", {
+            day: translate(WEEKDAYS[time.weekday]),
+          })
+        : translate("on the last day of each month");
+  return translate("Runs {when} at {localTime} ({utcWeekday}{utcTime} UTC)", {
+    when,
+    localTime,
+    utcWeekday,
+    utcTime,
+  });
 }
 
 export function formatNextCheck(nextCheckAt: string): string {

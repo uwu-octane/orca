@@ -48,14 +48,16 @@ export function AddKeywordsPanel({
           rows={3}
           // The field grows with its text; a long line must wrap, not widen the card.
           className="min-w-0"
-          aria-label="Keywords to add"
+          aria-label={t("Keywords to add")}
           placeholder={t("Enter keywords, one per line")}
           value={keywordInput}
           onChange={(e) => setKeywordInput(e.target.value)}
         />
         <div
           className="flex w-fit items-center gap-2"
-          title="Track these keywords exactly as typed instead of lowercasing them. Google can return different results for a capitalized brand name."
+          title={t(
+            "Track these keywords exactly as typed instead of lowercasing them. Google can return different results for a capitalized brand name.",
+          )}
         >
           <Checkbox
             id={matchCaseId}
@@ -63,7 +65,7 @@ export function AddKeywordsPanel({
             onCheckedChange={(checked) => setMatchCase(checked)}
           />
           <Label htmlFor={matchCaseId} className="text-xs font-normal">
-            Match case
+            {t("Match case")}
           </Label>
         </div>
       </div>
@@ -78,7 +80,9 @@ export function AddKeywordsPanel({
               .filter(Boolean);
             if (lines.some((l) => l.length > MAX_TRACKED_KEYWORD_LENGTH)) {
               toast.error(
-                `Keywords must be ${MAX_TRACKED_KEYWORD_LENGTH} characters or fewer.`,
+                t("Keywords must be {max} characters or fewer.", {
+                  max: MAX_TRACKED_KEYWORD_LENGTH,
+                }),
               );
               return;
             }

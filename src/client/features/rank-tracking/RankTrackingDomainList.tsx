@@ -163,7 +163,7 @@ export function RankTrackingDomainList({
           <div className="px-5 py-4">
             <QueryError
               error={summariesQuery.error}
-              fallback="Failed to load tracked domains"
+              fallback={t("Failed to load tracked domains")}
               onRetry={() => void summariesQuery.refetch()}
               isRetrying={summariesQuery.isFetching}
             />
@@ -213,8 +213,8 @@ export function RankTrackingDomainList({
 
       {archiveTarget && (
         <ConfirmDialog
-          title={`Archive ${archiveTarget.domain}?`}
-          confirmLabel="Archive"
+          title={t("Archive {domain}?", { domain: archiveTarget.domain })}
+          confirmLabel={t("Archive")}
           destructive
           pending={archiveMutation.isPending}
           onConfirm={() => archiveMutation.mutate(archiveTarget.id)}
@@ -246,7 +246,7 @@ function DomainRow({
         to="/p/$projectId/rank-tracking/$configId"
         params={{ projectId, configId: summary.id }}
         className="absolute inset-0 z-0"
-        aria-label={`Open ${summary.domain}`}
+        aria-label={t("Open {domain}", { domain: summary.domain })}
       />
       <div className="min-w-0 flex-1 pointer-events-none">
         <p className="font-medium truncate">{summary.domain}</p>
@@ -257,13 +257,21 @@ function DomainRow({
           &middot; {t(devicesLabel(summary.devices))} &middot;{" "}
           {t(scheduleLabel(summary.scheduleInterval))}
           {summary.scheduleInterval !== "manual" && summary.nextCheckAt && (
-            <> &middot; Next: {formatNextCheck(summary.nextCheckAt)}</>
+            <>
+              {" "}
+              &middot;{" "}
+              {t("Next: {date}", {
+                date: formatNextCheck(summary.nextCheckAt),
+              })}
+            </>
           )}
           {summary.lastRunCompletedAt && (
             <>
               {" "}
-              &middot; Last:{" "}
-              {new Date(summary.lastRunCompletedAt).toLocaleDateString()}
+              &middot;{" "}
+              {t("Last: {date}", {
+                date: new Date(summary.lastRunCompletedAt).toLocaleDateString(),
+              })}
             </>
           )}
         </p>
@@ -294,8 +302,8 @@ function DomainRow({
         variant="ghost"
         size="icon-xs"
         className="relative z-10 text-muted-foreground hover:text-destructive"
-        title="Archive domain"
-        aria-label={`Archive ${summary.domain}`}
+        title={t("Archive domain")}
+        aria-label={t("Archive {domain}", { domain: summary.domain })}
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();

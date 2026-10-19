@@ -85,18 +85,23 @@ export function MoreMenu({
       </DropdownMenu>
       {confirmingRefresh ? (
         <ConfirmDialog
-          title="Update keyword stats?"
-          confirmLabel="Update stats"
+          title={t("Update keyword stats?")}
+          confirmLabel={t("Update stats")}
           onConfirm={() => {
             setConfirmingRefresh(false);
             onRefreshMetrics();
           }}
           onClose={() => setConfirmingRefresh(false)}
         >
-          This fetches new volume, difficulty, and CPC for all{" "}
-          {trackedKeywordCount} tracked keyword
-          {trackedKeywordCount !== 1 ? "s" : ""}. Each keyword uses credits.
-          Rankings do not change.
+          {trackedKeywordCount === 1
+            ? t(
+                "This fetches new volume, difficulty, and CPC for all {count} tracked keyword. Each keyword uses credits. Rankings do not change.",
+                { count: trackedKeywordCount },
+              )
+            : t(
+                "This fetches new volume, difficulty, and CPC for all {count} tracked keywords. Each keyword uses credits. Rankings do not change.",
+                { count: trackedKeywordCount },
+              )}
         </ConfirmDialog>
       ) : null}
     </>

@@ -121,7 +121,7 @@ export function KeywordTrendModal({
 
   const series: TrendSeries[] = devices.map((device) => ({
     dataKey: device,
-    name: DEVICE_STYLE[device].label,
+    name: t(DEVICE_STYLE[device].label),
     color: DEVICE_STYLE[device].color,
     strokeDasharray: "4 3",
   }));
@@ -181,7 +181,7 @@ export function KeywordTrendModal({
               {locationName
                 ? formatLocationLabel(locationName, 2)
                 : (LOCATIONS[locationCode] ?? "US")}{" "}
-              &middot; Position over time
+              &middot; {t("Position over time")}
             </DialogDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -189,7 +189,9 @@ export function KeywordTrendModal({
               variant="outline"
               size="sm"
               nativeButton={false}
-              title="Search this keyword on Google with the tracked language, country, and city"
+              title={t(
+                "Search this keyword on Google with the tracked language, country, and city",
+              )}
               render={
                 <a
                   href={googleSerpUrl(target.keyword, {
@@ -203,7 +205,7 @@ export function KeywordTrendModal({
               }
             >
               <ExternalLink data-icon="inline-start" />
-              Open on Google
+              {t("Open on Google")}
             </Button>
             <TrendRangeToggle value={sinceDays} onChange={setSinceDays} />
           </div>
@@ -211,7 +213,7 @@ export function KeywordTrendModal({
 
         <QueryState
           query={historyQuery}
-          errorFallback="Failed to load keyword history"
+          errorFallback={t("Failed to load keyword history")}
           loading={<Skeleton className="h-56 w-full" />}
         >
           {() =>
@@ -237,7 +239,7 @@ export function KeywordTrendModal({
                       typeof item.dataKey === "string" &&
                       bottomBandKeys.has(`${checkedAt}:${item.dataKey}`) ? (
                       <span className="font-normal text-muted-foreground">
-                        Not found
+                        {t("Not found")}
                       </span>
                     ) : (
                       String(value)
@@ -283,7 +285,7 @@ export function KeywordTrendModal({
                             </TableCell>
                             {devices.length > 1 && (
                               <TableCell className="text-xs">
-                                {DEVICE_STYLE[r.device].label}
+                                {t(DEVICE_STYLE[r.device].label)}
                               </TableCell>
                             )}
                             <TableCell>
@@ -295,10 +297,10 @@ export function KeywordTrendModal({
                                       <span className="cursor-help text-xs text-muted-foreground underline decoration-dotted underline-offset-2" />
                                     }
                                   >
-                                    Not found
+                                    {t("Not found")}
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    Not ranking, or incomplete results
+                                    {t("Not ranking, or incomplete results")}
                                   </TooltipContent>
                                 </Tooltip>
                               ) : (
