@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import type { ReactNode } from "react";
 import { Clock, History, X, type LucideIcon } from "lucide-react";
 import { EmptyState } from "@/client/components/EmptyState";
@@ -31,6 +32,7 @@ export function RecentSearches<TItem extends { timestamp: number }>({
   emptyTitle,
   emptyDescription,
 }: Props<TItem>) {
+  const { t } = useLocale();
   if (!loaded) {
     return null;
   }
@@ -49,7 +51,9 @@ export function RecentSearches<TItem extends { timestamp: number }>({
     <Card size="lg">
       <CardHeader className="flex items-center gap-2 text-muted-foreground">
         <History className="size-4" aria-hidden />
-        {items.length} recent search{items.length !== 1 ? "es" : ""}
+        {items.length === 1
+          ? t("{count} recent search", { count: items.length })
+          : t("{count} recent searches", { count: items.length })}
       </CardHeader>
 
       <CardContent>
@@ -91,7 +95,7 @@ export function RecentSearches<TItem extends { timestamp: number }>({
                   size="icon-xs"
                   className="reveal-on-hover"
                   onClick={() => onRemove(item.timestamp)}
-                  aria-label="Remove from recent searches"
+                  aria-label={t("Remove from recent searches")}
                 >
                   <X />
                 </Button>

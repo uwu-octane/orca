@@ -1,4 +1,5 @@
 import { aiVisibilityZh } from "./ai-visibility";
+import { sharedZh } from "./shared";
 import { shellZh } from "./shell";
 import { errorsZh } from "./errors";
 import { dashboardZh } from "./dashboard";
@@ -36,6 +37,7 @@ import { reportsZh } from "./reports";
  */
 export const zh = {
   ...shellZh,
+  ...sharedZh,
   ...errorsZh,
   ...dashboardZh,
   ...domainZh,

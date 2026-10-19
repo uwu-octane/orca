@@ -82,7 +82,10 @@ export function DataTableFilterToggle({
       <SlidersHorizontal data-icon="inline-start" />
       {t("Filters")}
       {activeCount > 0 ? (
-        <Badge size="sm" aria-label={`${activeCount} active`}>
+        <Badge
+          size="sm"
+          aria-label={t("{count} active", { count: activeCount })}
+        >
           {activeCount}
         </Badge>
       ) : null}
@@ -107,7 +110,9 @@ export function DataTableFilterPanel({
         <div className="flex items-center gap-2">
           <p className="text-sm font-semibold">{t("Refine results")}</p>
           {activeCount > 0 ? (
-            <Badge size="sm">{activeCount} active</Badge>
+            <Badge size="sm">
+              {t("{count} active", { count: activeCount })}
+            </Badge>
           ) : null}
         </div>
         <Button
@@ -166,14 +171,14 @@ export function DataTableRangeFilter({
         <Input
           type="number"
           placeholder={t("Min")}
-          aria-label={`${label} min`}
+          aria-label={t("{label} min", { label })}
           className="h-7"
           {...min}
         />
         <Input
           type="number"
           placeholder={t("Max")}
-          aria-label={`${label} max`}
+          aria-label={t("{label} max", { label })}
           className="h-7"
           {...max}
         />

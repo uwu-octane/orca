@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import type { ReactNode } from "react";
 import {
   Table,
@@ -15,13 +16,17 @@ export function MetricsTable({
   rows: { label: ReactNode; value: ReactNode; change?: ReactNode }[];
   showChange?: boolean;
 }) {
+  const { t } = useLocale();
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Metric</TableHead>
-          <TableHead className="text-right">Value</TableHead>
-          {showChange && <TableHead className="text-right">Change</TableHead>}
+          <TableHead>{t("Metric")}</TableHead>
+          <TableHead className="text-right">{t("Value")}</TableHead>
+          {showChange && (
+            <TableHead className="text-right">{t("Change")}</TableHead>
+          )}
         </TableRow>
       </TableHeader>
       <TableBody>

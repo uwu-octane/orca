@@ -24,7 +24,7 @@ export function NotFound() {
         </CardContent>
         <CardFooter>
           <Button nativeButton={false} render={<Link to="/" />}>
-            Home
+            {t("Home")}
           </Button>
         </CardFooter>
       </Card>

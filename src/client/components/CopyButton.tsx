@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import type { ComponentProps } from "react";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
@@ -26,6 +27,7 @@ export function CopyButton({
   size?: ButtonProps["size"];
   className?: string;
 }) {
+  const { t } = useLocale();
   const { copied, copy } = useCopy();
   const iconOnly = size?.startsWith("icon") ?? false;
   const Icon = copied ? Check : Copy;
@@ -36,9 +38,9 @@ export function CopyButton({
       variant={variant}
       size={size}
       className={className}
-      aria-label={iconOnly ? label : undefined}
+      aria-label={iconOnly ? t(label) : undefined}
       onClick={() => {
-        void copy(value, successMessage).then((ok) => {
+        void copy(value, t(successMessage)).then((ok) => {
           if (ok) onCopy?.();
         });
       }}
@@ -48,7 +50,7 @@ export function CopyButton({
         className={copied && variant !== "default" ? "text-success" : undefined}
         aria-hidden
       />
-      {iconOnly ? null : copied ? "Copied" : label}
+      {iconOnly ? null : copied ? t("Copied") : t(label)}
     </Button>
   );
 }

@@ -26,15 +26,6 @@ import type { ExportFormat } from "@/client/lib/exportRows";
 /** Every `exportRows()` format, plus a plain list copy (one item per line). */
 type ExportAction = ExportFormat | "copy-list";
 
-const ACTION_ITEMS: Record<ExportAction, { label: string; icon: ReactNode }> = {
-  sheets: { label: "Export to Sheets", icon: <Sheet /> },
-  csv: { label: "Export CSV", icon: <FileDown /> },
-  excel: { label: "Export Excel", icon: <FileSpreadsheet /> },
-  json: { label: "Download JSON", icon: <FileJson /> },
-  "copy-json": { label: "Copy JSON", icon: <Copy /> },
-  "copy-list": { label: "Copy list", icon: <List /> },
-};
-
 /**
  * The toolbar Export button. The caller runs each action through
  * `exportRows()`, so every format shares the empty check and the analytics
@@ -60,14 +51,23 @@ export function ExportMenu<A extends ExportAction>({
   scopes?: { id: string; label: string; actions?: A[] }[];
 }) {
   const { t } = useLocale();
+  const actionItems: Record<ExportAction, { label: string; icon: ReactNode }> =
+    {
+      sheets: { label: t("Export to Sheets"), icon: <Sheet /> },
+      csv: { label: t("Export CSV"), icon: <FileDown /> },
+      excel: { label: t("Export Excel"), icon: <FileSpreadsheet /> },
+      json: { label: t("Download JSON"), icon: <FileJson /> },
+      "copy-json": { label: t("Copy JSON"), icon: <Copy /> },
+      "copy-list": { label: t("Copy list"), icon: <List /> },
+    };
 
   const renderItems = (scope?: string, scopeActions: A[] = actions) =>
     scopeActions.map((action) => (
       <DropdownMenuItem key={action} onClick={() => onExport(action, scope)}>
-        {ACTION_ITEMS[action].icon}
+        {actionItems[action].icon}
         {action === "copy-list" && copyListLabel
           ? copyListLabel
-          : ACTION_ITEMS[action].label}
+          : actionItems[action].label}
       </DropdownMenuItem>
     ));
 

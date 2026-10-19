@@ -52,7 +52,9 @@ export function ExportToSheetsModal() {
             <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
               <Check className="size-4" />
             </span>
-            Copied {rowCount} row{rowCount === 1 ? "" : "s"} to your clipboard
+            {rowCount === 1
+              ? t("Copied {count} row to your clipboard", { count: rowCount })
+              : t("Copied {count} rows to your clipboard", { count: rowCount })}
           </DialogTitle>
           <DialogDescription>
             {t("Open a new Google Sheet and paste to fill it.")}

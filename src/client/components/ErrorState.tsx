@@ -55,7 +55,7 @@ export function ErrorState({
         kind="error"
         variant="plain"
         size="lg"
-        title={title ?? "Something went wrong"}
+        title={title ?? t("Something went wrong")}
         description={message}
         action={button}
       />

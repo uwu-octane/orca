@@ -1,4 +1,5 @@
 // FORK: retain locale subscriptions across upstream component changes.
+import { translate } from "@/plugins/locale/t";
 import { useLocale } from "@/plugins/client/context";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
@@ -112,9 +113,12 @@ export function TablePagination<TSize extends number>({
 
         <div className="flex items-center gap-2">
           <span className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">
-            {t("Page")}
-            {currentPage.toLocaleString()}
-            {totalPages != null ? ` of ${totalPages.toLocaleString()}` : ""}
+            {totalPages != null
+              ? t("Page {page} of {totalPages}", {
+                  page: currentPage.toLocaleString(),
+                  totalPages: totalPages.toLocaleString(),
+                })
+              : t("Page {page}", { page: currentPage.toLocaleString() })}
           </span>
           <div className="flex items-center gap-1">
             {renderPageButton({
@@ -183,5 +187,9 @@ function formatRange(
     return `${start.toLocaleString()}–${pageEnd.toLocaleString()}`;
   }
   const end = Math.min(totalCount, pageEnd);
-  return `${start.toLocaleString()}–${end.toLocaleString()} of ${totalCount.toLocaleString()}`;
+  return translate("{start}–{end} of {total}", {
+    start: start.toLocaleString(),
+    end: end.toLocaleString(),
+    total: totalCount.toLocaleString(),
+  });
 }

@@ -268,7 +268,7 @@ function AccountFooter({ ready }: { ready: boolean }) {
                     <DropdownMenuGroup>
                       <DropdownMenuLabel className="flex items-center gap-1.5">
                         <ArrowLeftRight className="size-3" />
-                        Organization
+                        {t("Organization")}
                       </DropdownMenuLabel>
                       {organizations.map((organization) => (
                         <DropdownMenuItem

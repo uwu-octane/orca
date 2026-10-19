@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { HelpLabel } from "@/client/components/HelpLabel";
 
@@ -22,6 +23,7 @@ export function SortableHeader({
   align?: "left" | "right";
   className?: string;
 }) {
+  const { t } = useLocale();
   const sorted = column.getIsSorted();
   const content = (
     <button
@@ -29,7 +31,7 @@ export function SortableHeader({
       className={`inline-flex items-center gap-1 font-medium transition-colors hover:text-foreground ${className ?? ""}`}
       onClick={column.getToggleSortingHandler()}
       title={title}
-      aria-label={`Sort by ${label}`}
+      aria-label={t("Sort by {label}", { label })}
       aria-pressed={!!sorted}
     >
       {helpText ? <HelpLabel label={label} helpText={helpText} /> : label}

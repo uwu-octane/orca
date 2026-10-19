@@ -9,7 +9,10 @@ import {
 } from "@/client/features/backlinks/backlinksPageUtils";
 import { WEB_SEARCH_COUNTRY_CODES } from "@/shared/prompt-search-countries";
 import { formatCountryLabel } from "@/shared/prompt-explorer-labels";
-import { RESEARCH_SCOPE_LABELS } from "@/shared/researchScope";
+import {
+  RESEARCH_SCOPE_LABELS,
+  RESEARCH_SCOPE_DESCRIPTIONS,
+} from "@/shared/researchScope";
 import { auditLighthouseResults } from "@/db/audit.schema";
 import { AUDIT_ISSUE_TYPES } from "@/shared/audit-issues";
 import {
@@ -187,10 +190,12 @@ describe("translate", () => {
     }
   });
 
-  it("translates all prompt search countries and research scopes", () => {
+  it("translates all selectable countries and research scope labels and descriptions", () => {
     const labels = [
       ...WEB_SEARCH_COUNTRY_CODES.map(formatCountryLabel),
+      ...LOCATION_OPTIONS.map((location) => location.label),
       ...Object.values(RESEARCH_SCOPE_LABELS),
+      ...Object.values(RESEARCH_SCOPE_DESCRIPTIONS),
     ];
     for (const label of labels) {
       expect(

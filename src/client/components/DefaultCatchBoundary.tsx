@@ -62,7 +62,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
               size="sm"
               variant="outline"
             >
-              Home
+              {t("Home")}
             </Button>
           ) : (
             <Button
@@ -79,7 +79,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
               size="sm"
               variant="outline"
             >
-              Go Back
+              {t("Go Back")}
             </Button>
           )}
         </CardFooter>

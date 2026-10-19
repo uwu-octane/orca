@@ -43,7 +43,7 @@ export function InlineConfirm({
             onConfirm();
           }}
         >
-          {confirmLabel}
+          {t(confirmLabel)}
         </Button>
         <Button
           variant="ghost"

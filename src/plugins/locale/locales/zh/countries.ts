@@ -225,4 +225,9 @@ export const countriesZh = {
   Mayotte: "马约特",
   Zambia: "赞比亚",
   Zimbabwe: "津巴布韦",
+  "Bosnia and Herzegovina": "波斯尼亚和黑塞哥维那",
+  "Cote d'Ivoire": "科特迪瓦",
+  Palestine: "巴勒斯坦",
+  "Trinidad and Tobago": "特立尼达和多巴哥",
+  Turkiye: "土耳其",
 } satisfies Record<string, string>;

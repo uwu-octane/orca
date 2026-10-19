@@ -1,4 +1,5 @@
 // FORK: retain locale subscriptions across upstream component changes.
+import { translate } from "@/plugins/locale/t";
 import { useLocale } from "@/plugins/client/context";
 import {
   Combobox,
@@ -20,6 +21,7 @@ function matchesCountry(option: LocationOption, query: string) {
   return (
     label.startsWith(needle) ||
     label.split(/[\s-]+/).some((word) => word.startsWith(needle)) ||
+    translate(option.label).toLowerCase().startsWith(needle) ||
     option.shortLabel.toLowerCase().startsWith(needle)
   );
 }
@@ -45,7 +47,7 @@ export function CountryCombobox({
     <Combobox
       items={options}
       value={country}
-      itemToStringLabel={(option) => option.label}
+      itemToStringLabel={(option) => t(option.label)}
       autoHighlight
       filter={matchesCountry}
       onValueChange={(option) => {
@@ -58,11 +60,11 @@ export function CountryCombobox({
         placeholder={t("Search countries")}
       />
       <ComboboxContent>
-        <ComboboxEmpty>No countries match.</ComboboxEmpty>
+        <ComboboxEmpty>{t("No countries match.")}</ComboboxEmpty>
         <ComboboxList>
           {(option: LocationOption) => (
             <ComboboxItem key={option.code} value={option}>
-              {option.label}
+              {t(option.label)}
             </ComboboxItem>
           )}
         </ComboboxList>

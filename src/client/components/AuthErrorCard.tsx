@@ -149,13 +149,14 @@ function UnauthenticatedErrorCard({ message, onRetry }: CardProps) {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Authentication required</CardTitle>
+        <CardTitle>{t("Authentication required")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 text-muted-foreground">
         <p>{message}</p>
         <p>
-          This deployment uses external authentication. Refresh your access
-          session, then try again.
+          {t(
+            "This deployment uses external authentication. Refresh your access session, then try again.",
+          )}
         </p>
       </CardContent>
       <CardFooter className="justify-end">

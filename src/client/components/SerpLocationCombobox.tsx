@@ -76,12 +76,12 @@ export function SerpLocationCombobox({
     : null;
 
   const emptyMessage = !trimmed
-    ? "Type a city, county, or region"
+    ? t("Type a city, county, or region")
     : searching
-      ? "Searching..."
+      ? t("Searching...")
       : searchQuery.isError
         ? t("Unable to load locations")
-        : `No locations found for "${trimmed}"`;
+        : t('No locations found for "{query}"', { query: trimmed });
 
   return (
     <Combobox

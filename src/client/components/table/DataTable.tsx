@@ -80,7 +80,7 @@ export function useSelectionAnchor(): MutableRefObject<SelectionAnchor | null> {
 export function makeSelectionColumn<TData>(
   anchorRef: MutableRefObject<SelectionAnchor | null>,
   /** Names each row checkbox for screen readers. */
-  rowLabel: (row: Row<TData>) => string = () => "Select row",
+  rowLabel: (row: Row<TData>) => string = () => translate("Select row"),
 ): ColumnDef<TData> {
   return {
     id: "select",
@@ -253,8 +253,10 @@ export function DataTable<TData>({
                     <EmptyState
                       kind="filtered"
                       variant="plain"
-                      title="No rows match these filters"
-                      description="Change or clear the filters to see more rows."
+                      title={t("No rows match these filters")}
+                      description={t(
+                        "Change or clear the filters to see more rows.",
+                      )}
                       action={
                         onClearFilters ? (
                           <Button
