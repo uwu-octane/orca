@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
@@ -28,6 +29,8 @@ export function PaidPlanGate({
   alternative,
   children,
 }: PaidPlanGateCopy & { children: ReactNode }) {
+  const { t } = useLocale();
+
   const planStatus = useHostedPlanGate();
   if (planStatus === "loading") return <SkeletonCard />;
   if (planStatus === "paid") return children;
@@ -35,14 +38,19 @@ export function PaidPlanGate({
     <div className="grid min-h-[calc(100dvh-8rem)] place-items-center">
       <GateCard
         className="max-w-3xl"
-        title={`Unlock ${feature}`}
+        title={t("Unlock {feature}", { feature })}
         description={
           <>
             <p className="max-w-xl">{description}</p>
             <p className="max-w-xl">
-              It runs on costlier AI data, so it&apos;s part of the{" "}
-              {BASE_PLAN_OFFER.name}: ${BASE_PLAN_OFFER.priceUsd} a month, with
-              ${BASE_PLAN_OFFER.monthlyCreditsUsd} of usage credits included.
+              {t(
+                "It runs on costlier AI data, so it's part of the {plan}: ${price} a month, with ${credits} of usage credits included.",
+                {
+                  plan: BASE_PLAN_OFFER.name,
+                  price: BASE_PLAN_OFFER.priceUsd,
+                  credits: BASE_PLAN_OFFER.monthlyCreditsUsd,
+                },
+              )}
             </p>
           </>
         }
@@ -53,7 +61,7 @@ export function PaidPlanGate({
               nativeButton={false}
               render={<Link to={SUBSCRIBE_ROUTE} search={{ upgrade: true }} />}
             >
-              View plan
+              {t("View plan")}
             </Button>
             {alternative}
           </>

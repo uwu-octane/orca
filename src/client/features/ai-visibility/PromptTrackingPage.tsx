@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Play, Plus, Settings2 } from "lucide-react";
@@ -98,6 +99,8 @@ function PromptTrackingContent({
   state: AiTrackerState;
   defaultMarket: ProjectMarket;
 }) {
+  const { t } = useLocale();
+
   const queryClient = useQueryClient();
   const [editorMode, setEditorMode] = useState<TrackerEditorMode | null>(null);
   const [managingTracking, setManagingTracking] = useState(false);
@@ -121,7 +124,7 @@ function PromptTrackingContent({
     setEditingPrompt(null);
     setChange(null);
     if (run) setSelectedRun(run);
-    toast.success(run ? "Run started" : "Prompt tracking saved");
+    toast.success(run ? t("Run started") : t("Prompt tracking saved"));
   };
   const pauseSchedule = useMutation({
     mutationFn: () =>
@@ -131,15 +134,17 @@ function PromptTrackingContent({
     onSuccess: (result) => {
       saved(result.state);
       setManagingTracking(false);
-      toast.success("Tracking paused");
+      toast.success(t("Tracking paused"));
     },
-    onError: (error) => toast.error(getStandardErrorMessage(error)),
+    onError: (error) =>
+      toast.error(getStandardErrorMessage(error, undefined, t)),
   });
   const reduceTracking = useMutation({
     mutationFn: (patch: AiTrackerPatch) =>
       saveAiVisibilityTracker({ data: { projectId, ...patch } }),
     onSuccess: (result) => saved(result.state),
-    onError: (error) => toast.error(getStandardErrorMessage(error)),
+    onError: (error) =>
+      toast.error(getStandardErrorMessage(error, undefined, t)),
   });
   const busy =
     progress.run?.status === "running" || progress.run?.status === "queued";
@@ -170,19 +175,23 @@ function PromptTrackingContent({
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Prompt Tracking"
-        description="Track the prompts your customers use with AI. Inspect where your business is mentioned or cited."
+        title={t("Prompt Tracking")}
+        description={t(
+          "Track the prompts your customers use with AI. Inspect where your business is mentioned or cited.",
+        )}
       />
       {!state.configured ? (
         <EmptyState
           variant="card"
           icon={MessageSquare}
-          title="Start with the prompts that matter to your business"
-          description="Add a topic and its prompts using your saved project settings."
+          title={t("Start with the prompts that matter to your business")}
+          description={t(
+            "Add a topic and its prompts using your saved project settings.",
+          )}
           action={
             <Button onClick={() => setEditorMode(TrackerEditorMode.Prompts)}>
               <Plus />
-              Add prompts
+              {t("Add prompts")}
             </Button>
           }
         />
@@ -198,8 +207,12 @@ function PromptTrackingContent({
                     <h2 className="text-lg font-semibold">{ownBrand?.name}</h2>
                     <Badge variant={tracker?.enabled ? "success" : "secondary"}>
                       {tracker?.enabled
-                        ? `${scheduleLabel(tracker.scheduleInterval)} tracking`
-                        : "Paused"}
+                        ? t("{schedule} tracking", {
+                            schedule: t(
+                              scheduleLabel(tracker.scheduleInterval),
+                            ),
+                          })
+                        : t("Paused")}
                     </Badge>
                   </div>
                 </div>
@@ -211,7 +224,7 @@ function PromptTrackingContent({
                     onClick={() => setEditorMode(TrackerEditorMode.Settings)}
                   >
                     <Settings2 />
-                    Tracking settings
+                    {t("Tracking settings")}
                   </Button>
                   <Button
                     size="sm"
@@ -224,7 +237,7 @@ function PromptTrackingContent({
                     onClick={() => setCostMode("check")}
                   >
                     <Play />
-                    Run now
+                    {t("Run now")}
                   </Button>
                 </div>
               </div>
@@ -234,7 +247,9 @@ function PromptTrackingContent({
               ) : (
                 tracker?.lastSkipReason && (
                   <p className="text-xs text-warning">
-                    Most recent scheduling notice: {tracker.lastSkipReason}
+                    {t("Most recent scheduling notice: {reason}", {
+                      reason: tracker.lastSkipReason,
+                    })}
                   </p>
                 )
               )}
@@ -316,10 +331,10 @@ function PromptTrackingContent({
             });
             toast.success(
               run
-                ? "Run started"
+                ? t("Run started")
                 : tracker.enabled
-                  ? "Tracking schedule saved"
-                  : "Tracking scheduled",
+                  ? t("Tracking schedule saved")
+                  : t("Tracking scheduled"),
             );
           }}
         />

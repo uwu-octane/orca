@@ -28,10 +28,10 @@ export function TrackingScheduleSummary({
       {tracker.enabled ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
           <p className="text-sm">
-            {scheduleLabel(tracker.scheduleInterval)}
+            {t(scheduleLabel(tracker.scheduleInterval))}
             <span className="text-muted-foreground">
               {" "}
-              · Next run {aiDate(tracker.nextCheckAt)}
+              · {t("Next run {date}", { date: aiDate(tracker.nextCheckAt) })}
             </span>
           </p>
           <div className="flex flex-wrap gap-2">
@@ -43,7 +43,7 @@ export function TrackingScheduleSummary({
               onClick={onPause}
             >
               <Pause />
-              Pause
+              {t("Pause")}
             </Button>
             <Button
               type="button"
@@ -53,7 +53,7 @@ export function TrackingScheduleSummary({
               onClick={onSchedule}
             >
               <CalendarClock />
-              Change schedule
+              {t("Change schedule")}
             </Button>
           </div>
         </div>
@@ -65,7 +65,7 @@ export function TrackingScheduleSummary({
           onClick={onSchedule}
         >
           <CalendarClock />
-          Schedule tracking
+          {t("Schedule tracking")}
         </Button>
       )}
     </section>

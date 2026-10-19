@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useId, useState } from "react";
 import { Field, FieldLabel } from "@/client/components/ui/field";
 import { Input } from "@/client/components/ui/input";
@@ -19,18 +20,20 @@ export function TopicField({
   value: string;
   onChange: (topic: string) => void;
 }) {
+  const { t } = useLocale();
+
   const topicId = useId();
   // Kept separately so typing a saved topic's name doesn't hide the input.
   const [creating, setCreating] = useState(!topics.includes(value));
   const items = [
     ...topics.map((name) => ({ value: name, label: name })),
-    { value: "", label: "New topic" },
+    { value: "", label: t("New topic") },
   ];
   return (
     <>
       {topics.length > 0 && (
         <Field>
-          <FieldLabel>Topic</FieldLabel>
+          <FieldLabel>{t("Topic")}</FieldLabel>
           <Select
             items={items}
             value={creating ? "" : value}
@@ -39,7 +42,7 @@ export function TopicField({
               onChange(name ?? "");
             }}
           >
-            <SelectTrigger className="w-full" aria-label="Topic">
+            <SelectTrigger className="w-full" aria-label={t("Topic")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -54,12 +57,12 @@ export function TopicField({
       )}
       {creating && (
         <Field>
-          <FieldLabel htmlFor={topicId}>Topic name</FieldLabel>
+          <FieldLabel htmlFor={topicId}>{t("Topic name")}</FieldLabel>
           <Input
             id={topicId}
             required
             maxLength={100}
-            placeholder="e.g. SEO tools"
+            placeholder={t("e.g. SEO tools")}
             value={value}
             onChange={(event) => onChange(event.target.value)}
           />

@@ -129,7 +129,7 @@ export function TrackingCostReview({
     (mode === "check" ? cost?.runNowCostUsd : cost?.costUsd) ?? 0;
   const start = useMutation({
     mutationFn: async () => {
-      if (!cost) throw new Error("Review the estimate before starting.");
+      if (!cost) throw new Error(t("Review the estimate before starting."));
       if (mode === "schedule") {
         const result = await setAiVisibilitySchedule({
           data: {
@@ -162,10 +162,10 @@ export function TrackingCostReview({
     <FormDialog
       title={
         mode === "check"
-          ? "Run now"
+          ? t("Run now")
           : tracker.enabled
-            ? "Change tracking schedule"
-            : "Schedule tracking"
+            ? t("Change tracking schedule")
+            : t("Schedule tracking")
       }
       onClose={() => {
         if (!start.isPending) onClose();
@@ -188,10 +188,10 @@ export function TrackingCostReview({
           >
             {start.isPending && <Loader2 className="size-4 animate-spin" />}
             {mode === "check"
-              ? "Run now"
+              ? t("Run now")
               : tracker.enabled
-                ? "Save schedule"
-                : "Start tracking"}
+                ? t("Save schedule")
+                : t("Start tracking")}
           </Button>
         </>
       }
@@ -224,14 +224,27 @@ export function TrackingCostReview({
             )}
             <Field>
               <FieldLabel>
-                {mode === "schedule" ? "Cost per run" : "Cost"}
+                {mode === "schedule" ? t("Cost per run") : t("Cost")}
               </FieldLabel>
               <span className="text-2xl font-semibold tabular-nums">
                 {aiMoney(runCostUsd)}
               </span>
               <FieldDescription>
                 {/* No per-answer price: engines cost different amounts. */}
-                {`${cost.observations} ${cost.observations === 1 ? "answer" : "answers"}${mode === "schedule" ? ` · about ${aiMoney(cost.monthlyCostUsd)} a month (${cost.checksPerMonth} ${cost.checksPerMonth === 1 ? "run" : "runs"})` : " · live answers, ready in a few minutes"}`}
+                {cost.observations === 1
+                  ? t("{count} answer", { count: cost.observations })
+                  : t("{count} answers", { count: cost.observations })}
+                {mode === "schedule"
+                  ? cost.checksPerMonth === 1
+                    ? t(" · about {cost} a month ({count} run)", {
+                        cost: aiMoney(cost.monthlyCostUsd),
+                        count: cost.checksPerMonth,
+                      })
+                    : t(" · about {cost} a month ({count} runs)", {
+                        cost: aiMoney(cost.monthlyCostUsd),
+                        count: cost.checksPerMonth,
+                      })
+                  : t(" · live answers, ready in a few minutes")}
               </FieldDescription>
             </Field>
             {start.error && <AiQueryError error={start.error} />}

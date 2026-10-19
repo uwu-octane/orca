@@ -24,7 +24,7 @@ export function RenameTopicDialog({
   const next = name.trim();
   return (
     <FormDialog
-      title="Rename topic"
+      title={t("Rename topic")}
       onClose={onClose}
       actions={
         <>
@@ -36,7 +36,7 @@ export function RenameTopicDialog({
             form={formId}
             disabled={!next || next === topic}
           >
-            Rename
+            {t("Rename")}
           </Button>
         </>
       }
@@ -49,7 +49,7 @@ export function RenameTopicDialog({
         }}
       >
         <Field>
-          <FieldLabel htmlFor={inputId}>Topic name</FieldLabel>
+          <FieldLabel htmlFor={inputId}>{t("Topic name")}</FieldLabel>
           <Input
             id={inputId}
             autoFocus

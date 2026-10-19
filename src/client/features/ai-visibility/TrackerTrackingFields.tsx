@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { Info } from "lucide-react";
 import { EngineLabel } from "./EngineLabel";
 import { Checkbox } from "@/client/components/ui/checkbox";
@@ -59,6 +60,8 @@ export function TrackerTrackingFields({
   // Base UI checkboxes aren't native inputs, so a disabled <fieldset> misses them.
   disabled: boolean;
 }) {
+  const { t } = useLocale();
+
   const countryOptions = LOCATION_OPTIONS.filter(
     (option) => !aiEnginesWithoutLocation(value.engines, option.code).length,
   );
@@ -75,7 +78,7 @@ export function TrackerTrackingFields({
             render={
               <button
                 type="button"
-                aria-label={`About ${title.toLowerCase()}`}
+                aria-label={t("About {title}", { title: title.toLowerCase() })}
                 className="text-muted-foreground"
               />
             }
@@ -128,13 +131,13 @@ export function TrackerTrackingFields({
   return (
     <section className="space-y-5">
       {engineGroup(
-        "Scraped responses",
-        "Answers as users see them in each AI app.",
+        t("Scraped responses"),
+        t("Answers as users see them in each AI app."),
         state.capabilities.filter((capability) => !capability.modelApi),
       )}
       {engineGroup(
-        "API responses",
-        "Answers from each model's API, with web search.",
+        t("API responses"),
+        t("Answers from each model's API, with web search."),
         state.capabilities.filter((capability) => capability.modelApi),
       )}
       <ProjectMarketFields

@@ -71,13 +71,15 @@ export function TrackerPatchReview({
     >
       <DialogContent className="sm:max-w-lg" showCloseButton={false}>
         <DialogHeader className="flex-row items-center justify-between gap-3">
-          <DialogTitle className="text-lg">Review tracking change</DialogTitle>
+          <DialogTitle className="text-lg">
+            {t("Review tracking change")}
+          </DialogTitle>
           <Button
             variant="ghost"
             size="icon-sm"
             disabled={save.isPending}
             onClick={onClose}
-            aria-label="Close review"
+            aria-label={t("Close review")}
           >
             <X />
           </Button>
@@ -119,7 +121,7 @@ export function TrackerPatchReview({
                 onClick={() => save.mutate()}
               >
                 {save.isPending && <Loader2 className="size-4 animate-spin" />}
-                Save change
+                {t("Save change")}
               </Button>
             </DialogFooter>
           </>
@@ -163,18 +165,18 @@ export function PromptEditor({
     >
       <DialogContent className="sm:max-w-xl" showCloseButton={false}>
         <DialogHeader className="flex-row items-center justify-between gap-3">
-          <DialogTitle className="text-lg">Edit prompt</DialogTitle>
+          <DialogTitle className="text-lg">{t("Edit prompt")}</DialogTitle>
           <Button
             variant="ghost"
             size="icon-sm"
             onClick={onClose}
-            aria-label="Close prompt editor"
+            aria-label={t("Close prompt editor")}
           >
             <X />
           </Button>
         </DialogHeader>
         <Field>
-          <FieldLabel htmlFor={textId}>Exact prompt</FieldLabel>
+          <FieldLabel htmlFor={textId}>{t("Exact prompt")}</FieldLabel>
           <Textarea
             id={textId}
             className="min-h-28"
@@ -203,7 +205,7 @@ export function PromptEditor({
             }}
           >
             {pending && <Loader2 className="size-4 animate-spin" />}
-            {reworded ? "Review change" : t("Save")}
+            {reworded ? t("Review change") : t("Save")}
           </Button>
         </DialogFooter>
       </DialogContent>

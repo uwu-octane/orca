@@ -1,4 +1,5 @@
-import { getIntlLocale, readActiveLocale } from "@/plugins/locale";
+import { useLocale } from "@/plugins/client/context";
+import { translate, getIntlLocale, readActiveLocale } from "@/plugins/locale";
 // FORK: retain locale subscriptions across upstream component changes.
 
 import { useEffect, useRef } from "react";
@@ -167,19 +168,23 @@ export function AiQueryError({
   error: unknown;
   retry?: () => void;
 }) {
+  const { t } = useLocale();
+
   return (
     <QueryError
       error={error}
-      fallback="Could not load AI visibility. Please try again."
+      fallback={t("Could not load AI visibility. Please try again.")}
       onRetry={retry}
     />
   );
 }
 
 export function AiLoading() {
+  const { t } = useLocale();
+
   return (
     <div className="flex justify-center py-12">
-      <Spinner size="sm" label="Loading AI visibility…" />
+      <Spinner size="sm" label={t("Loading AI visibility…")} />
     </div>
   );
 }
@@ -191,9 +196,16 @@ export function AiMatchBadge({
   value: boolean;
   positive?: "Mentioned" | "Cited";
 }) {
+  const { t } = useLocale();
   return (
     <Badge variant={value ? "success" : "secondary"}>
-      {value ? positive : positive === "Cited" ? "Not cited" : "Not mentioned"}
+      {value
+        ? positive === "Cited"
+          ? t("Cited")
+          : t("Mentioned")
+        : positive === "Cited"
+          ? t("Not cited")
+          : t("Not mentioned")}
     </Badge>
   );
 }
@@ -201,7 +213,9 @@ export function AiMatchBadge({
 export function aiDate(value: string | null) {
   if (!value) return "—";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Unavailable" : date.toLocaleString();
+  return Number.isNaN(date.getTime())
+    ? translate("Unavailable")
+    : date.toLocaleString();
 }
 
 export function aiRate(count: number, eligible: number) {
@@ -218,6 +232,7 @@ export function aiMoney(value: number) {
 }
 
 export function AiRunStatus({ run }: { run: AiRun }) {
+  const { t } = useLocale();
   const pending = run.status === "running" || run.status === "queued";
   return (
     <div
@@ -228,11 +243,21 @@ export function AiRunStatus({ run }: { run: AiRun }) {
         <span className="flex items-center gap-2 font-medium">
           {pending && <Loader2 className="size-4 animate-spin" />}
           {run.trigger === "manual"
-            ? "One-off run"
+            ? t("One-off run")
             : run.trigger === "baseline"
-              ? "First scheduled run"
-              : "Scheduled run"}
-          <Badge variant="secondary">{run.status}</Badge>
+              ? t("First scheduled run")
+              : t("Scheduled run")}
+          <Badge variant="secondary">
+            {
+              {
+                queued: t("Queued"),
+                running: t("Running"),
+                completed: t("Completed"),
+                partial: t("Partial"),
+                failed: t("Failed"),
+              }[run.status]
+            }
+          </Badge>
         </span>
         <span className="text-xs text-muted-foreground">
           {aiDate(run.createdAt)}
@@ -240,12 +265,17 @@ export function AiRunStatus({ run }: { run: AiRun }) {
       </div>
       <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
         <span>
-          {run.completed} of {run.expected} answers collected
+          {t("{completed} of {expected} answers collected", {
+            completed: run.completed,
+            expected: run.expected,
+          })}
         </span>
-        {run.pending > 0 && <span>{run.pending} pending</span>}
+        {run.pending > 0 && (
+          <span>{t("{count} pending", { count: run.pending })}</span>
+        )}
         {run.failed > 0 && (
           <span className="text-destructive">
-            {run.failed} {"failed"}
+            {t("{count} failed", { count: run.failed })}
           </span>
         )}
       </div>
@@ -262,6 +292,8 @@ export function PromptTrackingWithoutUpgradeButton({
 }: {
   projectId: string;
 }) {
+  const { t } = useLocale();
+
   return (
     <Button
       size="lg"
@@ -269,7 +301,7 @@ export function PromptTrackingWithoutUpgradeButton({
       nativeButton={false}
       render={<Link to="/p/$projectId/ai-visibility" params={{ projectId }} />}
     >
-      Use Prompt Tracking without upgrading
+      {t("Use Prompt Tracking without upgrading")}
     </Button>
   );
 }

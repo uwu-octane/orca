@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { Progress } from "@/client/components/ui/progress";
 import { Spinner } from "@/client/components/ui/spinner";
 import type { AiRun, AiTrackerState } from "@/shared/ai-visibility";
@@ -11,13 +12,17 @@ export function RunStatusLine({
   run: AiRun | null;
   tracker: AiTrackerState["tracker"];
 }) {
+  const { t } = useLocale();
   const pending = run?.status === "running" || run?.status === "queued";
   if (run && pending) {
     return (
       <div className="space-y-1.5">
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
           <Spinner className="size-3.5" />
-          Collecting {run.completed + run.failed} of {run.expected} answers…
+          {t("Collecting {completed} of {expected} answers…", {
+            completed: run.completed + run.failed,
+            expected: run.expected,
+          })}
         </p>
         <Progress value={run.completed + run.failed} max={run.expected || 1} />
       </div>
@@ -27,8 +32,12 @@ export function RunStatusLine({
   return (
     <p className="text-xs text-muted-foreground">
       {[
-        run && `Updated ${aiDate(run.completedAt ?? run.createdAt)}`,
-        tracker?.enabled && `Next run ${aiDate(tracker.nextCheckAt)}`,
+        run &&
+          t("Updated {date}", {
+            date: aiDate(run.completedAt ?? run.createdAt),
+          }),
+        tracker?.enabled &&
+          t("Next run {date}", { date: aiDate(tracker.nextCheckAt) }),
       ]
         .filter(Boolean)
         .join(" · ")}

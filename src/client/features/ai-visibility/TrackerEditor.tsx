@@ -130,7 +130,7 @@ export function TrackerEditor({
         return;
       }
       if (adding && !parsed.data.prompts?.length) {
-        setValidationError(new Error("Add at least one prompt."));
+        setValidationError(new Error(t("Add at least one prompt.")));
         return;
       }
       prepare.mutate(parsed.data);
@@ -146,13 +146,13 @@ export function TrackerEditor({
       <DialogContent className="sm:max-w-xl" showCloseButton={false}>
         <DialogHeader className="flex-row items-center justify-between gap-3">
           <DialogTitle className="text-lg">
-            {adding ? "Add prompts" : "Tracking settings"}
+            {adding ? t("Add prompts") : t("Tracking settings")}
           </DialogTitle>
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Close setup"
+            aria-label={t("Close setup")}
             disabled={save.isPending || generating}
             onClick={onClose}
           >
@@ -161,13 +161,13 @@ export function TrackerEditor({
         </DialogHeader>
         {!adding && !review && (
           <p className="text-sm text-muted-foreground">
-            Brand details and competitors come from{" "}
+            {t("Brand details and competitors come from")}{" "}
             <Link
               to="/p/$projectId/context"
               params={{ projectId }}
               className="text-foreground underline underline-offset-4"
             >
-              project context
+              {t("project context")}
             </Link>
             {t(".")}
           </p>
@@ -175,8 +175,9 @@ export function TrackerEditor({
         {!adding && !review && schedule}
         {!state.providerConfigured && (
           <p className="rounded-lg bg-muted px-4 py-3 text-sm">
-            An administrator needs to configure the DataForSEO API key before we
-            can collect data.
+            {t(
+              "An administrator needs to configure the DataForSEO API key before we can collect data.",
+            )}
           </p>
         )}
         {review ? (
@@ -230,13 +231,13 @@ export function TrackerEditor({
                           onGeneratingChange={setGenerating}
                         />
                         <p className="text-xs text-muted-foreground">
-                          Manage the active AI engines and country in{" "}
+                          {t("Manage the active AI engines and country in")}{" "}
                           <button
                             type="button"
                             className="text-foreground underline underline-offset-4"
                             onClick={onManageTracking}
                           >
-                            Tracking settings
+                            {t("Tracking settings")}
                           </button>
                           {t(".")}
                         </p>
@@ -263,7 +264,7 @@ export function TrackerEditor({
                 {prepare.isPending && (
                   <Loader2 className="size-4 animate-spin" />
                 )}
-                {adding ? "Review prompts" : "Review changes"}
+                {adding ? t("Review prompts") : t("Review changes")}
               </Button>
             </DialogFooter>
           </form>

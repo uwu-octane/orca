@@ -1,3 +1,5 @@
+import { setAiScheduleSchema } from "@/types/schemas/ai-visibility";
+import { scheduleLabel } from "@/shared/rank-tracking";
 import { WEEKDAYS } from "@/client/features/rank-tracking/scheduleTime";
 import { TAG_COLOR_KEYS } from "@/shared/tag-colors";
 import { countBy } from "remeda";
@@ -83,6 +85,17 @@ describe("translate", () => {
       expect(translate(color), `untranslated tag color: ${color}`).not.toBe(
         color,
       );
+    }
+  });
+
+  it("translates every AI tracking schedule label", () => {
+    for (const interval of setAiScheduleSchema.shape.scheduleInterval.unwrap()
+      .options) {
+      const label = scheduleLabel(interval);
+      expect(
+        translate(label),
+        `untranslated tracking schedule: ${label}`,
+      ).not.toBe(label);
     }
   });
 

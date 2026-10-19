@@ -1,3 +1,4 @@
+import { aiVisibilityZh } from "./ai-visibility";
 import { shellZh } from "./shell";
 import { errorsZh } from "./errors";
 import { dashboardZh } from "./dashboard";
@@ -56,6 +57,7 @@ export const zh = {
   ...reportsZh,
   ...teamZh,
   ...integrationsZh,
+  ...aiVisibilityZh,
 } as const;
 
 export type ShellKey = keyof typeof zh;

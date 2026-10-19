@@ -132,7 +132,7 @@ export function AiResearchSetupGate({
         <WebsiteResearchProgress
           missingOverview={setup.data.missingOverview}
           missingCompetitors={setup.data.missingCompetitors}
-          note="You can leave this page; setup keeps running."
+          note={t("You can leave this page; setup keeps running.")}
         />
       </div>
     );
@@ -148,29 +148,35 @@ export function AiResearchSetupGate({
               <Sparkles className="size-5" />
             </div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              Set up AI visibility
+              {t("Set up AI visibility")}
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              We’ll research your brand and find the most relevant topics to
-              monitor.
+              {t(
+                "We’ll research your brand and find the most relevant topics to monitor.",
+              )}
             </p>
           </div>
           {failed && (
             <Alert variant="destructive">
               <AlertDescription>
                 {unreadable
-                  ? "We couldn’t read this website. Check the URL in project settings, then try again."
-                  : "We couldn’t finish setting up AI visibility. Check your available usage credits, then try again."}
+                  ? t(
+                      "We couldn’t read this website. Check the URL in project settings, then try again.",
+                    )
+                  : t(
+                      "We couldn’t finish setting up AI visibility. Check your available usage credits, then try again.",
+                    )}
               </AlertDescription>
             </Alert>
           )}
           <div className="space-y-3">
             <Button size="lg" className="w-full" onClick={() => start.mutate()}>
-              {failed ? t("Try again") : "Start research"}
+              {failed ? t("Try again") : t("Start research")}
             </Button>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Research and a first run of your prompts use a small amount of
-              usage credits.
+              {t(
+                "Research and a first run of your prompts use a small amount of usage credits.",
+              )}
             </p>
           </div>
         </CardContent>

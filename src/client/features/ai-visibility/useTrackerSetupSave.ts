@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -16,6 +17,8 @@ export function useTrackerSetupSave({
   projectId: string;
   onSaved: (state: AiTrackerState, run?: AiRun) => void;
 }) {
+  const { t } = useLocale();
+
   return useMutation({
     mutationFn: async ({
       accepted,
@@ -47,7 +50,7 @@ export function useTrackerSetupSave({
       onSaved(result.state, result.run);
       if (result.scheduleError)
         toast.error(
-          `${result.state.tracker?.enabled ? "Weekly tracking is on, but the first check couldn't start." : "Prompts saved. We couldn't start weekly tracking."} ${getStandardErrorMessage(result.scheduleError)}`,
+          `${result.state.tracker?.enabled ? t("Weekly tracking is on, but the first check couldn't start.") : t("Prompts saved. We couldn't start weekly tracking.")} ${getStandardErrorMessage(result.scheduleError, undefined, t)}`,
         );
     },
   });

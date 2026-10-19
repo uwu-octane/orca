@@ -1,5 +1,6 @@
 // FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
+import { scheduleLabel } from "@/shared/rank-tracking";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
 import { DialogFooter } from "@/client/components/ui/dialog";
@@ -43,17 +44,21 @@ export function TrackerSetupReview({
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Review your changes before saving.{" "}
+        {t("Review your changes before saving.")}{" "}
         {enabled
-          ? "These settings apply to your enabled schedule."
+          ? t("These settings apply to your enabled schedule.")
           : creating
-            ? "Tracking runs weekly. The first check is a week from now; use Run now for results sooner."
-            : "Track weekly to collect fresh answers once a week. A tracker that has never run on a schedule also runs its first check now."}
+            ? t(
+                "Tracking runs weekly. The first check is a week from now; use Run now for results sooner.",
+              )
+            : t(
+                "Track weekly to collect fresh answers once a week. A tracker that has never run on a schedule also runs its first check now.",
+              )}
       </p>
       <dl className="grid grid-cols-2 gap-4 rounded-lg border p-4 text-sm border-border">
         {review.patch.engines && (
           <div>
-            <dt className="text-muted-foreground">Engines</dt>
+            <dt className="text-muted-foreground">{t("Engines")}</dt>
             <dd className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
               {review.patch.engines?.map((engine) => (
                 <EngineLabel key={engine} engine={engine} />
@@ -63,19 +68,19 @@ export function TrackerSetupReview({
         )}
         {review.patch.prompts !== undefined && (
           <div>
-            <dt className="text-muted-foreground">New prompts</dt>
+            <dt className="text-muted-foreground">{t("New prompts")}</dt>
             <dd className="mt-1">{review.patch.prompts?.length ?? 0}</dd>
           </div>
         )}
         {review.patch.prompts?.[0]?.topic && (
           <div>
-            <dt className="text-muted-foreground">Topic</dt>
+            <dt className="text-muted-foreground">{t("Topic")}</dt>
             <dd className="mt-1">{review.patch.prompts[0].topic}</dd>
           </div>
         )}
         {review.patch.locationCode && review.patch.languageCode && (
           <div>
-            <dt className="text-muted-foreground">Market</dt>
+            <dt className="text-muted-foreground">{t("Market")}</dt>
             <dd className="mt-1">
               {aiMarketLabel({
                 locationCode: review.patch.locationCode,
@@ -90,7 +95,7 @@ export function TrackerSetupReview({
           className="max-h-56 space-y-2 overflow-y-auto rounded-lg border p-4 border-border"
           data-ph-mask
         >
-          <h3 className="text-sm font-semibold">Prompts to add</h3>
+          <h3 className="text-sm font-semibold">{t("Prompts to add")}</h3>
           {review.patch.prompts.map((prompt) => (
             <p
               key={prompt.text}
@@ -103,13 +108,20 @@ export function TrackerSetupReview({
       )}
       <div className="space-y-1 rounded-lg bg-muted/60 p-4 text-sm">
         <p>
-          Each run collects <strong>{review.estimate.observations}</strong>{" "}
-          {review.estimate.observations === 1 ? "answer" : "answers"} for{" "}
+          {t("Each run collects")}{" "}
+          <strong>{review.estimate.observations}</strong>{" "}
+          {review.estimate.observations === 1
+            ? t("answer for")
+            : t("answers for")}{" "}
           <strong>{aiMoney(review.estimate.costUsd)}</strong>
         </p>
         <p>
-          <strong>{aiMoney(review.estimate.monthlyCostUsd)}</strong> estimated
-          per month if it runs {review.estimate.scheduleInterval}
+          <strong>{aiMoney(review.estimate.monthlyCostUsd)}</strong>{" "}
+          {t("estimated per month if it runs {schedule}", {
+            schedule: t(
+              scheduleLabel(review.estimate.scheduleInterval),
+            ).toLowerCase(),
+          })}
           {t(".")}
         </p>
       </div>
@@ -121,7 +133,7 @@ export function TrackerSetupReview({
           disabled={pending}
           onClick={onBack}
         >
-          Back to editing
+          {t("Back to editing")}
         </Button>
         <Button
           type="button"
@@ -133,10 +145,10 @@ export function TrackerSetupReview({
             <Loader2 className="size-4 animate-spin" />
           )}
           {enabled
-            ? "Save reviewed changes"
+            ? t("Save reviewed changes")
             : creating
-              ? "Save and track weekly"
-              : "Save as paused"}
+              ? t("Save and track weekly")
+              : t("Save as paused")}
         </Button>
         {paused && (
           <Button
@@ -149,7 +161,7 @@ export function TrackerSetupReview({
             {pending && scheduling && (
               <Loader2 className="size-4 animate-spin" />
             )}
-            Save and track weekly
+            {t("Save and track weekly")}
           </Button>
         )}
       </DialogFooter>

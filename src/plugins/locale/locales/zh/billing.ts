@@ -20,4 +20,8 @@ export const billingZh = {
   "reach out with questions": "如有问题,请联系我们",
   "Buy more credits": "购买更多额度",
   "Upgrade anytime": "随时升级",
+  "Unlock {feature}": "解锁{feature}",
+  "It runs on costlier AI data, so it's part of the {plan}: ${price} a month, with ${credits} of usage credits included.":
+    "此功能使用成本较高的 AI 数据，因此包含在 {plan} 套餐中：每月 {price} 美元，内含 {credits} 美元的使用额度。",
+  "View plan": "查看套餐",
 } satisfies Record<string, string>;
