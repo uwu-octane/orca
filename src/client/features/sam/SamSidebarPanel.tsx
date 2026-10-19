@@ -40,7 +40,7 @@ function BetaNotice() {
       </div>
       <p className="mt-1.5 text-xs text-base-content/70">
         {t(
-          "For more powerful AI workflows, use the OpenSEO MCP with your own agent like Claude Code or Hermes.",
+          "For more powerful AI workflows, use the Orca MCP with your own agent like Claude Code or Hermes.",
         )}
       </p>
       <Link to="/ai" className="link link-primary mt-1.5 inline-block text-xs">

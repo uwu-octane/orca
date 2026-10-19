@@ -34,7 +34,7 @@ function SupportPage() {
         </h1>
         <p className="mt-2 text-sm text-base-content/60">
           {t(
-            "We want to talk to you! We're super open to feedback and want to learn how you work so we can make OpenSEO better.",
+            "We want to talk to you! We're super open to feedback and want to learn how you work so we can make Orca better.",
           )}
         </p>
 

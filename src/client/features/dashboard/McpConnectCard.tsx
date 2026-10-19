@@ -10,8 +10,8 @@ import { dismissDashboardMcpCard } from "@/serverFunctions/dashboard";
 function firstPrompts(domain: string | null): string[] {
   const site = domain ?? "my site";
   return [
-    `Review ${site}. Ideas for what keywords we could target? Use OpenSEO`,
-    "Research my competitors top pages and keywords and tell me what's working. Use OpenSEO",
+    `Review ${site}. Ideas for what keywords we could target? Use Orca`,
+    "Research my competitors top pages and keywords and tell me what's working. Use Orca",
   ];
 }
 
@@ -96,7 +96,7 @@ export function McpConnectCard({
             </ul>
             <p className="text-xs text-base-content/50">
               {t(
-                "Waiting for your first call — this card disappears once your agent talks to OpenSEO.",
+                "Waiting for your first call — this card disappears once your agent talks to Orca.",
               )}
             </p>
           </>
@@ -105,7 +105,7 @@ export function McpConnectCard({
             <div className="space-y-2 text-sm text-base-content/70">
               <p>
                 {t(
-                  "OpenSEO is designed to give your AI agent the data it needs to build a great SEO strategy and help you execute it.",
+                  "Orca is designed to give your AI agent the data it needs to build a great SEO strategy and help you execute it.",
                 )}
               </p>
               <p>{t("This way you aren't limited on “AI credits”.")}</p>

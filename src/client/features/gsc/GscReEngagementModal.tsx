@@ -110,7 +110,7 @@ export function GscReEngagementModal({
         </h2>
         <p className="text-sm text-base-content/70">
           {t(
-            "Bring your real clicks, impressions, and rankings into OpenSEO and query them from Claude or Codex over MCP. It never uses credits.",
+            "Bring your real clicks, impressions, and rankings into Orca and query them from Claude or Codex over MCP. It never uses credits.",
           )}
         </p>
       </div>

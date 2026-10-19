@@ -24,10 +24,10 @@ export function SamSetupGate({
             <h2 className="text-xl font-semibold">{t("Enable AI Features")}</h2>
             <div className="text-sm text-base-content/68">
               {t(
-                "SAM, OpenSEO's in-app AI agent, needs an OpenRouter API key. Create a key on OpenRouter, set it as",
+                "SAM, Orca's in-app AI agent, needs an OpenRouter API key. Create a key on OpenRouter, set it as",
               )}{" "}
               <code>OPENROUTER_API_KEY</code>{" "}
-              {t("environment variable, restart OpenSEO, then confirm here.")}
+              {t("environment variable, restart Orca, then confirm here.")}
             </div>
             <div className="text-xs text-base-content/50">
               {t("Step-by-step instructions for every deployment are in the")}{" "}

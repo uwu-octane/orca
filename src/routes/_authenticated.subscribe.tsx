@@ -132,7 +132,7 @@ function SubscribePage() {
       <div className="w-full max-w-xs space-y-4 text-center">
         <img
           src="/transparent-logo.png"
-          alt="OpenSEO"
+          alt="Orca"
           className="mx-auto size-10 rounded-lg"
         />
         <h1 className="text-xl font-semibold">
@@ -159,7 +159,7 @@ function SubscribePage() {
         <div className="text-center space-y-3">
           <img
             src="/transparent-logo.png"
-            alt="OpenSEO"
+            alt="Orca"
             className="mx-auto size-10 rounded-lg"
           />
           <h1 className="text-xl font-semibold">{t("Billing unavailable")}</h1>
@@ -222,15 +222,15 @@ function SubscribePage() {
       <div className="text-center space-y-3">
         <img
           src="/transparent-logo.png"
-          alt="OpenSEO"
+          alt="Orca"
           className="mx-auto size-10 rounded-lg"
         />
         <h1 className="text-xl font-semibold">
           {isUpgradeFlow
             ? t("Upgrade your plan")
             : firstName
-              ? t("Welcome to OpenSEO, {name}!", { name: firstName })
-              : t("Welcome to OpenSEO!")}
+              ? t("Welcome to Orca, {name}!", { name: firstName })
+              : t("Welcome to Orca!")}
         </h1>
         <p className="text-sm text-base-content/60">
           {t(

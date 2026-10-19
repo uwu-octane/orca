@@ -19,9 +19,9 @@ function OpenrouterApiKeyHelpPage() {
               {t("Set up your OpenRouter API key")}
             </h1>
             <p className="text-sm text-base-content/70">
-              {t("OpenSEO needs the")} <code>OPENROUTER_API_KEY</code>{" "}
+              {t("Orca needs the")} <code>OPENROUTER_API_KEY</code>{" "}
               {t(
-                "secret before AI features like SAM, the in-app SEO agent, can run. It is optional — everything else in OpenSEO works without it.",
+                "secret before AI features like SAM, the in-app SEO agent, can run. It is optional — everything else in Orca works without it.",
               )}
             </p>
           </div>
@@ -70,7 +70,7 @@ function OpenrouterApiKeyHelpPage() {
                   </li>
                 </ul>
               </li>
-              <li>{t("Restart OpenSEO.")}</li>
+              <li>{t("Restart Orca.")}</li>
             </ol>
           </div>
         </div>
@@ -84,7 +84,7 @@ function OpenrouterApiKeyHelpPage() {
               <li>
                 {t("In Cloudflare, go to")} <code>Compute</code> -&gt;{" "}
                 <code>Workers &amp; Pages</code>
-                {t("and open your OpenSEO Worker.")}
+                {t("and open your Orca Worker.")}
               </li>
               <li>
                 {t("Open")} <code>{t("Settings")}</code>.

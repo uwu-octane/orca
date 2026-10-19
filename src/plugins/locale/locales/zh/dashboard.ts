@@ -4,8 +4,8 @@ export const dashboardZh = {
     "设置项目域名后,本页的每张卡片(反链、审计等)都会基于该域名开始工作。",
   Save: "保存",
   "Connect your AI agent": "连接你的 AI 代理",
-  "OpenSEO is built to be used from agents like Claude. Connect once, then ask it to use OpenSEO to help build your SEO strategy.":
-    "OpenSEO 专为 Claude 等代理打造。连接一次,然后让它使用 OpenSEO 帮助制定 SEO 策略。",
+  "Orca is built to be used from agents like Claude. Connect once, then ask it to use Orca to help build your SEO strategy.":
+    "Orca 专为 Claude 等代理打造。连接一次,然后让它使用 Orca 帮助制定 SEO 策略。",
   "Show me how": "查看方法",
   "Connect Search Console": "连接 Search Console",
   "Your real queries and clicks, straight from Google.":
@@ -28,10 +28,10 @@ export const dashboardZh = {
   "I already connected": "我已连接",
   "Your agent is connected. Try asking it:": "你的代理已连接。试试这样问:",
   "Prompt copied": "提示词已复制",
-  "Waiting for your first call — this card disappears once your agent talks to OpenSEO.":
-    "等待你的首次调用 — 一旦你的代理与 OpenSEO 对话,这张卡片就会消失。",
-  "OpenSEO is designed to give your AI agent the data it needs to build a great SEO strategy and help you execute it.":
-    "OpenSEO 旨在为你的 AI 代理提供制定出色 SEO 策略所需的数据,并协助你执行。",
+  "Waiting for your first call — this card disappears once your agent talks to Orca.":
+    "等待你的首次调用 — 一旦你的代理与 Orca 对话,这张卡片就会消失。",
+  "Orca is designed to give your AI agent the data it needs to build a great SEO strategy and help you execute it.":
+    "Orca 旨在为你的 AI 代理提供制定出色 SEO 策略所需的数据,并协助你执行。",
   "This way you aren't limited on “AI credits”.":
     "这样你就不会被“AI 额度”限制。",
   "You can work with your agent to figure out what automations make sense for you and it can help you write content too.":

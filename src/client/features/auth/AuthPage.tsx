@@ -105,7 +105,7 @@ export function AuthPageCard({
       <div className="text-center space-y-3">
         <img
           src="/transparent-logo.png"
-          alt="OpenSEO"
+          alt="Orca"
           className="mx-auto size-10 rounded-lg"
         />
         <div>

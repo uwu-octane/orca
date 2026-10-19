@@ -139,7 +139,7 @@ export function SamChat({
         <p className="text-lg font-medium">{t("What should we work on?")}</p>
         <p className="max-w-sm text-sm text-base-content/60">
           {t(
-            "SAM is your in-app SEO agent with access to every OpenSEO research tool. Start a chat to get going.",
+            "SAM is your in-app SEO agent with access to every Orca research tool. Start a chat to get going.",
           )}
         </p>
       </div>

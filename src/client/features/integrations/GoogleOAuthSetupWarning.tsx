@@ -17,7 +17,7 @@ export function GoogleOAuthSetupWarning({
         <p className="font-medium">{t("Google OAuth client not configured")}</p>
         <p className="text-base-content/70">
           {t(
-            "Add your Google client ID and secret to this OpenSEO deployment before connecting {integrationName}.",
+            "Add your Google client ID and secret to this Orca deployment before connecting {integrationName}.",
             { integrationName },
           )}
         </p>

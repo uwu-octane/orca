@@ -19,7 +19,7 @@ function DataforseoApiKeyHelpPage() {
               {t("Set up your DataForSEO API key")}
             </h1>
             <p className="text-sm text-base-content/70">
-              {t("OpenSEO needs the")} <code>DATAFORSEO_API_KEY</code>{" "}
+              {t("Orca needs the")} <code>DATAFORSEO_API_KEY</code>{" "}
               {t(
                 "secret before keyword, domain, and SEO data workflows can run.",
               )}
@@ -68,7 +68,7 @@ function DataforseoApiKeyHelpPage() {
               <li>
                 {t("In Cloudflare, go to")} <code>Compute</code> -&gt;{" "}
                 <code>Workers &amp; Pages</code>
-                {t("and open your OpenSEO Worker.")}
+                {t("and open your Orca Worker.")}
               </li>
               <li>
                 {t("Open")} <code>{t("Settings")}</code>.

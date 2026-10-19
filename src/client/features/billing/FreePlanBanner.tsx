@@ -61,7 +61,7 @@ export function FreePlanBanner() {
     return (
       <BannerShell variant="error">
         {t("You've used all your credits.")} {creditsActionLink}{" "}
-        {t("to continue using OpenSEO.")}
+        {t("to continue using Orca.")}
       </BannerShell>
     );
   }
@@ -70,7 +70,7 @@ export function FreePlanBanner() {
     return (
       <BannerShell variant="warning">
         {t("You're running low on credits.")} {creditsActionLink}{" "}
-        {t("to keep using OpenSEO.")}
+        {t("to keep using Orca.")}
       </BannerShell>
     );
   }
@@ -78,7 +78,7 @@ export function FreePlanBanner() {
   if (isFreePlan) {
     return (
       <BannerShell variant="info">
-        {t("We hope you're enjoying OpenSEO!")}{" "}
+        {t("We hope you're enjoying Orca!")}{" "}
         <Link
           to={SUBSCRIBE_ROUTE}
           search={{ upgrade: true }}

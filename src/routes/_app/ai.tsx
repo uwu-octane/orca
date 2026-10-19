@@ -56,7 +56,7 @@ function AiPage() {
         <h1 className="text-2xl font-semibold">{t("AI & MCP")}</h1>
         <p className="mt-2 text-sm text-base-content/70 leading-relaxed">
           {t(
-            "Connect your AI agent to OpenSEO. Run keyword research, SERP analysis, domain lookups, and backlink reviews from your editor or chat.",
+            "Connect your AI agent to Orca. Run keyword research, SERP analysis, domain lookups, and backlink reviews from your editor or chat.",
           )}
         </p>
 
@@ -97,7 +97,7 @@ function AiPage() {
           </div>
           <p className="mt-2.5 text-xs text-base-content/55 leading-relaxed">
             {t(
-              "Paste this into any MCP client. This URL points at the OpenSEO instance you are using now, whether hosted, self-hosted, or local. Sign in with OpenSEO when prompted.",
+              "Paste this into any MCP client. This URL points at the Orca instance you are using now, whether hosted, self-hosted, or local. Sign in with Orca when prompted.",
             )}
           </p>
           {isHostedClientAuthMode() ? (
@@ -127,7 +127,7 @@ function AiPage() {
                 {t("Run this in your terminal:")}
               </p>
               <CodeBlock
-                code={`claude mcp add --transport http --scope user openseo ${mcpUrl}`}
+                code={`claude mcp add --transport http --scope user orca ${mcpUrl}`}
                 onCopy={() =>
                   captureClientEvent("mcp:setup_command_copy", {
                     agent: "claude-code",
@@ -159,9 +159,9 @@ function AiPage() {
                   .
                 </li>
                 <li>{t("Paste the MCP URL above and click Add.")}</li>
-                <li>{t("Approve the OpenSEO login when prompted.")}</li>
+                <li>{t("Approve the Orca login when prompted.")}</li>
                 <li>
-                  {t("Optional: after OpenSEO connects, click")}{" "}
+                  {t("Optional: after Orca connects, click")}{" "}
                   <span className="font-medium text-base-content">
                     {t("Configure")}
                   </span>
@@ -190,7 +190,7 @@ function AiPage() {
                 {t("Run this in your terminal:")}
               </p>
               <CodeBlock
-                code={`codex mcp add openseo --url ${mcpUrl}`}
+                code={`codex mcp add orca --url ${mcpUrl}`}
                 onCopy={() =>
                   captureClientEvent("mcp:setup_command_copy", {
                     agent: "codex",
@@ -224,17 +224,17 @@ function AiPage() {
                   .
                 </li>
                 <li>{t("Paste the MCP URL above.")}</li>
-                <li>{t("Approve the OpenSEO login when prompted.")}</li>
+                <li>{t("Approve the Orca login when prompted.")}</li>
               </ol>
             </Collapsible>
           </div>
         </section>
 
         <section className="mt-12">
-          <h2 className="text-base font-semibold">{t("OpenSEO Skills")}</h2>
+          <h2 className="text-base font-semibold">{t("Orca Skills")}</h2>
           <p className="mt-1.5 text-sm text-base-content/70 leading-relaxed">
             {t(
-              "Skills give Codex and Claude Code reusable SEO workflows that can call your OpenSEO MCP tools when live SERP, keyword, backlink, or domain data is needed.",
+              "Skills give Codex and Claude Code reusable SEO workflows that can call your Orca MCP tools when live SERP, keyword, backlink, or domain data is needed.",
             )}
           </p>
           <div className="mt-4 divide-y divide-base-300 overflow-hidden rounded-lg border border-base-300 bg-base-200">
@@ -245,7 +245,7 @@ function AiPage() {
             >
               <CodeBlock code={SKILLS_INSTALL} />
               <p className="text-sm text-base-content/70">
-                {t("You can also auto-accept each OpenSEO skill:")}
+                {t("You can also auto-accept each Orca skill:")}
               </p>
               <CodeBlock code={ALL_SKILLS_INSTALL} />
             </Collapsible>
@@ -331,7 +331,7 @@ function AiPage() {
               {
                 title: "In-app SEO Research Agent",
                 description:
-                  "Ask questions and run research without leaving OpenSEO",
+                  "Ask questions and run research without leaving Orca",
               },
               {
                 title: "Content Assistant",

@@ -67,10 +67,10 @@ export function WelcomeMessage({
       </div>
       <div className="min-w-0 flex-1 space-y-3 pt-0.5 text-sm">
         <div className="space-y-3 text-base-content/80">
-          <p>{t("Hey, I’m Sam — welcome to OpenSEO.")}</p>
+          <p>{t("Hey, I’m Sam — welcome to Orca.")}</p>
           <p>
             {t(
-              "To get full access to OpenSEO, you need to upgrade to the paid plan. But, I’m here if you have any questions.",
+              "To get full access to Orca, you need to upgrade to the paid plan. But, I’m here if you have any questions.",
             )}
           </p>
           <p>
@@ -154,7 +154,7 @@ export function UpgradeSidebar({
         </span>
         <div className="min-w-0">
           <p className="font-medium text-base-content/80">
-            {t("Previewing OpenSEO")}
+            {t("Previewing Orca")}
           </p>
           <p className="truncate" title={domain}>
             {domain}
@@ -199,7 +199,7 @@ export function UpgradeSidebar({
               : t("Upgrade to continue")}
           </button>
           <p className="text-center text-xs leading-relaxed text-base-content/55">
-            {t("Want advice from other OpenSEO users?")}{" "}
+            {t("Want advice from other Orca users?")}{" "}
             <a
               href={DISCORD_URL}
               target="_blank"
@@ -249,9 +249,7 @@ export function ChatGate({
           })}
         </p>
         <p className="mx-auto mt-1 max-w-md text-xs text-base-content/70">
-          {t(
-            "Upgrade to keep working with Sam and unlock the full OpenSEO app.",
-          )}
+          {t("Upgrade to keep working with Sam and unlock the full Orca app.")}
         </p>
         <button
           type="button"
@@ -321,9 +319,7 @@ export function ChatComposer({
         onChange={(event) => setValue(event.target.value)}
         onKeyDown={handleKey}
         rows={1}
-        placeholder={
-          placeholder ?? t("Ask Sam about your strategy or OpenSEO…")
-        }
+        placeholder={placeholder ?? t("Ask Sam about your strategy or Orca…")}
         className="max-h-40 flex-1 resize-none border-0 bg-transparent px-1 py-1 text-sm leading-relaxed outline-none placeholder:text-base-content/50 focus:outline-none"
       />
       <button

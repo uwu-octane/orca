@@ -90,7 +90,7 @@ function SignUpPage() {
           redirect_to: redirectTo,
         });
         const resolvedName =
-          value.name.trim() || email.split("@")[0] || "OpenSEO User";
+          value.name.trim() || email.split("@")[0] || "Orca User";
         const verificationCallbackURL = new URL(
           "/verify-email",
           window.location.origin,

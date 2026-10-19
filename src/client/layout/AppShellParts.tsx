@@ -23,7 +23,7 @@ function SeoApiStatusBanners({
               <AlertTriangle className="size-4 shrink-0" />
               <span className="text-sm">
                 {t(
-                  "Setup needed: add your DataForSEO API key to use OpenSEO features. See the quick steps on the",
+                  "Setup needed: add your DataForSEO API key to use Orca features. See the quick steps on the",
                 )}{" "}
                 <Link
                   {...dataforseoHelpLinkOptions}
@@ -126,7 +126,7 @@ const MissingSeoSetupModal = React.forwardRef<
               id="dataforseo-setup-description"
               className="text-sm text-base-content/75"
             >
-              {t("Add your DataForSEO API key to start using OpenSEO.")}
+              {t("Add your DataForSEO API key to start using Orca.")}
             </p>
           </div>
         </div>

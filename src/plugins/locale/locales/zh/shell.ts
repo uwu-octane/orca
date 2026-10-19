@@ -76,10 +76,10 @@ export const shellZh = {
 
   // standard error messages (src/client/lib/error-messages.ts)
   "Please sign in and try again.": "请登录后重试。",
-  "OpenSEO auth is not configured. Follow the README setup steps for Cloudflare Access.":
-    "OpenSEO 认证未配置,请按 README 中的 Cloudflare Access 设置步骤操作。",
-  "An active hosted subscription is required before you can use OpenSEO.":
-    "使用 OpenSEO 前需要有效的托管订阅。",
+  "Orca auth is not configured. Follow the README setup steps for Cloudflare Access.":
+    "Orca 认证未配置,请按 README 中的 Cloudflare Access 设置步骤操作。",
+  "An active hosted subscription is required before you can use Orca.":
+    "使用 Orca 前需要有效的托管订阅。",
   "You've run out of credits. Add more credits or upgrade your plan to continue.":
     "额度已用完,请充值或升级套餐后继续。",
   "You do not have access to this resource.": "你没有访问此资源的权限。",
@@ -107,10 +107,10 @@ export const shellZh = {
   // app shell (src/client/layout/AppShell.tsx, AppShellParts.tsx)
   "Toggle sidebar": "切换侧边栏",
   "One quick setup step": "一个快速设置步骤",
-  "Add your DataForSEO API key to start using OpenSEO.":
-    "添加你的 DataForSEO API 密钥即可开始使用 OpenSEO。",
-  "Setup needed: add your DataForSEO API key to use OpenSEO features. See the quick steps on the":
-    "需要设置:添加 DataForSEO API 密钥即可使用 OpenSEO 功能。前往",
+  "Add your DataForSEO API key to start using Orca.":
+    "添加你的 DataForSEO API 密钥即可开始使用 Orca。",
+  "Setup needed: add your DataForSEO API key to use Orca features. See the quick steps on the":
+    "需要设置:添加 DataForSEO API 密钥即可使用 Orca 功能。前往",
   "We could not verify your DataForSEO setup. If features are not working, check the setup steps on the":
     "无法验证你的 DataForSEO 设置。如果功能无法使用,请查看",
   "help page": "帮助页面",

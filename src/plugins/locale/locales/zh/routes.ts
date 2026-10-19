@@ -2,15 +2,15 @@ export const routesZh = {
   "The page you are looking for does not exist.": "找不到你要访问的页面。",
 
   // AI and MCP route
-  "Connect your AI agent to OpenSEO. Run keyword research, SERP analysis, domain lookups, and backlink reviews from your editor or chat.":
-    "将你的 AI 代理连接到 OpenSEO。无需离开编辑器或对话,即可运行关键词研究、SERP 分析、域名查询和反链审查。",
+  "Connect your AI agent to Orca. Run keyword research, SERP analysis, domain lookups, and backlink reviews from your editor or chat.":
+    "将你的 AI 代理连接到 Orca。无需离开编辑器或对话,即可运行关键词研究、SERP 分析、域名查询和反链审查。",
   "This instance is behind Cloudflare Access. MCP clients cannot connect until Managed OAuth is enabled on your Access application.":
     "此实例位于 Cloudflare Access 后方。在 Access 应用中启用托管 OAuth 前,MCP 客户端无法连接。",
   "Setup guide": "设置指南",
   "MCP server URL": "MCP 服务器 URL",
   "MCP URL copied": "MCP URL 已复制",
-  "Paste this into any MCP client. This URL points at the OpenSEO instance you are using now, whether hosted, self-hosted, or local. Sign in with OpenSEO when prompted.":
-    "将此地址粘贴到任意 MCP 客户端中。此 URL 指向你当前使用的 OpenSEO 实例,无论是托管、自托管还是本地实例。出现提示时请登录 OpenSEO。",
+  "Paste this into any MCP client. This URL points at the Orca instance you are using now, whether hosted, self-hosted, or local. Sign in with Orca when prompted.":
+    "将此地址粘贴到任意 MCP 客户端中。此 URL 指向你当前使用的 Orca 实例,无论是托管、自托管还是本地实例。出现提示时请登录 Orca。",
   "For headless or CI setups, use an API key from":
     "对于无头或 CI 环境,请使用来自",
   "instead of the OAuth login.": "而不是使用 OAuth 登录。",
@@ -23,8 +23,8 @@ export const routesZh = {
   Click: "点击",
   "Add custom connector": "添加自定义连接器",
   "Paste the MCP URL above and click Add.": "粘贴上面的 MCP URL,然后点击添加。",
-  "Approve the OpenSEO login when prompted.": "出现提示时批准 OpenSEO 登录。",
-  "Optional: after OpenSEO connects, click": "可选:OpenSEO 连接后,点击",
+  "Approve the Orca login when prompted.": "出现提示时批准 Orca 登录。",
+  "Optional: after Orca connects, click": "可选:Orca 连接后,点击",
   Configure: "配置",
   "then choose": "然后选择",
   "Always Approved": "始终批准",
@@ -35,11 +35,11 @@ export const routesZh = {
   "Settings → Integrations & MCP": "设置 → 集成与 MCP",
   "Add your own": "添加你自己的",
   "Paste the MCP URL above.": "粘贴上面的 MCP URL。",
-  "OpenSEO Skills": "OpenSEO 技能",
-  "Skills give Codex and Claude Code reusable SEO workflows that can call your OpenSEO MCP tools when live SERP, keyword, backlink, or domain data is needed.":
-    "技能为 Codex 和 Claude Code 提供可复用的 SEO 工作流,在需要实时 SERP、关键词、反链或域名数据时调用你的 OpenSEO MCP 工具。",
-  "You can also auto-accept each OpenSEO skill:":
-    "你也可以自动批准每个 OpenSEO 技能:",
+  "Orca Skills": "Orca 技能",
+  "Skills give Codex and Claude Code reusable SEO workflows that can call your Orca MCP tools when live SERP, keyword, backlink, or domain data is needed.":
+    "技能为 Codex 和 Claude Code 提供可复用的 SEO 工作流,在需要实时 SERP、关键词、反链或域名数据时调用你的 Orca MCP 工具。",
+  "You can also auto-accept each Orca skill:":
+    "你也可以自动批准每个 Orca 技能:",
   "Start with": "从",
   ". It will ask about your project and save your goals, positioning, and competitors to your project context.":
     "开始。它会询问你的项目,并将目标、定位和竞争对手保存到项目上下文中。",
@@ -51,8 +51,8 @@ export const routesZh = {
   "View Sam on GitHub": "在 GitHub 查看 Sam",
   Roadmap: "路线图",
   "In-app SEO Research Agent": "应用内 SEO 研究代理",
-  "Ask questions and run research without leaving OpenSEO":
-    "无需离开 OpenSEO 即可提问并运行研究",
+  "Ask questions and run research without leaving Orca":
+    "无需离开 Orca 即可提问并运行研究",
   "Content Assistant": "内容助手",
   "Generate drafts using saved keywords and business context":
     "使用已存关键词和业务上下文生成草稿",
@@ -85,7 +85,7 @@ export const routesZh = {
   Plan: "套餐",
   "Free Plan": "免费套餐",
   "Base Plan": "基础套餐",
-  "Access to all OpenSEO features": "使用所有 OpenSEO 功能",
+  "Access to all Orca features": "使用所有 Orca 功能",
   "Includes $10.00 of Usage Credits each month":
     "每月包含 10.00 美元的使用额度",
   "Upgrade Plan": "升级套餐",
@@ -111,8 +111,8 @@ export const routesZh = {
 
   // Support and help routes
   "We want to hear from you": "我们想听听你的想法",
-  "We want to talk to you! We're super open to feedback and want to learn how you work so we can make OpenSEO better.":
-    "我们很想和你交流！我们非常欢迎反馈,也想了解你的工作方式,以便让 OpenSEO 变得更好。",
+  "We want to talk to you! We're super open to feedback and want to learn how you work so we can make Orca better.":
+    "我们很想和你交流！我们非常欢迎反馈,也想了解你的工作方式,以便让 Orca 变得更好。",
   "Email copied to clipboard": "邮箱已复制到剪贴板",
   "Send ideas, problems, questions, or feedback directly.":
     "直接发送想法、问题、疑问或反馈。",
@@ -122,9 +122,9 @@ export const routesZh = {
     "在 GitHub 报告问题或请求功能。",
   "Open an issue": "提交问题",
   "Set up your OpenRouter API key": "设置 OpenRouter API 密钥",
-  "OpenSEO needs the": "OpenSEO 需要",
-  "secret before AI features like SAM, the in-app SEO agent, can run. It is optional — everything else in OpenSEO works without it.":
-    "此密钥才能运行 SAM 这类 AI 功能和应用内 SEO 代理。它是可选的,OpenSEO 的其他功能无需此密钥也能运行。",
+  "Orca needs the": "Orca 需要",
+  "secret before AI features like SAM, the in-app SEO agent, can run. It is optional — everything else in Orca works without it.":
+    "此密钥才能运行 SAM 这类 AI 功能和应用内 SEO 代理。它是可选的,Orca 的其他功能无需此密钥也能运行。",
   Steps: "步骤",
   "Create an account at": "在以下网站创建账户:",
   "and add credits (pay-as-you-go, like DataForSEO).":
@@ -137,10 +137,10 @@ export const routesZh = {
   "Cloudflare: set it in the Workers UI (see below)":
     "Cloudflare:在 Workers 界面中设置(见下文)",
   "Local development:": "本地开发:",
-  "Restart OpenSEO.": "重启 OpenSEO。",
+  "Restart Orca.": "重启 Orca。",
   "Cloudflare Workers (Dashboard UI)": "Cloudflare Workers(控制面板界面)",
   "In Cloudflare, go to": "在 Cloudflare 中前往",
-  "and open your OpenSEO Worker.": "并打开你的 OpenSEO Worker。",
+  "and open your Orca Worker.": "并打开你的 Orca Worker。",
   "and add a new secret named": "并添加名为以下内容的新密钥:",
   "Paste your OpenRouter API key and save.":
     "粘贴你的 OpenRouter API 密钥并保存。",
@@ -165,9 +165,9 @@ export const routesZh = {
   "Authorization response did not include a redirect URL.":
     "授权响应未包含重定向 URL。",
   "Authorize MCP access": "授权 MCP 访问",
-  "An MCP client is requesting access to your OpenSEO workspace.":
-    "一个 MCP 客户端正在请求访问你的 OpenSEO 工作区。",
-  "Read your OpenSEO data": "读取你的 OpenSEO 数据",
+  "An MCP client is requesting access to your Orca workspace.":
+    "一个 MCP 客户端正在请求访问你的 Orca 工作区。",
+  "Read your Orca data": "读取你的 Orca 数据",
   "Projects, keyword reports, and audit results.":
     "项目、关键词报告和审计结果。",
   "Act on your behalf via MCP": "通过 MCP 代表你执行操作",
@@ -186,8 +186,8 @@ export const routesZh = {
   "We couldn't verify your billing status right now. Please try again.":
     "目前无法验证你的账单状态,请重试。",
   "Upgrade your plan": "升级你的套餐",
-  "Welcome to OpenSEO, {name}!": "欢迎使用 OpenSEO,{name}！",
-  "Welcome to OpenSEO!": "欢迎使用 OpenSEO！",
+  "Welcome to Orca, {name}!": "欢迎使用 Orca,{name}！",
+  "Welcome to Orca!": "欢迎使用 Orca！",
   "SEO on your terms. All your SEO tools in one place at a fair price.":
     "按你的方式使用 SEO。以合理的价格,在一个地方获得所有 SEO 工具。",
   "Keyword research, backlinks, rank tracking, and site audits":

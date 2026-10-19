@@ -86,8 +86,8 @@ export const errorsZh = {
   "We couldn't start checkout. Please refresh and try again.":
     "无法开始结算,请刷新后重试。",
   "Couldn't start the checkout. Please try again.": "无法开始结算,请重试。",
-  "Please sign in to access your OpenSEO workspace.":
-    "请登录以访问你的 OpenSEO 工作区。",
+  "Please sign in to access your Orca workspace.":
+    "请登录以访问你的 Orca 工作区。",
   "Copied data": "已复制数据",
   "Please complete the captcha to continue.": "请先完成验证码。",
   "Unable to create account right now. Please try again.":

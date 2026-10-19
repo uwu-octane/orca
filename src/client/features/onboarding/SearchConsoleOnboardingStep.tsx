@@ -48,7 +48,7 @@ export function SearchConsoleOnboardingStep() {
 
         <p className="hidden sm:block text-xs leading-relaxed text-base-content/55">
           {t(
-            "For now, Search Console data flows through the OpenSEO MCP. We're building it into the OpenSEO app soon too.",
+            "For now, Search Console data flows through the Orca MCP. We're building it into the Orca app soon too.",
           )}
         </p>
       </div>
