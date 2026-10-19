@@ -2,6 +2,11 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Orca mapping of the locally inspected desktop theme palette:
+   neutral surface/ink, translucent separators and the shared blue scale.
+   Use blue-500 for light-mode action labels/buttons to retain text contrast.
+   Desktop window translucency is not reproduced by these web theme tokens. */
+
 /* shadcn components here are built on Base UI. The shadcn variables below are
    the source of truth for theme colors. */
 
@@ -65,20 +70,20 @@
 [data-theme="openseo"] {
   color-scheme: light;
   --radius: 0.5rem;
-  --background: oklch(95.5% 0 0);
-  --foreground: oklch(20% 0 0);
-  --card: oklch(100% 0 0);
-  --card-foreground: oklch(20% 0 0);
-  --popover: oklch(100% 0 0);
-  --popover-foreground: oklch(20% 0 0);
-  --primary: oklch(50% 0.12 262);
-  --primary-foreground: oklch(100% 0 0);
-  --secondary: oklch(97% 0 0);
-  --secondary-foreground: oklch(20% 0 0);
-  --muted: oklch(97% 0 0);
-  --muted-foreground: oklch(20% 0 0 / 60%);
-  --accent: oklch(97% 0 0);
-  --accent-foreground: oklch(20% 0 0);
+  --background: #ffffff;
+  --foreground: #1a1c1f;
+  --card: #ffffff;
+  --card-foreground: #1a1c1f;
+  --popover: #ffffff;
+  --popover-foreground: #1a1c1f;
+  --primary: #0169cc;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f3f3;
+  --secondary-foreground: #1a1c1f;
+  --muted: #f9f9f9;
+  --muted-foreground: #5d5d5d;
+  --accent: #e5f3ff;
+  --accent-foreground: #004f99;
   --destructive: oklch(65% 0.2 25);
   --success: oklch(65% 0.18 145);
   --success-foreground: oklch(100% 0 0);
@@ -86,40 +91,40 @@
   --warning-foreground: oklch(25% 0.05 80);
   --info: oklch(70% 0.15 230);
   --info-foreground: oklch(100% 0 0);
-  --border: oklch(92% 0 0);
-  --input: oklch(82% 0 0);
-  --ring: oklch(50% 0.12 262);
-  --chart-1: oklch(57.5% 0.163 255.5);
-  --chart-2: oklch(67.1% 0.175 40.6);
-  --chart-3: oklch(66.9% 0.141 162.1);
-  --chart-4: oklch(76.4% 0.161 75.1);
-  --chart-5: oklch(71.6% 0.141 357.4);
-  --sidebar: oklch(91% 0 0);
-  --sidebar-foreground: oklch(20% 0 0);
-  --sidebar-primary: oklch(50% 0.12 262);
-  --sidebar-primary-foreground: oklch(100% 0 0);
-  --sidebar-accent: oklch(20% 0 0 / 8%);
-  --sidebar-accent-foreground: oklch(20% 0 0);
-  --sidebar-border: oklch(86% 0 0);
-  --sidebar-ring: oklch(50% 0.12 262);
+  --border: rgb(26 28 31 / 7.8%);
+  --input: rgb(26 28 31 / 15%);
+  --ring: #3a83f7;
+  --chart-1: #3976d3;
+  --chart-2: #b57c35;
+  --chart-3: #328a7b;
+  --chart-4: #8b6cc2;
+  --chart-5: #bf708b;
+  --sidebar: #f9f9f9;
+  --sidebar-foreground: #1a1c1f;
+  --sidebar-primary: #0169cc;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgb(26 28 31 / 4.9%);
+  --sidebar-accent-foreground: #1a1c1f;
+  --sidebar-border: rgb(26 28 31 / 7.8%);
+  --sidebar-ring: #3a83f7;
 }
 
 [data-theme="openseo-dark"] {
   color-scheme: dark;
-  --background: oklch(18% 0 0);
-  --foreground: oklch(92% 0 0);
-  --card: oklch(23% 0 0);
-  --card-foreground: oklch(92% 0 0);
-  --popover: oklch(25% 0 0);
-  --popover-foreground: oklch(92% 0 0);
-  --primary: oklch(66% 0.12 262);
-  --primary-foreground: oklch(100% 0 0);
-  --secondary: oklch(28% 0 0);
-  --secondary-foreground: oklch(92% 0 0);
-  --muted: oklch(18% 0 0);
-  --muted-foreground: oklch(92% 0 0 / 60%);
-  --accent: oklch(28% 0 0);
-  --accent-foreground: oklch(92% 0 0);
+  --background: #181818;
+  --foreground: #ffffff;
+  --card: #212121;
+  --card-foreground: #ffffff;
+  --popover: #303030;
+  --popover-foreground: #ffffff;
+  --primary: #99ceff;
+  --primary-foreground: #00284d;
+  --secondary: #303030;
+  --secondary-foreground: #ffffff;
+  --muted: #212121;
+  --muted-foreground: #cdcdcd;
+  --accent: #00284d;
+  --accent-foreground: #99ceff;
   --destructive: oklch(65% 0.2 25);
   --success: oklch(65% 0.18 145);
   --success-foreground: oklch(100% 0 0);
@@ -127,32 +132,40 @@
   --warning-foreground: oklch(25% 0.05 80);
   --info: oklch(70% 0.15 230);
   --info-foreground: oklch(100% 0 0);
-  --border: oklch(30% 0 0);
-  --input: oklch(40% 0 0);
-  --ring: oklch(66% 0.12 262);
-  --chart-1: oklch(62.2% 0.161 255.1);
-  --chart-2: oklch(62.2% 0.173 40.1);
-  --chart-3: oklch(62.1% 0.128 163.1);
-  --chart-4: oklch(67% 0.143 73.2);
-  --chart-5: oklch(62.2% 0.171 0.8);
-  --sidebar: oklch(24% 0 0);
-  --sidebar-foreground: oklch(92% 0 0);
-  --sidebar-primary: oklch(66% 0.12 262);
-  --sidebar-primary-foreground: oklch(100% 0 0);
-  --sidebar-accent: oklch(100% 0 0 / 8%);
-  --sidebar-accent-foreground: oklch(92% 0 0);
-  --sidebar-border: oklch(31% 0 0);
-  --sidebar-ring: oklch(66% 0.12 262);
+  --border: rgb(255 255 255 / 8.4%);
+  --input: rgb(255 255 255 / 15.6%);
+  --ring: #63a8f8;
+  --chart-1: #82aef3;
+  --chart-2: #d5aa72;
+  --chart-3: #75b9aa;
+  --chart-4: #b59ada;
+  --chart-5: #da9ab0;
+  --sidebar: #131313;
+  --sidebar-foreground: #ededed;
+  --sidebar-primary: #99ceff;
+  --sidebar-primary-foreground: #00284d;
+  --sidebar-accent: rgb(255 255 255 / 5.2%);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgb(255 255 255 / 8.4%);
+  --sidebar-ring: #63a8f8;
 }
 
 :root {
-  --trend-grid-color: oklch(56% 0.01 255 / 0.28);
-  --trend-axis-color: oklch(42% 0.01 255 / 0.85);
-  --trend-fill-start-opacity: 0.32;
-  --trend-fill-end-opacity: 0.05;
-  --trend-tooltip-bg: oklch(99% 0.005 255 / 0.96);
-  --trend-tooltip-border: oklch(84% 0.01 255 / 0.7);
-  --trend-tooltip-shadow: oklch(0% 0 0 / 0.1);
+  --trend-grid-color: rgb(26 28 31 / 7.8%);
+  --trend-axis-color: #5d5d5d;
+  --trend-fill-start-opacity: 0.18;
+  --trend-fill-end-opacity: 0.02;
+  --trend-tooltip-bg: #ffffff;
+  --trend-tooltip-border: rgb(26 28 31 / 7.8%);
+  --trend-tooltip-shadow: rgb(24 39 64 / 0.08);
+}
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
 }
 
 html,
@@ -341,11 +354,11 @@ html[data-theme="openseo-dark"] .score-tier-6 {
 }
 
 html[data-theme="openseo-dark"] {
-  --trend-grid-color: oklch(78% 0.01 255 / 0.22);
-  --trend-axis-color: oklch(84% 0.01 255 / 0.62);
+  --trend-grid-color: rgb(255 255 255 / 8.4%);
+  --trend-axis-color: #cdcdcd;
   --trend-fill-start-opacity: 0.24;
   --trend-fill-end-opacity: 0.03;
-  --trend-tooltip-bg: oklch(21% 0.01 255 / 0.95);
-  --trend-tooltip-border: oklch(40% 0.01 255 / 0.65);
+  --trend-tooltip-bg: #303030;
+  --trend-tooltip-border: rgb(255 255 255 / 15.6%);
   --trend-tooltip-shadow: oklch(0% 0 0 / 0.35);
 }
