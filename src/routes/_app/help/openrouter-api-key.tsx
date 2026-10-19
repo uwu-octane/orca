@@ -20,8 +20,7 @@ function OpenrouterApiKeyHelpPage() {
       title={t("Set up your OpenRouter API key")}
       intro={
         <>
-          {t("Orca needs the")}
-          <code>OPENROUTER_API_KEY</code>{" "}
+          {t("Orca needs the")} <code>OPENROUTER_API_KEY</code>{" "}
           {t(
             "secret before AI features like SAM, the in-app SEO agent, can run. It is optional — everything else in Orca works without it.",
           )}
@@ -50,30 +49,28 @@ function OpenrouterApiKeyHelpPage() {
               target="_blank"
               rel="noreferrer"
             >
-              OpenRouter API Keys
+              {t("OpenRouter API Keys")}
             </a>{" "}
             {t('and click "Create API Key".')}
           </li>
           <li>
-            {t("Save the key as the")}
-            <code>OPENROUTER_API_KEY</code> {t("secret in your environment:")}
+            {t("Save the key as the")} <code>OPENROUTER_API_KEY</code>{" "}
+            {t("secret in your environment:")}
             <ul className="mt-2 list-disc space-y-1 pl-5">
               <li>
-                {t("Docker self-hosting:")}
-                <code>.env</code>
+                {t("Docker self-hosting:")} <code>.env</code>
               </li>
               <li>{t("Cloudflare: set it in the Workers UI (see below)")}</li>
               <li>
-                {t("Local development:")}
-                <code>.env.local</code>
+                {t("Local development:")} <code>.env.local</code>
               </li>
             </ul>
           </li>
           <li>{t("Restart Orca.")}</li>
         </>
       }
-      dashboardPasteStep="Paste your OpenRouter API key and save."
-      terminalPromptHint="Paste your OpenRouter API key when prompted."
+      dashboardPasteStep={t("Paste your OpenRouter API key and save.")}
+      terminalPromptHint={t("Paste your OpenRouter API key when prompted.")}
     />
   );
 }

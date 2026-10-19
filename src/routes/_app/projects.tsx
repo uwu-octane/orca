@@ -39,7 +39,9 @@ function ProjectsPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
           title={t("Projects")}
-          description="Each project has its own Search Console, rank tracking, and audits."
+          description={t(
+            "Each project has its own Search Console, rank tracking, and audits.",
+          )}
           actions={
             <Button onClick={() => setCreating(true)}>
               <Plus data-icon="inline-start" />
@@ -50,7 +52,7 @@ function ProjectsPage() {
 
         <QueryState
           query={projectsQuery}
-          errorFallback="Failed to load projects"
+          errorFallback={t("Failed to load projects")}
         >
           {(data) => (
             <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
@@ -73,7 +75,7 @@ function ProjectsPage() {
                         ) : null}
                       </span>
                       <span className="truncate text-xs text-muted-foreground">
-                        {project.domain ?? "No domain set"}
+                        {project.domain ?? t("No domain set")}
                       </span>
                     </span>
                     <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -112,7 +114,7 @@ function ArchivedProjects() {
       await queryClient.invalidateQueries({
         queryKey: projectsQueryOptions().queryKey,
       });
-      toast.success("Project restored");
+      toast.success(t("Project restored"));
     },
   });
 
@@ -132,7 +134,7 @@ function ArchivedProjects() {
                 {project.name}
               </span>
               <span className="truncate text-xs text-muted-foreground">
-                {project.domain ?? "No domain set"}
+                {project.domain ?? t("No domain set")}
               </span>
             </span>
             <Button

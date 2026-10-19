@@ -21,8 +21,7 @@ function DataforseoApiKeyHelpPage() {
       title={t("Set up your DataForSEO API key")}
       intro={
         <>
-          {t("Orca needs the")}
-          <code>DATAFORSEO_API_KEY</code>{" "}
+          {t("Orca needs the")} <code>DATAFORSEO_API_KEY</code>{" "}
           {t("secret before keyword, domain, and SEO data workflows can run.")}
         </>
       }
@@ -37,7 +36,7 @@ function DataforseoApiKeyHelpPage() {
               target="_blank"
               rel="noreferrer"
             >
-              DataForSEO API Access
+              {t("DataForSEO API Access")}
             </a>{" "}
             {t("and request API credentials by email.")}
           </li>
@@ -48,16 +47,18 @@ function DataforseoApiKeyHelpPage() {
             <CommandBlock command="printf '%s' 'YOUR_LOGIN:YOUR_PASSWORD' | base64" />
           </li>
           <li>
-            Save the output as the <code>DATAFORSEO_API_KEY</code>{" "}
+            {t("Save the output as the")} <code>DATAFORSEO_API_KEY</code>{" "}
             {t("secret in your environment.")}
           </li>
         </>
       }
-      dashboardPasteStep="Paste the base64 value from the terminal command above and save."
+      dashboardPasteStep={t(
+        "Paste the base64 value from the terminal command above and save.",
+      )}
       terminalPromptHint={
         <>
-          {t("Use the base64 value of")}
-          <code>login:password</code> {t("when prompted.")}
+          {t("Use the base64 value of")} <code>login:password</code>{" "}
+          {t("when prompted.")}
         </>
       }
     />

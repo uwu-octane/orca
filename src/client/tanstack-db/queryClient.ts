@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 import { MutationCache, QueryClient } from "@tanstack/query-core";
 import { toast } from "sonner";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
@@ -19,7 +20,7 @@ export const queryClient = new QueryClient({
       if (mutation.options.onError || mutation.meta?.errorToast === false) {
         return;
       }
-      toast.error(getStandardErrorMessage(error));
+      toast.error(getStandardErrorMessage(error, undefined, translate));
     },
   }),
   defaultOptions: {

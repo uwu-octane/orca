@@ -49,4 +49,12 @@ export const lighthouseZh = {
   "best-practices": "最佳实践",
   seo: "SEO",
   "Affected items ({count})": "受影响项目 ({count})",
+  "{category} issues": "{category}问题",
+  "All actionable issues": "全部可处理的问题",
+  "Saved Lighthouse payload": "已保存的 Lighthouse 数据",
+  "This Lighthouse run was saved without issue details. Re-run the audit to see them.":
+    "此次 Lighthouse 运行未保存问题详情。请重新运行审计以查看详情。",
+  Seo: "SEO",
+  all: "全部",
+  "best practices": "最佳实践",
 } satisfies Record<string, string>;

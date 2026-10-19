@@ -22,7 +22,7 @@ function RankTrackingLayout() {
           backLink={
             projectId && configId ? (
               <BackLink to="/p/$projectId/rank-tracking" params={{ projectId }}>
-                Tracked domains
+                {t("Tracked domains")}
               </BackLink>
             ) : undefined
           }

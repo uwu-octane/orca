@@ -1,3 +1,5 @@
+import { LIGHTHOUSE_CATEGORY_TABS } from "@/shared/lighthouse";
+import { categoryLabel } from "@/client/features/lighthouse/issues/utils";
 import { passwordSchema } from "@/client/features/auth/passwordSchema";
 import { HOSTED_PASSWORD_MAX_LENGTH } from "@/lib/auth-options";
 import { AGENT_SETUP_DESCRIPTION } from "@/client/features/ai-mcp/AgentSetupPanel";
@@ -287,6 +289,20 @@ describe("translate", () => {
       expect(translate(label), `untranslated billing label: ${label}`).not.toBe(
         label,
       );
+    }
+  });
+
+  it("translates Lighthouse category labels used in tabs and export menus", () => {
+    for (const category of LIGHTHOUSE_CATEGORY_TABS) {
+      for (const label of [
+        categoryLabel(category),
+        categoryLabel(category).toLowerCase(),
+      ]) {
+        expect(
+          translate(label),
+          `untranslated Lighthouse category: ${label}`,
+        ).not.toBe(label);
+      }
     }
   });
 

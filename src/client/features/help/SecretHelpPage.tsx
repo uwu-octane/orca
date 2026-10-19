@@ -16,6 +16,8 @@ export const helpLinkClassName =
 
 /** A terminal command with a copy button. */
 export function CommandBlock({ command }: { command: string }) {
+  const { t } = useLocale();
+
   return (
     <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-muted p-3">
       <pre className="min-w-0 flex-1 overflow-x-auto text-xs">
@@ -23,8 +25,8 @@ export function CommandBlock({ command }: { command: string }) {
       </pre>
       <CopyButton
         value={command}
-        successMessage="Command copied"
-        label="Copy command"
+        successMessage={t("Command copied")}
+        label={t("Copy command")}
         variant="ghost"
         size="icon-xs"
       />
@@ -76,20 +78,17 @@ export function SecretHelpPage({
           <CardContent className="space-y-3">
             <ol className="list-decimal space-y-2 pl-5">
               <li>
-                {t("In Cloudflare, go to")}
-                <code>Compute</code> -&gt; <code>Workers &amp; Pages</code>{" "}
+                {t("In Cloudflare, go to")} <code>{t("Compute")}</code> -&gt;{" "}
+                <code>Workers &amp; Pages</code>{" "}
                 {t("and open your Orca Worker.")}
               </li>
               <li>
-                {t("Open")}
-                <code>{t("Settings")}</code>
+                {t("Open")} <code>{t("Settings")}</code>
                 {t(".")}
               </li>
               <li>
-                {t("Go to")}
-                <code>Variables &amp; Secrets</code>{" "}
-                {t("and add a new secret named")}
-                <code>{secretName}</code>
+                {t("Go to")} <code>{t("Variables & Secrets")}</code>{" "}
+                {t("and add a new secret named")} <code>{secretName}</code>
                 {t(".")}
               </li>
               <li>{dashboardPasteStep}</li>

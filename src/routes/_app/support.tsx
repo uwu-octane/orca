@@ -63,14 +63,14 @@ function SupportPage() {
             description={t(
               "Ask for help, share ideas and learn from the community.",
             )}
-            cta="Join the Discord"
+            cta={t("Join the Discord")}
           />
 
           <SupportLinkCard
             href={`${GITHUB_URL}/issues`}
             title="GitHub Issues"
             description={t("Report bugs or request features on GitHub.")}
-            cta="Open an issue"
+            cta={t("Open an issue")}
           />
         </div>
       </div>

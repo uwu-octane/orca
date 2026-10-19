@@ -38,6 +38,7 @@ import {
 } from "@/client/features/saved-keywords/savedKeywordsFilterTypes";
 import {
   SAVED_KEYWORD_PAGE_SIZES,
+  savedKeywordActionMessage,
   toSavedKeywordSort,
 } from "@/client/features/saved-keywords/savedKeywordsUtils";
 import { useSavedKeywordsExport } from "@/client/features/saved-keywords/useSavedKeywordsExport";
@@ -240,12 +241,10 @@ function SavedKeywordsPage() {
       captureClientEvent("saved_keywords:bulk_remove", {
         count: result.deletedCount,
       });
-      toast.success(
-        `${result.deletedCount} keyword${result.deletedCount !== 1 ? "s" : ""} removed`,
-      );
+      toast.success(savedKeywordActionMessage("removed", result.deletedCount));
     },
     onError: (error) => {
-      setRemoveError(getStandardErrorMessage(error, t("Remove failed.")));
+      setRemoveError(getStandardErrorMessage(error, t("Remove failed."), t));
     },
   });
 
@@ -267,9 +266,7 @@ function SavedKeywordsPage() {
       setRowSelection({});
       setShowTagModal(false);
       void invalidateSavedKeywords();
-      toast.success(
-        `Updated tags for ${result.taggedCount} keyword${result.taggedCount !== 1 ? "s" : ""}`,
-      );
+      toast.success(savedKeywordActionMessage("tags", result.taggedCount));
     },
   });
 
@@ -277,9 +274,7 @@ function SavedKeywordsPage() {
     mutationFn: () => refreshSavedKeywordMetrics({ data: { projectId } }),
     onSuccess: (result) => {
       void invalidateSavedKeywords();
-      toast.success(
-        `Updated stats for ${result.updated} keyword${result.updated !== 1 ? "s" : ""}`,
-      );
+      toast.success(savedKeywordActionMessage("metrics", result.updated));
     },
   });
 
@@ -330,7 +325,7 @@ function SavedKeywordsPage() {
         {savedKeywordsQuery.isError ? (
           <QueryError
             error={savedKeywordsQuery.error}
-            fallback="Failed to load saved keywords."
+            fallback={t("Failed to load saved keywords.")}
             onRetry={() => void savedKeywordsQuery.refetch()}
             isRetrying={isFetching}
           />
@@ -390,7 +385,7 @@ function SavedKeywordsPage() {
               .then(
                 () =>
                   toast.success(
-                    `${selectedCount} keyword${selectedCount !== 1 ? "s" : ""} copied`,
+                    savedKeywordActionMessage("copied", selectedCount),
                   ),
                 () => toast.error(t("Could not copy to clipboard")),
               );

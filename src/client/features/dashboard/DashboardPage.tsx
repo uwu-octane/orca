@@ -63,7 +63,7 @@ export function DashboardPage({
       <div className="px-4 py-4 md:px-6 md:py-6">
         <QueryError
           error={activationQuery.error}
-          fallback="Failed to load dashboard"
+          fallback={t("Failed to load dashboard")}
           onRetry={() => void activationQuery.refetch()}
           isRetrying={activationQuery.isFetching}
         />

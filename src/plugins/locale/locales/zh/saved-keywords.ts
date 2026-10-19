@@ -93,4 +93,9 @@ export const savedKeywordsZh = {
   sky: "天蓝色",
   violet: "紫罗兰色",
   fuchsia: "紫红色",
+  "{count} keyword": "{count} 个关键词",
+  "{keywords} removed": "已移除 {keywords}",
+  "Updated tags for {keywords}": "已更新 {keywords}的标签",
+  "Updated stats for {keywords}": "已更新 {keywords}的指标",
+  "{keywords} copied": "已复制 {keywords}",
 } satisfies Record<string, string>;

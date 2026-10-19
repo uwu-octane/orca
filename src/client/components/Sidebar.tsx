@@ -233,7 +233,7 @@ function AccountFooter({ ready }: { ready: boolean }) {
       clearLastProjectId();
       window.location.assign("/");
     } catch (error) {
-      toast.error(getStandardErrorMessage(error));
+      toast.error(getStandardErrorMessage(error, undefined, t));
       setIsSwitching(false);
     }
   }

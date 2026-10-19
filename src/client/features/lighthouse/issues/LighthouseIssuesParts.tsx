@@ -50,7 +50,9 @@ export function LighthouseIssuesHeader({
         <BackButton onClick={onBack}>{t("Site Audit")}</BackButton>
         <span className="text-xs text-muted-foreground">
           {scannedAt
-            ? `Scanned ${new Date(scannedAt).toLocaleString()}`
+            ? t("Scanned {date}", {
+                date: new Date(scannedAt).toLocaleString(),
+              })
             : isLoading
               ? t("Reading latest issues...")
               : null}
@@ -113,10 +115,12 @@ export function LighthouseIssuesToolbar({
     variant: "all" | "current",
   ) => void;
 }) {
+  const { t } = useLocale();
+
   const exportCurrentCategory: ExportPayload =
     category === "all" ? { mode: "issues" } : { mode: "category", category };
 
-  const categoryLabelLower = selectedCategoryLabel.toLowerCase();
+  const categoryLabelLower = t(selectedCategoryLabel.toLowerCase());
 
   // One menu section per scope. The saved payload has no issue rows, so it
   // offers only the JSON formats.
@@ -130,25 +134,25 @@ export function LighthouseIssuesToolbar({
   }> = [
     {
       id: "current",
-      label: `${selectedCategoryLabel} issues`,
+      label: t("{category} issues", { category: t(selectedCategoryLabel) }),
       issues: visibleIssues,
       payload: exportCurrentCategory,
-      copied: `Copied ${categoryLabelLower} issues`,
+      copied: t("Copied {category} issues", { category: categoryLabelLower }),
     },
     {
       id: "all",
-      label: "All actionable issues",
+      label: t("All actionable issues"),
       issues: allIssues,
       payload: { mode: "issues" },
-      copied: "Copied all actionable issues",
+      copied: t("Copied all actionable issues"),
     },
     {
       id: "full",
-      label: "Saved Lighthouse payload",
+      label: t("Saved Lighthouse payload"),
       actions: ["copy-json", "json"],
       issues: [],
       payload: { mode: "full" },
-      copied: "Copied saved Lighthouse payload",
+      copied: t("Copied saved Lighthouse payload"),
     },
   ];
 

@@ -59,7 +59,7 @@ function RankTrackingConfigRoute() {
     return (
       <QueryError
         error={configsQuery.error}
-        fallback="Failed to load domain configuration"
+        fallback={t("Failed to load domain configuration")}
         onRetry={() => void configsQuery.refetch()}
         isRetrying={configsQuery.isFetching}
       />

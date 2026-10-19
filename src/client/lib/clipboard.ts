@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 import { normalizeExportValue, type CsvValue, type ExportValue } from "./csv";
 import { safeHttpUrl } from "@/shared/safe-url";
 
@@ -8,7 +9,7 @@ export async function copyTableToClipboard(
   rows: CsvValue[][],
 ): Promise<void> {
   if (typeof navigator === "undefined" || !navigator.clipboard?.write) {
-    throw new Error("Clipboard API not available in this browser.");
+    throw new Error(translate("Clipboard API not available in this browser."));
   }
 
   const safeRows = rows.map((row) =>

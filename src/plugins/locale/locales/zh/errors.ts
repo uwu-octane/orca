@@ -165,4 +165,10 @@ export const errorsZh = {
     "未找到该城市、县或地区。请从列表中选择，或清空此字段以查询全国数据。",
   "The AI visibility request could not be completed. Review the tracking settings and try again.":
     "无法完成 AI 可见性请求，请检查追踪设置后重试。",
+  "Failed to load dashboard": "无法加载仪表盘",
+  "Failed to load domain configuration": "无法加载域名配置",
+  "Failed to load saved keywords.": "无法加载已存关键词。",
+  "Failed to load projects": "无法加载项目",
+  "Clipboard API not available in this browser.":
+    "当前浏览器不支持剪贴板功能。",
 } satisfies Record<string, string>;

@@ -344,4 +344,18 @@ export const routesZh = {
   "Email address": "邮箱地址",
   Password: "密码",
   "We couldn't reach Orca. Please try again.": "无法连接到 Orca，请重试。",
+  "Copy command": "复制命令",
+  Compute: "计算",
+  "Variables & Secrets": "变量与密钥",
+  "Best Practices": "最佳实践",
+  "Search tabs": "搜索标签页",
+  "Close {label} tab": "关闭 {label} 标签页",
+  "Each project has its own Search Console, rank tracking, and audits.":
+    "每个项目都有独立的 Search Console、排名追踪和审计。",
+  "Tracked domains": "追踪的域名",
+  "Save the output as the": "将输出内容保存为",
+  "DataForSEO API Access": "DataForSEO API 访问",
+  "OpenRouter API Keys": "OpenRouter API 密钥",
+  "Project restored": "项目已恢复",
+  "Command copied": "命令已复制",
 } satisfies Record<string, string>;

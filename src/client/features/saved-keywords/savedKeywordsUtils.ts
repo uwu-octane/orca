@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 import type { CsvValue } from "@/client/lib/csv";
 import { KEYWORD_RESEARCH_HEADERS } from "@/client/features/keywords/state/keywordControllerActions";
 import type { SavedKeywordRow } from "@/types/keywords";
@@ -47,4 +48,25 @@ export function formatSavedKeywordNumber(value: number | null | undefined) {
 export function formatSavedKeywordDate(value: string | null | undefined) {
   if (!value) return "-";
   return new Date(value).toLocaleDateString();
+}
+
+/** Localized confirmations for saved-keyword actions, with English plurals. */
+export function savedKeywordActionMessage(
+  action: "removed" | "tags" | "metrics" | "copied",
+  count: number,
+): string {
+  const keywords =
+    count === 1
+      ? translate("{count} keyword", { count })
+      : translate("{count} keywords", { count });
+  switch (action) {
+    case "removed":
+      return translate("{keywords} removed", { keywords });
+    case "tags":
+      return translate("Updated tags for {keywords}", { keywords });
+    case "metrics":
+      return translate("Updated stats for {keywords}", { keywords });
+    case "copied":
+      return translate("{keywords} copied", { keywords });
+  }
 }
