@@ -177,4 +177,74 @@ export const aiSearchZh = {
   // Brand lookup target type (src/client/features/ai-search/components/BrandLookupResults.tsx)
   domain: "域名",
   keyword: "关键词",
+  "Search a brand name or domain to see how AI cites it":
+    "搜索品牌名称或域名，查看 AI 如何引用它",
+  "Failed to load brand lookup": "品牌查询结果加载失败",
+  "Enter a prompt to compare model answers": "输入提示词，比较各模型的回答",
+  "Failed to load prompt results": "提示词结果加载失败",
+  "Allow web search": "允许联网搜索",
+  "Web search country": "联网搜索国家/地区",
+  "No supported countries match.": "没有匹配的受支持国家或地区。",
+  "About country targeting": "关于国家/地区定向",
+  "A country guides web search when a model supports it. Models may answer without searching. Leave it unset to run all selected models.":
+    "支持国家/地区定向的模型会参考此设置进行联网搜索。模型也可能不搜索就直接回答。不设置国家/地区即可运行所有选中的模型。",
+  "Skipped for {country}": "在 {country} 下已跳过",
+  "No country preference": "不限国家/地区",
+  "Run {count} model": "运行 {count} 个模型",
+  "Run {count} models": "运行 {count} 个模型",
+  Skipped: "已跳过",
+  "no web search": "未联网搜索",
+  "Loading answers": "正在加载回答",
+  "Country hint sent: {country}. This is not a verified search location.":
+    "已发送国家/地区偏好：{country}。实际搜索位置尚未验证。",
+  "No country hint sent. Any search uses the provider’s default location.":
+    "未发送国家/地区偏好。如进行搜索，将使用服务提供商的默认位置。",
+  "{prompt} · {count} models": "{prompt} · {count} 个模型",
+  "Keep the brand under {count} characters": "品牌名称不能超过 {count} 个字符",
+  "Ask one prompt across ChatGPT, Claude, Gemini, and Perplexity at the same time and compare their answers: including which sources each model cites.":
+    "同时向 ChatGPT、Claude、Gemini 和 Perplexity 提出同一个问题，比较回答及各模型引用的来源。",
+  "{error} Showing earlier results.": "{error} 当前显示之前的结果。",
+  "AI mention data is temporarily unavailable for":
+    "暂时无法获取以下目标的 AI 提及数据：",
+  ". Please try again shortly.": "。请稍后重试。",
+  "No AI mentions found for": "未找到以下目标的 AI 提及：",
+  " and ": " 和 ",
+  "was unavailable — some mentions may be missing.":
+    "的数据不可用，部分提及可能缺失。",
+  "were unavailable — some mentions may be missing.":
+    "的数据不可用，部分提及可能缺失。",
+  Total: "总计",
+  "More info": "更多信息",
+  "AI answers that mention your brand or cite your website.":
+    "提及你的品牌或引用你网站的 AI 回答。",
+  "Estimated monthly searches for prompts where your brand appears in AI answers.":
+    "AI 回答中出现你品牌的提示词的预估月搜索量。",
+  "ChatGPT data covers US English only.": "ChatGPT 数据仅涵盖美国英语。",
+  "Brand name or domain": "品牌名称或域名",
+  "plus ~${cost} to compare competitors": "比较竞争对手另需约 ${cost}",
+  "Which AI surface produced the answer — ChatGPT or Google AI Overview.":
+    "回答来自哪个 AI 平台：ChatGPT 或 Google AI Overview。",
+  "pricing, reviews": "价格, 评价",
+  "login, download": "登录, 下载",
+  "· no comparable data": "· 无可比较的数据",
+  "Share of mentions on {platforms}": "在 {platforms} 上的提及占比",
+  "{brand} share of the leader": "{brand} 相对于首位的占比",
+  "Cited pages within ": "以下范围内被引用的页面：",
+  "Pages cited alongside ": "与以下目标一同被引用的页面：",
+  " in AI answers.": "（来自 AI 回答）。",
+  "Prompt examples come from the fetched sample.": "提示词示例来自获取的样本。",
+  "Fetched sample of prompts whose AI answer cited a page within ":
+    "获取的提示词样本，其 AI 回答引用了以下范围内的页面：",
+  "Fetched sample of prompts whose AI answer cited ":
+    "获取的提示词样本，其 AI 回答引用了以下目标：",
+  " in its text or sources.": "（在回答文本或来源中）。",
+  "None of this domain's top cited pages fall under {target}.":
+    "该域名下被引用最多的页面均不在 {target} 范围内。",
+  "Broaden the scope to see domain-level citations.":
+    "扩大范围以查看整个域名的引用。",
+  "No sampled prompts cited a page under {target}.":
+    "没有样本提示词引用 {target} 范围内的页面。",
+  "Broaden the scope to see domain-level prompts.":
+    "扩大范围以查看整个域名的提示词样本。",
+  "vs {competitors}": "对比 {competitors}",
 } satisfies Record<string, string>;

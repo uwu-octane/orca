@@ -163,22 +163,25 @@ export function CitationTabsCard({
               {pagesActive ? (
                 <>
                   {isUrlScoped
-                    ? "Cited pages within "
-                    : "Pages cited alongside "}
+                    ? t("Cited pages within ")
+                    : t("Pages cited alongside ")}
                   <strong className="text-foreground">
                     {result.resolvedTarget}
                   </strong>
-                  {isUrlScoped ? t(".") : " in AI answers."} Prompt examples
-                  come from the fetched sample.
+                  {isUrlScoped ? t(".") : t(" in AI answers.")}{" "}
+                  {t("Prompt examples come from the fetched sample.")}
                 </>
               ) : (
                 <>
-                  Fetched sample of prompts whose AI answer cited{" "}
-                  {isUrlScoped ? "a page within " : null}
+                  {isUrlScoped
+                    ? t(
+                        "Fetched sample of prompts whose AI answer cited a page within ",
+                      )
+                    : t("Fetched sample of prompts whose AI answer cited ")}
                   <strong className="text-foreground">
                     {result.resolvedTarget}
                   </strong>
-                  {isUrlScoped ? t(".") : " in its text or sources."}
+                  {isUrlScoped ? t(".") : t(" in its text or sources.")}
                 </>
               )}
             </p>
@@ -232,10 +235,12 @@ export function CitationTabsCard({
       table={pagesTable}
       empty={{
         title: isUrlScoped
-          ? `None of this domain's top cited pages fall under ${result.resolvedTarget}.`
+          ? t("None of this domain's top cited pages fall under {target}.", {
+              target: result.resolvedTarget,
+            })
           : t("No cited sources to show."),
         description: isUrlScoped
-          ? "Broaden the scope to see domain-level citations."
+          ? t("Broaden the scope to see domain-level citations.")
           : undefined,
       }}
       {...tableProps}
@@ -245,10 +250,12 @@ export function CitationTabsCard({
       table={queriesTable}
       empty={{
         title: isUrlScoped
-          ? `No sampled prompts cited a page under ${result.resolvedTarget}.`
+          ? t("No sampled prompts cited a page under {target}.", {
+              target: result.resolvedTarget,
+            })
           : t("No matching queries found."),
         description: isUrlScoped
-          ? "Broaden the scope to see domain-level prompts."
+          ? t("Broaden the scope to see domain-level prompts.")
           : undefined,
       }}
       {...tableProps}

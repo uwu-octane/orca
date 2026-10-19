@@ -11,6 +11,7 @@ import { rankTrackingZh } from "./rank-tracking";
 import { gscZh } from "./gsc";
 import { searchPerformanceZh } from "./search-performance";
 import { lighthouseZh } from "./lighthouse";
+import { countriesZh } from "./countries";
 import { aiSearchZh } from "./ai-search";
 import { billingZh } from "./billing";
 import { projectsZh } from "./projects";
@@ -47,6 +48,7 @@ export const zh = {
   ...searchPerformanceZh,
   ...lighthouseZh,
   ...aiSearchZh,
+  ...countriesZh,
   ...billingZh,
   ...projectsZh,
   ...onboardingZh,

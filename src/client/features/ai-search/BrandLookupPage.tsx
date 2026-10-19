@@ -40,24 +40,6 @@ type Props = {
 
 const KEYWORD_SCOPE_REASON = "Scopes apply to domain lookups";
 
-const BRAND_LOOKUP_BULLETS = [
-  {
-    icon: TrendingUp,
-    title: "Track AI visibility",
-    body: "See estimated counts for ChatGPT and Google AI Overview answers that cite your brand, and watch the trend month over month.",
-  },
-  {
-    icon: Quote,
-    title: "See the prompts",
-    body: "View sample user questions where LLMs reference your brand or domain.",
-  },
-  {
-    icon: BarChart3,
-    title: "Map the competition",
-    body: "Spot the pages LLMs cite alongside you so you know who's competing for attention in AI answers.",
-  },
-];
-
 export function BrandLookupPage({
   projectId,
   initialQuery,
@@ -66,6 +48,29 @@ export function BrandLookupPage({
   onSearchChange,
 }: Props) {
   const { t } = useLocale();
+  const BRAND_LOOKUP_BULLETS = [
+    {
+      icon: TrendingUp,
+      title: t("Track AI visibility"),
+      body: t(
+        "See estimated counts for ChatGPT and Google AI Overview answers that cite your brand, and watch the trend month over month.",
+      ),
+    },
+    {
+      icon: Quote,
+      title: t("See the prompts"),
+      body: t(
+        "View sample user questions where LLMs reference your brand or domain.",
+      ),
+    },
+    {
+      icon: BarChart3,
+      title: t("Map the competition"),
+      body: t(
+        "Spot the pages LLMs cite alongside you so you know who's competing for attention in AI answers.",
+      ),
+    },
+  ];
 
   const planStatus = useHostedPlanGate();
   const [query, setQuery] = useState(initialQuery);
@@ -152,7 +157,9 @@ export function BrandLookupPage({
     if (trimmed.length > BRAND_LOOKUP_MAX_INPUT_LENGTH) {
       setValidationError({
         field: "query",
-        message: `Keep it under ${BRAND_LOOKUP_MAX_INPUT_LENGTH} characters`,
+        message: t("Keep it under {count} characters", {
+          count: BRAND_LOOKUP_MAX_INPUT_LENGTH,
+        }),
       });
       return;
     }
@@ -167,7 +174,9 @@ export function BrandLookupPage({
     if (tooLong) {
       setValidationError({
         field: "competitors",
-        message: `Keep each competitor under ${BRAND_LOOKUP_MAX_INPUT_LENGTH} characters`,
+        message: t("Keep each competitor under {count} characters", {
+          count: BRAND_LOOKUP_MAX_INPUT_LENGTH,
+        }),
       });
       return;
     }
@@ -179,7 +188,10 @@ export function BrandLookupPage({
     if (matchesTarget) {
       setValidationError({
         field: "competitors",
-        message: `"${matchesTarget}" matches the brand you're looking up — remove it from competitors`,
+        message: t(
+          '"{target}" matches the brand you\'re looking up — remove it from competitors',
+          { target: matchesTarget },
+        ),
       });
       return;
     }
@@ -212,7 +224,7 @@ export function BrandLookupPage({
       title={t("Brand Lookup")}
       description={t("See how AI search cites any brand name or domain.")}
       gate={{
-        feature: "Brand Lookup",
+        feature: t("Brand Lookup"),
         description: t(
           "See how ChatGPT and Google AI Overview cite any brand or domain — total mentions, sample prompts where it appears, and the pages cited alongside it.",
         ),
@@ -230,7 +242,9 @@ export function BrandLookupPage({
           }}
           scope={selectedScope}
           onScopeChange={setScopeChoice}
-          scopeDisabledReason={scopeDisabledReason}
+          scopeDisabledReason={
+            scopeDisabledReason ? t(scopeDisabledReason) : undefined
+          }
           competitors={competitorsInput}
           onCompetitorsChange={(next) => {
             setCompetitorsInput(next);
@@ -243,7 +257,7 @@ export function BrandLookupPage({
       }
       query={lookupQuery}
       hasActiveQuery={hasActiveQuery}
-      errorFallback="Failed to load brand lookup"
+      errorFallback={t("Failed to load brand lookup")}
       // The form resets whenever the URL `q`/`c`/`scope` changes, including
       // browser back and history links. `competitorKey` is a stable string,
       // unlike the fresh-each-render `initialCompetitors` array.
@@ -282,7 +296,7 @@ export function BrandLookupPage({
           loaded={historyLoaded}
           onRemove={removeHistoryItem}
           emptyIcon={Sparkles}
-          emptyTitle="Search a brand name or domain to see how AI cites it"
+          emptyTitle={t("Search a brand name or domain to see how AI cites it")}
           getTitle={(item) => (
             <>
               {item.query}
@@ -290,14 +304,16 @@ export function BrandLookupPage({
                   adds information the query string doesn't carry. */}
               {item.scope ? (
                 <Badge variant="secondary" className="ml-2">
-                  {RESEARCH_SCOPE_LABELS[item.scope]}
+                  {t(RESEARCH_SCOPE_LABELS[item.scope])}
                 </Badge>
               ) : null}
             </>
           )}
           getSubtitle={(item) =>
             item.competitors.length > 0
-              ? `vs ${item.competitors.join(", ")}`
+              ? t("vs {competitors}", {
+                  competitors: item.competitors.join(", "),
+                })
               : null
           }
           renderLink={(item, props) => (

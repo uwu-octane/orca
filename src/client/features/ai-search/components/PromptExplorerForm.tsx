@@ -161,7 +161,7 @@ export function PromptExplorerForm({
                 spellCheck={false}
               />
               <FieldDescription>
-                We&apos;ll flag whether each model mentions this brand.
+                {t("We'll flag whether each model mentions this brand.")}
               </FieldDescription>
             </Field>
 
@@ -179,8 +179,11 @@ export function PromptExplorerForm({
                       {unsupportedModels.includes(model) &&
                       form.webSearchCountryCode !== "default" ? (
                         <span className="block text-xs text-muted-foreground">
-                          Skipped for{" "}
-                          {formatCountryLabel(form.webSearchCountryCode)}
+                          {t("Skipped for {country}", {
+                            country: t(
+                              formatCountryLabel(form.webSearchCountryCode),
+                            ),
+                          })}
                         </span>
                       ) : null}
                     </span>
@@ -197,7 +200,7 @@ export function PromptExplorerForm({
                   checked={form.webSearch}
                   onCheckedChange={onWebSearchChange}
                 />
-                Allow web search
+                {t("Allow web search")}
               </Label>
               <Combobox
                 items={countryItems}
@@ -206,7 +209,7 @@ export function PromptExplorerForm({
                     (item) => item.value === form.webSearchCountryCode,
                   ) ?? null
                 }
-                itemToStringLabel={(item) => item.label}
+                itemToStringLabel={(item) => t(item.label)}
                 autoHighlight
                 onValueChange={(item) => {
                   if (item) onCountryChange(item.value);
@@ -214,16 +217,18 @@ export function PromptExplorerForm({
                 disabled={!form.webSearch}
               >
                 <ComboboxInput
-                  aria-label="Web search country"
+                  aria-label={t("Web search country")}
                   placeholder={t("Search countries")}
                   className="w-full sm:w-80"
                 />
                 <ComboboxContent>
-                  <ComboboxEmpty>No supported countries match.</ComboboxEmpty>
+                  <ComboboxEmpty>
+                    {t("No supported countries match.")}
+                  </ComboboxEmpty>
                   <ComboboxList>
                     {(item: (typeof COUNTRY_ITEMS)[number]) => (
                       <ComboboxItem key={item.value} value={item}>
-                        {item.label}
+                        {t(item.label)}
                       </ComboboxItem>
                     )}
                   </ComboboxList>
@@ -234,7 +239,7 @@ export function PromptExplorerForm({
                   render={
                     <button
                       type="button"
-                      aria-label="About country targeting"
+                      aria-label={t("About country targeting")}
                       className="text-muted-foreground"
                     />
                   }
@@ -242,9 +247,9 @@ export function PromptExplorerForm({
                   <Info className="size-4" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  A country guides web search when a model supports it. Models
-                  may answer without searching. Leave it unset to run all
-                  selected models.
+                  {t(
+                    "A country guides web search when a model supports it. Models may answer without searching. Leave it unset to run all selected models.",
+                  )}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -253,9 +258,9 @@ export function PromptExplorerForm({
               className="px-6"
               disabled={supportedModels.length === 0}
             >
-              {t("Run")}
-              {supportedModels.length}{" "}
-              {supportedModels.length === 1 ? "model" : "models"}
+              {supportedModels.length === 1
+                ? t("Run {count} model", { count: supportedModels.length })
+                : t("Run {count} models", { count: supportedModels.length })}
             </Button>
           </div>
 

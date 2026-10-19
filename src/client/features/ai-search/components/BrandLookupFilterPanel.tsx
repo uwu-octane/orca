@@ -85,14 +85,13 @@ function FilterRangeInputs({
   );
 }
 
-const PLATFORM_ITEMS = [
-  { value: "all", icon: null, label: "All" },
-  { value: "chat_gpt", icon: null, label: formatPlatformLabel("chat_gpt") },
-  { value: "google", icon: null, label: formatPlatformLabel("google") },
-];
-
 function PlatformToggle({ form }: { form: AnyForm }) {
   const { t } = useLocale();
+  const PLATFORM_ITEMS = [
+    { value: "all", icon: null, label: t("All") },
+    { value: "chat_gpt", icon: null, label: formatPlatformLabel("chat_gpt") },
+    { value: "google", icon: null, label: formatPlatformLabel("google") },
+  ];
 
   return (
     <DataTableFilterGroup label={t("Platform")}>
@@ -166,13 +165,13 @@ function QueriesFilters({
           form={form}
           name="include"
           label={t("Include Terms")}
-          placeholder="pricing, reviews"
+          placeholder={t("pricing, reviews")}
         />
         <FilterTextInput
           form={form}
           name="exclude"
           label={t("Exclude Terms")}
-          placeholder="login, download"
+          placeholder={t("login, download")}
         />
       </div>
 

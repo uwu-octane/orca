@@ -54,8 +54,9 @@ export function BrandLookupResults({ result, projectId }: Props) {
         <Alert variant="warning">
           <TriangleAlert aria-hidden />
           <AlertTitle className="font-normal">
-            AI mention data is temporarily unavailable for{" "}
-            <strong>{result.resolvedTarget}</strong>. Please try again shortly.
+            {t("AI mention data is temporarily unavailable for")}{" "}
+            <strong>{result.resolvedTarget}</strong>
+            {t(". Please try again shortly.")}
           </AlertTitle>
         </Alert>
       );
@@ -65,7 +66,8 @@ export function BrandLookupResults({ result, projectId }: Props) {
         <Alert variant="info">
           <Info aria-hidden />
           <AlertTitle className="font-normal">
-            No AI mentions found for <strong>{result.resolvedTarget}</strong>
+            {t("No AI mentions found for")}{" "}
+            <strong>{result.resolvedTarget}</strong>
             {t(".")}
           </AlertTitle>
         </Alert>
@@ -74,9 +76,10 @@ export function BrandLookupResults({ result, projectId }: Props) {
             {t("Note:")}{" "}
             {erroredPlatforms
               .map((p) => formatPlatformLabel(p.platform))
-              .join(" and ")}{" "}
-            {erroredPlatforms.length === 1 ? "was" : "were"} unavailable — some
-            mentions may be missing.
+              .join(t(" and "))}{" "}
+            {erroredPlatforms.length === 1
+              ? t("was unavailable — some mentions may be missing.")
+              : t("were unavailable — some mentions may be missing.")}
           </p>
         ) : null}
       </div>
@@ -130,12 +133,13 @@ function BrandHeader({ result }: { result: BrandLookupResult }) {
         </h2>
         <Badge variant="secondary">{t(result.detectedTargetType)}</Badge>
         {result.scope ? (
-          <Badge variant="outline">{RESEARCH_SCOPE_LABELS[result.scope]}</Badge>
+          <Badge variant="outline">
+            {t(RESEARCH_SCOPE_LABELS[result.scope])}
+          </Badge>
         ) : null}
       </div>
       <p className="ml-auto text-xs text-muted-foreground">
-        {t("Updated")}
-        {formatRelative(result.fetchedAt)}
+        {t("Updated")} {formatRelative(result.fetchedAt)}
       </p>
     </section>
   );
@@ -171,7 +175,7 @@ function StatsCard({ result }: { result: BrandLookupResult }) {
         </TableHeader>
         <TableBody>
           <TableRow className="font-medium">
-            <TableCell>Total</TableCell>
+            <TableCell>{t("Total")}</TableCell>
             <TableCell className="text-right tabular-nums">
               {formatCount(result.totalMentions)}
             </TableCell>
@@ -191,7 +195,7 @@ function StatsCard({ result }: { result: BrandLookupResult }) {
                     <InfoTooltip text="ChatGPT data covers US English only." />
                   )}
                   {row.status === "error" && (
-                    <span className="text-destructive">Unavailable</span>
+                    <span className="text-destructive">{t("Unavailable")}</span>
                   )}
                 </span>
               </TableCell>
@@ -232,17 +236,19 @@ function MentionTrendCard({ result }: { result: BrandLookupResult }) {
 }
 
 function InfoTooltip({ text }: { text: string }) {
+  const { t } = useLocale();
+
   return (
     <Tooltip>
       <TooltipTrigger
         delay={150}
-        aria-label="More info"
+        aria-label={t("More info")}
         className="inline-flex rounded-sm text-muted-foreground/70 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
       >
         <Info className="size-3" />
       </TooltipTrigger>
       <TooltipContent className="normal-case tracking-normal font-normal">
-        {text}
+        {t(text)}
       </TooltipContent>
     </Tooltip>
   );
@@ -256,9 +262,9 @@ function formatRelative(iso: string): string {
   const diffMin = Math.floor(diffMs / 60_000);
 
   if (diffMin < 1) return translate("just now");
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 60) return translate("{count}m ago", { count: diffMin });
   const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffHr < 24) return translate("{count}h ago", { count: diffHr });
   const diffDay = Math.floor(diffHr / 24);
-  return `${diffDay}d ago`;
+  return translate("{count}d ago", { count: diffDay });
 }

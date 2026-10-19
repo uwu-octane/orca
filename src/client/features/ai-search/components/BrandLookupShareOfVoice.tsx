@@ -52,7 +52,7 @@ export function BrandLookupShareOfVoice({
           <span className="text-xs text-muted-foreground">
             <span className="font-medium text-foreground">{target.label}</span>{" "}
             {target.sharePct == null
-              ? "· no comparable data"
+              ? t("· no comparable data")
               : `· ${Math.round(target.sharePct)}%`}
           </span>
         ) : null}
@@ -72,8 +72,11 @@ export function BrandLookupShareOfVoice({
       {/* Captions only the platforms actually summed — when one platform's
           cross_aggregated call failed, the leaderboard must not claim both. */}
       <p className="border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
-        Share of mentions on{" "}
-        {shareOfVoice.platforms.map(formatPlatformLabel).join(" and ")}
+        {t("Share of mentions on {platforms}", {
+          platforms: shareOfVoice.platforms
+            .map(formatPlatformLabel)
+            .join(t(" and ")),
+        })}
       </p>
     </div>
   );
@@ -113,7 +116,7 @@ function LeaderboardRow({
         </div>
         <Progress
           value={barWidth}
-          aria-label={`${entry.label} share of the leader`}
+          aria-label={t("{brand} share of the leader", { brand: entry.label })}
           className={cn(
             "mt-1.5 **:data-[slot=progress-track]:h-1.5",
             !entry.isTarget &&

@@ -39,7 +39,7 @@ function HeaderWithHelp({
 
   return (
     <span className="tracking-wider uppercase">
-      <HelpLabel label={t(label)} helpText={helpText} />
+      <HelpLabel label={t(label)} helpText={t(helpText)} />
     </span>
   );
 }

@@ -95,8 +95,17 @@ function ModelResultCard({
 
       <p className="px-5 pt-3 text-xs text-muted-foreground">
         {modelResult.webSearchCountryCode
-          ? `Country hint sent: ${formatCountryLabel(modelResult.webSearchCountryCode)}. This is not a verified search location.`
-          : "No country hint sent. Any search uses the provider’s default location."}
+          ? t(
+              "Country hint sent: {country}. This is not a verified search location.",
+              {
+                country: t(
+                  formatCountryLabel(modelResult.webSearchCountryCode),
+                ),
+              },
+            )
+          : t(
+              "No country hint sent. Any search uses the provider’s default location.",
+            )}
       </p>
       <div className="px-5 py-5">
         <MarkdownAnswer text={modelResult.text} />
@@ -138,10 +147,11 @@ function CitationsList({
   citations: PromptExplorerCitation[];
   highlightBrand: string | null;
 }) {
+  const { t } = useLocale();
   return (
     <div className="border-t border-border bg-muted/30 px-5 py-3">
       <p className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-        Cited sources ({citations.length})
+        {t("Cited sources ({count})", { count: citations.length })}
       </p>
       <ExpandableList
         items={citations}
@@ -208,7 +218,7 @@ function ModelHeader({
           <Badge variant="destructive">{t("Error")}</Badge>
         ) : null}
         {status === "skipped" ? (
-          <Badge variant="secondary">Skipped</Badge>
+          <Badge variant="secondary">{t("Skipped")}</Badge>
         ) : null}
         <BrandMentionBadge
           mentioned={brandMentioned}
@@ -224,7 +234,7 @@ function ModelHeader({
           // are no cited sources on this card.
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
             <Globe className="size-3" />
-            no web search
+            {t("no web search")}
           </span>
         ) : null}
       </div>
@@ -244,6 +254,7 @@ function BrandMentionBadge({
   mentioned: boolean | null;
   highlightBrand: string | null;
 }) {
+  const { t } = useLocale();
   if (mentioned == null || !highlightBrand) return null;
   if (mentioned) {
     return (
@@ -256,7 +267,7 @@ function BrandMentionBadge({
   return (
     <Badge variant="secondary" className="font-normal text-muted-foreground">
       <XCircle data-icon="inline-start" />
-      no {highlightBrand}
+      {t("No {brand}", { brand: highlightBrand })}
     </Badge>
   );
 }

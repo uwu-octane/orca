@@ -101,9 +101,9 @@ export function BrandLookupSearchCard({
             {hasCompetitors ? (
               <span>
                 {" "}
-                plus ~$
-                {BRAND_LOOKUP_COMPETITOR_DISPLAYED_COST_USD.toFixed(2)} to
-                compare competitors
+                {t("plus ~${cost} to compare competitors", {
+                  cost: BRAND_LOOKUP_COMPETITOR_DISPLAYED_COST_USD.toFixed(2),
+                })}
               </span>
             ) : null}
           </p>
@@ -112,7 +112,7 @@ export function BrandLookupSearchCard({
     >
       <SearchInput
         placeholder={t("Enter a brand name or domain")}
-        aria-label="Brand name or domain"
+        aria-label={t("Brand name or domain")}
         value={query}
         maxLength={BRAND_LOOKUP_MAX_INPUT_LENGTH}
         onChange={(event) => onQueryChange(event.target.value)}

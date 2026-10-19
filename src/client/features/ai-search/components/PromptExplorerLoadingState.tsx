@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { cn } from "cn";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import { getModelAccent } from "@/client/features/ai-search/platformLabels";
@@ -11,8 +12,14 @@ export function PromptExplorerLoadingState({
 }: {
   models: PromptExplorerModel[];
 }) {
+  const { t } = useLocale();
+
   return (
-    <div className="space-y-5" aria-busy="true" aria-label="Loading answers">
+    <div
+      className="space-y-5"
+      aria-busy="true"
+      aria-label={t("Loading answers")}
+    >
       {models.map((model) => (
         <article
           key={model}

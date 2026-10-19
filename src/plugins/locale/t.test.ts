@@ -1,3 +1,6 @@
+import { WEB_SEARCH_COUNTRY_CODES } from "@/shared/prompt-search-countries";
+import { formatCountryLabel } from "@/shared/prompt-explorer-labels";
+import { RESEARCH_SCOPE_LABELS } from "@/shared/researchScope";
 import { auditLighthouseResults } from "@/db/audit.schema";
 import { AUDIT_ISSUE_TYPES } from "@/shared/audit-issues";
 import {
@@ -172,6 +175,19 @@ describe("translate", () => {
       const chinese = message(1000, translate);
       expect(chinese).toContain("1,000 个页面");
       expect(chinese.match(/\$[\d.]+/g)).toEqual(english.match(/\$[\d.]+/g));
+    }
+  });
+
+  it("translates all prompt search countries and research scopes", () => {
+    const labels = [
+      ...WEB_SEARCH_COUNTRY_CODES.map(formatCountryLabel),
+      ...Object.values(RESEARCH_SCOPE_LABELS),
+    ];
+    for (const label of labels) {
+      expect(
+        translate(label),
+        `untranslated research option: ${label}`,
+      ).not.toBe(label);
     }
   });
 

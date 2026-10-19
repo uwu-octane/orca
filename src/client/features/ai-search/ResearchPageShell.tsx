@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useEffect, useRef, type ReactNode } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { PageHeader } from "@/client/components/PageHeader";
@@ -60,6 +61,7 @@ export function ResearchPageShell<TData>({
   renderResults: (data: TData) => ReactNode;
   history: ReactNode;
 }) {
+  const { t } = useLocale();
   // Browser back/forward and history links change the URL, not the form.
   // Keep the latest callback in a ref so only a URL change resets the form.
   const onUrlChangeRef = useRef(onUrlChange);
@@ -82,7 +84,7 @@ export function ResearchPageShell<TData>({
   const isLoading = hasActiveQuery && query.isPending;
   const errorMessage =
     hasActiveQuery && query.isError
-      ? getStandardErrorMessage(query.error, errorFallback)
+      ? getStandardErrorMessage(query.error, errorFallback, t)
       : null;
   const resultData = hasActiveQuery ? query.data : undefined;
 
@@ -111,7 +113,9 @@ export function ResearchPageShell<TData>({
               cause={query.error}
               fallback={
                 resultData
-                  ? `${errorMessage} Showing earlier results.`
+                  ? t("{error} Showing earlier results.", {
+                      error: errorMessage,
+                    })
                   : errorMessage
               }
               onRetry={() => void query.refetch()}

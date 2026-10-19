@@ -1,3 +1,4 @@
+import { useLocale } from "@/plugins/client/context";
 import { useMemo } from "react";
 import { Line, LineChart } from "recharts";
 import {
@@ -18,11 +19,11 @@ type Props = {
   result: BrandLookupResult;
 };
 
-const chartConfig = {
-  volume: { label: "Mentions", color: "hsl(220 70% 50%)" },
-} satisfies ChartConfig;
-
 export function BrandLookupMentionTrendCard({ result }: Props) {
+  const { t } = useLocale();
+  const chartConfig = {
+    volume: { label: t("Mentions"), color: "hsl(220 70% 50%)" },
+  } satisfies ChartConfig;
   const chartData = useMemo(
     () =>
       result.monthlyVolume.map((entry) => ({
