@@ -26,6 +26,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
   const message = getStandardErrorMessage(
     error,
     t("Something went wrong. Please try again."),
+    t,
   );
   const errorCode = getErrorCode(error);
 

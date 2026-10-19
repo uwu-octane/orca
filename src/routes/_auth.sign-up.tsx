@@ -113,7 +113,7 @@ function SignUpPage() {
           if (isTurnstileEnabled) captcha.reset();
           formApi.setErrorMap({
             onSubmit: {
-              form: result.error.message || "Unable to create account.",
+              form: result.error.message || t("Unable to create account."),
               fields: {},
             },
           });
@@ -132,7 +132,7 @@ function SignUpPage() {
         if (isTurnstileEnabled) captcha.reset();
         formApi.setErrorMap({
           onSubmit: {
-            form: "Unable to create account right now. Please try again.",
+            form: t("Unable to create account right now. Please try again."),
             fields: {},
           },
         });
@@ -198,7 +198,7 @@ function SignUpPage() {
       {!showEmailForm ? (
         <>
           <AuthMethodChooser
-            googleLabel="Continue with Google"
+            googleLabel={t("Continue with Google")}
             disabled={!isHostedMode}
             isBusy={google.isStarting}
             onContinueWithGoogle={() => {
@@ -219,7 +219,7 @@ function SignUpPage() {
             <form.AppField name="email">
               {(field) => (
                 <field.TextField
-                  label="Email address"
+                  label={t("Email address")}
                   hideLabel
                   className={authInputClassName}
                   type="email"
@@ -232,7 +232,7 @@ function SignUpPage() {
             <form.AppField name="password">
               {(field) => (
                 <field.TextField
-                  label="Password"
+                  label={t("Password")}
                   hideLabel
                   className={authInputClassName}
                   type="password"
@@ -245,7 +245,7 @@ function SignUpPage() {
             <form.AppField name="confirmPassword">
               {(field) => (
                 <field.TextField
-                  label="Confirm password"
+                  label={t("Confirm password")}
                   hideLabel
                   className={authInputClassName}
                   type="password"

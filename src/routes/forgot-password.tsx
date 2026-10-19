@@ -51,7 +51,8 @@ function ForgotPasswordPage() {
         if (result.error) {
           formApi.setErrorMap({
             onSubmit: {
-              form: result.error.message || "We couldn't send the reset email.",
+              form:
+                result.error.message || t("We couldn't send the reset email."),
               fields: {},
             },
           });
@@ -60,7 +61,9 @@ function ForgotPasswordPage() {
       } catch {
         formApi.setErrorMap({
           onSubmit: {
-            form: "We couldn't send the reset email right now. Please try again.",
+            form: t(
+              "We couldn't send the reset email right now. Please try again.",
+            ),
             fields: {},
           },
         });
@@ -108,8 +111,10 @@ function ForgotPasswordPage() {
               {isSuccess ? (
                 <Alert variant="success">
                   <AlertDescription>
-                    If an account exists for {submittedEmail}, you'll receive
-                    password reset instructions shortly.
+                    {t(
+                      "If an account exists for {email}, you'll receive password reset instructions shortly.",
+                      { email: submittedEmail },
+                    )}
                   </AlertDescription>
                 </Alert>
               ) : (
@@ -118,7 +123,7 @@ function ForgotPasswordPage() {
                     <form.AppField name="email">
                       {(field) => (
                         <field.TextField
-                          label="Email address"
+                          label={t("Email address")}
                           type="email"
                           placeholder={t("Email address...")}
                           autoComplete="email"

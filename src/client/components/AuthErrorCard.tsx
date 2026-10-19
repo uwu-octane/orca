@@ -50,6 +50,7 @@ export function AuthErrorCard({
   const message = getStandardErrorMessage(
     error,
     t("Something went wrong. Please try again."),
+    t,
   );
   return (
     <div className="flex h-full min-w-0 flex-1 items-center justify-center p-4">

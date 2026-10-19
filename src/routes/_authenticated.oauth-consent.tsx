@@ -18,21 +18,20 @@ export const Route = createFileRoute("/_authenticated/oauth-consent")({
   component: OAuthConsentPage,
 });
 
-const SCOPES = [
-  {
-    icon: Database,
-    label: "Read your Orca data",
-    description: "Projects, keyword reports, and audit results.",
-  },
-  {
-    icon: KeyRound,
-    label: "Act on your behalf via MCP",
-    description: "Run tools and write results back to your organization.",
-  },
-];
-
 function OAuthConsentPage() {
   const { t } = useLocale();
+  const SCOPES = [
+    {
+      icon: Database,
+      label: t("Read your Orca data"),
+      description: t("Projects, keyword reports, and audit results."),
+    },
+    {
+      icon: KeyRound,
+      label: t("Act on your behalf via MCP"),
+      description: t("Run tools and write results back to your organization."),
+    },
+  ];
 
   const { data: session } = useSession();
   const [pendingAction, setPendingAction] = useState<
@@ -68,15 +67,15 @@ function OAuthConsentPage() {
       } = await response.json();
 
       if (!response.ok) {
-        setError(data.error ?? "Unable to complete authorization.");
+        setError(data.error ?? t("Unable to complete authorization."));
       } else if (data.redirectTo) {
         window.location.assign(data.redirectTo);
         return;
       } else {
-        setError("Authorization response did not include a redirect URL.");
+        setError(t("Authorization response did not include a redirect URL."));
       }
     } catch {
-      setError("We couldn't reach Orca. Please try again.");
+      setError(t("We couldn't reach Orca. Please try again."));
     }
     setPendingAction(null);
   }
@@ -119,9 +118,9 @@ function OAuthConsentPage() {
               <li key={scope.label} className="flex gap-3">
                 <Check className="mt-0.5 size-4 shrink-0 text-primary" />
                 <div>
-                  <div className="text-sm font-medium">{t(scope.label)}</div>
+                  <div className="text-sm font-medium">{scope.label}</div>
                   <div className="text-xs text-muted-foreground">
-                    {t(scope.description)}
+                    {scope.description}
                   </div>
                 </div>
               </li>
@@ -144,7 +143,7 @@ function OAuthConsentPage() {
             disabled={pendingAction !== null}
             onClick={() => void respond(false)}
           >
-            {pendingAction === "cancel" ? "Canceling..." : t("Cancel")}
+            {pendingAction === "cancel" ? t("Canceling...") : t("Cancel")}
           </Button>
           <Button
             type="button"

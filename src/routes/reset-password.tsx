@@ -70,15 +70,16 @@ function getResetPasswordPageCopy({
   if (!isHostedMode) {
     return {
       title: translate("Reset password"),
-      helperText: "Password reset isn't available right now.",
+      helperText: translate("Password reset isn't available right now."),
     };
   }
 
   if (isComplete) {
     return {
       title: translate("Password updated"),
-      helperText:
+      helperText: translate(
         "Your password has been updated. Sign in with your new password.",
+      ),
     };
   }
 
@@ -87,13 +88,15 @@ function getResetPasswordPageCopy({
       title: translate("Reset link expired"),
       helperText:
         routeError ||
-        "This reset link is no longer valid. Request a new one to keep going.",
+        translate(
+          "This reset link is no longer valid. Request a new one to keep going.",
+        ),
     };
   }
 
   return {
     title: translate("Reset password"),
-    helperText: "Choose a new password for your account.",
+    helperText: translate("Choose a new password for your account."),
   };
 }
 
@@ -138,7 +141,9 @@ function ResetPasswordPage() {
       } catch {
         formApi.setErrorMap({
           onSubmit: {
-            form: "We couldn't update your password right now. Please try again.",
+            form: t(
+              "We couldn't update your password right now. Please try again.",
+            ),
             fields: {},
           },
         });
@@ -213,7 +218,7 @@ function ResetPasswordPage() {
                     <form.AppField name="password">
                       {(field) => (
                         <field.TextField
-                          label="New password"
+                          label={t("New password")}
                           type="password"
                           placeholder={t("New password...")}
                           autoComplete="new-password"
@@ -224,7 +229,7 @@ function ResetPasswordPage() {
                     <form.AppField name="confirmPassword">
                       {(field) => (
                         <field.TextField
-                          label="Confirm new password"
+                          label={t("Confirm new password")}
                           type="password"
                           placeholder={t("Confirm new password...")}
                           autoComplete="new-password"

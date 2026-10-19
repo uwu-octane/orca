@@ -34,35 +34,6 @@ const LINK_CLASS =
   "text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground";
 const MUTED_LINK_CLASS =
   "inline-flex items-center gap-1 text-sm text-muted-foreground underline decoration-foreground/25 underline-offset-4 hover:text-foreground";
-const SKILLS = [
-  ["seo-coach", "Explains where you stand and picks your next step."],
-  [
-    "seo-project-setup",
-    "Saves your goals, competitors, and key pages as shared context.",
-  ],
-  [
-    "seo-audit",
-    "One-page site audit built around a single do-this-week action.",
-  ],
-  [
-    "ai-visibility-audit",
-    "Finds the few changes most likely to get you cited in AI answers.",
-  ],
-  [
-    "ai-prompt-research",
-    "Finds what people ask ChatGPT about your market and who gets cited.",
-  ],
-  ["keyword-research", "Finds keyword opportunities from a few seed topics."],
-  ["keyword-clustering", "Groups keywords by intent and maps them to pages."],
-  ["competitive-landscape", "Maps who wins in your market and why."],
-  [
-    "competitor-analysis",
-    "Studies one competitor's keywords, content, and backlinks.",
-  ],
-  ["link-prospecting", "Finds link prospects and drafts outreach."],
-  ["local-seo", "Audits a Google Business Profile and Maps visibility."],
-  ["seo-report", "Saves any of the above as a report on your Reports page."],
-];
 
 const aiSearchSchema = z.object({
   // Active tab. Omitted for the default "setup" tab.
@@ -76,6 +47,44 @@ export const Route = createFileRoute("/_app/ai")({
 
 function AiPage() {
   const { t } = useLocale();
+  const SKILLS = [
+    ["seo-coach", t("Explains where you stand and picks your next step.")],
+    [
+      "seo-project-setup",
+      t("Saves your goals, competitors, and key pages as shared context."),
+    ],
+    [
+      "seo-audit",
+      t("One-page site audit built around a single do-this-week action."),
+    ],
+    [
+      "ai-visibility-audit",
+      t("Finds the few changes most likely to get you cited in AI answers."),
+    ],
+    [
+      "ai-prompt-research",
+      t("Finds what people ask ChatGPT about your market and who gets cited."),
+    ],
+    [
+      "keyword-research",
+      t("Finds keyword opportunities from a few seed topics."),
+    ],
+    [
+      "keyword-clustering",
+      t("Groups keywords by intent and maps them to pages."),
+    ],
+    ["competitive-landscape", t("Maps who wins in your market and why.")],
+    [
+      "competitor-analysis",
+      t("Studies one competitor's keywords, content, and backlinks."),
+    ],
+    ["link-prospecting", t("Finds link prospects and drafts outreach.")],
+    ["local-seo", t("Audits a Google Business Profile and Maps visibility.")],
+    [
+      "seo-report",
+      t("Saves any of the above as a report on your Reports page."),
+    ],
+  ];
 
   const { tab = "setup" } = Route.useSearch();
   const navigate = Route.useNavigate();
@@ -87,8 +96,10 @@ function AiPage() {
     <div className="h-full overflow-auto px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
       <div className="mx-auto max-w-7xl">
         <PageHeader
-          title="Agent setup"
-          description="The most powerful way to use Orca is through the AI agent you already use. Set it up once, then ask it anything."
+          title={t("Agent setup")}
+          description={t(
+            "The most powerful way to use Orca is through the AI agent you already use. Set it up once, then ask it anything.",
+          )}
         />
 
         <Tabs
@@ -102,20 +113,20 @@ function AiPage() {
           className="mt-8"
         >
           <TabsList variant="line">
-            <TabsTrigger value="setup">Set up your agent</TabsTrigger>
-            <TabsTrigger value="skills">Skills</TabsTrigger>
+            <TabsTrigger value="setup">{t("Set up your agent")}</TabsTrigger>
+            <TabsTrigger value="skills">{t("Skills")}</TabsTrigger>
           </TabsList>
           <TabsContent value="setup">
             <div className="mt-6 space-y-5">
               <Card size="lg">
                 <CardHeader>
                   <CardTitle>
-                    <h2>Set up your agent</h2>
+                    <h2>{t("Set up your agent")}</h2>
                   </CardTitle>
                   <CardDescription>
-                    Paste the setup prompt into your agent to connect Orca and
-                    install its SEO skills. It will guide you through any manual
-                    steps.
+                    {t(
+                      "Paste the setup prompt into your agent to connect Orca and install its SEO skills. It will guide you through any manual steps.",
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -125,8 +136,8 @@ function AiPage() {
                       variant="default"
                       size="lg"
                       value={prompt}
-                      label="Copy setup prompt"
-                      successMessage="Setup prompt copied"
+                      label={t("Copy setup prompt")}
+                      successMessage={t("Setup prompt copied")}
                       onCopy={() => captureClientEvent("mcp:setup_prompt_copy")}
                     />
                     <a
@@ -135,23 +146,23 @@ function AiPage() {
                       rel="noreferrer"
                       className={MUTED_LINK_CLASS}
                     >
-                      Setup instructions
+                      {t("Setup instructions")}
                       <ArrowUpRight className="size-3.5" />
                     </a>
                   </div>
                 </CardContent>
                 <CardFooter className="text-muted-foreground">
                   <p>
-                    Once connected, ask your agent to use{" "}
+                    {t("Once connected, ask your agent to use")}{" "}
                     <a
                       href={COACH_DOCS_URL}
                       target="_blank"
                       rel="noreferrer"
                       className={LINK_CLASS}
                     >
-                      SEO Coach
+                      {t("SEO Coach")}
                     </a>{" "}
-                    to help you choose what to do next.
+                    {t("to help you choose what to do next.")}
                   </p>
                 </CardFooter>
               </Card>
@@ -159,12 +170,12 @@ function AiPage() {
               <Card size="lg">
                 <CardHeader>
                   <CardTitle>
-                    <h2>Update your skills</h2>
+                    <h2>{t("Update your skills")}</h2>
                   </CardTitle>
                   <CardDescription>
-                    Already connected? Paste the update prompt into your agent
-                    to get the latest Orca skills while preserving your
-                    connection settings and personal edits.
+                    {t(
+                      "Already connected? Paste the update prompt into your agent to get the latest Orca skills while preserving your connection settings and personal edits.",
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -172,8 +183,8 @@ function AiPage() {
                     variant="default"
                     size="lg"
                     value={agentUpdatePrompt}
-                    label="Copy update prompt"
-                    successMessage="Update prompt copied"
+                    label={t("Copy update prompt")}
+                    successMessage={t("Update prompt copied")}
                     onCopy={() => captureClientEvent("mcp:update_prompt_copy")}
                   />
                   <a
@@ -182,7 +193,7 @@ function AiPage() {
                     rel="noreferrer"
                     className={MUTED_LINK_CLASS}
                   >
-                    Update instructions
+                    {t("Update instructions")}
                     <ArrowUpRight className="size-3.5" />
                   </a>
                 </CardContent>
@@ -210,7 +221,7 @@ function AiPage() {
 
             <div className="mt-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-border pt-5 text-xs text-muted-foreground">
               <span>
-                MCP server URL for this instance:{" "}
+                {t("MCP server URL for this instance:")}{" "}
                 <code className="font-mono text-foreground/80">{mcpUrl}</code>
               </span>
               <CopyButton
@@ -223,8 +234,9 @@ function AiPage() {
           <TabsContent value="skills">
             <section className="mt-6">
               <p className="text-sm text-muted-foreground">
-                The setup prompt installs these. Run one by name when you want a
-                full report instead of a quick answer.
+                {t(
+                  "The setup prompt installs these. Run one by name when you want a full report instead of a quick answer.",
+                )}
               </p>
               <ul className="mt-5 space-y-3 text-sm sm:space-y-2">
                 {SKILLS.map(([name, blurb]) => (

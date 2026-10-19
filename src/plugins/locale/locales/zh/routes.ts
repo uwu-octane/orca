@@ -285,4 +285,63 @@ export const routesZh = {
   "Name (optional)...": "姓名(可选)…",
   "Confirm password...": "确认密码…",
   "Creating account...": "创建账号中…",
+  "The most powerful way to use Orca is through the AI agent you already use. Set it up once, then ask it anything.":
+    "通过你常用的 AI 智能体，可以充分发挥 Orca 的能力。完成一次设置后，就可以随时提问。",
+  Skills: "技能",
+  "Paste the setup prompt into your agent to connect Orca and install its SEO skills. It will guide you through any manual steps.":
+    "将设置提示词粘贴到智能体中，即可连接 Orca 并安装 SEO 技能。需要手动操作时，智能体会引导你完成。",
+  "Setup instructions": "设置说明",
+  "Once connected, ask your agent to use": "连接后，让智能体使用",
+  "SEO Coach": "SEO 教练",
+  "to help you choose what to do next.": "帮你确定下一步行动。",
+  "Update your skills": "更新技能",
+  "Already connected? Paste the update prompt into your agent to get the latest Orca skills while preserving your connection settings and personal edits.":
+    "已经连接？将更新提示词粘贴到智能体中，即可获取最新的 Orca 技能，并保留连接设置和个人修改。",
+  "Copy update prompt": "复制更新提示词",
+  "Update prompt copied": "更新提示词已复制",
+  "Update instructions": "更新说明",
+  "MCP server URL for this instance:": "当前实例的 MCP 服务器地址：",
+  "The setup prompt installs these. Run one by name when you want a full report instead of a quick answer.":
+    "设置提示词会安装以下技能。如果需要完整报告而非简短答复，可以按名称运行对应技能。",
+  "Explains where you stand and picks your next step.":
+    "分析当前状况，确定下一步行动。",
+  "Saves your goals, competitors, and key pages as shared context.":
+    "将目标、竞争对手和关键页面保存为共享上下文。",
+  "One-page site audit built around a single do-this-week action.":
+    "围绕一项本周可执行的行动，生成一页网站审计报告。",
+  "Finds the few changes most likely to get you cited in AI answers.":
+    "找出最有可能让你获得 AI 回答引用的几项改进。",
+  "Finds what people ask ChatGPT about your market and who gets cited.":
+    "了解用户向 ChatGPT 提出的市场相关问题，以及回答引用了谁。",
+  "Finds keyword opportunities from a few seed topics.":
+    "从几个初始主题中发现关键词机会。",
+  "Groups keywords by intent and maps them to pages.":
+    "按意图对关键词分组，并匹配到页面。",
+  "Maps who wins in your market and why.": "梳理市场中的领先者及其优势原因。",
+  "Studies one competitor's keywords, content, and backlinks.":
+    "分析一个竞争对手的关键词、内容和反链。",
+  "Finds link prospects and drafts outreach.":
+    "寻找潜在的外链合作对象，并起草联系文案。",
+  "Audits a Google Business Profile and Maps visibility.":
+    "审查 Google 商家资料及其在地图中的可见度。",
+  "Saves any of the above as a report on your Reports page.":
+    "将上述任一分析保存为报告，供你在报告页面查看。",
+  "Not available": "暂不可用",
+  "This page isn't available right now.": "此页面目前不可用。",
+  "The security check couldn’t load. Allow challenges.cloudflare.com in your browser or ad blocker, then reload the page.":
+    "无法加载安全检查。请在浏览器或广告拦截工具中允许访问 challenges.cloudflare.com，然后重新加载页面。",
+  "Confirm password": "确认密码",
+  "New password": "新密码",
+  "Confirm new password": "确认新密码",
+  "Passwords do not match.": "两次输入的密码不一致。",
+  "Password must be at least 8 characters.": "密码至少需要 8 个字符。",
+  "Password must be at most 128 characters.": "密码不能超过 128 个字符。",
+  "If an account exists for {email}, you'll receive password reset instructions shortly.":
+    "如果 {email} 对应的账号存在，你很快就会收到密码重置说明。",
+  "Canceling...": "正在取消…",
+  "Run tools and write results back to your organization.":
+    "运行工具并将结果写回你的组织。",
+  "Email address": "邮箱地址",
+  Password: "密码",
+  "We couldn't reach Orca. Please try again.": "无法连接到 Orca，请重试。",
 } satisfies Record<string, string>;

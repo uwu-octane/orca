@@ -89,14 +89,14 @@ function SignInPage() {
 
         formApi.setErrorMap({
           onSubmit: {
-            form: result.error.message || "We couldn't sign you in.",
+            form: result.error.message || t("We couldn't sign you in."),
             fields: {},
           },
         });
       } catch {
         formApi.setErrorMap({
           onSubmit: {
-            form: "Unable to sign in right now. Please try again.",
+            form: t("Unable to sign in right now. Please try again."),
             fields: {},
           },
         });
@@ -139,7 +139,7 @@ function SignInPage() {
       {!showEmailForm ? (
         <>
           <AuthMethodChooser
-            googleLabel="Continue with Google"
+            googleLabel={t("Continue with Google")}
             disabled={!isHostedMode}
             isBusy={google.isStarting}
             onContinueWithGoogle={() => {
@@ -160,7 +160,7 @@ function SignInPage() {
             <form.AppField name="email">
               {(field) => (
                 <field.TextField
-                  label="Email address"
+                  label={t("Email address")}
                   hideLabel
                   className={authInputClassName}
                   type="email"
@@ -173,7 +173,7 @@ function SignInPage() {
             <form.AppField name="password">
               {(field) => (
                 <field.TextField
-                  label="Password"
+                  label={t("Password")}
                   hideLabel
                   className={authInputClassName}
                   type="password"

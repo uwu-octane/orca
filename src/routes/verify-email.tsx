@@ -73,7 +73,7 @@ function getVerifyEmailPageCopy({
   if (!isHostedMode) {
     return {
       title: translate("Verify email"),
-      helperText: "Email confirmation isn't available right now.",
+      helperText: translate("Email confirmation isn't available right now."),
     };
   }
 
@@ -87,14 +87,14 @@ function getVerifyEmailPageCopy({
   if (isRedirecting) {
     return {
       title: translate("Email confirmed"),
-      helperText: "You're all set. Taking you to your account now.",
+      helperText: translate("You're all set. Taking you to your account now."),
     };
   }
 
   if (isPending) {
     return {
       title: translate("Verify email"),
-      helperText: "Checking your email confirmation.",
+      helperText: translate("Checking your email confirmation."),
     };
   }
 
@@ -105,7 +105,9 @@ function getVerifyEmailPageCopy({
   return {
     title: translate("Verify your email"),
     helperText: email
-      ? `Click the link we sent to ${email} to verify your email.`
+      ? translate("Click the link we sent to {email} to verify your email.", {
+          email,
+        })
       : translate("Check your inbox for the link to verify your email."),
   };
 }
@@ -187,7 +189,9 @@ function VerifyEmailPage() {
         callbackURL: callbackURL.toString(),
       });
       if (result.error) {
-        toast.error(result.error.message || "We couldn't send another email.");
+        toast.error(
+          result.error.message || t("We couldn't send another email."),
+        );
         return;
       }
       captureClientEvent("auth:verification_resend");
