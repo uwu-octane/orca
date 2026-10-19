@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 // FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,16 +16,24 @@ export const crawlerCredentialsQueryKey = ["crawler-credentials"];
 export const saveCrawlerCredentialMutationKey = ["save-crawler-credential"];
 
 const signatureSchema = z.object({
-  host: z.string().trim().min(1, "Enter a domain."),
+  host: z
+    .string()
+    .trim()
+    .min(1, { error: () => translate("Enter a domain.") }),
   signatureInput: z
     .string()
     .trim()
-    .min(1, "Enter Signature-Input.")
-    .refine(
-      (value) => !isCrawlerAccessExpired(parseSignatureExpiry(value)),
-      "This signature has already expired. Create a new one in Shopify admin.",
-    ),
-  signature: z.string().trim().min(1, "Enter Signature."),
+    .min(1, { error: () => translate("Enter Signature-Input.") })
+    .refine((value) => !isCrawlerAccessExpired(parseSignatureExpiry(value)), {
+      error: () =>
+        translate(
+          "This signature has already expired. Create a new one in Shopify admin.",
+        ),
+    }),
+  signature: z
+    .string()
+    .trim()
+    .min(1, { error: () => translate("Enter Signature.") }),
 });
 
 /**
@@ -58,7 +67,9 @@ export function CrawlerAccessForm({
       await queryClient.invalidateQueries({
         queryKey: crawlerCredentialsQueryKey,
       });
-      toast.success(`Crawler access saved for ${result.credential.host}`);
+      toast.success(
+        t("Crawler access saved for {host}", { host: result.credential.host }),
+      );
       onSaved?.();
     },
   });
@@ -76,8 +87,14 @@ export function CrawlerAccessForm({
             fields: {
               signatureInput:
                 problem.reason === "wrong_domain"
-                  ? `This signature was created for ${problem.signedHost}, not ${problem.host}. In Shopify admin, create a signature for ${problem.host}.`
-                  : `Shopify won't accept this signature for ${problem.host}. Check that you created it for ${problem.host} and copied both values in full.`,
+                  ? t(
+                      "This signature was created for {signedHost}, not {host}. In Shopify admin, create a signature for {host}.",
+                      { signedHost: problem.signedHost, host: problem.host },
+                    )
+                  : t(
+                      "Shopify won't accept this signature for {host}. Check that you created it for {host} and copied both values in full.",
+                      { host: problem.host },
+                    ),
             },
           },
         });
@@ -119,7 +136,9 @@ export function CrawlerAccessForm({
           {(field) => (
             <field.TextField
               label="Signature"
-              description="Shopify also shows a Signature-Agent value. You don't need to paste it: Orca sends it with every request."
+              description={t(
+                "Shopify also shows a Signature-Agent value. You don't need to paste it: Orca sends it with every request.",
+              )}
               type="password"
               autoComplete="off"
               data-ph-mask
@@ -130,7 +149,7 @@ export function CrawlerAccessForm({
           )}
         </form.AppField>
         <form.SubmitButton disabled={!projectId}>
-          Save signature
+          {t("Save signature")}
         </form.SubmitButton>
       </form.Form>
     </form.AppForm>

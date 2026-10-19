@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 // FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
 import { useMutation } from "@tanstack/react-query";
@@ -19,18 +20,23 @@ import { captureClientEvent } from "@/client/lib/posthog";
 import { sendTeamInvitation } from "@/serverFunctions/organization";
 
 const inviteSchema = z.object({
-  email: z.string().trim().email("Enter a valid email address."),
+  email: z
+    .string()
+    .trim()
+    .email({ error: () => translate("Enter a valid email address.") }),
 });
 
 export function inviteErrorMessage(error: Error) {
   const code = getErrorCode(error);
   if (code === "RATE_LIMITED") {
-    return "Invitation limit reached for today. Try again tomorrow.";
+    return translate("Invitation limit reached for today. Try again tomorrow.");
   }
   if (code === "UPSTREAM_UNAVAILABLE") {
-    return "The invitation was saved but the email couldn't be sent. Use Resend in a moment to retry.";
+    return translate(
+      "The invitation was saved but the email couldn't be sent. Use Resend in a moment to retry.",
+    );
   }
-  return "We couldn't send that invitation.";
+  return translate("We couldn't send that invitation.");
 }
 
 export function InviteTeammateModal({
@@ -49,14 +55,16 @@ export function InviteTeammateModal({
       sendTeamInvitation({ data: { email: inviteeEmail } }),
     onSuccess: () => {
       captureClientEvent("team:invitation_send");
-      toast.success("Invitation sent");
+      toast.success(t("Invitation sent"));
       onInvited();
       onClose();
     },
     onError: (error: Error) => {
       if (getErrorCode(error) === "CONFLICT") {
         form.setErrorMap({
-          onSubmit: { fields: { email: "This person is already a member." } },
+          onSubmit: {
+            fields: { email: t("This person is already a member.") },
+          },
         });
       } else {
         toast.error(inviteErrorMessage(error));
@@ -84,10 +92,11 @@ export function InviteTeammateModal({
         <form.AppForm>
           <form.Form className="flex flex-col gap-4">
             <DialogHeader>
-              <DialogTitle>Invite a teammate</DialogTitle>
+              <DialogTitle>{t("Invite a teammate")}</DialogTitle>
               <DialogDescription>
-                They&rsquo;ll join as an Admin with full access to each project
-                except for billing. The invitation link expires in 7 days.
+                {t(
+                  "They’ll join as an Admin with full access to each project except for billing. The invitation link expires in 7 days.",
+                )}
               </DialogDescription>
             </DialogHeader>
             <form.AppField name="email">
@@ -109,7 +118,7 @@ export function InviteTeammateModal({
               >
                 {t("Cancel")}
               </Button>
-              <form.SubmitButton>Send invite</form.SubmitButton>
+              <form.SubmitButton>{t("Send invite")}</form.SubmitButton>
             </DialogFooter>
           </form.Form>
         </form.AppForm>

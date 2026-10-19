@@ -47,10 +47,11 @@ function SignedOutInvitationCard({ invitationId }: { invitationId: string }) {
   const redirect = `/accept-invitation/${invitationId}`;
 
   return (
-    <AuthPageCard title="You&rsquo;re invited">
+    <AuthPageCard title={t("You’re invited")}>
       <p className="text-sm text-muted-foreground">
-        You&rsquo;ve been invited to join an organization on Orca. Sign in with
-        the email address that received the invitation to accept it.
+        {t(
+          "You’ve been invited to join an organization on Orca. Sign in with the email address that received the invitation to accept it.",
+        )}
       </p>
       <div className="space-y-2">
         <Button
@@ -96,7 +97,7 @@ function InvitationCard({
         query: { id: invitationId },
       });
       if (result.error) {
-        throw new Error(result.error.message || "Invitation not found");
+        throw new Error(result.error.message || t("Invitation not found"));
       }
       return result.data;
     },
@@ -112,7 +113,7 @@ function InvitationCard({
       });
       if (accepted.error) {
         setActionError(
-          accepted.error.message || "We couldn't accept the invitation.",
+          accepted.error.message || t("We couldn't accept the invitation."),
         );
         setPendingAction(null);
         return;
@@ -130,7 +131,7 @@ function InvitationCard({
       clearLastProjectId();
       window.location.assign("/");
     } catch {
-      setActionError("We couldn't accept the invitation. Please try again.");
+      setActionError(t("We couldn't accept the invitation. Please try again."));
       setPendingAction(null);
     }
   }
@@ -144,7 +145,7 @@ function InvitationCard({
       });
       if (result.error) {
         setActionError(
-          result.error.message || "We couldn't decline the invitation.",
+          result.error.message || t("We couldn't decline the invitation."),
         );
         setPendingAction(null);
         return;
@@ -152,14 +153,16 @@ function InvitationCard({
       captureClientEvent("team:invitation_decline");
       setDeclined(true);
     } catch {
-      setActionError("We couldn't decline the invitation. Please try again.");
+      setActionError(
+        t("We couldn't decline the invitation. Please try again."),
+      );
       setPendingAction(null);
     }
   }
 
   if (invitationQuery.isPending) {
     return (
-      <AuthPageCard title="Checking invitation...">
+      <AuthPageCard title={t("Checking invitation...")}>
         <div className="flex justify-center py-4">
           <Spinner />
         </div>
@@ -169,18 +172,20 @@ function InvitationCard({
 
   if (invitationQuery.isError) {
     return (
-      <AuthPageCard title="Invitation unavailable">
+      <AuthPageCard title={t("Invitation unavailable")}>
         <p className="text-sm text-muted-foreground">
-          This invitation may have expired, been canceled, or belong to a
-          different email address. You&rsquo;re signed in as{" "}
+          {t(
+            "This invitation may have expired, been canceled, or belong to a different email address. You’re signed in as",
+          )}{" "}
           <span className="font-medium" data-ph-mask>
             {userEmail}
           </span>
           {t(".")}
         </p>
         <p className="text-sm text-muted-foreground">
-          If the invitation was sent to another address, sign out and sign back
-          in with that email. Otherwise ask your teammate to send a new invite.
+          {t(
+            "If the invitation was sent to another address, sign out and sign back in with that email. Otherwise ask your teammate to send a new invite.",
+          )}
         </p>
         <div className="space-y-2">
           <Button
@@ -193,7 +198,7 @@ function InvitationCard({
               signOutAndRedirect();
             }}
           >
-            Use a different account
+            {t("Use a different account")}
           </Button>
           <Button
             nativeButton={false}
@@ -201,7 +206,7 @@ function InvitationCard({
             variant="ghost"
             className="w-full"
           >
-            Go to dashboard
+            {t("Go to dashboard")}
           </Button>
         </div>
       </AuthPageCard>
@@ -210,9 +215,9 @@ function InvitationCard({
 
   if (declined) {
     return (
-      <AuthPageCard title="Invitation declined">
+      <AuthPageCard title={t("Invitation declined")}>
         <p className="text-sm text-muted-foreground">
-          You declined the invitation to join{" "}
+          {t("You declined the invitation to join")}{" "}
           <span className="font-medium">
             {invitationQuery.data.organizationName}
           </span>
@@ -224,23 +229,23 @@ function InvitationCard({
           variant="ghost"
           className="w-full"
         >
-          Go to dashboard
+          {t("Go to dashboard")}
         </Button>
       </AuthPageCard>
     );
   }
 
   return (
-    <AuthPageCard title="Join organization">
+    <AuthPageCard title={t("Join organization")}>
       <p className="text-sm text-muted-foreground">
         <span className="font-medium" data-ph-mask>
           {invitationQuery.data.inviterEmail}
         </span>{" "}
-        invited you to join{" "}
+        {t("invited you to join")}{" "}
         <span className="font-medium">
           {invitationQuery.data.organizationName}
         </span>{" "}
-        on Orca.
+        {t("on Orca.")}
       </p>
       {actionError ? (
         <Alert variant="destructive">
@@ -256,7 +261,9 @@ function InvitationCard({
           disabled={pendingAction !== null}
           onClick={() => void handleAccept()}
         >
-          {pendingAction === "accept" ? "Joining..." : "Accept invitation"}
+          {pendingAction === "accept"
+            ? t("Joining...")
+            : t("Accept invitation")}
         </Button>
         <Button
           type="button"
@@ -266,7 +273,7 @@ function InvitationCard({
           disabled={pendingAction !== null}
           onClick={() => void handleDecline()}
         >
-          {pendingAction === "decline" ? "Declining..." : "Decline"}
+          {pendingAction === "decline" ? t("Declining...") : t("Decline")}
         </Button>
       </div>
     </AuthPageCard>

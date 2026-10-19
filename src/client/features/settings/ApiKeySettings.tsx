@@ -1,3 +1,4 @@
+import { translate } from "@/plugins/locale";
 // FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -38,7 +39,10 @@ import { authClient } from "@/lib/auth-client";
 const MAX_KEY_NAME_LENGTH = 32;
 
 const createKeySchema = z.object({
-  name: z.string().trim().min(1, "Name is required"),
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: () => translate("Name is required") }),
 });
 
 export function ApiKeySettings() {
@@ -61,7 +65,7 @@ export function ApiKeySettings() {
     queryFn: async () => {
       const result = await authClient.apiKey.list();
       if (result.error) {
-        throw new Error(result.error.message ?? "Failed to load API keys");
+        throw new Error(result.error.message ?? t("Failed to load API keys"));
       }
       return result.data.apiKeys.map((key) => ({
         id: key.id,
@@ -77,7 +81,7 @@ export function ApiKeySettings() {
     mutationFn: async (keyName: string) => {
       const result = await authClient.apiKey.create({ name: keyName });
       if (result.error || !result.data?.key) {
-        throw new Error(result.error?.message ?? "Failed to create the key");
+        throw new Error(result.error?.message ?? t("Failed to create the key"));
       }
       return result.data.key;
     },
@@ -92,7 +96,7 @@ export function ApiKeySettings() {
     mutationFn: async (keyId: string) => {
       const result = await authClient.apiKey.delete({ keyId });
       if (result.error) {
-        throw new Error(result.error.message ?? "Failed to revoke the key");
+        throw new Error(result.error.message ?? t("Failed to revoke the key"));
       }
     },
     onSuccess: () => {
@@ -149,11 +153,13 @@ export function ApiKeySettings() {
 
       <QueryState
         query={apiKeysQuery}
-        errorFallback="We couldn't load your API keys."
+        errorFallback={t("We couldn't load your API keys.")}
       >
         {(apiKeys) =>
           apiKeys.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No API keys yet.</p>
+            <p className="text-sm text-muted-foreground">
+              {t("No API keys yet.")}
+            </p>
           ) : (
             <TableCard>
               <Table>
@@ -170,7 +176,7 @@ export function ApiKeySettings() {
                   {apiKeys.map((key) => (
                     <TableRow key={key.id}>
                       <TableCell className="max-w-[220px] truncate font-medium">
-                        {key.name || "Unnamed key"}
+                        {key.name || t("Unnamed key")}
                       </TableCell>
                       <TableCell
                         className="font-mono text-xs text-muted-foreground"
@@ -188,14 +194,16 @@ export function ApiKeySettings() {
                       </TableCell>
                       <TableCell>
                         <RowActionsMenu
-                          label={`Actions for ${key.name || "API key"}`}
+                          label={t("Actions for {name}", {
+                            name: key.name || t("API key"),
+                          })}
                         >
                           <DropdownMenuItem
                             variant="destructive"
                             onClick={() =>
                               setRevoking({
                                 id: key.id,
-                                name: key.name || "Unnamed key",
+                                name: key.name || t("Unnamed key"),
                               })
                             }
                           >
@@ -215,14 +223,14 @@ export function ApiKeySettings() {
 
       {revoking ? (
         <ConfirmDialog
-          title={`Revoke \u201c${revoking.name}\u201d?`}
-          confirmLabel="Revoke key"
+          title={t("Revoke “{name}”?", { name: revoking.name })}
+          confirmLabel={t("Revoke key")}
           destructive
           pending={revokeMutation.isPending}
           onClose={() => setRevoking(null)}
           onConfirm={() => revokeMutation.mutate(revoking.id)}
         >
-          Clients using it will stop working.
+          {t("Clients using it will stop working.")}
         </ConfirmDialog>
       ) : null}
 
@@ -249,7 +257,7 @@ export function ApiKeySettings() {
                   <span className="font-mono text-xs">
                     Authorization: Bearer
                   </span>{" "}
-                  to{" "}
+                  {t("to")}{" "}
                   <span className="font-mono text-xs break-all">{mcpUrl}</span>
                   {t(".")}
                 </DialogDescription>
@@ -264,7 +272,7 @@ export function ApiKeySettings() {
                 <CopyButton
                   value={createdKey}
                   successMessage={t("API key copied")}
-                  label="Copy API key"
+                  label={t("Copy API key")}
                   variant="ghost"
                   size="icon-sm"
                 />

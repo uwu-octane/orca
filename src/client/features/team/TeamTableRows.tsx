@@ -1,3 +1,5 @@
+import { translate } from "@/plugins/locale";
+import { useLocale } from "@/plugins/client/context";
 import { Crown, Send, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
@@ -7,16 +9,15 @@ import { DropdownMenuItem } from "@/client/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/client/components/ui/table";
 import { hasOrgPermission } from "@/lib/org-permissions";
 
-const ROLE_LABELS: Record<string, string> = {
-  owner: "Owner",
-  admin: "Admin",
-  member: "Member",
-};
-
 function formatRole(role: string) {
+  const labels: Record<string, string> = {
+    owner: translate("Owner"),
+    admin: translate("Admin"),
+    member: translate("Member"),
+  };
   return role
     .split(",")
-    .map((name) => ROLE_LABELS[name.trim()] ?? name.trim())
+    .map((name) => labels[name.trim()] ?? name.trim())
     .join(", ");
 }
 
@@ -51,6 +52,8 @@ export function MemberRow({
   onRemove: () => void;
   onTransferOwnership: () => void;
 }) {
+  const { t } = useLocale();
+
   const memberIsOwner = hasOrgPermission(member.role, {
     billing: ["manage"],
   });
@@ -67,7 +70,10 @@ export function MemberRow({
         <p className="truncate font-medium" data-ph-mask>
           {member.user.name || member.user.email}
           {isSelf ? (
-            <span className="font-normal text-muted-foreground"> (you)</span>
+            <span className="font-normal text-muted-foreground">
+              {" "}
+              {t("(you)")}
+            </span>
           ) : null}
         </p>
         <p className="truncate text-xs text-muted-foreground" data-ph-mask>
@@ -77,14 +83,18 @@ export function MemberRow({
       <TableCell>
         <Badge variant="secondary">{formatRole(member.role)}</Badge>
       </TableCell>
-      <TableCell className="text-xs text-muted-foreground">Active</TableCell>
+      <TableCell className="text-xs text-muted-foreground">
+        {t("Active")}
+      </TableCell>
       <TableCell>
         {canRemove ? (
-          <RowActionsMenu label={`Actions for ${member.user.email}`}>
+          <RowActionsMenu
+            label={t("Actions for {name}", { name: member.user.email })}
+          >
             {canTransferOwnership ? (
               <DropdownMenuItem onClick={onTransferOwnership}>
                 <Crown />
-                Transfer ownership
+                {t("Transfer ownership")}
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuItem
@@ -93,14 +103,16 @@ export function MemberRow({
               onClick={() => setIsConfirmingRemove(true)}
             >
               <Trash2 />
-              Remove member
+              {t("Remove member")}
             </DropdownMenuItem>
           </RowActionsMenu>
         ) : null}
         {isConfirmingRemove ? (
           <ConfirmDialog
-            title={`Remove ${member.user.email} from this organization?`}
-            confirmLabel="Remove member"
+            title={t("Remove {email} from this organization?", {
+              email: member.user.email,
+            })}
+            confirmLabel={t("Remove member")}
             destructive
             onClose={() => setIsConfirmingRemove(false)}
             onConfirm={() => {
@@ -108,7 +120,7 @@ export function MemberRow({
               onRemove();
             }}
           >
-            They lose access immediately.
+            {t("They lose access immediately.")}
           </ConfirmDialog>
         ) : null}
       </TableCell>
@@ -131,6 +143,8 @@ export function InvitationRow({
   onResend: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useLocale();
+
   return (
     <TableRow>
       <TableCell className="max-w-[280px]">
@@ -144,17 +158,20 @@ export function InvitationRow({
         </Badge>
       </TableCell>
       <TableCell className="text-xs text-muted-foreground">
-        Invited &middot; expires{" "}
-        {new Date(invitation.expiresAt).toLocaleDateString()}
+        {t("Invited · expires {date}", {
+          date: new Date(invitation.expiresAt).toLocaleDateString(),
+        })}
       </TableCell>
       <TableCell>
         {canManageTeam ? (
           <RowActionsMenu
-            label={`Actions for the invitation to ${invitation.email}`}
+            label={t("Actions for the invitation to {email}", {
+              email: invitation.email,
+            })}
           >
             <DropdownMenuItem disabled={isResending} onClick={onResend}>
               <Send />
-              Resend invitation
+              {t("Resend invitation")}
             </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"
@@ -162,7 +179,7 @@ export function InvitationRow({
               onClick={onCancel}
             >
               <Trash2 />
-              Cancel invitation
+              {t("Cancel invitation")}
             </DropdownMenuItem>
           </RowActionsMenu>
         ) : null}

@@ -18,6 +18,7 @@ import { samZh } from "./sam";
 import { ga4Zh } from "./ga4";
 import { routesZh } from "./routes";
 import { settingsZh } from "./settings";
+import { teamZh } from "./team";
 import { reportsZh } from "./reports";
 
 /**
@@ -52,6 +53,7 @@ export const zh = {
   ...routesZh,
   ...settingsZh,
   ...reportsZh,
+  ...teamZh,
 } as const;
 
 export type ShellKey = keyof typeof zh;

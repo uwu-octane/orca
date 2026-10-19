@@ -50,7 +50,7 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
       await queryClient.invalidateQueries({
         queryKey: crawlerCredentialsQueryKey,
       });
-      toast.success("Crawler access removed");
+      toast.success(t("Crawler access removed"));
     },
   });
 
@@ -58,14 +58,16 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
 
   return (
     <section className="space-y-3">
-      <SectionHeader title="Crawler access" />
+      <SectionHeader title={t("Crawler access")} />
       <div className="flex items-start justify-between gap-6">
         <div>
-          <p className="text-sm">Let the audit crawler through Shopify</p>
+          <p className="text-sm">
+            {t("Let the audit crawler through Shopify")}
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Paste the signature you created in Shopify admin under Online Store
-            &rarr; Preferences &rarr; Crawler access. Every audit of that domain
-            in your organization sends it with each request.
+            {t(
+              "Paste the signature you created in Shopify admin under Online Store → Preferences → Crawler access. Every audit of that domain in your organization sends it with each request.",
+            )}
           </p>
         </div>
         <Button
@@ -73,7 +75,7 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
           size="sm"
           onClick={() => setIsAdding((value) => !value)}
         >
-          {isAdding ? t("Cancel") : "Add signature"}
+          {isAdding ? t("Cancel") : t("Add signature")}
         </Button>
       </div>
 
@@ -89,7 +91,7 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
 
       {credentialsQuery.isError ? (
         <p className="text-sm text-destructive">
-          We couldn't load your crawler access.
+          {t("We couldn't load your crawler access.")}
         </p>
       ) : credentials.length > 0 ? (
         <TableCard>
@@ -97,9 +99,9 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
             <TableHeader>
               <TableRow>
                 <TableHead>{t("Domain")}</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Added</TableHead>
-                <TableHead>Expires</TableHead>
+                <TableHead>{t("Type")}</TableHead>
+                <TableHead>{t("Added")}</TableHead>
+                <TableHead>{t("Expires")}</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
@@ -108,7 +110,7 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
                 <TableRow key={credential.id}>
                   <TableCell className="font-mono">{credential.host}</TableCell>
                   <TableCell className="text-muted-foreground">
-                    Shopify signature
+                    {t("Shopify signature")}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDate(credential.createdAt)}
@@ -116,16 +118,20 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
                   <TableCell className="text-muted-foreground">
                     {credential.expiresAt
                       ? formatDate(credential.expiresAt)
-                      : "Unknown"}
+                      : t("Unknown")}
                     {isCrawlerAccessExpired(credential.expiresAt) && (
-                      <span className="ml-2 text-destructive">Expired</span>
+                      <span className="ml-2 text-destructive">
+                        {t("Expired")}
+                      </span>
                     )}
                   </TableCell>
                   <TableCell>
                     <Button
                       variant="ghost"
                       size="icon-xs"
-                      aria-label={`Remove crawler access for ${credential.host}`}
+                      aria-label={t("Remove crawler access for {host}", {
+                        host: credential.host,
+                      })}
                       disabled={deleteMutation.isPending}
                       onClick={() => deleteMutation.mutate(credential.id)}
                     >
