@@ -64,6 +64,11 @@ export const keywordsZh = {
     "请输入 1～20 个关键词，选择 1～10 个地区和一种语言。",
   "Close variants": "相近变体",
   "Ads competition": "广告竞争度",
+  "Keyword results": "关键词结果",
+  "Include terms": "包含词",
+  "Exclude terms": "排除词",
+  "{filtered} of {total} results on this page":
+    "本页显示 {filtered} / {total} 个结果",
   "No keywords found.": "未找到关键词。",
   "Next page": "下一页",
   "Discover keyword ideas, search demand, and ranking opportunities.":

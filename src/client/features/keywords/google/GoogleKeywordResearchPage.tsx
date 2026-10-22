@@ -254,7 +254,7 @@ function GoogleKeywordResearchWorkspace({
                   type="submit"
                   className="w-full px-6 lg:w-auto lg:shrink-0"
                   disabled={!configured || research.isPending}
-                  aria-busy={research.isPending}
+                  pending={research.isPending}
                 >
                   {t("Search")}
                 </Button>
@@ -329,12 +329,12 @@ function GoogleKeywordResearchWorkspace({
           message={getStandardErrorMessage(research.error, undefined, t)}
         />
       ) : null}
-      {current ? (
+      {current || research.isPending ? (
         <GoogleKeywordResults
-          result={current.result}
+          result={current?.result ?? null}
           pending={research.isPending}
           onNext={() => {
-            if (!current.result.nextPageToken) return;
+            if (!current?.result.nextPageToken) return;
             research.mutate({
               ...current.input,
               pageToken: current.result.nextPageToken,

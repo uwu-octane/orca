@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale } from "@/plugins/client/context";
 import { useDebouncedDraft } from "@/client/hooks/useDebouncedDraft";
 import { Button } from "@/client/components/ui/button";
+import { Spinner } from "@/client/components/ui/spinner";
 import {
   Combobox,
   ComboboxContent,
@@ -14,6 +15,7 @@ import {
 } from "@/client/components/ui/combobox";
 import { searchGoogleKeywordLocations } from "@/serverFunctions/googleKeywords";
 import type { GoogleKeywordLocation } from "@/types/schemas/google-keyword-targeting";
+import { searchGoogleLocations } from "./googleTargetingSearch";
 
 export function GoogleLocationSelect({
   projectId,
@@ -33,8 +35,11 @@ export function GoogleLocationSelect({
   const { t, active } = useLocale();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [draft, setDraft] = useDebouncedDraft(query, setQuery, (text) =>
-    text.trim(),
+  const [draft, setDraft] = useDebouncedDraft(
+    query,
+    setQuery,
+    (text) => text.trim(),
+    200,
   );
   const search = useQuery({
     queryKey: ["googleKeywordLocations", projectId, active, query],
@@ -48,21 +53,21 @@ export function GoogleLocationSelect({
   });
   const searching =
     draft.trim() !== "" && (draft.trim() !== query || search.isFetching);
-  const items = draft.trim()
-    ? searching
-      ? []
-      : (search.data ?? [])
-    : [
-        ...new Map(
-          [
-            ...value,
-            ...options.filter(
-              (item) =>
-                item.targetType === "Country" && item.status === "ENABLED",
-            ),
-          ].map((item) => [item.id, item]),
-        ).values(),
-      ];
+  const items = useMemo(() => {
+    const catalog = [
+      ...new Map(
+        [...value, ...options].map((item) => [item.id, item]),
+      ).values(),
+    ];
+    const local = searchGoogleLocations(catalog, draft, t);
+    // Local matches appear immediately; remote city/region suggestions are
+    // additive and only belong to the exact current query.
+    const remote =
+      draft.trim() && draft.trim() === query ? (search.data ?? []) : [];
+    return [
+      ...new Map([...local, ...remote].map((item) => [item.id, item])).values(),
+    ];
+  }, [draft, options, query, search.data, t, value]);
   const selectedLabel = value.map((item) => t(item.name)).join(", ");
   const label = loading
     ? t("Loading locations…")
@@ -105,12 +110,19 @@ export function GoogleLocationSelect({
           onChange={(event) => setDraft(event.target.value)}
         />
         <ComboboxEmpty>
-          {searching
-            ? t("Searching...")
-            : search.isError && draft.trim()
-              ? null
-              : t("No locations found.")}
+          {searching || (search.isError && draft.trim())
+            ? null
+            : t("No locations found.")}
         </ComboboxEmpty>
+        {searching ? (
+          <div
+            role="status"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground"
+          >
+            <Spinner />
+            {t("Searching...")}
+          </div>
+        ) : null}
         {draft.trim() && !searching && search.isError ? (
           <div role="alert" className="p-3 text-sm">
             {t("Unable to load locations")}

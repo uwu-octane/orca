@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { useLocale } from "@/plugins/client/context";
 import {
   Combobox,
@@ -8,6 +9,7 @@ import {
   ComboboxList,
 } from "@/client/components/ui/combobox";
 import type { GoogleKeywordLanguage } from "@/types/schemas/google-keyword-targeting";
+import { searchGoogleLanguages } from "./googleTargetingSearch";
 
 export function GoogleLanguageSelect({
   options,
@@ -23,18 +25,26 @@ export function GoogleLanguageSelect({
   loading: boolean;
 }) {
   const { t } = useLocale();
+  const [query, setQuery] = useState("");
+  const items = useMemo(
+    () => searchGoogleLanguages(options, query, t),
+    [options, query, t],
+  );
   return (
     <Combobox
-      items={options.filter((item) => item.targetable)}
+      items={items}
       value={options.find((item) => item.id === value) ?? null}
       disabled={disabled}
       itemToStringLabel={(item) => t(item.name)}
       isItemEqualToValue={(item, selected) => item.id === selected.id}
-      filter={(item, query) =>
-        `${t(item.name)} ${item.name} ${item.code}`
-          .toLowerCase()
-          .includes(query.trim().toLowerCase())
-      }
+      filter={null}
+      onInputValueChange={(text, details) => {
+        if (details.reason === "input-change") setQuery(text);
+        if (details.reason === "input-clear") setQuery("");
+      }}
+      onOpenChange={(open) => {
+        if (!open) setQuery("");
+      }}
       autoHighlight
       onValueChange={(item) => onChange(item?.id ?? "")}
     >

@@ -125,6 +125,9 @@ importers:
       fast-xml-parser:
         specifier: ^5.4.1
         version: 5.8.0
+      fuzzysort:
+        specifier: ^3.1.0
+        version: 3.1.0
       htmlparser2:
         specifier: ^10.1.0
         version: 10.1.0
