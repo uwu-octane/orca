@@ -2,6 +2,11 @@ import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { GoogleKeywordResearchService } from "./GoogleKeywordResearchService";
 import type { GoogleKeywordIdeasInput } from "@/types/schemas/google-keywords";
 
+// Persistence has its own service-level tests against real SQL.
+vi.mock("../repositories/GoogleKeywordRepository", () => ({
+  GoogleKeywordRepository: { upsertResult: async () => undefined },
+}));
+
 const mocks = vi.hoisted(() => ({
   getConnection: vi.fn(),
   getToken: vi.fn(),

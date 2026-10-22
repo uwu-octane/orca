@@ -14,3 +14,4 @@ export * from "../gsc.schema";
 export * from "../telemetry.schema";
 export * from "../ai-visibility.schema";
 export * from "../google-ads.schema";
+export * from "../google-keywords.schema";

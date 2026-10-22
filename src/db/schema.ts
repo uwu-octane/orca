@@ -7,6 +7,8 @@ import * as sqliteAudit from "./audit.schema";
 import * as sqliteSam from "./sam.schema";
 import * as sqliteAuth from "./better-auth-schema";
 import * as sqliteBilling from "./billing.schema";
+import * as sqliteGoogleKeywords from "./google-keywords.schema";
+import * as pgGoogleKeywords from "./pg/google-keywords.schema";
 import * as sqliteGoogleAds from "./google-ads.schema";
 import * as pgGoogleAds from "./pg/google-ads.schema";
 import * as sqliteGa4 from "./ga4.schema";
@@ -46,6 +48,7 @@ type AppSchema = typeof sqliteApp &
   typeof sqliteBilling &
   typeof sqliteGa4 &
   typeof sqliteGoogleAds &
+  typeof sqliteGoogleKeywords &
   typeof sqliteGsc &
   typeof sqliteTelemetry &
   typeof sqliteAiVisibility;
@@ -63,6 +66,7 @@ const runtimeSchema =
         ...pgBilling,
         ...pgGa4,
         ...pgGoogleAds,
+        ...pgGoogleKeywords,
         ...pgGsc,
         ...pgTelemetry,
         ...pgAiVisibility,
@@ -78,6 +82,7 @@ const runtimeSchema =
         ...sqliteBilling,
         ...sqliteGa4,
         ...sqliteGoogleAds,
+        ...sqliteGoogleKeywords,
         ...sqliteGsc,
         ...sqliteTelemetry,
         ...sqliteAiVisibility,
@@ -125,6 +130,11 @@ export const {
   billingCustomerStatus,
   ga4Connections,
   googleAdsConnections,
+  googleKeywordScopes,
+  googleKeywordScopeLocations,
+  googleKeywordMetrics,
+  googleKeywordMonthlyVolumes,
+  googleKeywordCloseVariants,
   gscConnections,
   telemetryState,
   aiTrackers,

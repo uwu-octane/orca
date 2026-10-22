@@ -11,6 +11,7 @@ import {
 } from "@/types/schemas/google-keywords";
 import { GoogleAdsConnectionService } from "@/server/features/google-ads/GoogleAdsConnectionService";
 import { fetchGoogleKeywordIdeas } from "../providers/googleAdsKeywordProvider";
+import { GoogleKeywordRepository } from "../repositories/GoogleKeywordRepository";
 
 async function research(
   input: GoogleKeywordIdeasInput,
@@ -33,14 +34,24 @@ async function research(
     connectionRevision: config.updatedAt,
   });
   const cached = googleKeywordResultSchema.safeParse(await getCached(key));
-  if (cached.success) return cached.data;
+  if (cached.success) {
+    await GoogleKeywordRepository.upsertResult(
+      request,
+      config.customerId,
+      cached.data,
+    );
+    return cached.data;
+  }
 
   const result = googleKeywordResultSchema.parse(
     await fetchGoogleKeywordIdeas(request, config),
   );
   await setCached(key, result, CACHE_TTL.researchResult);
-  // The shared SQL metric key has no provider/currency dimension. Keep Google
-  // snapshots in their own R2 namespace until provider-aware metrics are agreed.
+  await GoogleKeywordRepository.upsertResult(
+    request,
+    config.customerId,
+    result,
+  );
   return result;
 }
 

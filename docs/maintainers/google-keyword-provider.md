@@ -44,10 +44,32 @@ null; missing monthly values are omitted, while reported zero remains zero.
 Close variants are preserved alongside their canonical row, not expanded into
 independent rows carrying duplicated volume.
 
-The existing SQL metric identity has no provider or currency dimension.
-Google results therefore do not overwrite it. Shared saved-keyword actions,
-permanent corpus storage, provider-aware metric observations and classification
-relations require a separate design decision before they are connected.
+Google results use separate SQL tables rather than the DataForSEO metric table:
+
+- `google_keyword_scopes`: project, Ads customer, language, network,
+  adult-keyword setting and account currency.
+- `google_keyword_scope_locations`: the locations belonging to each scope.
+- `google_keyword_metrics`: the latest metrics for each scope and keyword.
+- `google_keyword_monthly_volumes`: reported monthly volumes for a metric.
+- `google_keyword_close_variants`: variants associated with the canonical keyword.
+
+Scope identity includes the complete, unordered set of Google location IDs.
+A multi-location total is never copied into individual country records. Seeds,
+page size and page token do not create separate metric identities. Different
+projects, customers, currencies and targeting settings cannot overwrite each other.
+
+Both fresh pages and valid cached pages await an atomic SQL upsert before
+returning successfully. An older `fetchedAt` cannot replace newer metrics or
+their related rows. Zero remains zero, missing metrics remain null, and a newer
+response replaces its monthly volumes and variants. A persistence error is
+returned to the caller; there is no background write or silent success.
+The batch transports values as bound JSON for SQL expansion, but the stored
+model is relational. This keeps large pages within D1 statement/parameter limits.
+
+Only requested pages are persisted. These are latest values, not an immutable
+history of searches or raw Google API responses. Project deletion cascades to
+these records; disconnecting an Ads grant does not erase collected project data.
+Shared saved-keyword actions and classification relations remain separate work.
 The OAuth connection has matching SQLite/Postgres migrations. Tokens remain encrypted in the existing account table; google_ads_connections stores only the project-to-customer mapping.
 
 ## Jev boundary

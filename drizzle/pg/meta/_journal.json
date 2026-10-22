@@ -246,6 +246,13 @@
       "when": 1792666697364,
       "tag": "0034_easy_unus",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1792674640429,
+      "tag": "0035_blushing_vulcan",
+      "breakpoints": true
     }
   ]
 }

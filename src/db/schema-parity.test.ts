@@ -13,6 +13,8 @@ import * as sqliteAudit from "./audit.schema";
 import * as sqliteSam from "./sam.schema";
 import * as sqliteAuth from "./better-auth-schema";
 import * as sqliteBilling from "./billing.schema";
+import * as sqliteGoogleKeywords from "./google-keywords.schema";
+import * as pgGoogleKeywords from "./pg/google-keywords.schema";
 import * as sqliteGoogleAds from "./google-ads.schema";
 import * as pgGoogleAds from "./pg/google-ads.schema";
 import * as sqliteGa4 from "./ga4.schema";
@@ -162,6 +164,7 @@ const sqliteAppTables = tablesFrom(
   sqliteBilling,
   sqliteGa4,
   sqliteGoogleAds,
+  sqliteGoogleKeywords,
   sqliteGsc,
   sqliteTelemetry,
   sqliteAiVisibility,
@@ -176,6 +179,7 @@ const pgAppTables = tablesFrom(
   pgBilling,
   pgGa4,
   pgGoogleAds,
+  pgGoogleKeywords,
   pgGsc,
   pgTelemetry,
   pgAiVisibility,
