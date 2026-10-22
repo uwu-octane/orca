@@ -1,18 +1,13 @@
 // FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
-import { Info, Search } from "lucide-react";
+import { Info } from "lucide-react";
 import { getFieldError } from "@/client/lib/forms";
-import { MAX_KEYWORDS_PER_SUBMIT } from "@/client/features/keywords/keywordResearchTypes";
 import { isLabsLocationCode } from "@/client/features/keywords/locations";
 import { LocationSelect } from "@/client/components/LocationSelect";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent } from "@/client/components/ui/card";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupTextarea,
-} from "@/client/components/ui/input-group";
+import { KeywordSearchInput } from "./KeywordSearchInput";
 import { KeywordAreaField, LocalVolumeCostNote } from "./KeywordAreaField";
 import { KeywordSearchOptions } from "./KeywordSearchOptions";
 import type { KeywordResearchControllerState } from "./types";
@@ -20,12 +15,6 @@ import type { KeywordResearchControllerState } from "./types";
 type Props = {
   controller: KeywordResearchControllerState;
 };
-
-function getTextareaRows(value: string): number {
-  const newlines = (value.match(/\n/g) ?? []).length;
-  const lines = newlines + 1;
-  return Math.min(MAX_KEYWORDS_PER_SUBMIT, Math.max(1, lines));
-}
 
 export function KeywordResearchSearchBar({ controller }: Props) {
   const { t } = useLocale();
@@ -45,35 +34,14 @@ export function KeywordResearchSearchBar({ controller }: Props) {
           <controlsForm.Field name="keyword">
             {(field) => {
               const keywordError = getFieldError(field.state.meta.errors);
-              const rows = getTextareaRows(field.state.value);
-
               return (
-                // Extra lines grow the field.
-                <InputGroup className="min-h-10 w-full lg:max-w-md lg:min-w-0 lg:flex-1">
-                  <InputGroupAddon
-                    className={rows > 1 ? "self-start pt-3" : undefined}
-                  >
-                    <Search />
-                  </InputGroupAddon>
-                  <InputGroupTextarea
-                    className="min-h-0 py-[7px] leading-6 field-sizing-fixed"
-                    rows={rows}
-                    placeholder={t("Enter a keyword")}
-                    aria-label={t("Keywords")}
-                    aria-invalid={keywordError ? true : undefined}
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onKeyDown={(event) => {
-                      // Enter submits. Shift+Enter inserts a newline, so
-                      // researching several keywords at once means adding a
-                      // line per keyword (or pasting newline-separated ones).
-                      if (event.key === "Enter" && !event.shiftKey) {
-                        event.preventDefault();
-                        void controlsForm.handleSubmit();
-                      }
-                    }}
-                  />
-                </InputGroup>
+                <KeywordSearchInput
+                  invalid={Boolean(keywordError)}
+                  value={field.state.value}
+                  onChange={field.handleChange}
+                  onBlur={field.handleBlur}
+                  onSubmit={() => void controlsForm.handleSubmit()}
+                />
               );
             }}
           </controlsForm.Field>

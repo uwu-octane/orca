@@ -6,4 +6,4 @@
  */
 export const GOOGLE_LINK_ERROR_PARAM = "google_link_error";
 
-export type GoogleLinkProvider = "gsc" | "ga4";
+export type GoogleLinkProvider = "gsc" | "ga4" | "google_ads";

@@ -58,11 +58,16 @@ beforeAll(async () => {
   for (const file of [
     "drizzle/sqlite/0019_true_absorbing_man.sql",
     "drizzle/sqlite/0039_ga4_connections.sql",
+    "drizzle/sqlite/0056_bouncy_the_twelve.sql",
   ]) {
     await client.executeMultiple(
       readFileSync(file, "utf8")
         .split("--> statement-breakpoint")
-        .filter((sql) => !sql.includes("ALTER TABLE"))
+        .filter(
+          (sql) =>
+            !sql.includes("ALTER TABLE") &&
+            !sql.includes("account_google_grant_owner_idx"),
+        )
         .join("\n"),
     );
   }
@@ -76,7 +81,7 @@ afterAll(() => {
 });
 beforeEach(async () => {
   await client.executeMultiple(
-    "DROP TRIGGER IF EXISTS fail_remove; DELETE FROM gsc_connections; DELETE FROM ga4_connections; DELETE FROM account;",
+    "DROP TRIGGER IF EXISTS fail_remove; DELETE FROM gsc_connections; DELETE FROM ga4_connections; DELETE FROM google_ads_connections; DELETE FROM account;",
   );
 });
 
@@ -87,12 +92,23 @@ async function grant(provider: string, accountId = "google-a", userId = "u1") {
   });
 }
 async function mapping(
-  provider: "gsc" | "ga4",
+  provider: "gsc" | "ga4" | "google_ads",
   projectId: string,
   accountId: string | null = "google-a",
   userId = "u1",
 ) {
-  if (provider === "gsc")
+  if (provider === "google_ads")
+    await client.execute({
+      sql: "INSERT INTO google_ads_connections (id, project_id, organization_id, customer_id, login_customer_id, customer_name, connected_by_user_id, google_account_id) VALUES (?, ?, ?, '1234567890', '1234567890', 'Ads', ?, ?)",
+      args: [
+        projectId,
+        projectId,
+        projectId === "p2" ? "org2" : "org1",
+        userId,
+        accountId,
+      ],
+    });
+  else if (provider === "gsc")
     await client.execute({
       sql: "INSERT INTO gsc_connections (id, project_id, organization_id, site_url, connected_by_user_id, gsc_account_id) VALUES (?, ?, ?, 'https://example.com/', ?, ?)",
       args: [
@@ -115,17 +131,32 @@ async function mapping(
       ],
     });
 }
-async function rows(table: "account" | "gsc_connections" | "ga4_connections") {
+async function rows(
+  table:
+    | "account"
+    | "gsc_connections"
+    | "ga4_connections"
+    | "google_ads_connections",
+) {
   return (await client.execute(`SELECT * FROM ${table} ORDER BY id`)).rows;
 }
 
-for (const provider of ["gsc", "ga4"] as const) {
+for (const provider of ["gsc", "ga4", "google_ads"] as const) {
   describe(`${provider} Google account removal`, () => {
     const providerId =
-      provider === "gsc" ? "google-search-console" : "google-analytics";
+      provider === "google_ads"
+        ? "google-ads"
+        : provider === "gsc"
+          ? "google-search-console"
+          : "google-analytics";
     const otherId =
       provider === "gsc" ? "google-analytics" : "google-search-console";
-    const table = provider === "gsc" ? "gsc_connections" : "ga4_connections";
+    const table =
+      provider === "google_ads"
+        ? "google_ads_connections"
+        : provider === "gsc"
+          ? "gsc_connections"
+          : "ga4_connections";
     const input = { provider, accountId: "google-a", userId: "u1" };
 
     it("removes all dependent mappings including archived and other-workspace projects", async () => {

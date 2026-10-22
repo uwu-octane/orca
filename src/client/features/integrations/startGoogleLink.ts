@@ -1,3 +1,4 @@
+import { startGoogleAdsLink } from "@/serverFunctions/googleAds";
 import { translate } from "@/plugins/locale";
 import { toast } from "sonner";
 import { useSyncExternalStore } from "react";
@@ -9,6 +10,7 @@ import type { GoogleLinkProvider } from "@/shared/google-link";
 const startLink: Record<GoogleLinkProvider, typeof startGscLink> = {
   gsc: startGscLink,
   ga4: startGa4Link,
+  google_ads: startGoogleAdsLink,
 };
 
 // One link flow at a time: a double-click, or a second Connect click while the

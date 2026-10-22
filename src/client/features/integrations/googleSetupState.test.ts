@@ -1,3 +1,10 @@
+vi.mock("@/serverFunctions/googleAds", () => ({
+  startGoogleAdsLink: vi.fn(),
+  getGoogleAdsConnection: vi.fn(),
+  listGoogleAdsAccounts: vi.fn(),
+  setGoogleAdsAccount: vi.fn(),
+  disconnectGoogleAds: vi.fn(),
+}));
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

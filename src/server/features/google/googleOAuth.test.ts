@@ -71,6 +71,11 @@ beforeAll(async () => {
       sql.includes("CREATE UNIQUE INDEX"),
     ),
   );
+  await client.executeMultiple(
+    migrationStatements("drizzle/sqlite/0056_bouncy_the_twelve.sql", (sql) =>
+      sql.includes("account_google_grant_owner_idx"),
+    ),
+  );
   oauth = await import("./googleOAuth");
 });
 
@@ -185,50 +190,60 @@ describe("Google OAuth grants", () => {
     );
   });
 
-  it("exchanges the code with PKCE and persists the grant", async () => {
-    const authorizeUrl = await authorizationUrl(oauth.GA4_INTEGRATION);
-    const state = authorizeUrl.searchParams.get("state")!;
-    mocks.fetch.mockResolvedValue(
-      tokenResponse({
-        access_token: "access-token",
-        refresh_token: "refresh-token",
-        expires_in: 3600,
-        id_token: idToken,
-        scope: "openid https://www.googleapis.com/auth/analytics.readonly",
-      }),
-    );
+  it.each(["GA4_INTEGRATION", "GOOGLE_ADS_INTEGRATION"] as const)(
+    "exchanges the code with PKCE and persists the grant: %s",
+    async (integrationName) => {
+      const integration = oauth[integrationName];
+      const authorizeUrl = await authorizationUrl(integration);
+      const state = authorizeUrl.searchParams.get("state")!;
+      expect(authorizeUrl.searchParams.get("redirect_uri")).toBe(
+        `${publicOrigin}${integration.callbackPath}`,
+      );
+      expect(authorizeUrl.searchParams.get("scope")).toContain(
+        integration.requiredScope,
+      );
+      mocks.fetch.mockResolvedValue(
+        tokenResponse({
+          access_token: "access-token",
+          refresh_token: "refresh-token",
+          expires_in: 3600,
+          id_token: idToken,
+          scope: `openid ${integration.requiredScope}`,
+        }),
+      );
 
-    const response = await callback(oauth.GA4_INTEGRATION, state, {
-      code: "code-1",
-    });
+      const response = await callback(integration, state, {
+        code: "code-1",
+      });
 
-    expect(response.status).toBe(303);
-    expect(response.headers.get("Location")).toBe(
-      "/p/project/settings?tab=integrations",
-    );
-    const body = mocks.fetch.mock.calls[0][1]?.body;
-    if (!(body instanceof URLSearchParams)) throw new Error("form body");
-    const digest = await crypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(body.get("code_verifier")!),
-    );
-    expect(Buffer.from(digest).toString("base64url")).toBe(
-      authorizeUrl.searchParams.get("code_challenge"),
-    );
-    expect(mocks.getGoogleAccountId).toHaveBeenCalledWith(
-      idToken,
-      "google-client-id",
-    );
-    expect(await grants()).toEqual([
-      {
-        user_id: "user-1",
-        provider_id: "google-analytics",
-        account_id: "google-account-1",
-        access_token: "access-token",
-        refresh_token: "refresh-token",
-      },
-    ]);
-  });
+      expect(response.status).toBe(303);
+      expect(response.headers.get("Location")).toBe(
+        "/p/project/settings?tab=integrations",
+      );
+      const body = mocks.fetch.mock.calls[0][1]?.body;
+      if (!(body instanceof URLSearchParams)) throw new Error("form body");
+      const digest = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(body.get("code_verifier")!),
+      );
+      expect(Buffer.from(digest).toString("base64url")).toBe(
+        authorizeUrl.searchParams.get("code_challenge"),
+      );
+      expect(mocks.getGoogleAccountId).toHaveBeenCalledWith(
+        idToken,
+        "google-client-id",
+      );
+      expect(await grants()).toEqual([
+        {
+          user_id: "user-1",
+          provider_id: integration.providerId,
+          account_id: "google-account-1",
+          access_token: "access-token",
+          refresh_token: "refresh-token",
+        },
+      ]);
+    },
+  );
 
   it("stores one grant per user for a Google account and keeps the refresh token on re-consent", async () => {
     mocks.getGoogleAccountId.mockResolvedValue("shared-google-account");

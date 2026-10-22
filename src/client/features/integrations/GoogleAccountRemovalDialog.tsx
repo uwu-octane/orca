@@ -24,7 +24,7 @@ export function GoogleAccountRemovalDialog({
   onClose,
   onRemoved,
 }: {
-  provider: "gsc" | "ga4";
+  provider: "gsc" | "ga4" | "google_ads";
   accountId: string;
   label: string;
   onClose: () => void;
@@ -46,22 +46,24 @@ export function GoogleAccountRemovalDialog({
       removeGoogleAccount({ data: { provider, accountId, confirmed: true } }),
     onSuccess: async () => {
       const keys =
-        provider === "gsc"
-          ? [
-              "gscConnection",
-              "gscSites",
-              "gscGrantStatus",
-              "searchPerformance",
-              "searchPerformanceTable",
-              "dashboardGscReport",
-              "dashboardActivation",
-            ]
-          : [
-              "ga4Connection",
-              "ga4Properties",
-              "dashboardGa4Report",
-              "dashboardActivation",
-            ];
+        provider === "google_ads"
+          ? ["google_adsConnection", "googleAdsAccounts", "googleKeywordIdeas"]
+          : provider === "gsc"
+            ? [
+                "gscConnection",
+                "gscSites",
+                "gscGrantStatus",
+                "searchPerformance",
+                "searchPerformanceTable",
+                "dashboardGscReport",
+                "dashboardActivation",
+              ]
+            : [
+                "ga4Connection",
+                "ga4Properties",
+                "dashboardGa4Report",
+                "dashboardActivation",
+              ];
       await Promise.all(
         keys.map((key) => queryClient.invalidateQueries({ queryKey: [key] })),
       );
@@ -69,7 +71,12 @@ export function GoogleAccountRemovalDialog({
       onRemoved();
     },
   });
-  const name = provider === "gsc" ? "Search Console" : "Google Analytics";
+  const name =
+    provider === "google_ads"
+      ? "Google Ads"
+      : provider === "gsc"
+        ? "Search Console"
+        : "Google Analytics";
   return (
     <Dialog
       open

@@ -1,3 +1,4 @@
+import { googlePickerLabels } from "./googlePickerLabels";
 import { translate } from "@/plugins/locale";
 // FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
@@ -45,7 +46,7 @@ function accountLabel(account: GooglePickerAccount) {
 }
 
 type GooglePropertyPickerProps = {
-  provider: "gsc" | "ga4";
+  provider: "gsc" | "ga4" | "google_ads";
   readOnly?: boolean;
   loading: boolean;
   linking?: boolean;
@@ -80,6 +81,7 @@ export function GooglePropertyPicker({
   renderActions,
 }: GooglePropertyPickerProps) {
   const { t } = useLocale();
+  const labels = googlePickerLabels(provider);
 
   const [open, setOpen] = useState(false);
   const [removing, setRemoving] = useState<GooglePickerAccount | null>(null);
@@ -123,7 +125,7 @@ export function GooglePropertyPicker({
   };
   const saveButton = readOnly ? null : (
     <Button size="sm" onClick={onSave} disabled={!canSave || saving}>
-      {saving ? t("Saving…") : (saveLabel ?? t("Save property"))}
+      {saving ? t("Saving…") : (saveLabel ?? t(labels.save))}
     </Button>
   );
   return (
@@ -155,7 +157,7 @@ export function GooglePropertyPicker({
       {!emptyGsc || readOnly ? (
         <div>
           <p className="mb-2 text-sm font-medium">
-            {readOnly ? t("Manage Google accounts") : t("Choose property")}
+            {readOnly ? t("Manage Google accounts") : t(labels.choose)}
           </p>
           <Button
             ref={trigger}
@@ -171,7 +173,7 @@ export function GooglePropertyPicker({
           >
             <span className="min-w-0">
               <span className="block truncate">
-                {selected?.name ?? t("Select a property…")}
+                {selected?.name ?? t(labels.select)}
               </span>
               {selectedAccount ? (
                 <span className="mt-0.5 block truncate text-xs text-muted-foreground">
@@ -185,7 +187,7 @@ export function GooglePropertyPicker({
             <div
               id={panelId}
               role="region"
-              aria-label={t("Google properties")}
+              aria-label={t(labels.items)}
               className="mt-2 overflow-hidden rounded-lg border border-border bg-popover shadow-sm"
               onKeyDown={(event) => handlePropertyKeyDown(event, close)}
             >
@@ -194,8 +196,8 @@ export function GooglePropertyPicker({
                 <Input
                   autoFocus
                   type="search"
-                  aria-label={t("Search properties or accounts")}
-                  placeholder={t("Search properties or accounts…")}
+                  aria-label={t(labels.search)}
+                  placeholder={t(labels.searchPlaceholder)}
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   className="h-auto min-w-0 border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
@@ -205,14 +207,11 @@ export function GooglePropertyPicker({
                 {loading ? (
                   <Spinner
                     size="sm"
-                    label={t("Loading properties…")}
+                    label={t(labels.loading)}
                     className="p-3"
                   />
                 ) : error ? (
-                  <QueryError
-                    fallback={t("Couldn't load properties.")}
-                    onRetry={onRetry}
-                  />
+                  <QueryError fallback={t(labels.error)} onRetry={onRetry} />
                 ) : (
                   <>
                     {filtered.map((account) => (
@@ -262,7 +261,7 @@ export function GooglePropertyPicker({
                             <span className="text-muted-foreground">
                               {account.apiDisabled
                                 ? t("Search Console API isn't enabled")
-                                : t("Couldn't load properties")}
+                                : t(labels.error)}
                             </span>
                             <Button variant="ghost" size="xs" onClick={onRetry}>
                               {t("Try again")}
@@ -329,9 +328,7 @@ export function GooglePropertyPicker({
                     ))}
                     {filtered.length === 0 ? (
                       <p className="p-3 text-sm text-muted-foreground">
-                        {query
-                          ? t("No matching properties or accounts")
-                          : t("Add a Google account to find properties.")}
+                        {query ? t(labels.noMatches) : t(labels.add)}
                       </p>
                     ) : null}
                   </>

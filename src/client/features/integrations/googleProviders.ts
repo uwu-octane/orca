@@ -1,3 +1,10 @@
+import { GoogleGlyph } from "@/client/features/gsc/GoogleGlyph";
+import {
+  getGoogleAdsConnection,
+  listGoogleAdsAccounts,
+  setGoogleAdsAccount,
+  disconnectGoogleAds,
+} from "@/serverFunctions/googleAds";
 import { queryOptions, type QueryKey } from "@tanstack/react-query";
 import type {
   GooglePickerAccount,
@@ -22,10 +29,12 @@ import {
 import { GA4_SELF_HOSTED_SETUP_DOCS_URL } from "@/shared/ga4";
 import { GSC_SELF_HOSTED_SETUP_DOCS_URL } from "@/shared/gsc";
 
-export type GoogleProvider = "gsc" | "ga4";
+export type GoogleProvider = "gsc" | "ga4" | "google_ads";
 
 /** One project's connection to a Google product, in the same shape for both. */
 export type GoogleConnection = {
+  available?: boolean;
+  connectionKey?: string | null;
   connected: boolean;
   canManage: boolean;
   currentUserHasGrant: boolean;
@@ -105,6 +114,23 @@ function ga4PickerOptions(accounts: Ga4Accounts): PickerOptions {
 }
 
 export const googleProviders: Record<GoogleProvider, ProviderConfig> = {
+  google_ads: {
+    title: "Google Ads",
+    name: "Google Ads",
+    Logo: GoogleGlyph,
+    docsUrl: "https://developers.google.com/google-ads/api/docs/oauth/overview",
+    getConnection: (projectId) =>
+      getGoogleAdsConnection({ data: { projectId } }),
+    accountsKey: "googleAdsAccounts",
+    listAccounts: async (projectId) =>
+      pickerOptions(
+        (await listGoogleAdsAccounts({ data: { projectId } })).accounts,
+      ),
+    save: (projectId, selection) =>
+      setGoogleAdsAccount({ data: { projectId, ...selection } }),
+    disconnect: (projectId) => disconnectGoogleAds({ data: { projectId } }),
+    dependentKeys: (projectId) => [["googleKeywordIdeas", projectId]],
+  },
   gsc: {
     title: "Google Search Console",
     name: "Search Console",

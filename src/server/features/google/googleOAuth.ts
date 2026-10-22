@@ -1,3 +1,8 @@
+import {
+  GOOGLE_ADS_OAUTH_PROVIDER_ID,
+  GOOGLE_ADS_DATA_SCOPE,
+  GOOGLE_ADS_OAUTH_SCOPES,
+} from "@/shared/google-ads";
 import { symmetricDecrypt, symmetricEncrypt } from "better-auth/crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -79,6 +84,15 @@ export const GA4_INTEGRATION: GoogleOAuthIntegration = {
   callbackPath: "/api/ga4/oauth/callback",
   scopes: GA4_OAUTH_SCOPES,
   requiredScope: GA4_DATA_SCOPE,
+};
+
+export const GOOGLE_ADS_INTEGRATION: GoogleOAuthIntegration = {
+  provider: "google_ads",
+  providerId: GOOGLE_ADS_OAUTH_PROVIDER_ID,
+  displayName: "Google Ads",
+  callbackPath: "/api/google-ads/oauth/callback",
+  scopes: GOOGLE_ADS_OAUTH_SCOPES,
+  requiredScope: GOOGLE_ADS_DATA_SCOPE,
 };
 
 const googleTokenResponseSchema = z.object({
@@ -164,7 +178,7 @@ async function upsertGrant(input: {
     })
     .onConflictDoUpdate({
       target: [account.userId, account.providerId, account.accountId],
-      targetWhere: sql`${account.providerId} in ('google-search-console', 'google-analytics')`,
+      targetWhere: sql`${account.providerId} in ('google-search-console', 'google-analytics', 'google-ads')`,
       set: {
         ...accountValues,
         // Google may omit the refresh token on a later consent. Keep the

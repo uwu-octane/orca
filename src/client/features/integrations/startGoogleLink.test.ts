@@ -1,3 +1,10 @@
+vi.mock("@/serverFunctions/googleAds", () => ({
+  startGoogleAdsLink: vi.fn(),
+  getGoogleAdsConnection: vi.fn(),
+  listGoogleAdsAccounts: vi.fn(),
+  setGoogleAdsAccount: vi.fn(),
+  disconnectGoogleAds: vi.fn(),
+}));
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { startLink } = vi.hoisted(() => ({ startLink: vi.fn() }));

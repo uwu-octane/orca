@@ -237,6 +237,7 @@ const keywordSortFields = [
 const keywordModes = ["auto", "related", "suggestions", "ideas"] as const;
 
 export const keywordsSearchSchema = z.object({
+  provider: z.enum(["dataforseo", "google_ads"]).optional(),
   q: z.string().optional(),
   loc: z.coerce.number().int().positive().optional(),
   locName: z.string().optional(),

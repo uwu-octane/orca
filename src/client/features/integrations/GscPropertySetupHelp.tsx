@@ -115,7 +115,7 @@ export function EmptyAccountMessage({
   provider,
   filtered,
 }: {
-  provider: "gsc" | "ga4";
+  provider: "gsc" | "ga4" | "google_ads";
   filtered: boolean;
 }) {
   const { t } = useLocale();
@@ -138,7 +138,11 @@ export function EmptyAccountMessage({
           {t(", then refresh the list.")}
         </>
       ) : (
-        t("No properties available")
+        t(
+          provider === "google_ads"
+            ? "No advertising accounts available"
+            : "No properties available",
+        )
       )}
     </>
   );

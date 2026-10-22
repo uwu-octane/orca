@@ -40,6 +40,12 @@ const STANDARD_MESSAGES: Record<ErrorCode, string> = {
     "The AI visibility request could not be completed. Review the tracking settings and try again.",
   DATAFORSEO_AUTH_FAILED:
     "DataForSEO rejected the API key. Check that DATAFORSEO_API_KEY is the base64 of your DataForSEO login:password.",
+  GOOGLE_ADS_NOT_CONFIGURED:
+    "Connect a Google Ads account to start researching keywords.",
+  GOOGLE_ADS_RECONNECT_REQUIRED:
+    "Reconnect your Google Ads account to continue.",
+  GOOGLE_ADS_REQUEST_FAILED:
+    "Google Ads could not complete the request. Check account access and API configuration.",
   RATE_LIMITED: "Too many requests. Please wait and try again.",
   UPSTREAM_UNAVAILABLE:
     "The data provider is temporarily unavailable. Please retry in a moment.",

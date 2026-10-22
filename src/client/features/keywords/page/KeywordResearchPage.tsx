@@ -3,7 +3,7 @@ import { useLocale } from "@/plugins/client/context";
 import { useCallback, useMemo } from "react";
 import { ErrorState } from "@/client/components/ErrorState";
 import { FormDialog } from "@/client/components/FormDialog";
-import { BackButton, PageHeader } from "@/client/components/PageHeader";
+import { BackButton } from "@/client/components/PageHeader";
 import { Button } from "@/client/components/ui/button";
 import { InsufficientCreditsError } from "@/client/features/billing/InsufficientCreditsError";
 import { getErrorCode } from "@/client/lib/error-messages";
@@ -31,6 +31,7 @@ import { KeywordResearchEmptyState } from "./KeywordResearchEmptyState";
 import { KeywordResearchLoadingState } from "./KeywordResearchLoadingState";
 import { KeywordResearchResults } from "./KeywordResearchResults";
 import { KeywordResearchSearchBar } from "./KeywordResearchSearchBar";
+import { KeywordResearchLayout } from "./KeywordResearchLayout";
 import type { KeywordResearchControllerState } from "./types";
 
 type ControllerProps = Omit<KeywordResearchControllerInput, "onFormSubmit">;
@@ -200,43 +201,36 @@ export function KeywordResearchPage(input: Props) {
   });
 
   return (
-    <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4">
-        <PageHeader
-          title={t("Keyword Research")}
-          description={t(
-            "Discover keyword ideas, search demand, and ranking opportunities.",
-          )}
-          backLink={
-            controller.hasSearched ? (
-              <BackButton
-                data-testid="keyword-research-recent-searches"
-                onClick={showRecentSearches}
-              >
-                {t("Recent searches")}
-              </BackButton>
-            ) : undefined
-          }
+    <KeywordResearchLayout
+      provider="dataforseo"
+      actions={
+        controller.hasSearched ? (
+          <BackButton
+            data-testid="keyword-research-recent-searches"
+            onClick={showRecentSearches}
+          >
+            {t("Recent searches")}
+          </BackButton>
+        ) : undefined
+      }
+    >
+      <KeywordResearchSearchBar controller={controller} />
+      {controller.hasSearched ? (
+        <SearchTabStrip
+          projectId={projectId}
+          tabs={searchTabs.tabs}
+          activeTabId={searchTabs.activeTabId}
+          onSelect={searchTabs.selectTab}
+          onClose={searchTabs.closeTab}
+          onViewed={searchTabs.markTabViewed}
         />
-
-        <KeywordResearchSearchBar controller={controller} />
-        {controller.hasSearched ? (
-          <SearchTabStrip
-            projectId={projectId}
-            tabs={searchTabs.tabs}
-            activeTabId={searchTabs.activeTabId}
-            onSelect={searchTabs.selectTab}
-            onClose={searchTabs.closeTab}
-            onViewed={searchTabs.markTabViewed}
-          />
-        ) : null}
-        <KeywordResearchContent
-          controller={controller}
-          projectId={input.projectId}
-        />
-        <KeywordSaveDialog controller={controller} />
-      </div>
-    </div>
+      ) : null}
+      <KeywordResearchContent
+        controller={controller}
+        projectId={input.projectId}
+      />
+      <KeywordSaveDialog controller={controller} />
+    </KeywordResearchLayout>
   );
 }
 

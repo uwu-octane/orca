@@ -3,6 +3,7 @@ import { useLocale } from "@/plugins/client/context";
 import { Button } from "@/client/components/ui/button";
 
 export function GoogleConnectedState({
+  accountSelection = false,
   property,
   detail,
   email,
@@ -13,6 +14,7 @@ export function GoogleConnectedState({
   canManageAccounts,
   disabled,
 }: {
+  accountSelection?: boolean;
   property: string;
   detail?: string | null;
   email?: string | null;
@@ -49,7 +51,9 @@ export function GoogleConnectedState({
         >
           <Button variant="outline" size="sm" onClick={onChange}>
             {canManage
-              ? t("Change property or account")
+              ? accountSelection
+                ? t("Change advertising account")
+                : t("Change property or account")
               : t("Manage Google accounts")}
           </Button>
           {canManage ? (

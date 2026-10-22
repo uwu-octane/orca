@@ -5,6 +5,7 @@ import { GoogleGlyph } from "@/client/features/gsc/GoogleGlyph";
 import { Button } from "@/client/components/ui/button";
 
 export function GoogleProjectEmptyState({
+  accountSelection = false,
   name,
   hasGrant,
   disabled,
@@ -14,6 +15,7 @@ export function GoogleProjectEmptyState({
   onLink,
   children,
 }: {
+  accountSelection?: boolean;
   name: string;
   hasGrant: boolean;
   disabled: boolean;
@@ -29,9 +31,14 @@ export function GoogleProjectEmptyState({
     <div className="flex flex-1 flex-col gap-4">
       <p className="text-sm text-muted-foreground">
         {hasGrant
-          ? t("Choose a {name} property to finish connecting this project.", {
-              name,
-            })
+          ? t(
+              accountSelection
+                ? "Choose an advertising account to finish connecting this project."
+                : "Choose a {name} property to finish connecting this project.",
+              {
+                name,
+              },
+            )
           : t("Connect {name} to see this project’s data.", { name })}
       </p>
       {/* Actions sit bottom-right, with Dismiss (children) just left of the
@@ -58,7 +65,11 @@ export function GoogleProjectEmptyState({
               ? t("Opening Google…")
               : canManage
                 ? hasGrant
-                  ? t("Choose property")
+                  ? t(
+                      accountSelection
+                        ? "Choose advertising account"
+                        : "Choose property",
+                    )
                   : t("Connect")
                 : t("Manage Google accounts")}
           </Button>

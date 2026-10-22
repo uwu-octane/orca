@@ -63,18 +63,17 @@ export function GoogleConnectionCard({
   const connectionQuery = useQuery(connectionOptions);
   const connection = connectionQuery.data;
   const connectionUnavailable = connectionQuery.isError && !connection;
-  const connected = Boolean(connection?.connected);
-  const hasGrant = Boolean(connection?.currentUserHasGrant);
-  const canManage = connection?.canManage === true;
-  const needsGoogleOAuthSetup =
-    connectionQuery.isSuccess && !connection?.googleOAuthConfigured;
+  const { connected, hasGrant, canManage, needsGoogleOAuthSetup } =
+    connectionCapabilities(connection, connectionQuery.isSuccess);
 
   const showPicker = picking ?? (!connected && hasGrant && canManage);
   const accountsKey = [config.accountsKey, projectId];
   const accountsQuery = useQuery({
     queryKey: accountsKey,
     queryFn: () => config.listAccounts(projectId),
-    enabled: Boolean(showPicker && !needsGoogleOAuthSetup),
+    enabled: Boolean(
+      showPicker && !needsGoogleOAuthSetup && connection?.available !== false,
+    ),
   });
   const accounts = accountsQuery.data?.accounts ?? [];
   const savedSelection = accountsQuery.data?.selected ?? null;
@@ -187,6 +186,10 @@ export function GoogleConnectionCard({
           onRetry={() => void connectionQuery.refetch()}
           isRetrying={connectionQuery.isFetching}
         />
+      ) : connection?.available === false ? (
+        <p className="text-sm text-muted-foreground">
+          {t("Google Ads is available on self-hosted deployments only.")}
+        </p>
       ) : needsGoogleOAuthSetup ? (
         <div className="flex flex-1 flex-col items-start justify-between gap-3">
           <GoogleOAuthSetupWarning
@@ -197,6 +200,7 @@ export function GoogleConnectionCard({
         </div>
       ) : connected && !picking ? (
         <GoogleConnectedState
+          accountSelection={provider === "google_ads"}
           property={connection?.property ?? ""}
           detail={connection?.propertyDetail}
           canManageAccounts={hasGrant}
@@ -239,6 +243,7 @@ export function GoogleConnectionCard({
         </fieldset>
       ) : (
         <GoogleProjectEmptyState
+          accountSelection={provider === "google_ads"}
           name={config.name}
           hasGrant={hasGrant}
           canManage={canManage}
@@ -290,4 +295,16 @@ function ConnectionStatusPill({
           : t("Not connected")}
     </Badge>
   );
+}
+
+function connectionCapabilities(
+  connection: GoogleConnection | undefined,
+  loaded: boolean,
+) {
+  return {
+    connected: Boolean(connection?.connected),
+    hasGrant: Boolean(connection?.currentUserHasGrant),
+    canManage: connection?.canManage === true,
+    needsGoogleOAuthSetup: loaded && !connection?.googleOAuthConfigured,
+  };
 }

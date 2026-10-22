@@ -5,6 +5,7 @@ import type {
 } from "@/client/features/keywords/keywordResearchTypes";
 
 type KeywordSearchParams = {
+  provider?: "dataforseo" | "google_ads";
   q?: string;
   loc?: number;
   locName?: string;

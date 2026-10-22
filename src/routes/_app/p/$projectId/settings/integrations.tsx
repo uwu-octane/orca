@@ -8,7 +8,10 @@ export const Route = createFileRoute(
   "/_app/p/$projectId/settings/integrations",
 )({
   loader: ({ params }) => {
-    // Start both database checks on link intent without holding up navigation.
+    void queryClient.prefetchQuery(
+      googleConnectionOptions("google_ads", params.projectId),
+    );
+    // Start the database checks on link intent without holding up navigation.
     void queryClient.prefetchQuery(
       googleConnectionOptions("gsc", params.projectId),
     );
@@ -33,6 +36,10 @@ function ProjectIntegrationsRoute() {
 
       <section id="google-analytics" className="scroll-mt-6">
         <GoogleConnectionCard provider="ga4" projectId={projectId} />
+      </section>
+
+      <section id="google-ads" className="scroll-mt-6">
+        <GoogleConnectionCard provider="google_ads" projectId={projectId} />
       </section>
 
       <CrawlerAccessSettings projectId={projectId} />

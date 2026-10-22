@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { KeywordResearchPage } from "@/client/features/keywords/page/KeywordResearchPage";
+import { GoogleKeywordResearchPage } from "@/client/features/keywords/google/GoogleKeywordResearchPage";
 import {
   isResultLimit,
   normalizeKeywordMode,
@@ -30,6 +31,9 @@ export const Route = createFileRoute("/_app/p/$projectId/keywords")({
 function KeywordResearchPageRoute() {
   const { projectId } = Route.useParams();
   const search = Route.useSearch();
+  if (search.provider === "google_ads") {
+    return <GoogleKeywordResearchPage key={projectId} projectId={projectId} />;
+  }
   const {
     q: keywordInput = "",
     loc: locationCode,

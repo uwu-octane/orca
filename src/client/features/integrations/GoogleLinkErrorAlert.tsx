@@ -20,6 +20,7 @@ import type { GoogleLinkProvider } from "@/shared/google-link";
 const PROVIDER_LABELS: Record<GoogleLinkProvider, string> = {
   gsc: "Search Console",
   ga4: "Google Analytics",
+  google_ads: "Google Ads",
 };
 
 /**

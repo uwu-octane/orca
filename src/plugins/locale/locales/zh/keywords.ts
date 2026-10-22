@@ -1,4 +1,71 @@
 export const keywordsZh = {
+  "Chinese (simplified)": "简体中文",
+  "Chinese (traditional)": "繁体中文",
+  Filipino: "菲律宾语",
+  Gujarati: "古吉拉特语",
+  Kannada: "卡纳达语",
+  Malayalam: "马拉雅拉姆语",
+  Marathi: "马拉地语",
+  Norwegian: "挪威语",
+  Persian: "波斯语",
+  Punjabi: "旁遮普语",
+  Tamil: "泰米尔语",
+  Telugu: "泰卢固语",
+  Locations: "地区",
+  "{count} locations": "{count} 个地区",
+  "Loading locations…": "正在加载地区…",
+  "Loading languages…": "正在加载语言…",
+  "Search countries, regions, or cities": "搜索国家、地区或城市",
+  "Search locations": "搜索地区",
+  "No locations found.": "未找到地区。",
+  "No languages found.": "未找到语言。",
+  "Up to 10 locations": "最多选择 10 个地区",
+  "Unable to load locations and languages.": "无法加载地区和语言。",
+  "Some saved locations are unavailable. Select locations to search again.":
+    "部分已保存的地区不可用，请重新选择地区后搜索。",
+  "Location unavailable": "地区不可用",
+  "Language unavailable": "语言不可用",
+
+  "Connection settings": "连接设置",
+  "Reconnect your Google Ads account to continue.":
+    "请重新授权 Google Ads 账号后继续。",
+  "Connect a Google Ads account to start researching keywords.":
+    "连接 Google Ads 账号以开始研究关键词。",
+  "Change advertising account": "更换广告账号",
+  "Choose an advertising account to finish connecting this project.":
+    "选择广告账号以完成项目连接。",
+  "Choose advertising account": "选择广告账号",
+  "Save advertising account": "保存广告账号",
+  "Select an advertising account…": "选择一个广告账号…",
+  "Advertising accounts": "广告账号",
+  "Search advertising or Google accounts": "搜索广告账号或 Google 账号",
+  "Search advertising or Google accounts…": "搜索广告账号或 Google 账号…",
+  "Loading advertising accounts…": "正在加载广告账号…",
+  "Couldn't load advertising accounts.": "无法加载广告账号。",
+  "No matching advertising accounts": "没有匹配的广告账号",
+  "Add a Google account to find advertising accounts.":
+    "添加 Google 账号以查找广告账号。",
+  "No advertising accounts available": "没有可用的广告账号",
+
+  "Keyword provider": "关键词数据来源",
+  "Google Ads is not configured. Contact your administrator.":
+    "尚未配置 Google Ads，请联系管理员。",
+  "Google Ads could not complete the request. Check account access and API configuration.":
+    "Google Ads 查询失败，请检查账号访问权限和 API 配置。",
+  "Google Ads is available on self-hosted deployments only.":
+    "Google Ads 仅适用于自托管部署。",
+  "Search network": "搜索网络",
+  "Google Search": "Google 搜索",
+  "Google Search and partners": "Google 搜索及搜索合作伙伴",
+  "Results per page": "每页结果数",
+  "Include adult keywords": "包含成人关键词",
+  "One keyword per line": "每行一个关键词",
+  "Enter 1–20 keywords and select 1–10 locations and a language.":
+    "请输入 1～20 个关键词，选择 1～10 个地区和一种语言。",
+  "Close variants": "相近变体",
+  "Ads competition": "广告竞争度",
+  "No keywords found.": "未找到关键词。",
+  "Next page": "下一页",
   "Discover keyword ideas, search demand, and ranking opportunities.":
     "发现关键词创意、搜索需求和排名机会。",
   "Go to Billing": "前往账单",
