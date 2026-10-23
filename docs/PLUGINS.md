@@ -159,6 +159,14 @@ does not imply different vendors' scores are directly comparable.
 The full domain migration and ownership rules are maintained in
 [Domain plugins](maintainers/domain-plugins.md).
 
+## AI providers
+
+- `ai` owns encrypted project configuration, text/decision contracts and explicit capability dispatch. A request resolves its project/organization credentials and pins their revision; the root registry retains only provider definitions.
+- `vercel-gateway` registers text inference, public model discovery and decisions. `systemone` registers TypeSafe and explicitly configured local decision endpoints. Both use lifecycle-owned registrations and a shared SystemOne wire implementation. Models are chosen at the call site, not by installing another plugin.
+- Every inference checks the saved revision before sending credentials. Provider disposal aborts active requests and prevents retained model objects from issuing later calls. Configuration APIs return masked summaries only.
+- The client `ai` entry owns settings, credential dialogs, model lists and decision testing. The project settings route mounts its registered view through `useClientService`.
+- SAM and dimension generation use the same installed `ai` service. Their business prompts and session semantics remain in their own domains. The DeepSeek official-only routing, retry/error policies and custom-endpoint DNS validation remain unchanged.
+
 ## Planned services
 
 - **`billing`** — `BillingProvider` interface mirroring the six functions of

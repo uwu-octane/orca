@@ -2,7 +2,7 @@ import { tool } from "ai";
 import { withPgClient } from "@/db";
 import { KeywordDimensionService } from "@/server/features/keywords/services/KeywordDimensionService";
 import { keywordDimensionInputSchema } from "@/types/schemas/keyword-dimensions";
-import type { AiProviderScope } from "@/server/features/ai/AiProviderConfigRepository";
+import type { AiProviderScope } from "@/plugins/ai/contracts";
 import { asAppError } from "@/server/lib/errors";
 
 /** Internal SAM tool; the model cannot supply or switch its project/org. */

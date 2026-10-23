@@ -4,7 +4,7 @@ import {
   type GenerateKeywordDimensionsInput,
 } from "@/types/schemas/keyword-dimensions";
 import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
-import type { AiProviderScope } from "@/server/features/ai/AiProviderConfigRepository";
+import type { AiProviderScope } from "@/plugins/ai/contracts";
 import { AppError } from "@/server/lib/errors";
 
 async function generate(

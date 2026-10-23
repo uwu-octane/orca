@@ -5,7 +5,7 @@ import {
   keywordDimensionsSchema,
   type GenerateKeywordDimensionsInput,
 } from "@/types/schemas/keyword-dimensions";
-import type { AiProviderScope } from "@/server/features/ai/AiProviderConfigRepository";
+import type { AiProviderScope } from "@/plugins/ai/contracts";
 
 interface DimensionAgent {
   id: string;

@@ -1,13 +1,20 @@
+import { createAiTestRuntime } from "@/plugins/ai/server/testRuntime";
+import type { Context } from "cordis";
+let runtime: Context;
+vi.mock("@/plugins/server/context", () => ({
+  getAi: async () => runtime.ai,
+  getAiAgents: async () => runtime.aiAgents,
+}));
 import { z } from "zod";
-import { beforeEach, expect, it, vi } from "vitest";
+import { beforeAll, afterAll, beforeEach, expect, it, vi } from "vitest";
 import { createSamModel, gatewayCostUsd } from "./samModel";
 import { AppError } from "@/server/lib/errors";
 
 const mocks = vi.hoisted(() => ({ config: vi.fn(), recordUse: vi.fn() }));
 vi.mock("cloudflare:workers", () => ({ env: {} }));
 vi.mock("@/db", () => ({ withPgClient: (fn: () => unknown) => fn() }));
-vi.mock("@/server/features/ai/AiProviderConfigService", () => ({
-  AiProviderConfigService: {
+vi.mock("@/plugins/ai/server/configuration", () => ({
+  configuration: {
     resolve: mocks.config,
     recordUse: mocks.recordUse,
   },
@@ -106,4 +113,11 @@ it("reports a configured request timeout without leaking the transport error", a
 it("does not report missing Gateway costs as free usage", () => {
   expect(gatewayCostUsd({ gateway: { cost: "0.002" } })).toBe(0.002);
   expect(gatewayCostUsd(undefined)).toBeNull();
+});
+
+beforeAll(async () => {
+  runtime = await createAiTestRuntime();
+});
+afterAll(async () => {
+  await runtime?.fiber.dispose();
 });

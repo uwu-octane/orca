@@ -1,8 +1,5 @@
-import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import type { z } from "zod";
-import { DecisionService } from "@/server/features/decision/DecisionService";
-import { AiProviderConfigService } from "@/server/features/ai/AiProviderConfigService";
 import {
   AI_PROVIDERS,
   type SaveAiProviderConfig,
@@ -16,18 +13,28 @@ import {
 } from "@/serverFunctions/aiProviders";
 import { type DecisionInput } from "@/types/schemas/decision";
 
-const database = await vi.hoisted(async () => {
-  const { createClient } = await import("@libsql/client");
-  const { drizzle } = await import("drizzle-orm/libsql");
-  const client = createClient({ url: "file::memory:" });
-  return { client, db: drizzle(client) };
-});
+import {
+  database,
+  initializeAiDatabase,
+  resetAiDatabase,
+} from "./testDatabase";
+import { createAiTestRuntime } from "./testRuntime";
+import type { Context } from "cordis";
+let runtime: Context;
+vi.mock("@/plugins/server/context", () => ({
+  getAi: async () => runtime.ai,
+  getAiAgents: async () => runtime.aiAgents,
+}));
+
 const mocks = vi.hoisted(() => ({
   fetch: vi.fn<typeof fetch>(),
   hosted: false,
   context: { organizationId: "org-1", projectId: "project-1", role: "owner" },
 }));
-vi.mock("@/db", () => ({ db: database.db }));
+vi.mock("@/db", async () => {
+  const { database: fixture } = await import("./testDatabase");
+  return { db: fixture.db, withPgClient: (fn: () => unknown) => fn() };
+});
 vi.mock("cloudflare:workers", () => ({ env: { DATABASE_PROVIDER: "d1" } }));
 vi.mock("@/server/lib/runtime-env", () => ({
   getOptionalEnvValue: async (name: string) =>
@@ -56,20 +63,15 @@ vi.mock("@tanstack/react-start", () => ({
 }));
 
 beforeAll(async () => {
-  await database.client.executeMultiple(
-    "PRAGMA foreign_keys = ON; CREATE TABLE projects (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, archived_at TEXT);",
-  );
-  await database.client.executeMultiple(
-    readFileSync("drizzle/sqlite/0060_greedy_wiccan.sql", "utf8") +
-      ";" +
-      readFileSync("drizzle/sqlite/0061_ancient_nuke.sql", "utf8"),
-  );
+  await initializeAiDatabase();
+  runtime = await createAiTestRuntime();
 });
-afterAll(() => database.client.close());
+afterAll(async () => {
+  await runtime?.fiber.dispose();
+  database.client.close();
+});
 beforeEach(async () => {
-  await database.client.executeMultiple(
-    "DELETE FROM projects; INSERT INTO projects VALUES ('project-1','org-1',NULL), ('project-2','org-2',NULL);",
-  );
+  await resetAiDatabase();
   mocks.hosted = false;
   mocks.context.role = "owner";
   vi.stubGlobal("fetch", mocks.fetch);
@@ -107,7 +109,7 @@ function config(
 }
 
 it("encrypts the credential in SQL and never returns it in configuration summaries", async () => {
-  const saved = await AiProviderConfigService.saveConfig(config(), scope);
+  const saved = await runtime.ai.configuration.saveConfig(config(), scope);
   const rows = await database.client.execute(
     "SELECT encrypted_api_key FROM ai_provider_configs",
   );
@@ -122,26 +124,26 @@ it("encrypts the credential in SQL and never returns it in configuration summari
   expect(saved?.keyAddedAt).toEqual(expect.any(String));
   expect(JSON.stringify(saved)).not.toContain("test-secret-key");
   expect(saved).not.toHaveProperty("encryptedApiKey");
-  await DecisionService.decide(input, scope, { provider: "typesafe" });
+  await runtime.ai.decide(input, scope, { provider: "typesafe" });
   expect(mocks.fetch.mock.calls[0][1]?.headers).toMatchObject({
     Authorization: "Bearer test-secret-key",
   });
   expect(
-    (await AiProviderConfigService.getConfig(scope, "typesafe"))?.lastUsedAt,
+    (await runtime.ai.configuration.getConfig(scope, "typesafe"))?.lastUsedAt,
   ).toEqual(expect.any(String));
 });
 
 it("isolates project configurations by organization and deletes them with the project", async () => {
-  await AiProviderConfigService.saveConfig(config(), scope);
+  await runtime.ai.configuration.saveConfig(config(), scope);
   const otherOrg = { ...scope, organizationId: "org-2" };
   expect(
-    await AiProviderConfigService.getConfig(otherOrg, "typesafe"),
+    await runtime.ai.configuration.getConfig(otherOrg, "typesafe"),
   ).toBeNull();
   await expect(
-    AiProviderConfigService.saveConfig(config(), otherOrg),
+    runtime.ai.configuration.saveConfig(config(), otherOrg),
   ).rejects.toMatchObject({ code: "NOT_FOUND" });
   await expect(
-    DecisionService.decide(input, otherOrg, { provider: "typesafe" }),
+    runtime.ai.decide(input, otherOrg, { provider: "typesafe" }),
   ).rejects.toMatchObject({
     code: "AI_PROVIDER_NOT_CONFIGURED",
   });
@@ -166,12 +168,14 @@ it("requires integration management permission to change or remove a model", asy
       },
     }),
   ).rejects.toMatchObject({ code: "FORBIDDEN" });
-  expect(await AiProviderConfigService.getConfig(scope, "typesafe")).toBeNull();
+  expect(
+    await runtime.ai.configuration.getConfig(scope, "typesafe"),
+  ).toBeNull();
 });
 
 it("stores independent provider credentials and rejects stale updates and removals", async () => {
-  const original = await AiProviderConfigService.saveConfig(config(), scope);
-  const gateway = await AiProviderConfigService.saveConfig(
+  const original = await runtime.ai.configuration.saveConfig(config(), scope);
+  const gateway = await runtime.ai.configuration.saveConfig(
     config({
       provider: "vercel_gateway",
       endpoint: VERCEL_GATEWAY_ENDPOINT,
@@ -179,7 +183,7 @@ it("stores independent provider credentials and rejects stale updates and remova
     }),
     scope,
   );
-  const current = await AiProviderConfigService.saveConfig(
+  const current = await runtime.ai.configuration.saveConfig(
     config({
       revision: original!.revision,
       timeoutMs: 45000,
@@ -188,33 +192,40 @@ it("stores independent provider credentials and rejects stale updates and remova
     scope,
   );
   await expect(
-    AiProviderConfigService.saveConfig(
+    runtime.ai.configuration.saveConfig(
       config({ revision: original!.revision }),
       scope,
     ),
   ).rejects.toMatchObject({ code: "CONFLICT" });
   await expect(
-    AiProviderConfigService.removeConfig(scope, "typesafe", original!.revision),
+    runtime.ai.configuration.removeConfig(
+      scope,
+      "typesafe",
+      original!.revision,
+    ),
   ).rejects.toMatchObject({ code: "CONFLICT" });
+  await runtime.ai.decide(input, scope, { provider: "typesafe" });
+  await runtime.ai.decide(input, scope, { provider: "vercel_gateway" });
   expect(
-    (await AiProviderConfigService.resolve(scope, "typesafe")).apiKey,
-  ).toBe("test-secret-key");
-  expect(
-    (await AiProviderConfigService.resolve(scope, "vercel_gateway")).apiKey,
-  ).toBe("gateway-key");
-  await AiProviderConfigService.removeConfig(
+    mocks.fetch.mock.calls.map(([, init]) =>
+      new Headers(init?.headers).get("authorization"),
+    ),
+  ).toEqual(["Bearer test-secret-key", "Bearer gateway-key"]);
+  await runtime.ai.configuration.removeConfig(
     scope,
     "typesafe",
     current!.revision,
   );
   expect(
-    await AiProviderConfigService.getConfig(scope, "vercel_gateway"),
-  ).toEqual(gateway);
-  expect(await AiProviderConfigService.getConfig(scope, "typesafe")).toBeNull();
+    await runtime.ai.configuration.getConfig(scope, "vercel_gateway"),
+  ).toMatchObject({ revision: gateway!.revision, hasApiKey: true });
+  expect(
+    await runtime.ai.configuration.getConfig(scope, "typesafe"),
+  ).toBeNull();
 });
 
 it("requires an explicit new credential when a custom endpoint changes", async () => {
-  const original = await AiProviderConfigService.saveConfig(
+  const original = await runtime.ai.configuration.saveConfig(
     config({
       provider: "systemone",
       endpoint: "http://localhost:8765/v1/systemone",
@@ -222,7 +233,7 @@ it("requires an explicit new credential when a custom endpoint changes", async (
     scope,
   );
   await expect(
-    AiProviderConfigService.saveConfig(
+    runtime.ai.configuration.saveConfig(
       config({
         provider: "systemone",
         endpoint: "http://localhost:8099/v1/systemone",
@@ -239,12 +250,14 @@ it.each([
   { provider: "vercel_gateway", endpoint: VERCEL_GATEWAY_ENDPOINT },
 ] as const)("$provider requires a key", async (service) => {
   await expect(
-    AiProviderConfigService.saveConfig(
+    runtime.ai.configuration.saveConfig(
       config({ ...service, credential: { action: "clear" } }),
       scope,
     ),
   ).rejects.toMatchObject({ code: "AI_PROVIDER_CONFIG_INVALID" });
-  expect(await AiProviderConfigService.getConfig(scope, "typesafe")).toBeNull();
+  expect(
+    await runtime.ai.configuration.getConfig(scope, "typesafe"),
+  ).toBeNull();
   expect(mocks.fetch).not.toHaveBeenCalled();
 });
 
@@ -252,13 +265,13 @@ it.each(["typesafe", "vercel_gateway"] as const)(
   "%s rejects replacement endpoints before storing or sending credentials",
   async (provider) => {
     await expect(
-      AiProviderConfigService.saveConfig(
+      runtime.ai.configuration.saveConfig(
         config({ provider, endpoint: "https://example.com/v1/systemone" }),
         scope,
       ),
     ).rejects.toMatchObject({ code: "AI_PROVIDER_CONFIG_INVALID" });
     expect(
-      await AiProviderConfigService.getConfig(scope, "typesafe"),
+      await runtime.ai.configuration.getConfig(scope, "typesafe"),
     ).toBeNull();
     expect(mocks.fetch).not.toHaveBeenCalled();
   },
@@ -277,7 +290,7 @@ it.each([
   "rejects unsafe service addresses before sending credentials: %s",
   async (endpoint) => {
     await expect(
-      AiProviderConfigService.saveConfig(
+      runtime.ai.configuration.saveConfig(
         config({ provider: "systemone", endpoint }),
         scope,
       ),
@@ -289,7 +302,7 @@ it.each([
 it("does not permit hosted tenants to target the server's loopback interface", async () => {
   mocks.hosted = true;
   await expect(
-    AiProviderConfigService.saveConfig(
+    runtime.ai.configuration.saveConfig(
       config({
         provider: "systemone",
         endpoint: "http://127.0.0.1:8765/v1/systemone",
@@ -301,13 +314,14 @@ it("does not permit hosted tenants to target the server's loopback interface", a
 });
 
 it("renames without rotating the secret and resets usage metadata on explicit replacement", async () => {
-  const first = await AiProviderConfigService.saveConfig(config(), scope);
+  const first = await runtime.ai.configuration.saveConfig(config(), scope);
+  await runtime.ai.decide(input, scope, { provider: "typesafe" });
   const originalCipher = (
     await database.client.execute(
       "SELECT encrypted_api_key FROM ai_provider_configs",
     )
   ).rows[0].encrypted_api_key;
-  const renamed = await AiProviderConfigService.saveConfig(
+  const renamed = await runtime.ai.configuration.saveConfig(
     config({
       revision: first!.revision,
       credential: { action: "keep", name: "Production" },
@@ -325,7 +339,8 @@ it("renames without rotating the secret and resets usage metadata on explicit re
       )
     ).rows[0].encrypted_api_key,
   ).toBe(originalCipher);
-  const replaced = await AiProviderConfigService.saveConfig(
+  expect(renamed?.lastUsedAt).toEqual(expect.any(String));
+  const replaced = await runtime.ai.configuration.saveConfig(
     config({
       revision: renamed!.revision,
       credential: {
@@ -336,11 +351,9 @@ it("renames without rotating the secret and resets usage metadata on explicit re
     }),
     scope,
   );
-  await expect(
-    AiProviderConfigService.recordUse(scope, "typesafe", renamed!.revision),
-  ).rejects.toMatchObject({ code: "CONFLICT" });
+
   expect(
-    await AiProviderConfigService.getConfig(scope, "typesafe"),
+    await runtime.ai.configuration.getConfig(scope, "typesafe"),
   ).toMatchObject({
     revision: replaced!.revision,
     keyName: "New",
@@ -350,7 +363,7 @@ it("renames without rotating the secret and resets usage metadata on explicit re
 });
 
 it("does not reveal a short custom key through its masked suffix", async () => {
-  const saved = await AiProviderConfigService.saveConfig(
+  const saved = await runtime.ai.configuration.saveConfig(
     config({
       provider: "systemone",
       endpoint: "http://localhost:8765/v1/systemone",

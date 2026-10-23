@@ -1,4 +1,5 @@
-import { AiProviderSettings } from "@/client/features/settings/AiProviderSettings";
+// FORK: the installed AI plugin owns its settings surface.
+import { AiProviderSettings } from "@/plugins/ai/client/views";
 import { queryClient } from "@/client/tanstack-db/queryClient";
 import { googleConnectionOptions } from "@/plugins/google-oauth/client/googleProviders";
 import { createFileRoute } from "@tanstack/react-router";

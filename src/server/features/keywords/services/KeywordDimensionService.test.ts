@@ -1,4 +1,21 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import AiAgentsService from "@/plugins/ai-agents";
+import * as dimensions from "@/plugins/keyword-dimension-agent";
+import { createAiTestRuntime } from "@/plugins/ai/server/testRuntime";
+import type { Context } from "cordis";
+let runtime: Context;
+vi.mock("@/plugins/server/context", () => ({
+  getAi: async () => runtime.ai,
+  getAiAgents: async () => runtime.aiAgents,
+}));
+import {
+  beforeAll,
+  afterAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { z } from "zod";
 import { KeywordDimensionService } from "./KeywordDimensionService";
 import { keywordDimensionTool } from "@/server/features/sam/keywordDimensionTool";
@@ -15,8 +32,8 @@ vi.mock("@/db", () => ({ withPgClient: (fn: () => unknown) => fn() }));
 vi.mock("@/server/features/projects/repositories/ProjectRepository", () => ({
   ProjectRepository: { getProjectForOrganization: mocks.project },
 }));
-vi.mock("@/server/features/ai/AiProviderConfigService", () => ({
-  AiProviderConfigService: {
+vi.mock("@/plugins/ai/server/configuration", () => ({
+  configuration: {
     resolve: mocks.config,
     recordUse: mocks.recordUse,
   },
@@ -197,4 +214,13 @@ describe("keyword field generation", () => {
       });
     },
   );
+});
+
+beforeAll(async () => {
+  runtime = await createAiTestRuntime();
+  await runtime.plugin(AiAgentsService, { keywordDimensions: "ai-sdk" });
+  await runtime.plugin(dimensions);
+});
+afterAll(async () => {
+  await runtime?.fiber.dispose();
 });

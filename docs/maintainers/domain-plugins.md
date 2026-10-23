@@ -9,13 +9,15 @@ Branches stack in this order. Finish validation and commit a domain before start
 | Domain               | Branch                     | State    |
 | -------------------- | -------------------------- | -------- |
 | Google authorization | `codex/cordis-google-auth` | Complete |
-| AI                   | `codex/cordis-ai`          | Pending  |
+| AI                   | `codex/cordis-ai`          | Complete |
 | SAM                  | `codex/cordis-sam`         | Pending  |
 | Keywords             | `codex/cordis-keywords`    | Pending  |
 
 The starting checkpoint is `712454e1` on `codex/google-keyword-provider`. Each domain commit and its validation evidence are recorded below as it completes.
 
 Google authorization validation: 252 test files / 1,826 tests passed, `pnpm ci:check` and `pnpm build` passed. The local development application and client plugin modules return HTTP 200 after rebuilding and restarting both Worker environments. Authorization tests exercise persisted grants, PKCE/state replay, account-removal transactions, connection selection, dependency activation and plugin disposal. No live supplier calls or visual UI checks were performed.
+
+AI validation: 253 test files / 1,829 tests passed; the final configuration and lifecycle suite passed after lint cleanup. `pnpm ci:check` and `pnpm build` passed. The local app and AI client entry/mount modules return HTTP 200. Supplier responses were mocked; no paid calls or visual checks were used.
 
 ## Domain ownership
 
@@ -31,9 +33,9 @@ The auxiliary audit Worker has its own manifest/module map for SEO and DataForSE
 
 ### AI
 
-`ai` will own provider configuration, encrypted key persistence, text/decision contracts, model discovery orchestration and the complete settings UI. It replaces the narrow `ai-models` registry. Gateway and SystemOne plugins will own their actual protocol implementations rather than importing legacy feature services. Gateway owns text, catalog and its decision endpoint; SystemOne owns TypeSafe and explicitly configured local endpoints. Model IDs are selected at call sites, with the existing DeepSeek text and Jev decision defaults.
+`ai` owns provider configuration, encrypted key persistence, text/decision contracts, model discovery orchestration and the complete settings UI. It replaces the narrow `ai-models` registry. Gateway and SystemOne plugins own their actual protocol implementations rather than importing legacy feature services. Gateway owns text, catalog and its decision endpoint; SystemOne owns TypeSafe and explicitly configured local endpoints. Model IDs are selected at call sites, with the existing DeepSeek text and Jev decision defaults.
 
-Move `features/ai`, `features/decision` and their settings components. Replace implementation-derived public types with explicit domain contracts. Retain scope/revision checks and existing credentials and routing policies.
+The former `features/ai`, `features/decision` implementations and settings components now live inside the domain and its provider plugins. `contracts.ts` defines scope, model and provider capabilities. Only summary/configuration operations are public; credential resolution and revision checks remain internal. Each provider registration owns an abort signal, so unloading prevents retained models from issuing new requests and cancels in-flight calls. Gateway and local/TypeSafe providers share the SystemOne wire library in `plugins/shared/systemone.ts`, with endpoint selection in the provider. Existing credentials, DNS and routing policies are unchanged.
 
 ### SAM
 
@@ -55,3 +57,5 @@ Keep DataForSEO and direct Google Ads semantics distinct. DataForSEO's Ads-deriv
 - Preserve OAuth callback paths, single-use state, PKCE, encrypted grants, per-user isolation and account-removal atomicity. Existing legacy connection selection behavior remains unchanged.
 - Preserve configured DNS checks, DeepSeek-only Gateway routing, retry/fallback policies and billing seams. Any policy change requires explicit maintainer approval before implementation.
 - Validate through registered service entry points with real SQL for persistence and mocked supplier responses. Check tenant isolation, lifecycle teardown, existing behavior, type/lint checks and production build. The maintainer performs visual UI verification.
+
+Google authorization checkpoint: `a1d5dc81`. AI work is stacked on that commit in `codex/cordis-ai`.

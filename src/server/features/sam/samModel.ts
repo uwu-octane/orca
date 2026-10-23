@@ -1,7 +1,7 @@
 // FORK: resolve every inference through the installed Cordis model provider.
-import { getAiModels } from "@/plugins/server/context";
-import type { TextModel } from "@/plugins/ai-models";
-import type { AiProviderScope } from "@/server/features/ai/AiProviderConfigRepository";
+import { getAi } from "@/plugins/server/context";
+import type { TextModel } from "@/plugins/ai/contracts";
+import type { AiProviderScope } from "@/plugins/ai/contracts";
 import { DEFAULT_LLM_MODEL } from "@/types/schemas/ai-provider";
 import { z } from "zod";
 
@@ -12,7 +12,7 @@ export function createSamModel(
   modelId = DEFAULT_LLM_MODEL,
 ): TextModel {
   const resolve = async () =>
-    (await getAiModels()).languageModel(await scope(), modelId);
+    (await getAi()).languageModel(await scope(), modelId);
   return {
     specificationVersion: "v3",
     provider: "orca.cordis",

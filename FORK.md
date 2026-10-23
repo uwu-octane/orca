@@ -1,5 +1,9 @@
 # Fork maintenance log
 
+## 2026-10-23 AI domain
+
+AI configuration, credential persistence and decision validation now belong to `plugins/ai/server`; the full provider settings UI belongs to its client entry. Gateway owns its text and catalog implementations, while provider plugins share the SystemOne wire library. Public callers resolve the installed `ai` service; superseded feature implementations and the `ai-models` registry are removed. Registrations own cancellation, and each request revalidates its scoped credential revision. Existing routing, billing, DNS and error policies remain unchanged.
+
 ## 2026-10-23 Google authorization domain
 
 Google authorization, connection repositories and the connection/onboarding UI now belong to the `google-oauth` Cordis plugin. The `google-ads` provider owns Ads discovery, targeting and Keyword Ideas, with an injected authorization dependency and lifecycle-owned discovery registration. GSC/GA4 reports remain in their original domains. Shared routes, server functions, reporting consumers and GDPR access resolve the installed service; framework mount views use the client plugin. OAuth callbacks, grant encryption, data tables and supplier/error policies are unchanged. See `docs/maintainers/domain-plugins.md` for branch sequence and remaining domains.

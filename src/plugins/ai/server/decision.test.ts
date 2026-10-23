@@ -1,8 +1,5 @@
 import { typedDecisionFixture } from "./decision-test-fixtures";
-import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
-import { DecisionService } from "./DecisionService";
-import { AiProviderConfigService } from "@/server/features/ai/AiProviderConfigService";
 import {
   AI_PROVIDERS,
   type SaveAiProviderConfig,
@@ -12,18 +9,28 @@ const VERCEL_GATEWAY_ENDPOINT = AI_PROVIDERS.vercel_gateway.endpoint;
 
 import { type DecisionInput } from "@/types/schemas/decision";
 
-const database = await vi.hoisted(async () => {
-  const { createClient } = await import("@libsql/client");
-  const { drizzle } = await import("drizzle-orm/libsql");
-  const client = createClient({ url: "file::memory:" });
-  return { client, db: drizzle(client) };
-});
+import {
+  database,
+  initializeAiDatabase,
+  resetAiDatabase,
+} from "./testDatabase";
+import { createAiTestRuntime } from "./testRuntime";
+import type { Context } from "cordis";
+let runtime: Context;
+vi.mock("@/plugins/server/context", () => ({
+  getAi: async () => runtime.ai,
+  getAiAgents: async () => runtime.aiAgents,
+}));
+
 const mocks = vi.hoisted(() => ({
   fetch: vi.fn<typeof fetch>(),
   hosted: false,
   context: { organizationId: "org-1", projectId: "project-1", role: "owner" },
 }));
-vi.mock("@/db", () => ({ db: database.db }));
+vi.mock("@/db", async () => {
+  const { database: fixture } = await import("./testDatabase");
+  return { db: fixture.db, withPgClient: (fn: () => unknown) => fn() };
+});
 vi.mock("cloudflare:workers", () => ({ env: { DATABASE_PROVIDER: "d1" } }));
 vi.mock("@/server/lib/runtime-env", () => ({
   getOptionalEnvValue: async (name: string) =>
@@ -33,20 +40,15 @@ vi.mock("@/server/lib/runtime-env", () => ({
   isHostedServerAuthMode: async () => mocks.hosted,
 }));
 beforeAll(async () => {
-  await database.client.executeMultiple(
-    "PRAGMA foreign_keys = ON; CREATE TABLE projects (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, archived_at TEXT);",
-  );
-  await database.client.executeMultiple(
-    readFileSync("drizzle/sqlite/0060_greedy_wiccan.sql", "utf8") +
-      ";" +
-      readFileSync("drizzle/sqlite/0061_ancient_nuke.sql", "utf8"),
-  );
+  await initializeAiDatabase();
+  runtime = await createAiTestRuntime();
 });
-afterAll(() => database.client.close());
+afterAll(async () => {
+  await runtime?.fiber.dispose();
+  database.client.close();
+});
 beforeEach(async () => {
-  await database.client.executeMultiple(
-    "DELETE FROM projects; INSERT INTO projects VALUES ('project-1','org-1',NULL), ('project-2','org-2',NULL);",
-  );
+  await resetAiDatabase();
   mocks.hosted = false;
   mocks.context.role = "owner";
   vi.stubGlobal("fetch", mocks.fetch);
@@ -105,13 +107,13 @@ it.each([
   async (service) => {
     // Fixed cloud endpoints are available in hosted mode without custom-origin configuration.
     mocks.hosted = true;
-    await AiProviderConfigService.saveConfig(
+    await runtime.ai.configuration.saveConfig(
       config({ provider: service.provider, endpoint: service.endpoint }),
       scope,
     );
     const { request, response } = typedDecisionFixture();
     mocks.fetch.mockResolvedValue(Response.json(response));
-    const result = await DecisionService.decide(request, scope, {
+    const result = await runtime.ai.decide(request, scope, {
       provider: service.provider,
       model: service.model,
     });
@@ -137,7 +139,7 @@ it.each([
 
 it("uses the explicitly configured local endpoint and model, with optional bearer auth and no invented usage", async () => {
   const endpoint = "http://127.0.0.1:8765/v1/systemone";
-  await AiProviderConfigService.saveConfig(
+  await runtime.ai.configuration.saveConfig(
     config({
       provider: "systemone",
       endpoint,
@@ -151,7 +153,7 @@ it("uses the explicitly configured local endpoint and model, with optional beare
       answers: { relevant: { type: "noul", noul: 0.4 } },
     }),
   );
-  const result = await DecisionService.decide(input, scope, {
+  const result = await runtime.ai.decide(input, scope, {
     provider: "systemone",
     model: "english",
   });
@@ -179,12 +181,12 @@ it.each([
     },
   },
 ])("rejects incomplete or incorrectly typed answers", async (answers) => {
-  await AiProviderConfigService.saveConfig(config(), scope);
+  await runtime.ai.configuration.saveConfig(config(), scope);
   mocks.fetch.mockResolvedValue(
     Response.json({ model: "jev-release", answers }),
   );
   await expect(
-    DecisionService.decide(input, scope, { provider: "typesafe" }),
+    runtime.ai.decide(input, scope, { provider: "typesafe" }),
   ).rejects.toMatchObject({
     code: "DECISION_INVALID_RESPONSE",
   });
@@ -192,7 +194,7 @@ it.each([
 });
 
 it("rejects options not present in the caller's criteria", async () => {
-  await AiProviderConfigService.saveConfig(config(), scope);
+  await runtime.ai.configuration.saveConfig(config(), scope);
   mocks.fetch.mockResolvedValue(
     Response.json({
       model: "jev-release",
@@ -207,7 +209,7 @@ it("rejects options not present in the caller's criteria", async () => {
     }),
   );
   await expect(
-    DecisionService.decide(
+    runtime.ai.decide(
       {
         state: "coffee",
         questions: {
@@ -225,7 +227,7 @@ it("rejects options not present in the caller's criteria", async () => {
 });
 
 it("rejects reported truncation instead of treating a partial evaluation as complete", async () => {
-  await AiProviderConfigService.saveConfig(config(), scope);
+  await runtime.ai.configuration.saveConfig(config(), scope);
   mocks.fetch.mockResolvedValue(
     Response.json({
       model: "laya",
@@ -234,7 +236,7 @@ it("rejects reported truncation instead of treating a partial evaluation as comp
     }),
   );
   await expect(
-    DecisionService.decide(input, scope, { provider: "typesafe" }),
+    runtime.ai.decide(input, scope, { provider: "typesafe" }),
   ).rejects.toMatchObject({
     code: "DECISION_INPUT_TRUNCATED",
   });
@@ -250,12 +252,12 @@ it.each([
 ])(
   "reports HTTP %s without echoing the body or retrying",
   async (status, code) => {
-    await AiProviderConfigService.saveConfig(config(), scope);
+    await runtime.ai.configuration.saveConfig(config(), scope);
     mocks.fetch.mockResolvedValue(
       new Response("private provider body", { status: Number(status) }),
     );
     await expect(
-      DecisionService.decide(input, scope, { provider: "typesafe" }),
+      runtime.ai.decide(input, scope, { provider: "typesafe" }),
     ).rejects.toMatchObject({
       code,
       message: code,
@@ -265,7 +267,10 @@ it.each([
 );
 
 it("aborts a stalled inference at the configured deadline without retrying", async () => {
-  await AiProviderConfigService.saveConfig(config({ timeoutMs: 1_000 }), scope);
+  await runtime.ai.configuration.saveConfig(
+    config({ timeoutMs: 1_000 }),
+    scope,
+  );
   mocks.fetch.mockImplementation(
     (_url, init) =>
       new Promise((_resolve, reject) => {
@@ -275,7 +280,7 @@ it("aborts a stalled inference at the configured deadline without retrying", asy
       }),
   );
   await expect(
-    DecisionService.decide(input, scope, { provider: "typesafe" }),
+    runtime.ai.decide(input, scope, { provider: "typesafe" }),
   ).rejects.toMatchObject({
     code: "DECISION_TIMEOUT",
   });

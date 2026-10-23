@@ -1,5 +1,5 @@
 import { ToolLoopAgent, stepCountIs, tool } from "ai";
-import type { TextModel } from "@/plugins/ai-models";
+import type { TextModel } from "@/plugins/ai/contracts";
 import {
   keywordDimensionsSchema,
   type GenerateKeywordDimensionsInput,

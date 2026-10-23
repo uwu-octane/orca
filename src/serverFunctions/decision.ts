@@ -1,10 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
-import { DecisionService } from "@/server/features/decision/DecisionService";
+// FORK: the AI domain owns decision validation and provider selection.
+import { getAi } from "@/plugins/server/context";
 import { requireProjectContext } from "./middleware";
 import { decisionRequestSchema } from "@/types/schemas/decision";
 export const runDecision = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(decisionRequestSchema)
-  .handler(({ data, context }) =>
-    DecisionService.decide(data.input, context, data.selection),
+  .handler(async ({ data, context }) =>
+    (await getAi()).decide(data.input, context, data.selection),
   );

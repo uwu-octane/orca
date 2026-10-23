@@ -8,8 +8,8 @@ server:
     name: google-oauth
   - id: google-ads
     name: google-ads
-  - id: ai-models
-    name: ai-models
+  - id: ai
+    name: ai
     config:
       textProvider: vercel_gateway
   - id: vercel-gateway
@@ -34,3 +34,5 @@ client:
     name: locale
   - id: google-oauth
     name: google-oauth
+  - id: ai
+    name: ai

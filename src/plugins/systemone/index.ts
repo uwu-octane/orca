@@ -1,19 +1,19 @@
 import type { Context } from "cordis";
 
 export const name = "systemone";
-export const inject = ["aiModels"];
+export const inject = ["ai"];
 
 export function apply(ctx: Context) {
   for (const id of ["typesafe", "systemone"] as const) {
-    ctx.aiModels.register({
+    ctx.ai.register({
       id,
-      decide: async (input, scope, selection) =>
-        (
-          await import("@/server/features/decision/systemOneRequest")
-        ).executeSystemOneDecision(input, scope, {
-          ...selection,
-          provider: id,
-        }),
+      decide: async (input, execution, model) =>
+        (await import("@/plugins/shared/systemone")).executeSystemOneDecision(
+          input,
+          execution,
+          model,
+          execution.connection.endpoint,
+        ),
     });
   }
 }

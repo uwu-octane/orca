@@ -1,8 +1,6 @@
+import type { AiProviderScope } from "../contracts";
 import { symmetricDecrypt, symmetricEncrypt } from "better-auth/crypto";
-import {
-  AiProviderConfigRepository,
-  type AiProviderScope,
-} from "./AiProviderConfigRepository";
+import { AiProviderConfigRepository } from "./AiProviderConfigRepository";
 import { AppError } from "@/server/lib/errors";
 import { normalizeAndValidateStartUrl } from "@/server/lib/audit/url-policy";
 import {
@@ -211,7 +209,7 @@ async function recordUse(
     throw new AppError("CONFLICT");
 }
 
-export const AiProviderConfigService = {
+export const configuration = {
   recordUse,
   getConfig,
   saveConfig,

@@ -1,20 +1,26 @@
-import { readFileSync } from "node:fs";
+import AiAgentsService from "@/plugins/ai-agents";
+import * as dimensions from "@/plugins/keyword-dimension-agent";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
-import { AiProviderConfigService } from "./AiProviderConfigService";
-import { DecisionService } from "@/server/features/decision/DecisionService";
 import { KeywordDimensionService } from "@/server/features/keywords/services/KeywordDimensionService";
 import { AI_PROVIDERS, DEFAULT_LLM_MODEL } from "@/types/schemas/ai-provider";
 
-const database = await vi.hoisted(async () => {
-  const { createClient } = await import("@libsql/client");
-  const { drizzle } = await import("drizzle-orm/libsql");
-  const client = createClient({ url: "file::memory:" });
-  return { client, db: drizzle(client) };
-});
-vi.mock("@/db", () => ({
-  db: database.db,
-  withPgClient: (fn: () => unknown) => fn(),
+import {
+  database,
+  initializeAiDatabase,
+  resetAiDatabase,
+} from "./testDatabase";
+import { createAiTestRuntime } from "./testRuntime";
+import type { Context } from "cordis";
+let runtime: Context;
+vi.mock("@/plugins/server/context", () => ({
+  getAi: async () => runtime.ai,
+  getAiAgents: async () => runtime.aiAgents,
 }));
+
+vi.mock("@/db", async () => {
+  const { database: fixture } = await import("./testDatabase");
+  return { db: fixture.db, withPgClient: (fn: () => unknown) => fn() };
+});
 vi.mock("cloudflare:workers", () => ({ env: { DATABASE_PROVIDER: "d1" } }));
 vi.mock("@/server/lib/runtime-env", () => ({
   getOptionalEnvValue: async (name: string) =>
@@ -29,19 +35,19 @@ vi.mock("@/server/features/projects/repositories/ProjectRepository", () => ({
   },
 }));
 beforeAll(async () => {
-  await database.client.executeMultiple(
-    "CREATE TABLE projects (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, archived_at TEXT); INSERT INTO projects VALUES ('project-1','org-1',NULL);",
-  );
-  await database.client.executeMultiple(
-    readFileSync("drizzle/sqlite/0060_greedy_wiccan.sql", "utf8") +
-      ";" +
-      readFileSync("drizzle/sqlite/0061_ancient_nuke.sql", "utf8"),
-  );
+  await initializeAiDatabase();
+  await resetAiDatabase();
+  runtime = await createAiTestRuntime();
+  await runtime.plugin(AiAgentsService, { keywordDimensions: "ai-sdk" });
+  await runtime.plugin(dimensions);
 });
-afterAll(() => database.client.close());
+afterAll(async () => {
+  await runtime?.fiber.dispose();
+  database.client.close();
+});
 const scope = { organizationId: "org-1", projectId: "project-1" };
 it("shares one Gateway connection across LLM and decision calls with caller-selected models", async () => {
-  await AiProviderConfigService.saveConfig(
+  await runtime.ai.configuration.saveConfig(
     {
       projectId: scope.projectId,
       provider: "vercel_gateway",
@@ -107,12 +113,12 @@ it("shares one Gateway connection across LLM and decision calls with caller-sele
   expect(
     await KeywordDimensionService.generate(generationInput, scope),
   ).toEqual(fields);
-  await DecisionService.decide(input, scope);
+  await runtime.ai.decide(input, scope);
   await KeywordDimensionService.generate(
     { ...generationInput, model: "deepseek/deepseek-v4-flash" },
     scope,
   );
-  await DecisionService.decide(input, scope, {
+  await runtime.ai.decide(input, scope, {
     model: "typesafe-ai/jev-preview",
   });
   expect(fetchMock).toHaveBeenCalledTimes(4);

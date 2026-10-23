@@ -2,16 +2,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireProjectContext } from "@/serverFunctions/middleware";
-import { AiProviderConfigService } from "@/server/features/ai/AiProviderConfigService";
+// FORK: configuration is owned by the installed AI domain.
+import { getAi } from "@/plugins/server/context";
 
 export const getSamAccessSetupStatus = createServerFn({ method: "GET" })
   .middleware(requireProjectContext)
   .validator(z.object({ projectId: z.string().min(1) }))
   .handler(async ({ context }) => {
-    const config = await AiProviderConfigService.getConfig(
-      context,
-      "vercel_gateway",
-    );
+    const config = await (
+      await getAi()
+    ).configuration.getConfig(context, "vercel_gateway");
     const enabled = config?.hasApiKey === true;
     return {
       enabled,

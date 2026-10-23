@@ -3,7 +3,7 @@ import { and, eq, getTableColumns, inArray, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { aiProviderConfigs, projects } from "@/db/schema";
 
-export type AiProviderScope = { organizationId: string; projectId: string };
+import type { AiProviderScope } from "../contracts";
 
 function projectInScope(scope: AiProviderScope) {
   return db

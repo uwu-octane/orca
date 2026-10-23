@@ -1,5 +1,15 @@
-import { beforeEach, expect, it, vi } from "vitest";
-import { GatewayModelService } from "./GatewayModelService";
+import { beforeAll, afterAll, beforeEach, expect, it, vi } from "vitest";
+import { createAiTestRuntime } from "@/plugins/ai/server/testRuntime";
+import type { Context } from "cordis";
+let runtime: Context;
+vi.mock("cloudflare:workers", () => ({ env: {} }));
+vi.mock("@/db", () => ({}));
+beforeAll(async () => {
+  runtime = await createAiTestRuntime();
+});
+afterAll(async () => {
+  await runtime?.fiber.dispose();
+});
 
 const fetchMock = vi.fn<typeof fetch>();
 beforeEach(() => {
@@ -38,7 +48,7 @@ it("lists text and decision models with prices per million tokens and provider m
       ],
     }),
   );
-  const models = await GatewayModelService.list();
+  const models = await runtime.ai.listModels("vercel_gateway");
   expect(models).toHaveLength(2);
   expect(models[0]).toMatchObject({
     id: "deepseek/text-model",
@@ -77,7 +87,7 @@ it("distinguishes free models from unavailable pricing and policy information", 
       ],
     }),
   );
-  expect(await GatewayModelService.list()).toMatchObject([
+  expect(await runtime.ai.listModels("vercel_gateway")).toMatchObject([
     { id: "free", inputPrice: 0, outputPrice: 0, zeroDataRetention: "none" },
     {
       id: "unknown",
@@ -104,10 +114,12 @@ it.each([
   "reports $label without leaking upstream responses or substituting models",
   async ({ status, body }) => {
     fetchMock.mockResolvedValue(new Response(body, { status }));
-    await expect(GatewayModelService.list()).rejects.toMatchObject({
-      code: "AI_MODEL_CATALOG_UNAVAILABLE",
-      message: "AI_MODEL_CATALOG_UNAVAILABLE",
-    });
+    await expect(runtime.ai.listModels("vercel_gateway")).rejects.toMatchObject(
+      {
+        code: "AI_MODEL_CATALOG_UNAVAILABLE",
+        message: "AI_MODEL_CATALOG_UNAVAILABLE",
+      },
+    );
     expect(fetchMock).toHaveBeenCalledTimes(1);
   },
 );

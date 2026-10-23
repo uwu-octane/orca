@@ -1,31 +1,21 @@
 import { createGateway, wrapLanguageModel } from "ai";
 import { GatewayError } from "@ai-sdk/gateway";
-import { AiProviderConfigService } from "@/server/features/ai/AiProviderConfigService";
-import type { AiProviderScope } from "@/server/features/ai/AiProviderConfigRepository";
+import type { AiExecution } from "@/plugins/ai/contracts";
 import { llmModelSchema } from "@/types/schemas/ai-provider";
 import { AppError } from "@/server/lib/errors";
-import { withPgClient } from "@/db";
 
-export async function createProjectGatewayModel(
-  scope: AiProviderScope,
+export async function createGatewayModel(
+  execution: AiExecution,
   modelId: string,
 ) {
   const selectedModel = llmModelSchema.parse(modelId);
-  const config = await withPgClient(() =>
-    AiProviderConfigService.resolve(scope, "vercel_gateway"),
-  );
+  const config = execution.connection;
   if (!config.apiKey) throw new AppError("AI_PROVIDER_NOT_CONFIGURED");
   const model = createGateway({
     apiKey: config.apiKey,
     fetch: async (url, init) => {
-      await withPgClient(() =>
-        AiProviderConfigService.recordUse(
-          scope,
-          "vercel_gateway",
-          config.revision,
-        ),
-      );
-      const signals = [AbortSignal.timeout(config.timeoutMs)];
+      await execution.beforeRequest();
+      const signals = [AbortSignal.timeout(config.timeoutMs), execution.signal];
       if (init?.signal) signals.push(init.signal);
       return fetch(url, {
         ...init,

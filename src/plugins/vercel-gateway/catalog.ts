@@ -30,14 +30,16 @@ const catalogSchema = z.object({
   data: z.array(z.object({ type: z.string() }).loose()),
 });
 
-async function list(): Promise<GatewayModel[]> {
+export async function listGatewayModels(
+  signal: AbortSignal,
+): Promise<GatewayModel[]> {
   try {
     // This public catalog needs no project key. Never send saved credentials or
     // let callers supply an endpoint; model discovery does not run inference.
     const response = await fetch("https://ai-gateway.vercel.sh/v1/models", {
       headers: { Accept: "application/json" },
       redirect: "manual",
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),
     });
     if (!response.ok) {
       await response.body?.cancel();
@@ -77,5 +79,3 @@ async function list(): Promise<GatewayModel[]> {
     throw new AppError("AI_MODEL_CATALOG_UNAVAILABLE");
   }
 }
-
-export const GatewayModelService = { list } as const;

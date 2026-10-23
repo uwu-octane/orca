@@ -22,7 +22,7 @@ export function getAppContext(): Promise<Context> {
     try {
       await bootPlugins(ctx, manifest.server, serverModules);
       ctx.get("seoData")?.validateRoutes();
-      ctx.get("aiModels")?.validateRoutes();
+      ctx.get("ai")?.validateRoutes();
       ctx.get("aiAgents")?.validateRoutes();
       return ctx;
     } catch (error) {
@@ -50,8 +50,8 @@ export async function getDataforseoProvider() {
   return provider;
 }
 
-export async function getAiModels() {
-  const service = (await getAppContext()).get("aiModels");
+export async function getAi() {
+  const service = (await getAppContext()).get("ai");
   if (!service) throw new Error("AI model service is not configured");
   return service;
 }
