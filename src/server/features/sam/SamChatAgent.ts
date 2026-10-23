@@ -1,3 +1,4 @@
+// FORK: SAM uses project-scoped Cordis model providers and Gateway billing.
 import { Think } from "@cloudflare/think";
 import type {
   ChatErrorContext,
@@ -19,28 +20,18 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db, withPgClient } from "@/db";
 import { user } from "@/db/schema";
-import {
-  openRouterCostUsd,
-  staticAssistantModel,
-} from "@/server/lib/chatAgent";
+import { staticAssistantModel } from "@/server/lib/chatAgent";
+import { createSamModel, gatewayCostUsd } from "./samModel";
+import { DEFAULT_LLM_MODEL, llmModelSchema } from "@/types/schemas/ai-provider";
+import { AppError } from "@/server/lib/errors";
 import { SamSessionRepository } from "@/server/features/sam/SamSessionRepository";
 import { ProjectContextService } from "@/server/features/project-context/services/ProjectContextService";
 import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
 import { buildSamSkillSource } from "@/server/features/sam/samSkills";
 import { buildSamSystemPrompt } from "@/server/features/sam/samSystemPrompt";
-import {
-  SamTelemetry,
-  type SamTurnStats,
-} from "@/server/features/sam/samTurnTelemetry";
-import { buildChatAgentModel } from "@/server/lib/openrouter";
-import {
-  getEnvValueSync,
-  isHostedServerAuthMode,
-} from "@/server/lib/runtime-env";
-import {
-  checkUsageCreditsDepleted,
-  trackUsageCreditSpend,
-} from "@/server/billing/subscription";
+import { SamTelemetry } from "@/server/features/sam/samTurnTelemetry";
+import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
+import { checkUsageCreditsDepleted } from "@/server/billing/subscription";
 import { getPublicOrigin } from "@/server/mcp/public-origin";
 import { MCP_SCOPE } from "@/lib/oauth-resource";
 import { AuthRepository } from "@/server/auth/repositories/AuthRepository";
@@ -52,15 +43,6 @@ import type { ToolAuthContext } from "@/server/mcp/context";
 const PROJECT_CONTEXT_BLOCK = "project_context";
 
 const PUBLIC_ORIGIN_KEY = "sam-public-origin";
-
-// Batching threshold for metering, not a charge: the user pays the turn's
-// actual OpenRouter cost (times the usual markup) whatever this is set to.
-// Spend accumulates step by step and is sent to Autumn once the unbilled
-// total reaches this much, with the remainder flushed when the turn ends —
-// so a $0.50 turn is ~10 Autumn calls rather than one per step, and a turn
-// the isolate kills mid-way has at most this much unbilled. Each call rounds
-// up to a whole credit (a tenth of a cent).
-const SAM_BILLING_CHUNK_USD = 0.05;
 
 // Long tool-heavy turns are what outgrow the Durable Object memory limit; the
 // model's 1M-token window never gets a say. Compact between turns past this
@@ -118,7 +100,7 @@ type SamContext = {
  *
  * Think owns the agentic loop (streaming, persistence, compaction-ready
  * history, context blocks); this subclass contributes the model, the MCP
- * toolset, the billing gate/metering, and project-scoped memory: the
+ * toolset, the tool credit gate, and project-scoped memory: the
  * "project_context" block renders the project's shared memory, which every
  * session in the project — and the MCP server and settings UI — reads and
  * writes through ProjectContextService.
@@ -134,18 +116,6 @@ export class SamChatAgent extends Think {
   // immutable). Null until a turn/provider needs it — and left null when the
   // registry row is gone, which beforeTurn turns into a polite refusal.
   private samContext: SamContext | null = null;
-
-  // Per-turn billing state: beforeTurn arms it (non-null = hosted mode, meter
-  // this turn), onStepFinish accumulates OpenRouter cost and meters it in
-  // chunks as the turn runs, onChatResponse/onChatError flush the remainder.
-  // Chunked per step rather than once per turn so a turn the Durable Object
-  // memory limit kills mid-way still bills what it spent — the Sep 2026
-  // recovery loop burned ~$160/day of OpenRouter spend that never reached
-  // onChatResponse. Deductions run off the inference loop, serialized so they
-  // land in order; waitUntil keeps the final flush alive in the background.
-  private turnUnbilledUsd = 0;
-  private turnMonthlyRemaining: number | null = null;
-  private billing: Promise<void> = Promise.resolve();
 
   // Turn telemetry: armed in beforeTurn, fed by the step and tool hooks,
   // reported once as `sam:turn` when the turn ends by any route (response,
@@ -190,18 +160,21 @@ export class SamChatAgent extends Think {
   }
 
   getModel() {
-    return this.buildModel("max");
+    return this.buildModel();
   }
 
-  private buildModel(reasoningEffort: "max" | "low") {
-    const apiKey = getEnvValueSync(this.env, "OPENROUTER_API_KEY");
-    if (!apiKey) {
-      throw new Error("OPENROUTER_API_KEY is required for the SAM agent");
-    }
-    return buildChatAgentModel(
-      apiKey,
-      getEnvValueSync(this.env, "OPENROUTER_MODEL"),
-      reasoningEffort,
+  private buildModel(modelId = DEFAULT_LLM_MODEL) {
+    return createSamModel(
+      () =>
+        withPgClient(async () => {
+          const ctx = await this.loadSamContext();
+          if (!ctx) throw new AppError("NOT_FOUND");
+          return {
+            projectId: ctx.project.id,
+            organizationId: ctx.project.organizationId,
+          };
+        }),
+      modelId,
     );
   }
 
@@ -231,14 +204,15 @@ export class SamChatAgent extends Think {
       .compactAfter(SAM_COMPACT_AFTER_TOKENS);
   }
 
-  // Compaction summaries run outside the step loop (so outside onStepFinish),
-  // on the same model at low reasoning; their cost joins the turn's total.
+  // Compaction uses the same project connection and provider policy as chat.
   private async summarizeForCompaction(prompt: string): Promise<string> {
     const result = await generateText({
-      model: this.buildModel("low"),
+      model: this.buildModel(),
+      maxRetries: 0,
+      maxOutputTokens: 16_000,
       prompt,
     });
-    this.recordSpend(openRouterCostUsd(result.providerMetadata));
+    this.telemetry.spend(gatewayCostUsd(result.providerMetadata));
     this.telemetry.compaction();
     return result.text;
   }
@@ -309,10 +283,6 @@ export class SamChatAgent extends Think {
   }
 
   async beforeTurn(turnCtx: TurnContext): Promise<TurnConfig> {
-    // turnUnbilledUsd deliberately carries over: a between-turn compaction
-    // summary can land after the previous flush, and it is the same org's
-    // spend either way.
-    this.turnMonthlyRemaining = null;
     const turn = this.telemetry.beginTurn(turnCtx.continuation);
     return withPgClient(async (): Promise<TurnConfig> => {
       const ctx = await this.loadSamContext();
@@ -323,16 +293,12 @@ export class SamChatAgent extends Think {
         );
       }
 
-      // Gate every turn on credits in hosted mode: SAM is open to every plan
-      // (including free), and LLM tokens plus DataForSEO tool calls all draw
-      // down the org's credit balance. Self-hosted brings its own provider
-      // keys and has no Autumn balance, so it's ungated. Depletion is
-      // confirmed against a second Autumn read path before refusing — a
-      // stale check reading here once locked a paying customer out of chat.
+      // Hosted research tools still use the organization's credits. Model
+      // calls use the project's own Gateway key and are never charged twice.
       const { organizationId } = ctx.project;
       const hosted = await isHostedServerAuthMode();
       if (hosted) {
-        const { depleted, monthlyRemaining } = await checkUsageCreditsDepleted({
+        const { depleted } = await checkUsageCreditsDepleted({
           userId: ctx.row.userId,
           userEmail: ctx.userEmail,
           organizationId,
@@ -344,7 +310,6 @@ export class SamChatAgent extends Think {
             "You're out of credits. Upgrade your plan or buy more credits on the Billing page to keep using SAM.",
           );
         }
-        this.turnMonthlyRemaining = monthlyRemaining;
       }
 
       const baseUrl =
@@ -380,16 +345,15 @@ export class SamChatAgent extends Think {
 
       // Loaded per turn, not at startup: the tool schemas are costly to build.
       const samTools = await import("@/server/features/sam/samChatTools");
+      const selectedModel = llmModelSchema.parse(
+        turnCtx.body?.model ?? DEFAULT_LLM_MODEL,
+      );
       return {
+        model: this.buildModel(selectedModel),
+        maxRetries: 0,
         tools: samTools.buildSamMcpTools(authContext, ctx.project, turn.turnId),
-        // SAM runs complex multi-step work in one turn (site-read intake plus
-        // a full research chain, multi-competitor sweeps), so the step budget
-        // is generous; cost is bounded by per-step metering and the model
-        // stopping on its own. The per-step token budget is shared by
-        // max-effort reasoning and the visible reply, so it stays well above
-        // measured reasoning use (~3k tokens — a tight cap lets reasoning eat
-        // the reply, issue #161) but below the 32k that, with 48 steps, let a
-        // single turn outgrow the Durable Object memory limit.
+        // Preserve the established tool-loop bounds. The Gateway adapter
+        // enforces provider restrictions and the configured request timeout.
         maxSteps: 40,
         maxOutputTokens: 16_000,
       };
@@ -397,67 +361,17 @@ export class SamChatAgent extends Think {
   }
 
   onStepFinish(ctx: StepContext): void {
-    const costUsd = openRouterCostUsd(ctx.providerMetadata);
-    this.recordSpend(costUsd);
+    const costUsd = gatewayCostUsd(ctx.providerMetadata);
+    this.telemetry.spend(costUsd);
     this.telemetry.step(ctx, costUsd);
   }
 
-  // Add spend to the turn's unbilled total and meter it once a chunk has
-  // accumulated, or on `flush` at the end of the turn. Self-hosted turns (no
-  // armed balance) are never metered.
-  private recordSpend(costUsd: number, { flush = false } = {}): void {
-    this.turnUnbilledUsd += costUsd;
-    this.telemetry.spend(costUsd);
-    const armed = this.turnMonthlyRemaining;
-    if (armed === null) return;
-    if (!flush && this.turnUnbilledUsd < SAM_BILLING_CHUNK_USD) return;
-    const chunkUsd = this.turnUnbilledUsd;
-    this.turnUnbilledUsd = 0;
-    const turn = this.telemetry.turn;
-    this.billing = this.billing
-      .then(() => this.meterSpend(chunkUsd, armed, turn))
-      .catch((error: unknown) => {
-        console.error("[sam] credit metering failed", error);
-        this.telemetry.captureError(error, { stage: "metering" });
-      });
-  }
-
-  private async meterSpend(
-    costUsd: number,
-    armedMonthlyRemaining: number,
-    turn: SamTurnStats | null,
-  ): Promise<void> {
-    const ctx = await withPgClient(() => this.loadSamContext());
-    if (!ctx) return;
-    // Earlier chunks in the chain have already drawn the monthly balance
-    // down; the value captured at enqueue time only covers a flush that
-    // outlives its turn (onChatError), where the field has been re-armed.
-    const { monthlyCredits, topupCredits } = await trackUsageCreditSpend({
-      customer: {
-        userId: ctx.row.userId,
-        userEmail: ctx.userEmail,
-        organizationId: ctx.project.organizationId,
-        projectId: ctx.project.id,
-      },
-      customerId: ctx.project.organizationId,
-      creditFeature: "agent",
-      costUsd,
-      monthlyRemaining: this.turnMonthlyRemaining ?? armedMonthlyRemaining,
-      properties: { provider: "openrouter", turn_id: turn?.turnId },
-    });
-    if (turn) turn.credits += monthlyCredits + topupCredits;
-    if (this.turnMonthlyRemaining !== null)
-      this.turnMonthlyRemaining -= monthlyCredits;
-  }
-
   async onChatResponse(result: ChatResponseResult): Promise<void> {
-    this.flushSpend();
     this.ctx.waitUntil(
       this.telemetry.report(
         result.status,
         { request_id: result.requestId, error_message: result.error },
         this.messages,
-        { billing: this.billing },
       ),
     );
 
@@ -494,19 +408,8 @@ export class SamChatAgent extends Think {
   // clients replay — returning nothing would make it the string "undefined".
   onChatError(error: unknown, ctx?: ChatErrorContext): unknown {
     console.error("[sam] chat turn error", ctx?.stage, error);
-    // A stopped or failed turn still consumed what it consumed.
-    this.flushSpend();
-    this.telemetry.error(error, ctx, this.messages, this.billing);
+    this.telemetry.error(error, ctx, this.messages);
     return error;
-  }
-
-  // Meter the turn's remainder without holding the turn (and the queue
-  // behind it) on Autumn: the DO stays alive for the chain via waitUntil,
-  // which also covers the error stages Think never follows with a response
-  // hook.
-  private flushSpend(): void {
-    this.recordSpend(0, { flush: true });
-    this.ctx.waitUntil(this.billing);
   }
 
   // Think's chat recovery re-runs an interrupted turn: after a Durable Object

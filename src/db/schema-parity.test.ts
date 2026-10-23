@@ -1,3 +1,9 @@
+import * as sqliteAiProvider from "./ai-provider.schema";
+import * as pgAiProvider from "./pg/ai-provider.schema";
+import * as sqliteDecision from "./decision.schema";
+import * as pgDecision from "./pg/decision.schema";
+import * as sqliteKeywordGeneration from "./keyword-generation.schema";
+import * as pgKeywordGeneration from "./pg/keyword-generation.schema";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { getTableColumns, getTableName, is, Table } from "drizzle-orm";
@@ -155,6 +161,9 @@ function checkNames(table: Table, dialect: Dialect): string[] {
 }
 
 const sqliteAppTables = tablesFrom(
+  sqliteAiProvider,
+  sqliteDecision,
+  sqliteKeywordGeneration,
   sqliteApp,
   sqliteProjectContext,
   sqliteReports,
@@ -170,6 +179,9 @@ const sqliteAppTables = tablesFrom(
   sqliteAiVisibility,
 );
 const pgAppTables = tablesFrom(
+  pgAiProvider,
+  pgDecision,
+  pgKeywordGeneration,
   pgApp,
   pgProjectContext,
   pgReports,

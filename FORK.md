@@ -1,5 +1,19 @@
 # Fork maintenance log
 
+## 2026-10-23 AI providers and agents
+
+Cordis now registers model providers separately from the keyword-dimension agent
+implementation. Gateway text inference is shared by dimension generation and SAM;
+SystemOne decisions use the same model registry. SAM keeps Think's session and
+tool loop, with a project-bound dimension tool and the saved project Gateway key.
+Text calls remain pinned to DeepSeek, with no automatic retry or provider switch.
+SAM model usage is paid through that key, without a second platform-credit charge;
+research-tool billing is unchanged. Shared-file changes are marked `FORK`.
+
+Dimension generation uses AI SDK's terminal submission tool and a larger output
+budget to accommodate reasoning. The contracts are documented in
+`docs/maintainers/decision-service.md`.
+
 ## 2026-10-20 Upstream sync
 
 Merged upstream `d7ea7852` (OpenSEO 0.1.13), including the Base UI/shadcn migration, AI visibility, audit worker and billing reservation/settlement changes. Preserved Orca branding, locale controls, Cordis provider selection and private-origin authentication. Existing Chinese dictionary entries were reconnected to the new UI; new upstream vocabulary may remain English.

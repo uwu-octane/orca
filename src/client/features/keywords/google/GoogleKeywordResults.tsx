@@ -16,6 +16,7 @@ import { numericNullsLast } from "@/client/components/table/nullSafeSort";
 import { SortableHeader } from "@/client/components/table/SortableHeader";
 import { formatNumber } from "@/client/features/keywords/utils";
 import type { GoogleKeywordResult } from "@/types/schemas/google-keywords";
+import { KeywordDimensionsCard } from "../dimensions/KeywordDimensionsCard";
 import {
   EMPTY_GOOGLE_KEYWORD_FILTERS,
   filterGoogleKeywords,
@@ -48,10 +49,14 @@ const RANGES = [
 ] as const;
 
 export function GoogleKeywordResults({
+  projectId,
+  researchKey,
   result,
   pending,
   onNext,
 }: {
+  projectId: string;
+  researchKey: string;
   result: GoogleKeywordResult | null;
   pending: boolean;
   onNext: () => void;
@@ -130,116 +135,126 @@ export function GoogleKeywordResults({
   });
 
   return (
-    <section aria-label={t("Keyword results")} aria-busy={pending}>
-      <DataTable
-        table={table}
-        isLoading={pending}
-        empty={{ kind: "no-data", title: t("No keywords found.") }}
-        isFiltered={activeCount > 0}
-        onClearFilters={() => form.reset()}
-        toolbar={
-          <>
-            <DataTableToolbar>
-              <DataTableFilterToggle
-                open={showFilters}
-                activeCount={activeCount}
-                onToggle={() => setShowFilters(!showFilters)}
-              />
-              <span role="status" className="text-sm text-muted-foreground">
-                {pending
-                  ? t("Searching...")
-                  : t("{filtered} of {total} results on this page", {
-                      filtered: filtered.length,
-                      total: rows.length,
-                    })}
-              </span>
-            </DataTableToolbar>
-            {showFilters ? (
-              <DataTableFilterPanel
-                activeCount={activeCount}
-                onReset={() => form.reset()}
-              >
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                  {(["include", "exclude"] as const).map((name) => (
-                    <DataTableFilterGroup
-                      key={name}
-                      label={
-                        name === "include"
-                          ? t("Include terms")
-                          : t("Exclude terms")
-                      }
-                    >
-                      <form.Field name={name}>
-                        {(field) => (
-                          <Input
-                            className="h-7"
-                            aria-label={
-                              name === "include"
-                                ? t("Include terms")
-                                : t("Exclude terms")
-                            }
-                            placeholder={
-                              name === "include"
-                                ? t("Include terms (audit, checker)")
-                                : t("Exclude terms (jobs, course)")
-                            }
-                            value={field.state.value}
-                            onChange={(event) =>
-                              field.handleChange(event.target.value)
-                            }
-                          />
-                        )}
-                      </form.Field>
-                    </DataTableFilterGroup>
-                  ))}
-                  {RANGES.map((range) => (
-                    <form.Field key={range.min} name={range.min}>
-                      {(minField) => (
-                        <form.Field name={range.max}>
-                          {(maxField) => (
-                            <DataTableRangeFilter
-                              label={
-                                range.label === "CPC"
-                                  ? cpcLabel
-                                  : t(range.label)
+    <>
+      {result?.rows.length ? (
+        <KeywordDimensionsCard
+          key={JSON.stringify([projectId, researchKey, result.fetchedAt])}
+          projectId={projectId}
+          keywords={result.rows.map((row) => row.keyword)}
+          disabled={pending}
+        />
+      ) : null}
+      <section aria-label={t("Keyword results")} aria-busy={pending}>
+        <DataTable
+          table={table}
+          isLoading={pending}
+          empty={{ kind: "no-data", title: t("No keywords found.") }}
+          isFiltered={activeCount > 0}
+          onClearFilters={() => form.reset()}
+          toolbar={
+            <>
+              <DataTableToolbar>
+                <DataTableFilterToggle
+                  open={showFilters}
+                  activeCount={activeCount}
+                  onToggle={() => setShowFilters(!showFilters)}
+                />
+                <span role="status" className="text-sm text-muted-foreground">
+                  {pending
+                    ? t("Searching...")
+                    : t("{filtered} of {total} results on this page", {
+                        filtered: filtered.length,
+                        total: rows.length,
+                      })}
+                </span>
+              </DataTableToolbar>
+              {showFilters ? (
+                <DataTableFilterPanel
+                  activeCount={activeCount}
+                  onReset={() => form.reset()}
+                >
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                    {(["include", "exclude"] as const).map((name) => (
+                      <DataTableFilterGroup
+                        key={name}
+                        label={
+                          name === "include"
+                            ? t("Include terms")
+                            : t("Exclude terms")
+                        }
+                      >
+                        <form.Field name={name}>
+                          {(field) => (
+                            <Input
+                              className="h-7"
+                              aria-label={
+                                name === "include"
+                                  ? t("Include terms")
+                                  : t("Exclude terms")
                               }
-                              min={{
-                                min: 0,
-                                max: range.ceiling,
-                                step: range.step,
-                                value: minField.state.value,
-                                onChange: (event) =>
-                                  minField.handleChange(event.target.value),
-                              }}
-                              max={{
-                                min: 0,
-                                max: range.ceiling,
-                                step: range.step,
-                                value: maxField.state.value,
-                                onChange: (event) =>
-                                  maxField.handleChange(event.target.value),
-                              }}
+                              placeholder={
+                                name === "include"
+                                  ? t("Include terms (audit, checker)")
+                                  : t("Exclude terms (jobs, course)")
+                              }
+                              value={field.state.value}
+                              onChange={(event) =>
+                                field.handleChange(event.target.value)
+                              }
                             />
                           )}
                         </form.Field>
-                      )}
-                    </form.Field>
-                  ))}
-                </div>
-              </DataTableFilterPanel>
-            ) : null}
-          </>
-        }
-        footer={
-          result?.nextPageToken ? (
-            <div className="flex justify-end border-t p-3">
-              <Button variant="outline" pending={pending} onClick={onNext}>
-                {t("Next page")}
-              </Button>
-            </div>
-          ) : undefined
-        }
-      />
-    </section>
+                      </DataTableFilterGroup>
+                    ))}
+                    {RANGES.map((range) => (
+                      <form.Field key={range.min} name={range.min}>
+                        {(minField) => (
+                          <form.Field name={range.max}>
+                            {(maxField) => (
+                              <DataTableRangeFilter
+                                label={
+                                  range.label === "CPC"
+                                    ? cpcLabel
+                                    : t(range.label)
+                                }
+                                min={{
+                                  min: 0,
+                                  max: range.ceiling,
+                                  step: range.step,
+                                  value: minField.state.value,
+                                  onChange: (event) =>
+                                    minField.handleChange(event.target.value),
+                                }}
+                                max={{
+                                  min: 0,
+                                  max: range.ceiling,
+                                  step: range.step,
+                                  value: maxField.state.value,
+                                  onChange: (event) =>
+                                    maxField.handleChange(event.target.value),
+                                }}
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </form.Field>
+                    ))}
+                  </div>
+                </DataTableFilterPanel>
+              ) : null}
+            </>
+          }
+          footer={
+            result?.nextPageToken ? (
+              <div className="flex justify-end border-t p-3">
+                <Button variant="outline" pending={pending} onClick={onNext}>
+                  {t("Next page")}
+                </Button>
+              </div>
+            ) : undefined
+          }
+        />
+      </section>
+    </>
   );
 }

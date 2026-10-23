@@ -121,12 +121,12 @@ export function SamChat({
     );
   }
 
-  // SAM cannot answer a turn without OPENROUTER_API_KEY, so surface setup
-  // instructions instead of letting a chat fail mid-stream (self-hosted only).
+  // FORK: configuration is project-scoped and shared with keyword agents.
   if (access.status === "setup") {
     return (
       <StatusScreen size="lg">
         <SamSetupGate
+          projectId={projectId}
           errorMessage={access.errorMessage}
           isRefetching={access.isRefetching}
           onRetry={access.onRetry}

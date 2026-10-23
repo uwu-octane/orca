@@ -1,12 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
-import { isHostedClientAuthMode } from "@/lib/auth-mode";
 // FORK: locale plugin — error copy translates via the plugin tree.
 import { useLocale } from "@/plugins/client/context";
 import { getSamAccessSetupStatus } from "@/serverFunctions/samAccess";
 
-// Fails closed: the chat only renders once the check confirms the OpenRouter
-// key is set. A failed check is an error with retry, not the key-missing gate.
+// Fails closed: chat requires a saved project Gateway connection. A failed check is an error with retry, not the key-missing gate.
 type SamAccess =
   | { status: "ready" }
   | { status: "checking" }
@@ -25,21 +23,16 @@ type SamAccess =
 
 export function useSamAccess(projectId: string): SamAccess {
   const { t } = useLocale();
-  // Hosted deployments always have OPENROUTER_API_KEY provisioned (the server
-  // function short-circuits to enabled), so skip the round-trip entirely.
-  const isHosted = isHostedClientAuthMode();
 
   const { data, error, isFetching, isRefetching, refetch } = useQuery({
     queryKey: ["samAccessStatus", projectId],
     queryFn: () => getSamAccessSetupStatus({ data: { projectId } }),
-    enabled: !isHosted,
     refetchOnWindowFocus: false,
     staleTime: 60 * 1000,
   });
 
   const onRetry = () => void refetch();
 
-  if (isHosted) return { status: "ready" };
   if (data === undefined) {
     return error
       ? { status: "error", error, isRetrying: isFetching, onRetry }
@@ -49,7 +42,9 @@ export function useSamAccess(projectId: string): SamAccess {
   return {
     status: "setup",
     errorMessage:
-      data.errorMessage ??
+      (data.errorMessage
+        ? getStandardErrorMessage(new Error(data.errorMessage), undefined, t)
+        : null) ??
       (error
         ? getStandardErrorMessage(
             error,

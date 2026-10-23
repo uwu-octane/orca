@@ -331,6 +331,8 @@ function GoogleKeywordResearchWorkspace({
       ) : null}
       {current || research.isPending ? (
         <GoogleKeywordResults
+          projectId={projectId}
+          researchKey={JSON.stringify(current?.input)}
           result={current?.result ?? null}
           pending={research.isPending}
           onNext={() => {

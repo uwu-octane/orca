@@ -30,11 +30,6 @@ const openRouterUsageSchema = z.object({
   openrouter: z.object({ usage: z.object({ cost: z.number() }) }),
 });
 
-export function openRouterCostUsd(providerMetadata: unknown): number {
-  const parsed = openRouterUsageSchema.safeParse(providerMetadata);
-  return parsed.success ? parsed.data.openrouter.usage.cost : 0;
-}
-
 export function requireOpenRouterCostUsd(providerMetadata: unknown): number {
   return openRouterUsageSchema.parse(providerMetadata).openrouter.usage.cost;
 }
@@ -87,3 +82,4 @@ export function staticAssistantModel(text: string): LanguageModelV3 {
     },
   };
 }
+// FORK: SAM's Gateway model and usage reporting live in samModel.ts.

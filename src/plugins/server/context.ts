@@ -22,6 +22,8 @@ export function getAppContext(): Promise<Context> {
     try {
       await bootPlugins(ctx, manifest.server, serverModules);
       ctx.get("seoData")?.validateRoutes();
+      ctx.get("aiModels")?.validateRoutes();
+      ctx.get("aiAgents")?.validateRoutes();
       return ctx;
     } catch (error) {
       await ctx.fiber.dispose();
@@ -46,4 +48,16 @@ export async function getDataforseoProvider() {
   const provider = (await getAppContext()).get("dataforseo");
   if (!provider) throw new Error("DataForSEO plugin is not configured");
   return provider;
+}
+
+export async function getAiModels() {
+  const service = (await getAppContext()).get("aiModels");
+  if (!service) throw new Error("AI model service is not configured");
+  return service;
+}
+
+export async function getAiAgents() {
+  const service = (await getAppContext()).get("aiAgents");
+  if (!service) throw new Error("AI agent service is not configured");
+  return service;
 }

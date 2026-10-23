@@ -72,6 +72,55 @@ these records; disconnecting an Ads grant does not erase collected project data.
 Shared saved-keyword actions and classification relations remain separate work.
 The OAuth connection has matching SQLite/Postgres migrations. Tokens remain encrypted in the existing account table; google_ads_connections stores only the project-to-customer mapping.
 
+## Keyword dimension card
+
+The Google results page includes a dimension card between the search controls
+and result table. Its scope is the complete current result page, before table
+filters; it does not fetch other pages. Generation uses these result keywords
+directly and infers their subject without a separate industry input. An operator
+explicitly requests generation or adds fields manually. Dimensions
+use the existing line tabs; subdimensions use editable badge buttons. Existing
+form dialogs support adding, renaming and deleting names. Regeneration requires
+confirmation before replacing edits, and a failed request retains the draft.
+
+`generateKeywordDimensions` uses project authorization and the shared connection
+under **Settings → Integrations → AI providers → Vercel AI Gateway**. The dimension
+card selects the model per request and initially uses `deepseek/deepseek-v4.1-flash`.
+The same encrypted Gateway API key serves text generation and typed decisions.
+Only integration managers can change connections. Revision checks prevent stale
+updates; project/organization scoping and matching SQLite/Postgres schemas protect
+stored credentials. Summaries never return the key.
+
+The service resolves a Cordis-registered dimension agent, whose model comes from
+the separate Cordis model-provider registry. The installed implementation uses
+AI SDK `ToolLoopAgent` with an internal `submit_keyword_dimensions` tool and a
+16,000-token output budget, including reasoning. Submission ends the single
+model step; no extra explanation call or automatic repair follows it. SAM exposes
+the same service through a project-bound internal tool. See the
+[agent and provider contracts](decision-service.md#cordis-model-and-agent-assembly).
+
+The Gateway provider uses the AI SDK transport and pins routing to
+`only: ["deepseek"]`, with an empty model fallback list and SDK retries disabled.
+Only DeepSeek model IDs are accepted. It never reads a deployment OpenRouter key,
+changes models, or switches inference providers. Callers cannot supply credentials
+or endpoint URLs; the service resolves the saved Gateway connection.
+Each project pays Gateway directly through its own key, as with the decision
+service; these calls do not consume the app's shared research-credit pool.
+Authentication, budget/credit and rate-limit failures have actionable messages;
+provider bodies and credentials are not exposed to clients or logs.
+
+Output contains
+only dimension and subdimension names, with no fixed industry template or
+field quota. Invalid, duplicate, missing-tool or incomplete output is rejected;
+output exhaustion has a separate error. No Jev
+classification is triggered by this card.
+
+This first card stores its editable draft in the current result component.
+It is not yet saved to SQL and is cleared when leaving/replacing that result
+or refreshing the page. Its React identity includes project, request and fetch
+time, so delayed generation for an earlier result cannot populate a new one.
+Durable research sets and classification remain subsequent work.
+
 ## Jev boundary
 
 The result contract reserves classification execution state. Newly collected
@@ -86,12 +135,15 @@ prompts, credentials or algorithm was imported. Group identity must remain
 separate from representative keywords. Multiple dimensions can overlap;
 unexecuted classification is not a negative label.
 
-There is no Jev network client or paid inference in this change. The following
-remain for discussion:
+The shared [decision service](decision-service.md) now provides direct TypeSafe
+Jev and configurable SystemOne calls, with project settings and an explicit test
+action. Keyword research does not automatically invoke classification. The
+following remain for discussion:
 
 - User-defined dimensions, labels, task context and prompt/version ownership.
-- Direct TypeSafe API versus a gateway, authentication, budgets and metering.
-- How classifications are reviewed and stored as normalized relations.
+- Classification budgets and metering, and whether an additional gateway is needed.
+- Optional quality sampling and storage as normalized relations; no mandatory
+  per-keyword human review queue.
 - Threshold calibration, incomplete/failed decisions, incremental runs and
   cancellation.
 - Group browsing, intersections, representative keywords, optional embeddings,

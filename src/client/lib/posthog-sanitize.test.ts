@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   sanitizePostHogProperties,
+  sanitizePostHogNetworkRequest,
   sanitizePostHogUrl,
 } from "@/client/lib/posthog-sanitize";
 
@@ -33,5 +34,25 @@ describe("sanitizePostHogUrl", () => {
         "https://app.example.test/onboarding?step=2&email=user%40example.test",
       ),
     ).toBe("https://app.example.test/onboarding?step=2");
+  });
+});
+
+it("never records API secrets in replay request/response bodies or headers", () => {
+  const safe = sanitizePostHogNetworkRequest({
+    name: "https://app.example.test/_server/saveKey",
+    entryType: "resource",
+    startTime: 0,
+    duration: 12,
+    requestBody: JSON.stringify({
+      credential: { action: "replace", value: "request-key-secret" },
+    }),
+    responseBody: "response-key-secret",
+    requestHeaders: { authorization: "Bearer header-key-secret" },
+    responseHeaders: { "set-cookie": "cookie-secret" },
+  });
+  expect(JSON.stringify(safe)).not.toContain("secret");
+  expect(safe).toMatchObject({
+    name: "https://app.example.test/_server/saveKey",
+    duration: 12,
   });
 });

@@ -1,4 +1,28 @@
 export const keywordsZh = {
+  "Keyword dimensions": "关键词维度",
+  Dimensions: "维度",
+  "Generate dimensions": "生成维度",
+  "Regenerate dimensions": "重新生成",
+  "Regenerate dimensions?": "重新生成维度？",
+  "The generated dimensions will replace this draft, including your edits.":
+    "生成成功后将替换当前草案，包括你修改的内容。",
+  "Generating dimensions...": "正在生成维度…",
+  "No dimensions yet": "暂无维度",
+  "Add dimension": "新增维度",
+  "Edit dimension": "修改维度",
+  "Add subdimension": "新增子维度",
+  "Edit subdimension": "修改子维度",
+  "Edit {name}": "修改{name}",
+  "Enter a name.": "请输入名称。",
+  "This name already exists.": "该名称已存在。",
+  "Configure the dimension generation model in Settings → Integrations.":
+    "请先在设置 → 集成中配置维度生成模型。",
+  "AI Gateway credits or budget are insufficient. Check the configured API key's account and limits.":
+    "AI Gateway 余额或预算不足，请检查 API Key 所属账户和额度限制。",
+  "AI Gateway access was denied. Check the API key and account permissions in Settings → Integrations.":
+    "AI Gateway 拒绝访问，请在设置 → 集成中检查 API Key 和账户权限。",
+  "Dimensions could not be generated. Your existing draft has not changed.":
+    "维度生成失败，原有草案已保留。",
   "Chinese (simplified)": "简体中文",
   "Chinese (traditional)": "繁体中文",
   Filipino: "菲律宾语",

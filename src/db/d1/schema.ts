@@ -15,3 +15,8 @@ export * from "../telemetry.schema";
 export * from "../ai-visibility.schema";
 export * from "../google-ads.schema";
 export * from "../google-keywords.schema";
+
+export * from "../decision.schema";
+export * from "../keyword-generation.schema";
+
+export * from "../ai-provider.schema";

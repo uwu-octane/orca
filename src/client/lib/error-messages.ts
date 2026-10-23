@@ -46,6 +46,32 @@ const STANDARD_MESSAGES: Record<ErrorCode, string> = {
     "Reconnect your Google Ads account to continue.",
   GOOGLE_ADS_REQUEST_FAILED:
     "Google Ads could not complete the request. Check account access and API configuration.",
+  KEYWORD_DIMENSIONS_PROVIDER_CREDITS_EXHAUSTED:
+    "AI Gateway credits or budget are insufficient. Check the configured API key's account and limits.",
+  KEYWORD_DIMENSIONS_ACCESS_FAILED:
+    "AI Gateway access was denied. Check the API key and account permissions in Settings → Integrations.",
+  KEYWORD_DIMENSIONS_GENERATION_FAILED:
+    "Dimensions could not be generated. Your existing draft has not changed.",
+  AI_MODEL_CATALOG_UNAVAILABLE: "Couldn’t load the model list. Try again.",
+  AI_MODEL_REQUEST_FAILED: "The model request failed. Try again.",
+  AI_MODEL_TIMEOUT: "The model request timed out. Try again.",
+  KEYWORD_DIMENSIONS_OUTPUT_LIMIT:
+    "Dimension generation reached the output limit. Try fewer keywords.",
+  KEYWORD_DIMENSIONS_INVALID_RESPONSE:
+    "The model returned invalid dimensions. Your draft is unchanged.",
+  AI_PROVIDER_NOT_CONFIGURED:
+    "Configure the AI provider in Settings before continuing.",
+  AI_PROVIDER_CONFIG_INVALID: "Check the AI provider settings and API key.",
+  DECISION_AUTH_FAILED:
+    "The decision service rejected the API key. Check its access and expiry.",
+  DECISION_REQUEST_FAILED:
+    "The decision request failed. Check the service address, model name and service availability.",
+  DECISION_TIMEOUT:
+    "The decision request timed out. Check the service or increase the timeout.",
+  DECISION_INVALID_RESPONSE:
+    "The decision service returned an invalid or incomplete answer.",
+  DECISION_INPUT_TRUNCATED:
+    "The model could not read the full input. Shorten the content or select a model with a larger context window.",
   RATE_LIMITED: "Too many requests. Please wait and try again.",
   UPSTREAM_UNAVAILABLE:
     "The data provider is temporarily unavailable. Please retry in a moment.",

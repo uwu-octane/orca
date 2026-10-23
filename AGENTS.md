@@ -57,3 +57,20 @@ Do not mine an entire session for papercuts or start a broad cleanup unless the 
 Reviewer context lives in `docs/maintainers/review-guidelines.md`: the hard invariants (tenant scoping, dual-dialect persistence, billing seams, SSRF handling) and the false-positive controls that keep reviewers from flagging intentional behavior. After a merge-ready or other code review verifies a finding, add to that file only when the finding exposes a recurring or high-risk repository invariant that existing context and automated checks do not capture. Do not promote one-off bugs or preferences into permanent review rules.
 
 Changes to `AGENTS.md`, `.claude/CLAUDE.md`, `.agents/skills/**`, `.github/**`, and `docs/maintainers/review-guidelines.md` alter the review control plane and must receive explicit maintainer review. CODEOWNERS requests that review; where repository settings allow, enable GitHub's requirement for code-owner approval.
+
+## UI 内容约束
+
+- UI 只呈现当前业务所需的标题、字段、属性、状态、操作和必要提示，复用项目现有组件与风格。
+- 禁止把实现思路、设计讨论、业务逻辑解释、技术方案、数据流或需求中的解释性文字渲染到业务界面。这些内容写入代码注释或技术文档。
+- 不主动添加解释组件如何工作的 subtitle、description、badge、tip 或 placeholder；第三方实现名称仅在用户完成当前任务需要感知时展示。
+
+### 禁止额外副标签与脚注
+
+- 不因为数据可用，就额外展示来源、草案状态、分类状态、重复计数、内部版本或算法阈值。未经明确要求，不添加这类副标签、状态串和脚注。
+- 以下文案及同类内容不得加入 UI，包括交互原型：
+  - `字段草案 · 用户提供`
+  - `草案 · 未分类`
+  - `关键词：CRM · 1,000 词`
+  - `历史分析 · fields-full-v2 · 归属阈值 0.80`
+- 删除此类内容时，不要换成另一段说明，也不要移到 tooltip、badge、placeholder 或页脚继续展示。
+- 保留完成操作必需的加载、错误、表单校验和覆盖确认提示；不要借此扩展成解释性描述。

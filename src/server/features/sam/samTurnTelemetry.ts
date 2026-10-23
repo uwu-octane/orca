@@ -1,3 +1,4 @@
+// FORK: Gateway reports model costs; missing cost metadata remains unknown.
 import type {
   ChatErrorContext,
   StepContext,
@@ -48,8 +49,7 @@ export class SamTurnStats {
   outputTokens = 0;
   reasoningTokens = 0;
   cachedInputTokens = 0;
-  costUsd = 0;
-  credits = 0;
+  costUsd: number | null = 0;
   compactions = 0;
   toolCalls = 0;
   toolFailures = 0;
@@ -61,7 +61,10 @@ export class SamTurnStats {
    * recorded separately (recordSpend) because compaction summaries spend
    * outside the step loop.
    */
-  recordStep(ctx: StepContext, costUsd: number): Record<string, unknown> {
+  recordStep(
+    ctx: StepContext,
+    costUsd: number | null,
+  ): Record<string, unknown> {
     const now = Date.now();
     const latencySeconds = (now - this.lastStepEndedAt) / 1000;
     this.lastStepEndedAt = now;
@@ -81,7 +84,7 @@ export class SamTurnStats {
       $ai_parent_id: this.turnId,
       $ai_span_id: crypto.randomUUID(),
       $ai_span_name: `step ${this.steps}`,
-      $ai_provider: "openrouter",
+      $ai_provider: "vercel_gateway",
       $ai_model: ctx.response.modelId,
       $ai_input_tokens: usage.inputTokens ?? 0,
       $ai_output_tokens: usage.outputTokens ?? 0,
@@ -102,8 +105,9 @@ export class SamTurnStats {
     if (toolCallFailed(ctx)) this.toolFailures += 1;
   }
 
-  recordSpend(costUsd: number): void {
-    this.costUsd += costUsd;
+  recordSpend(costUsd: number | null): void {
+    this.costUsd =
+      this.costUsd == null || costUsd == null ? null : this.costUsd + costUsd;
   }
 
   /** The `sam:turn` event body. */
@@ -124,7 +128,6 @@ export class SamTurnStats {
       reasoning_tokens: this.reasoningTokens,
       cached_input_tokens: this.cachedInputTokens,
       cost_usd: this.costUsd,
-      credits: this.credits,
       compactions: this.compactions,
       duration_ms: Date.now() - this.startedAt,
     };
@@ -138,7 +141,7 @@ export class SamTurnStats {
     return {
       $ai_trace_id: this.turnId,
       $ai_span_name: "sam_turn",
-      $ai_provider: "openrouter",
+      $ai_provider: "vercel_gateway",
       $ai_model: this.model,
       $ai_latency: (Date.now() - this.startedAt) / 1000,
       $ai_is_error: status === "error",
@@ -197,7 +200,7 @@ export class SamTelemetry {
     return turn;
   }
 
-  spend(costUsd: number): void {
+  spend(costUsd: number | null): void {
     this.current?.recordSpend(costUsd);
   }
 
@@ -205,7 +208,7 @@ export class SamTelemetry {
     if (this.current) this.current.compactions += 1;
   }
 
-  step(ctx: StepContext, costUsd: number): void {
+  step(ctx: StepContext, costUsd: number | null): void {
     const turn = this.current;
     // Refusals answer through the canned model: no provider call to trace.
     if (!turn || turn.refusal) return;
@@ -244,10 +247,7 @@ export class SamTelemetry {
     outcome: SamTurnStatus,
     extra: Record<string, unknown>,
     messages: readonly UIMessage[],
-    {
-      synthesize = false,
-      billing,
-    }: { synthesize?: boolean; billing?: Promise<void> } = {},
+    { synthesize = false }: { synthesize?: boolean } = {},
   ): Promise<void> {
     let turn = this.current;
     if (!turn || turn.reported) {
@@ -263,7 +263,6 @@ export class SamTelemetry {
       message_count: messages.length,
       first_turn: userMessages <= 1,
       ...extra,
-      credits: turn.credits,
     };
     const error = extra.error_message;
     const trace =
@@ -273,10 +272,6 @@ export class SamTelemetry {
             typeof error === "string" ? error : undefined,
           )
         : null;
-    // Reserve this turn and snapshot its timing before billing settles. The
-    // next turn can start while the final credit deduction is still pending.
-    await billing;
-    properties.credits = turn.credits;
     console.log("[sam] turn", { session_id: this.sessionId(), ...properties });
     await this.capture("sam:turn", properties);
     if (trace) {
@@ -288,7 +283,6 @@ export class SamTelemetry {
     error: unknown,
     ctx: ChatErrorContext | undefined,
     messages: readonly UIMessage[],
-    billing?: Promise<void>,
   ): void {
     const errorName = error instanceof Error ? error.name : typeof error;
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -303,7 +297,7 @@ export class SamTelemetry {
           error_message: errorMessage.slice(0, 500),
         },
         messages,
-        { synthesize: true, billing },
+        { synthesize: true },
       ),
     );
     // A user-cancelled turn is an abort, not a failure worth an issue.

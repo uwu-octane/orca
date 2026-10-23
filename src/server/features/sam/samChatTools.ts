@@ -15,6 +15,8 @@ import {
   exportAiVisibilityDataTool,
 } from "@/server/mcp/tools/ai-visibility-tools";
 import { tool, type Tool, type ToolSet } from "ai";
+// FORK: project-bound keyword field generation, internal to SAM.
+import { keywordDimensionTool } from "./keywordDimensionTool";
 import { z, type ZodRawShape } from "zod";
 import { withPgClient } from "@/db";
 import type { CallToolResult } from "@modelcontextprotocol/server";
@@ -384,6 +386,10 @@ export function buildSamMcpTools(
     list_saved_keywords: adaptTool(listSavedKeywordsTool),
     remove_saved_keywords: adaptTool(removeSavedKeywordsTool),
     research_keywords: adaptTool(researchKeywordsTool),
+    generate_keyword_dimensions: keywordDimensionTool({
+      projectId,
+      organizationId: authContext.organizationId,
+    }),
     save_keywords: adaptTool(saveKeywordsTool),
     get_domain_overview: adaptTool(getDomainOverviewTool),
     get_domain_keyword_suggestions: adaptTool(getDomainKeywordSuggestionsTool),

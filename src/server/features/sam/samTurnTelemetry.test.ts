@@ -14,7 +14,7 @@ vi.mock("@/server/lib/posthog", () => ({
 const step = (overrides: Record<string, unknown> = {}) =>
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- only the fields recordStep reads
   ({
-    response: { modelId: "openai/gpt-5.6-luna" },
+    response: { modelId: "deepseek/deepseek-v4.1-flash" },
     usage: {
       inputTokens: 1000,
       outputTokens: 200,
@@ -43,7 +43,7 @@ describe("SamTurnStats", () => {
     expect(stats.recordStep(step(), 0.01)).toMatchObject({
       $ai_trace_id: stats.turnId,
       $ai_parent_id: stats.turnId,
-      $ai_model: "openai/gpt-5.6-luna",
+      $ai_model: "deepseek/deepseek-v4.1-flash",
     });
     stats.recordStep(step({ toolCalls: [], finishReason: "stop" }), 0.02);
     stats.recordSpend(0.03);
@@ -56,7 +56,7 @@ describe("SamTurnStats", () => {
     expect(stats.properties("completed")).toMatchObject({
       turn_id: stats.turnId,
       status: "completed",
-      model: "openai/gpt-5.6-luna",
+      model: "deepseek/deepseek-v4.1-flash",
       steps: 2,
       input_tokens: 2000,
       output_tokens: 400,
@@ -76,41 +76,42 @@ describe("SamTurnStats", () => {
   });
 });
 
-describe("SamTelemetry billing completion", () => {
+describe("SamTelemetry turn completion", () => {
   it.each(["completed", "error"] as const)(
-    "reports a %s turn once with final credits while another turn starts",
+    "reports a %s turn once with its own cost while another turn starts",
     async (outcome) => {
       const pending: Promise<unknown>[] = [];
+      let finishIdentity!: () => void;
+      const identityReady = new Promise<void>((resolve) => {
+        finishIdentity = resolve;
+      });
       const telemetry = new SamTelemetry(
         () => "session-1",
-        async () => ({
-          row: { userId: "user-1" },
-          project: { id: "project-1", organizationId: "org-1" },
-        }),
+        async () => {
+          await identityReady;
+          return {
+            row: { userId: "user-1" },
+            project: { id: "project-1", organizationId: "org-1" },
+          };
+        },
         (promise) => {
           pending.push(promise);
         },
       );
       const first = telemetry.beginTurn(false);
       first.recordStep(step(), 0.01);
-      let finishBilling!: () => void;
-      const billing = new Promise<void>((resolve) => {
-        finishBilling = () => {
-          first.credits = 7;
-          resolve();
-        };
-      });
+      first.recordSpend(0.01);
       if (outcome === "error") {
-        telemetry.error(new Error("failed"), undefined, [], billing);
+        telemetry.error(new Error("failed"), undefined, []);
       } else {
-        pending.push(telemetry.report(outcome, {}, [], { billing }));
+        pending.push(telemetry.report(outcome, {}, []));
       }
-      await telemetry.report(outcome, {}, [], { billing });
+      await telemetry.report(outcome, {}, []);
       expect(captureServerEvent).not.toHaveBeenCalled();
 
       const second = telemetry.beginTurn(false);
-      second.credits = 99;
-      finishBilling();
+      second.recordSpend(0.99);
+      finishIdentity();
       await Promise.all(pending);
 
       const events = vi
@@ -121,7 +122,7 @@ describe("SamTelemetry billing completion", () => {
       expect(turns[0]?.properties).toMatchObject({
         turn_id: first.turnId,
         status: outcome,
-        credits: 7,
+        cost_usd: 0.01,
       });
       expect(
         events.find((event) => event.event === "$ai_trace")?.properties,

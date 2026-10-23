@@ -1,5 +1,113 @@
 /** Settings page dictionary (API key management). */
 export const settingsZh = {
+  "Configure AI provider": "配置 AI 服务商",
+  "The model request failed. Try again.": "模型请求失败，请重试。",
+  "The model request timed out. Try again.": "模型请求超时，请重试。",
+  "Dimension generation reached the output limit. Try fewer keywords.":
+    "维度生成达到输出上限，请减少关键词后重试。",
+  "The model returned invalid dimensions. Your draft is unchanged.":
+    "模型返回的维度格式无效，原有草案已保留。",
+  Models: "模型列表",
+  Model: "模型",
+  Text: "文本",
+  Decision: "决策",
+  "Model creator": "模型厂商",
+  "All creators": "全部厂商",
+  Capabilities: "能力",
+  "All capabilities": "全部能力",
+  "Search models": "搜索模型",
+  "Copy model ID": "复制模型 ID",
+  "Model ID copied": "模型 ID 已复制",
+  "Input reference ($/1M tokens)": "输入参考价（美元／百万 Token）",
+  "Output reference ($/1M tokens)": "输出参考价（美元／百万 Token）",
+  "Context window": "上下文长度",
+  Reasoning: "推理",
+  "Tool use": "工具调用",
+  "Structured output": "结构化输出",
+  Vision: "视觉",
+  "Zero data retention": "零数据保留",
+  "No training": "不用于训练",
+  Supported: "支持",
+  "Partially supported": "部分支持",
+  "Not supported": "不支持",
+  Released: "发布日期",
+  "No models found": "未找到模型",
+  "Couldn’t load the model list. Try again.": "无法加载模型列表，请重试。",
+
+  "Remove connection": "移除连接",
+  "Requests through this connection will stop.":
+    "移除后将无法通过此连接发起请求。",
+
+  "Connection settings": "连接设置",
+  "Add API key": "添加密钥",
+  "Rename key": "重命名",
+  "Replace key": "更换密钥",
+  "Remove key": "移除密钥",
+  "No API key added": "尚未添加密钥",
+  "Remove “{name}”?": "移除“{name}”？",
+  "This removes the key from Orca. Revoke it at the provider to make it invalid elsewhere.":
+    "仅从 Orca 移除。要让密钥在其他地方也失效，请在服务商后台撤销。",
+
+  "Check the AI provider settings and API key.":
+    "请检查 AI 服务商设置和 API 密钥。",
+
+  "AI providers": "AI 服务商",
+  "Custom service": "自定义服务",
+  "Provider saved": "服务商已保存",
+  "Provider removed": "服务商已移除",
+  "Couldn't load AI provider settings.": "无法加载 AI 服务商设置。",
+  "configure AI providers": "配置 AI 服务商",
+  "Configure the AI provider in Settings before continuing.":
+    "请先在设置中配置 AI 服务商。",
+
+  "Dimension generation model": "维度生成模型",
+  "Couldn't load the generation model settings.": "无法加载维度生成模型配置。",
+  "Generation model saved": "维度生成模型已保存",
+  "Generation model removed": "维度生成模型配置已移除",
+  "configure the generation model": "配置维度生成模型",
+  "Enter a DeepSeek model ID.": "请输入 DeepSeek 模型 ID。",
+  "The model could not read the full input. Shorten the content or select a model with a larger context window.":
+    "模型未能读取完整输入，请缩短内容或选择支持更长上下文的模型。",
+  "Decision model": "决策模型",
+  "Couldn't load the decision model settings.": "无法加载决策模型配置。",
+  "Decision model saved": "决策模型已保存",
+  "Decision model removed": "决策模型配置已移除",
+  "Custom service (Laya / Strands Decider)":
+    "自定义服务（Laya / Strands Decider）",
+  "Model name": "模型名称",
+  "Service URL": "服务地址",
+  "This address must be reachable from the Orca server. Localhost refers to that server.":
+    "Orca 服务器需要能访问此地址，localhost 指该服务器。",
+  "Timeout (seconds)": "超时时间（秒）",
+  "Keep saved key": "保留已保存的密钥",
+  "Enter new key": "填写新密钥",
+  "No API key": "不使用密钥",
+  "New API key": "新 API 密钥",
+  "AI Gateway API key": "AI Gateway API 密钥",
+  "Remove configuration": "移除配置",
+  "configure the decision model": "配置决策模型",
+  "Test decision": "测试决策",
+  "Saved model: {model}": "已保存的模型：{model}",
+  "Content to evaluate": "待判断内容",
+  "Yes / no question": "是非问题",
+  "Run test": "运行测试",
+  "Yes probability": "判断为是的概率",
+  "Choose a timeout between 1 and 120 seconds.":
+    "请输入 1 至 120 秒的超时时间。",
+  "Enter an API key.": "请输入 API 密钥。",
+  "Configure a decision model for this project first.":
+    "请先为此项目配置决策模型。",
+  "Check the decision service URL and API key settings. Changing the service requires replacing or clearing the saved key.":
+    "请检查决策服务地址及密钥设置。更换服务时需重新填写或清除已保存的密钥。",
+  "The decision service rejected the API key. Check its access and expiry.":
+    "决策服务拒绝了此密钥，请检查密钥权限与有效期。",
+  "The decision request failed. Check the service address, model name and service availability.":
+    "决策请求失败，请检查服务地址、模型名称及服务是否可用。",
+  "The decision request timed out. Check the service or increase the timeout.":
+    "决策请求超时，请检查服务或增加超时时间。",
+  "The decision service returned an invalid or incomplete answer.":
+    "决策服务返回的结果无效或不完整。",
+
   "API keys": "API 密钥",
   "Authenticate MCP clients when OAuth doesn't work":
     "在 OAuth 不可用时为 MCP 客户端提供认证",

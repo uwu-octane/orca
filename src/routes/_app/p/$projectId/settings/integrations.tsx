@@ -1,3 +1,4 @@
+import { AiProviderSettings } from "@/client/features/settings/AiProviderSettings";
 import { queryClient } from "@/client/tanstack-db/queryClient";
 import { googleConnectionOptions } from "@/client/features/integrations/googleProviders";
 import { createFileRoute } from "@tanstack/react-router";
@@ -40,6 +41,10 @@ function ProjectIntegrationsRoute() {
 
       <section id="google-ads" className="scroll-mt-6">
         <GoogleConnectionCard provider="google_ads" projectId={projectId} />
+      </section>
+
+      <section id="ai-providers" className="scroll-mt-6">
+        <AiProviderSettings projectId={projectId} />
       </section>
 
       <CrawlerAccessSettings projectId={projectId} />

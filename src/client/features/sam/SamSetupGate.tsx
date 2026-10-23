@@ -1,77 +1,52 @@
-// FORK: retain locale subscriptions across upstream component changes.
+// FORK: link to the same project connection used by all Gateway agents.
 import { useLocale } from "@/plugins/client/context";
 import { Link } from "@tanstack/react-router";
-import { ShieldAlert, Wrench } from "lucide-react";
+import { Wrench } from "lucide-react";
 import { GateCard } from "@/client/components/GateCard";
-import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { Button } from "@/client/components/ui/button";
 
 export function SamSetupGate({
+  projectId,
   errorMessage,
   isRefetching,
   onRetry,
 }: {
+  projectId: string;
   errorMessage: string | null;
   isRefetching: boolean;
   onRetry: () => void;
 }) {
   const { t } = useLocale();
-
   return (
     <GateCard
       icon={Wrench}
       tone="warning"
-      title={t("Enable AI Features")}
-      description={
-        <>
-          <p>
-            {t(
-              "SAM, Orca's in-app AI agent, needs an OpenRouter API key. Create a key on OpenRouter, set it as the",
-            )}{" "}
-            <code>OPENROUTER_API_KEY</code>{" "}
-            {t("environment variable, restart Orca, then confirm here.")}
-          </p>
-          <p className="text-xs">
-            {t("Step-by-step instructions for every deployment are in the")}{" "}
-            <Link
-              className="underline underline-offset-2 hover:text-foreground"
-              to="/help/openrouter-api-key"
-            >
-              {t("OpenRouter API key setup guide")}
-            </Link>
-            {t(".")}
-          </p>
-        </>
-      }
+      title={t("Configure AI provider")}
+      description={null}
       actions={
         <>
-          <Button size="lg" pending={isRefetching} onClick={onRetry}>
-            {t("Confirm API Key")}
-          </Button>
           <Button
-            size="lg"
-            variant="outline"
             nativeButton={false}
             render={
-              <a
-                href="https://openrouter.ai/settings/keys"
-                target="_blank"
-                rel="noreferrer"
+              <Link
+                to="/p/$projectId/settings/integrations"
+                params={{ projectId }}
+                hash="ai-providers"
               />
             }
           >
-            {t("Open OpenRouter Keys")}
+            {t("Settings")}
+          </Button>
+          <Button variant="outline" pending={isRefetching} onClick={onRetry}>
+            {t("Retry")}
           </Button>
         </>
       }
     >
       {errorMessage ? (
-        <Alert variant="warning">
-          <ShieldAlert />
-          <AlertDescription className="text-foreground">
-            {errorMessage}
-          </AlertDescription>
-        </Alert>
+        <p role="alert" className="text-sm text-destructive">
+          {errorMessage}
+        </p>
       ) : null}
     </GateCard>
   );

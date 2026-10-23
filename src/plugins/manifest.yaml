@@ -4,6 +4,20 @@
 # Configs are plain YAML data — `!js` expressions
 # are unsupported on workerd (see docs/PLUGINS.md).
 server:
+  - id: ai-models
+    name: ai-models
+    config:
+      textProvider: vercel_gateway
+  - id: vercel-gateway
+    name: vercel-gateway
+  - id: systemone
+    name: systemone
+  - id: ai-agents
+    name: ai-agents
+    config:
+      keywordDimensions: ai-sdk
+  - id: keyword-dimension-agent
+    name: keyword-dimension-agent
   - id: seo-data
     name: seo-data
     config:

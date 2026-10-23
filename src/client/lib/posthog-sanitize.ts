@@ -1,3 +1,4 @@
+import type { CapturedNetworkRequest } from "posthog-js";
 const OAUTH_CONSENT_PATH = "/oauth-consent";
 
 export const POSTHOG_PERSONAL_DATA_QUERY_PARAMETERS = [
@@ -41,4 +42,19 @@ export function sanitizePostHogProperties(
   }
 
   return properties;
+}
+
+export function sanitizePostHogNetworkRequest(
+  request: CapturedNetworkRequest,
+): CapturedNetworkRequest {
+  // Remote replay settings can enable network payload capture. Keep timings,
+  // never credentials, cookies or user content sent to server functions.
+  return {
+    ...request,
+    name: sanitizePostHogUrl(request.name),
+    requestBody: undefined,
+    responseBody: undefined,
+    requestHeaders: undefined,
+    responseHeaders: undefined,
+  };
 }
