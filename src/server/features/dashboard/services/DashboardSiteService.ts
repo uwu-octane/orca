@@ -1,3 +1,5 @@
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
 import { sort } from "remeda";
 import { z } from "zod";
 import type { BillingCustomerContext } from "@/server/billing/subscription";
@@ -13,10 +15,10 @@ import {
 } from "@/server/lib/dataforseo/backlinks";
 import {
   GscService,
-  isExpectedGrantFailure,
   GscNotConnectedError,
 } from "@/server/features/gsc/services/GscService";
-import { GscConnectionRepository } from "@/server/features/gsc/repositories/GscConnectionRepository";
+import { isExpectedGrantFailure } from "@/server/lib/gscErrors";
+
 import { resolveDateRange } from "@/server/features/gsc/searchAnalytics";
 
 const querySchema = z.object({
@@ -82,7 +84,9 @@ async function getKeywords(projectId: string, organizationId: string) {
   const { startDate, endDate } = resolveDateRange({
     dateRange: "last_28_days",
   });
-  const connection = await GscConnectionRepository.getByProjectId(projectId);
+  const connection = await (
+    await getGoogleOAuth()
+  ).gsc.getConnection(projectId);
   if (!connection)
     return {
       value: { connected: false, rows: [], startDate, endDate },
@@ -152,7 +156,9 @@ async function getEmergingQueries(projectId: string, organizationId: string) {
   const baselineStartDate = new Date(Date.parse(startDate) - 28 * 86400_000)
     .toISOString()
     .slice(0, 10);
-  const connection = await GscConnectionRepository.getByProjectId(projectId);
+  const connection = await (
+    await getGoogleOAuth()
+  ).gsc.getConnection(projectId);
   if (!connection) {
     return {
       value: {

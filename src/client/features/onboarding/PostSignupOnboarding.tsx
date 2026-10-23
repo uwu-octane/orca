@@ -4,7 +4,8 @@ import { OnboardingCard } from "./OnboardingCard";
 import { ONBOARDING_STEPS } from "./onboardingModel";
 import { WebsiteOnboardingStep } from "./WebsiteOnboardingStep";
 import { AgentSetup } from "@/client/features/ai-mcp/AgentSetup";
-import { SearchConsoleOnboardingStep } from "./SearchConsoleOnboardingStep";
+// FORK: mount the installed Google connection feature.
+import { SearchConsoleOnboardingStep } from "@/plugins/google-oauth/client/views";
 
 type PostSignupOnboardingProps = {
   step: number;

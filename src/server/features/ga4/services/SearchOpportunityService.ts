@@ -1,3 +1,5 @@
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
 import { GscService } from "@/server/features/gsc/services/GscService";
 import { GscNotConnectedError } from "@/server/lib/gscErrors";
 import {
@@ -5,7 +7,7 @@ import {
   resolveGa4DateRange,
 } from "@/server/features/ga4/services/Ga4ReportingService";
 import { Ga4ReportError } from "@/server/lib/ga4Errors";
-import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
+
 import { ga4DateInTimeZone, shiftGa4Date } from "./Ga4Dates";
 
 type SearchOpportunityInput = {
@@ -109,8 +111,8 @@ async function getOpportunities(
     );
   }
   const [ga4Connection, gscConnection] = await Promise.all([
-    Ga4ConnectionRepository.getByProjectId(input.projectId),
-    GscService.getConnection(input.projectId),
+    (await getGoogleOAuth()).ga4.getConnection(input.projectId),
+    (await getGoogleOAuth()).gsc.getConnection(input.projectId),
   ]);
   if (!ga4Connection) {
     throw new Ga4ReportError(

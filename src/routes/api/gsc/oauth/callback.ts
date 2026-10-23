@@ -1,14 +1,17 @@
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  GSC_INTEGRATION,
-  handleGoogleOAuthCallbackRequest,
-} from "@/server/features/google/googleOAuth";
+
+import { GSC_INTEGRATION } from "@/plugins/google-oauth/contracts";
 
 export const Route = createFileRoute("/api/gsc/oauth/callback")({
   server: {
     handlers: {
       GET: async ({ request }: { request: Request }) =>
-        handleGoogleOAuthCallbackRequest(request, GSC_INTEGRATION),
+        (await getGoogleOAuth()).handleGoogleOAuthCallbackRequest(
+          request,
+          GSC_INTEGRATION,
+        ),
     },
   },
 });

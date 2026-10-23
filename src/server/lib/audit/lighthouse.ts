@@ -1,6 +1,7 @@
 import { detectUrlTemplate, canonicalUrlKey } from "./url-utils";
 import type { BillingCustomerContext } from "@/server/billing/subscription";
-import { createDataforseoClient } from "@/server/lib/dataforseo";
+// FORK: the audit Worker owns a separate composition without web-only plugins.
+import { getAuditContext } from "@/plugins/audit/context";
 import type { LighthouseResult, LighthouseStrategy } from "./types";
 import type { PageFetchClass } from "@/shared/audit-fetch-class";
 import { putTextToR2 } from "@/server/lib/r2";
@@ -56,8 +57,10 @@ export async function fetchLighthouseResult(
   strategy: "mobile" | "desktop",
   billingCustomer: BillingCustomerContext,
 ): Promise<LighthouseFetchResult> {
-  const dataforseo = createDataforseoClient(billingCustomer);
   try {
+    const provider = (await getAuditContext()).get("dataforseo");
+    if (!provider) throw new Error("DataForSEO plugin is not configured");
+    const dataforseo = provider.createClient(billingCustomer);
     const data = await dataforseo.lighthouse.live({ url, strategy });
 
     return {

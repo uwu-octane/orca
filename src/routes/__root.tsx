@@ -14,7 +14,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { QueryClientProvider } from "@tanstack/react-query";
 import * as React from "react";
 import { DefaultCatchBoundary } from "@/client/components/DefaultCatchBoundary";
-import { captureGoogleLinkError } from "@/client/features/integrations/googleLinkError";
+import { captureGoogleLinkError } from "@/plugins/google-oauth/client/googleLinkError";
 import { ExportToSheetsModal } from "@/client/components/table/ExportToSheetsModal";
 import { themePreferenceInitScript } from "@/client/lib/theme";
 import {

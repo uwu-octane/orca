@@ -1,3 +1,5 @@
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
 import { z } from "zod";
 import { createGa4DataClient } from "@/server/lib/ga4Client";
 import {
@@ -7,7 +9,7 @@ import {
   Ga4ReportError,
   Ga4TokenError,
 } from "@/server/lib/ga4Errors";
-import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
+
 import {
   buildGa4ReportRequest,
   getGa4ReportConfiguration,
@@ -238,9 +240,9 @@ async function resolveReportPage(input: {
 }
 
 async function runReport(input: Ga4ReportInput, opts: { now?: Date } = {}) {
-  const connection = await Ga4ConnectionRepository.getByProjectId(
-    input.projectId,
-  );
+  const connection = await (
+    await getGoogleOAuth()
+  ).ga4.getConnection(input.projectId);
   if (!connection) {
     throw new Ga4ReportError(
       "ga4_not_connected",

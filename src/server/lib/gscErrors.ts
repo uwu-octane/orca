@@ -34,3 +34,15 @@ export class GscNotConnectedError extends Error {
     this.name = "GscNotConnectedError";
   }
 }
+
+// FORK: shared grant-failure classification used by connections and reporting.
+/** Expected ways a stored grant fails to reach Search Console: no token could be
+ *  minted (refresh token revoked or expired), or Google rejected the call
+ *  (401/403). These surface a reconnect prompt without fault logging. */
+export function isExpectedGrantFailure(error: unknown): boolean {
+  if (error instanceof GscTokenError) return true;
+  return (
+    error instanceof GscApiError &&
+    (error.status === 401 || error.status === 403)
+  );
+}

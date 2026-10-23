@@ -36,6 +36,10 @@ extension instructions live in [the SEO capability README](../src/plugins/seo-da
   compile-time, assembly (enable/disable/config/failure isolation) is
   runtime. workerd has no filesystem, so Node-style package resolution is
   replaced by this map on both server and client.
+- **Audit Worker** — `src/plugins/audit/manifest.yaml` and its module map
+  assemble SEO/DataForSEO independently. Lighthouse resolves that tree rather
+  than the web application's tree; web authorization and TanStack router
+  dependencies must not enter the auxiliary Worker's import graph.
 - **No `!js` config expressions** — workerd bans `new Function` ("Code
   generation from strings disallowed"), so the vendored evaluator throws on
   call; and cordis rc.8 emits no `internal/config` event for resolution-time
@@ -144,6 +148,16 @@ metrics refresh and MCP `get_keyword_metrics`. All existing `serp.live`
 calls use the selected live-SERP capability. Other DataForSEO methods retain
 their vendor-specific types through the compatibility API. Schema ownership
 does not imply different vendors' scores are directly comparable.
+
+## Google authorization and Ads
+
+- `googleOAuth` owns the complete Google data-authorization lifecycle, connection repositories and GSC/GA4/Ads project bindings. It does not own application sign-in or report queries.
+- `googleAds` owns Ads protocol calls, account discovery, targeting and keyword ideas. It injects `googleOAuth` and registers discovery as a lifecycle effect. The authorization service depends on a discovery contract rather than importing Ads implementation code.
+- The client `google-oauth` plugin owns connection cards, property selection and onboarding. It injects `locale` and provides `googleConnections`; framework mount views read that service with `useClientService`, including async activation and disposal. Consent redirect state, subscriptions and the navigation-recovery timer belong to that plugin instance and are released on disposal.
+- Callback URLs, database tables and encrypted credentials remain unchanged. Existing callers resolve installed services through the server context. Disabling a plugin does not erase stored authorizations.
+
+The full domain migration and ownership rules are maintained in
+[Domain plugins](maintainers/domain-plugins.md).
 
 ## Planned services
 

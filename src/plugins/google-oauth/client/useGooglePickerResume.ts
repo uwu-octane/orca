@@ -1,0 +1,42 @@
+import { useEffect, useState } from "react";
+import { useGoogleLink } from "./useGoogleLink";
+
+/** Restore the picker after Google's full-page redirect, scoped to this project. */
+export function useGooglePickerResume(
+  provider: "gsc" | "ga4" | "google_ads",
+  projectId: string,
+) {
+  // null lets the card derive unfinished setup from the saved authorization.
+  // false means the user explicitly closed the picker during this visit.
+  const [picking, setPicking] = useState<boolean | null>(null);
+  const { pending: linking, startGoogleLink } = useGoogleLink();
+  const key = `google-property-picker:${provider}:${projectId}`;
+  useEffect(() => {
+    setPicking(null);
+    try {
+      if (sessionStorage.getItem(key)) {
+        sessionStorage.removeItem(key);
+        setPicking(true);
+      }
+    } catch {
+      /* Storage can be disabled; Connect still opens the picker. */
+    }
+  }, [key]);
+
+  const linkAccount = async (callbackURL: string) => {
+    try {
+      sessionStorage.setItem(key, "open");
+    } catch {
+      /* Google authorization does not require browser storage. */
+    }
+    const redirecting = await startGoogleLink(provider, callbackURL);
+    if (!redirecting) {
+      try {
+        sessionStorage.removeItem(key);
+      } catch {
+        /* Storage is optional. */
+      }
+    }
+  };
+  return { picking, setPicking, linkAccount, linking };
+}

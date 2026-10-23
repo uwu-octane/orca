@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { CardShell } from "@/client/components/CardShell";
 import { QueryState } from "@/client/components/QueryState";
-import { GoogleConnectionCard } from "@/client/features/integrations/GoogleConnectionCard";
+import { GoogleConnectionCard } from "@/plugins/google-oauth/client/views";
 import {
   Table,
   TableHeader,

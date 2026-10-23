@@ -3,7 +3,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { QueryError } from "@/client/components/QueryState";
 import { TablePagination } from "@/client/components/table/TablePagination";
 import { SkeletonTableRows } from "@/client/components/SkeletonPresets";
-import { GoogleConnectionCard } from "@/client/features/integrations/GoogleConnectionCard";
+import { GoogleConnectionCard } from "@/plugins/google-oauth/client/views";
 import { DimensionTable } from "@/client/features/search-performance/SearchPerformanceParts";
 import type { getSearchPerformanceTable } from "@/serverFunctions/searchPerformance";
 import { SEARCH_PERFORMANCE_PAGE_SIZES } from "@/types/schemas/search-performance";

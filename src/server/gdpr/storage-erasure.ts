@@ -1,4 +1,6 @@
-import { getGoogleAccessToken } from "@/server/features/google/googleOAuth";
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
+
 import type { SamChatAgent } from "@/server/features/sam/SamChatAgent";
 import { captureServerError } from "@/server/lib/posthog";
 import { deleteProjectAiObjects } from "@/server/features/ai-visibility/services/aiVisibilityStorage";
@@ -142,7 +144,9 @@ async function revokeGoogleAccount(
 ): Promise<GoogleRevocationResult> {
   let accessToken: string;
   try {
-    accessToken = await getGoogleAccessToken({
+    accessToken = await (
+      await getGoogleOAuth()
+    ).getGoogleAccessToken({
       userId,
       providerId: account.providerId,
       accountId: account.accountId,

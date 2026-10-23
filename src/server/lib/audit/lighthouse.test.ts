@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 
 const createDataforseoClientMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@/server/lib/dataforseo", () => ({
-  createDataforseoClient: createDataforseoClientMock,
+vi.mock("@/plugins/audit/context", () => ({
+  getAuditContext: async () => ({
+    get: () => ({ createClient: createDataforseoClientMock }),
+  }),
 }));
 
 vi.mock("@/server/lib/r2", () => ({

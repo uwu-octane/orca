@@ -6,8 +6,8 @@ const mocks = vi.hoisted(() => ({
   fetch: vi.fn<typeof fetch>(),
 }));
 
-vi.mock("@/server/features/google/googleOAuth", () => ({
-  getGoogleAccessToken: mocks.getAccessToken,
+vi.mock("@/plugins/server/context", () => ({
+  getGoogleOAuth: async () => ({ getGoogleAccessToken: mocks.getAccessToken }),
 }));
 
 function jsonResponse(body: unknown, status = 200) {

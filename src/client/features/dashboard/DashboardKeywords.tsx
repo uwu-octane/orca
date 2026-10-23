@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { TabsTrigger } from "@/client/components/ui/tabs";
 import { DataTableTabs } from "@/client/components/table/DataTableToolbar";
 import { QueryError } from "@/client/components/QueryState";
-import { GoogleConnectionCard } from "@/client/features/integrations/GoogleConnectionCard";
+import { GoogleConnectionCard } from "@/plugins/google-oauth/client/views";
 import {
   getDashboardEmergingQueries,
   getDashboardKeywords,

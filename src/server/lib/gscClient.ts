@@ -1,4 +1,6 @@
-import { getGoogleAccessToken } from "@/server/features/google/googleOAuth";
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
+
 import { GSC_OAUTH_PROVIDER_ID } from "@/shared/gsc";
 import { GscApiError, GscTokenError } from "./gscErrors";
 
@@ -83,10 +85,14 @@ function messageForStatus(status: number, body: string): string {
 export function createGscClient(opts: {
   userId: string;
   gscAccountId?: string;
+  getAccessToken?: () => Promise<string>;
 }) {
   async function getToken(): Promise<string> {
     try {
-      return await getGoogleAccessToken({
+      if (opts.getAccessToken) return await opts.getAccessToken();
+      return await (
+        await getGoogleOAuth()
+      ).getGoogleAccessToken({
         providerId: GSC_OAUTH_PROVIDER_ID,
         userId: opts.userId,
         accountId: opts.gscAccountId,

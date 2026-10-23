@@ -1,17 +1,22 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { DashboardSiteService } from "./DashboardSiteService";
 import { GscService } from "@/server/features/gsc/services/GscService";
-import { GscConnectionRepository } from "@/server/features/gsc/repositories/GscConnectionRepository";
 
-const providers = vi.hoisted(() => ({ domains: vi.fn(), links: vi.fn() }));
+const providers = vi.hoisted(() => ({
+  domains: vi.fn(),
+  links: vi.fn(),
+  connection: vi.fn(),
+}));
 vi.mock("@/server/lib/dataforseo", async () => ({
   ...(await import("@/server/lib/dataforseoBacklinksTarget")),
   createDataforseoClient: () => ({
     backlinks: { referringDomains: providers.domains, rows: providers.links },
   }),
 }));
-vi.mock("@/server/features/gsc/repositories/GscConnectionRepository", () => ({
-  GscConnectionRepository: { getByProjectId: vi.fn() },
+vi.mock("@/plugins/server/context", () => ({
+  getGoogleOAuth: async () => ({
+    gsc: { getConnection: providers.connection },
+  }),
 }));
 vi.mock("@/server/features/gsc/services/GscService", async () => ({
   ...(await import("@/server/lib/gscErrors")),
@@ -35,7 +40,7 @@ const performanceBase = {
 beforeEach(() => {
   providers.domains.mockResolvedValue({ items: [] });
   providers.links.mockResolvedValue({ items: [] });
-  vi.mocked(GscConnectionRepository.getByProjectId).mockResolvedValue({
+  providers.connection.mockResolvedValue({
     id: "connection",
     projectId: "project",
     organizationId: "org",

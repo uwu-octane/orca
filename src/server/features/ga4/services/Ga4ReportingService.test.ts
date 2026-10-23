@@ -13,8 +13,10 @@ const mocks = vi.hoisted(() => ({
     vi.fn<(request: Ga4RunReportRequest) => Promise<Ga4RunReportResponse>>(),
 }));
 
-vi.mock("@/server/features/ga4/repositories/Ga4ConnectionRepository", () => ({
-  Ga4ConnectionRepository: { getByProjectId: mocks.getByProjectId },
+vi.mock("@/plugins/server/context", () => ({
+  getGoogleOAuth: async () => ({
+    ga4: { getConnection: mocks.getByProjectId },
+  }),
 }));
 
 vi.mock("@/server/lib/ga4Client", () => ({

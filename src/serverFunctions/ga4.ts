@@ -1,17 +1,16 @@
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { waitUntil } from "cloudflare:workers";
 import { z } from "zod";
 import { shiftGa4Date } from "@/server/features/ga4/services/Ga4Dates";
 import { Ga4OrganicOverviewService } from "@/server/features/ga4/services/Ga4OrganicOverviewService";
-import { Ga4Service } from "@/server/features/ga4/services/Ga4Service";
+
 import { AppError } from "@/server/lib/errors";
 import { Ga4ReportError } from "@/server/lib/ga4Errors";
-import { hasGoogleOAuthConfig } from "@/server/features/google/oauth-config";
-import {
-  createGoogleAuthorizationUrl,
-  GA4_INTEGRATION,
-} from "@/server/features/google/googleOAuth";
+
+import { GA4_INTEGRATION } from "@/plugins/google-oauth/contracts";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import { requireOrgPermission } from "@/server/auth/org-gate";
 import { captureServerEvent } from "@/server/lib/posthog";
@@ -34,11 +33,12 @@ export const getGa4Connection = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(projectScopedSchema)
   .handler(async ({ context }) => {
+    const google = await getGoogleOAuth();
     const [connection, currentUserHasGrant, googleOAuthConfigured] =
       await Promise.all([
-        Ga4Service.getConnection(context.projectId),
-        Ga4Service.userHasGrant(context.userId),
-        hasGoogleOAuthConfig(),
+        google.ga4.getConnection(context.projectId),
+        google.ga4.userHasGrant(context.userId),
+        google.hasGoogleOAuthConfig(),
       ]);
     return {
       connected: Boolean(connection),
@@ -141,30 +141,18 @@ export const getGa4DashboardReport = createServerFn({ method: "POST" })
 export const listGa4Properties = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(projectScopedSchema)
-  .handler(async ({ context }) => {
-    const [propertyList, connection] = await Promise.all([
-      Ga4Service.listPropertiesForUserWithGrantStatus(context.userId),
-      Ga4Service.getConnection(context.projectId),
-    ]);
-    return {
-      accounts: propertyList.accounts.map((grant) => ({
-        ...grant,
-        properties: grant.properties.map((property) => ({
-          ...property,
-          isSelected:
-            connection?.ga4AccountId === grant.accountId &&
-            connection.propertyId === property.propertyId,
-        })),
-      })),
-    };
-  });
+  .handler(async ({ context }) =>
+    (await getGoogleOAuth()).ga4.listProperties(context),
+  );
 
 export const setGa4Property = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(setPropertySchema)
   .handler(async ({ data, context }) => {
     requireOrgPermission(context, { integration: ["manage"] });
-    const connection = await Ga4Service.setProperty({
+    const connection = await (
+      await getGoogleOAuth()
+    ).ga4.setProperty({
       projectId: context.projectId,
       organizationId: context.organizationId,
       accountId: data.accountId,
@@ -195,7 +183,9 @@ export const disconnectGa4 = createServerFn({ method: "POST" })
   .validator(projectScopedSchema)
   .handler(async ({ context }) => {
     requireOrgPermission(context, { integration: ["manage"] });
-    await Ga4Service.disconnect({ projectId: context.projectId });
+    await (
+      await getGoogleOAuth()
+    ).ga4.disconnect({ projectId: context.projectId });
     waitUntil(
       captureServerEvent({
         distinctId: context.userId,
@@ -211,7 +201,9 @@ export const startGa4Link = createServerFn({ method: "POST" })
   .middleware(requireAuthenticatedContext)
   .validator(startLinkSchema)
   .handler(async ({ data, context }) => ({
-    url: await createGoogleAuthorizationUrl({
+    url: await (
+      await getGoogleOAuth()
+    ).createGoogleAuthorizationUrl({
       integration: GA4_INTEGRATION,
       userId: context.userId,
       callbackURL: data.callbackURL,

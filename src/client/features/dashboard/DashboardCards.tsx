@@ -1,6 +1,6 @@
 // FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
-import { GoogleSearchConsoleLogo } from "@/client/features/integrations/GoogleProductLogos";
+import { GoogleSearchConsoleLogo } from "@/plugins/google-oauth/client/GoogleProductLogos";
 import { startAudit } from "@/serverFunctions/audit";
 import { QueryError } from "@/client/components/QueryState";
 import { LoaderCircle, ScanSearch } from "lucide-react";
@@ -10,7 +10,7 @@ import { Button } from "@/client/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check } from "lucide-react";
-import { GoogleConnectionCard } from "@/client/features/integrations/GoogleConnectionCard";
+import { GoogleConnectionCard } from "@/plugins/google-oauth/client/views";
 import { SeverityBadge } from "@/client/features/audit/shared";
 import { AUDIT_ISSUE_TYPES } from "@/shared/audit-issues";
 

@@ -13,8 +13,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("cloudflare:workers", () => ({ env: {} }));
-vi.mock("@/server/features/google/oauth-config", () => ({
-  hasGoogleOAuthConfig: mocks.hasGoogleOAuthConfig,
+vi.mock("@/plugins/server/context", () => ({
+  getGoogleOAuth: async () => ({
+    hasGoogleOAuthConfig: mocks.hasGoogleOAuthConfig,
+  }),
 }));
 vi.mock("@/server/features/projects/services/ProjectService", () => ({
   ProjectService: {

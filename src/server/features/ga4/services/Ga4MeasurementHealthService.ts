@@ -1,10 +1,14 @@
-import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
+
 import { createGa4AdminClient } from "@/server/lib/ga4Client";
 import { Ga4ReportError } from "@/server/lib/ga4Errors";
 import { mapGa4ReportError } from "@/server/features/ga4/services/Ga4ReportingService";
 
 async function getMeasurementHealth(projectId: string) {
-  const connection = await Ga4ConnectionRepository.getByProjectId(projectId);
+  const connection = await (
+    await getGoogleOAuth()
+  ).ga4.getConnection(projectId);
   if (!connection) {
     throw new Ga4ReportError(
       "ga4_not_connected",

@@ -1,4 +1,6 @@
-import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
+
 import { createGa4DataClient } from "@/server/lib/ga4Client";
 import {
   buildGa4OverviewRequest,
@@ -66,9 +68,9 @@ async function getOrganicOverview(
   input: Ga4OrganicOverviewInput,
   opts: { now?: Date } = {},
 ) {
-  const connection = await Ga4ConnectionRepository.getByProjectId(
-    input.projectId,
-  );
+  const connection = await (
+    await getGoogleOAuth()
+  ).ga4.getConnection(input.projectId);
   if (!connection) {
     throw new Ga4ReportError(
       "ga4_not_connected",

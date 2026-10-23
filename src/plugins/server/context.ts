@@ -61,3 +61,15 @@ export async function getAiAgents() {
   if (!service) throw new Error("AI agent service is not configured");
   return service;
 }
+
+export async function getGoogleOAuth() {
+  const service = (await getAppContext()).get("googleOAuth");
+  if (!service) throw new Error("Google OAuth plugin is not configured");
+  return service;
+}
+
+export async function getGoogleAds() {
+  const service = (await getAppContext()).get("googleAds");
+  if (!service) throw new Error("Google Ads plugin is not configured");
+  return service;
+}

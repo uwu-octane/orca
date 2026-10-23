@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/client/components/ui/dialog";
 import { GoogleGlyph } from "@/client/features/gsc/GoogleGlyph";
-import { startGoogleLink } from "@/client/features/integrations/startGoogleLink";
+import { useGoogleLink } from "@/plugins/google-oauth/client/useGoogleLink";
 import { onboardingAnswersQueryOptions } from "@/client/features/onboarding/onboardingModel";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
@@ -37,6 +37,7 @@ export function GscReEngagementModal({
   suppressed: boolean;
 }) {
   const { t } = useLocale();
+  const { startGoogleLink, available } = useGoogleLink();
 
   const hosted = isHostedClientAuthMode();
   const queryClient = useQueryClient();
@@ -66,6 +67,7 @@ export function GscReEngagementModal({
   // already saw that step), and dismissing/connecting clears it too.
   const eligible =
     hosted &&
+    available &&
     !suppressed &&
     !closed &&
     onboardingQuery.isSuccess &&

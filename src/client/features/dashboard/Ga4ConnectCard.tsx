@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { CardShell } from "@/client/components/CardShell";
 import { Button } from "@/client/components/ui/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { GoogleConnectionCard } from "@/client/features/integrations/GoogleConnectionCard";
+import { GoogleConnectionCard } from "@/plugins/google-oauth/client/views";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { dismissDashboardGa4Card } from "@/serverFunctions/dashboard";
 

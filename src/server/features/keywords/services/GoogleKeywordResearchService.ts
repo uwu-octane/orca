@@ -1,3 +1,5 @@
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth, getGoogleAds } from "@/plugins/server/context";
 import {
   buildCacheKey,
   CACHE_TTL,
@@ -9,8 +11,7 @@ import {
   googleKeywordResultSchema,
   type GoogleKeywordIdeasInput,
 } from "@/types/schemas/google-keywords";
-import { GoogleAdsConnectionService } from "@/server/features/google-ads/GoogleAdsConnectionService";
-import { fetchGoogleKeywordIdeas } from "../providers/googleAdsKeywordProvider";
+
 import { GoogleKeywordRepository } from "../repositories/GoogleKeywordRepository";
 
 async function research(
@@ -21,7 +22,7 @@ async function research(
     ...input,
     projectId: context.projectId,
   });
-  const config = await GoogleAdsConnectionService.credentials(context);
+  const config = await (await getGoogleOAuth()).ads.credentials(context);
   const key = await buildCacheKey("kw:google-ads", {
     provider: "google_ads",
     version: "v25:oauth:1",
@@ -44,7 +45,7 @@ async function research(
   }
 
   const result = googleKeywordResultSchema.parse(
-    await fetchGoogleKeywordIdeas(request, config),
+    await (await getGoogleAds()).keywordIdeas(request, config),
   );
   await setCached(key, result, CACHE_TTL.researchResult);
   await GoogleKeywordRepository.upsertResult(

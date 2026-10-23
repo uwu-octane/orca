@@ -1,6 +1,8 @@
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { GoogleAccountService } from "@/server/features/google/GoogleAccountService";
+
 import { requireAuthenticatedContext } from "@/serverFunctions/middleware";
 
 const accountSchema = z.object({
@@ -11,13 +13,16 @@ const accountSchema = z.object({
 export const getGoogleAccountRemovalImpact = createServerFn({ method: "POST" })
   .middleware(requireAuthenticatedContext)
   .validator(accountSchema)
-  .handler(({ data, context }) =>
-    GoogleAccountService.getRemovalImpact({ ...data, userId: context.userId }),
+  .handler(async ({ data, context }) =>
+    (await getGoogleOAuth()).getRemovalImpact({
+      ...data,
+      userId: context.userId,
+    }),
   );
 
 export const removeGoogleAccount = createServerFn({ method: "POST" })
   .middleware(requireAuthenticatedContext)
   .validator(accountSchema.extend({ confirmed: z.literal(true) }))
-  .handler(({ data, context }) =>
-    GoogleAccountService.remove({ ...data, userId: context.userId }),
+  .handler(async ({ data, context }) =>
+    (await getGoogleOAuth()).removeAccount({ ...data, userId: context.userId }),
   );

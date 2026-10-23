@@ -1,4 +1,4 @@
-import type { Ga4Connection } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
+import type { Ga4Connection } from "@/plugins/google-oauth/contracts";
 import type { Ga4ReportResult } from "./Ga4ReportingService";
 
 export function makeGa4Connection(

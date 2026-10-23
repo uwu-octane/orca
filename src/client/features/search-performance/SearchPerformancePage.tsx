@@ -17,7 +17,7 @@ import { Button } from "@/client/components/ui/button";
 import { Spinner } from "@/client/components/ui/spinner";
 import { DataTableTabs } from "@/client/components/table/DataTableToolbar";
 import { TabsTrigger } from "@/client/components/ui/tabs";
-import { GoogleConnectionCard } from "@/client/features/integrations/GoogleConnectionCard";
+import { GoogleConnectionCard } from "@/plugins/google-oauth/client/views";
 import { DimensionSection } from "@/client/features/search-performance/SearchPerformanceDimensionSection";
 import { SearchPerformanceSelects } from "@/client/features/search-performance/SearchPerformanceSelects";
 import { SearchPerformanceLoadingState } from "@/client/features/search-performance/SearchPerformanceLoadingState";

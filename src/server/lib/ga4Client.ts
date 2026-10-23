@@ -1,6 +1,8 @@
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
 /* eslint-disable max-lines -- one client module per Google integration (gscClient precedent); GA4 spans the Admin and Data APIs */
 import { z } from "zod";
-import { getGoogleAccessToken } from "@/server/features/google/googleOAuth";
+
 import {
   Ga4AdminApiError,
   Ga4DataApiError,
@@ -127,9 +129,13 @@ type Ga4Property = z.infer<typeof propertySchema>;
 async function getGa4AccessToken(opts: {
   userId: string;
   ga4AccountId: string;
+  getAccessToken?: () => Promise<string>;
 }): Promise<string> {
   try {
-    return await getGoogleAccessToken({
+    if (opts.getAccessToken) return await opts.getAccessToken();
+    return await (
+      await getGoogleOAuth()
+    ).getGoogleAccessToken({
       providerId: GA4_OAUTH_PROVIDER_ID,
       userId: opts.userId,
       accountId: opts.ga4AccountId,
@@ -158,6 +164,7 @@ function isAbortError(error: unknown): boolean {
 function memoizedGa4AccessToken(opts: {
   userId: string;
   ga4AccountId: string;
+  getAccessToken?: () => Promise<string>;
 }) {
   let accessTokenPromise: Promise<string> | undefined;
   return () => (accessTokenPromise ??= getGa4AccessToken(opts));
@@ -167,6 +174,7 @@ function memoizedGa4AccessToken(opts: {
 export function createGa4AdminClient(opts: {
   userId: string;
   ga4AccountId: string;
+  getAccessToken?: () => Promise<string>;
 }) {
   const accessToken = memoizedGa4AccessToken(opts);
 

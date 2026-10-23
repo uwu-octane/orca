@@ -1,0 +1,10 @@
+# The audit Worker has no web router or Google authorization endpoints.
+# Keep its composition independent while sharing the same provider plugins.
+server:
+  - id: seo-data
+    name: seo-data
+    config:
+      keywordMetrics: dataforseo
+      serpLive: dataforseo
+  - id: dataforseo
+    name: dataforseo

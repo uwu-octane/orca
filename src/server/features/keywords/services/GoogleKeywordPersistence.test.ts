@@ -20,11 +20,9 @@ const mocks = vi.hoisted(() => ({
   cache: new Map<string, unknown>(),
 }));
 vi.mock("cloudflare:workers", () => ({ env: { DATABASE_PROVIDER: "d1" } }));
-vi.mock("@/server/features/google-ads/GoogleAdsConnectionService", () => ({
-  GoogleAdsConnectionService: { credentials: mocks.credentials },
-}));
-vi.mock("../providers/googleAdsKeywordProvider", () => ({
-  fetchGoogleKeywordIdeas: mocks.fetchIdeas,
+vi.mock("@/plugins/server/context", () => ({
+  getGoogleOAuth: async () => ({ ads: { credentials: mocks.credentials } }),
+  getGoogleAds: async () => ({ keywordIdeas: mocks.fetchIdeas }),
 }));
 vi.mock("@/server/lib/r2-cache", async (importOriginal) => ({
   ...(await importOriginal<typeof R2Cache>()),

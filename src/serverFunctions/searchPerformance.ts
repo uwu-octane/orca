@@ -2,8 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import {
   GscNotConnectedError,
   GscService,
-  isExpectedGrantFailure,
 } from "@/server/features/gsc/services/GscService";
+import { isExpectedGrantFailure } from "@/server/lib/gscErrors";
 import {
   resolveDateRange,
   type GscPerformanceFilter,

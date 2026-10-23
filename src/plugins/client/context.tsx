@@ -24,6 +24,25 @@ interface ClientCordisState {
 
 const CordisCtx = createContext<ClientCordisState | null>(null);
 
+/** Reads the live client service, including activation and disposal after boot. */
+export function useClientService<K extends keyof CordisContext & string>(
+  name: K,
+) {
+  const state = useContext(CordisCtx);
+  const ctx = state?.ctx;
+  const service = useSyncExternalStore(
+    (changed) =>
+      ctx
+        ? ctx.on("internal/service", (key) => {
+            if (key === name) changed();
+          })
+        : noSubscription(),
+    () => ctx?.get(name),
+    () => undefined,
+  );
+  return { service, pending: !state?.settled };
+}
+
 /**
  * Mounts the client plugin tree. Lives inside `ClientOnly` in __root.tsx.
  * Fiber activation is async, so the first render happens before any service

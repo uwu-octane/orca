@@ -110,7 +110,7 @@ specific connector account that selected the property.
 
 The server function for selection receives `projectId`, `propertyId`, and the
 connector account ID. Project authorization supplies `organizationId` and the
-current user. `Ga4Service` verifies that the current user owns that connector
+current user. `googleOAuth.ga4` verifies that the current user owns that connector
 grant and that the exact property appears in a fresh discovery response before
 upserting the mapping. Clients cannot submit `organizationId`,
 `connectedByUserId`, account email, time zone, currency, or display name.
@@ -373,15 +373,15 @@ or credentials.
 Follow the existing application boundary:
 
 ```text
-SQLite/Postgres repository -> Ga4Service -> server-function and MCP adapters
+Server-function / MCP adapter -> owning domain service -> SQLite/Postgres repository
 ```
 
-- `Ga4ConnectionRepository` owns mapping persistence and dialect parity.
+- The `google-oauth` Cordis plugin owns authorization, property selection and mapping persistence through its `ga4` service and `Ga4ConnectionRepository`.
 - A small GA4 REST client owns HTTP, token use, pagination, and Zod validation
   of Admin and Data API responses.
-- `Ga4Service` owns grant lookup, property verification, typed errors, fixed
-  report builders, date clamps, quota/privacy normalization, URL joins, and
-  opportunity scoring.
+- GA4 reporting services own fixed report builders, date clamps, quota/privacy
+  normalization, URL joins and opportunity scoring. They obtain connections
+  and tokens through the installed Google authorization service.
 - Project-scoped TanStack server functions own session/project authorization
   and expose grant status, property listing, selection, and disconnect.
 - MCP handlers own annotations, input/output schemas, response formatting, and

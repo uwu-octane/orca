@@ -1,3 +1,12 @@
+import { Context } from "cordis";
+import GoogleOAuthService from "@/plugins/google-oauth/server";
+import * as googleAds from "@/plugins/google-ads";
+let ctx: Context;
+vi.mock("@/lib/auth", () => ({ getAuth: vi.fn() }));
+vi.mock("@/plugins/server/context", () => ({
+  getGoogleOAuth: async () => ctx.googleOAuth,
+  getGoogleAds: async () => ctx.googleAds,
+}));
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { GoogleKeywordResearchService } from "./GoogleKeywordResearchService";
 import type { GoogleKeywordIdeasInput } from "@/types/schemas/google-keywords";
@@ -21,12 +30,12 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/server/lib/runtime-env", () => ({
   isHostedServerAuthMode: async () => mocks.hosted,
 }));
-vi.mock("@/server/features/google-ads/GoogleAdsConnectionRepository", () => ({
-  GoogleAdsConnectionRepository: { get: mocks.getConnection },
-}));
-vi.mock("@/server/features/google/googleOAuth", () => ({
-  getGoogleAccessToken: mocks.getToken,
-}));
+vi.mock(
+  "@/plugins/google-oauth/server/connections/GoogleAdsConnectionRepository",
+  () => ({
+    GoogleAdsConnectionRepository: { get: mocks.getConnection },
+  }),
+);
 const connection = {
   id: "connection-1",
   projectId: "project-1",
@@ -91,7 +100,13 @@ function defaultResponse(url: RequestInfo | URL) {
   });
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  ctx = new Context();
+  await ctx.plugin(GoogleOAuthService);
+  vi.spyOn(ctx.googleOAuth, "getGoogleAccessToken").mockImplementation(
+    mocks.getToken,
+  );
+  await ctx.plugin(googleAds);
   mocks.hosted = false;
   mocks.objects.clear();
   mocks.getConnection.mockResolvedValue({ ...connection });
@@ -99,7 +114,11 @@ beforeEach(() => {
   mocks.fetch.mockImplementation(async (url) => defaultResponse(url));
   vi.stubGlobal("fetch", mocks.fetch);
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(async () => {
+  await ctx.fiber.dispose();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 describe("Google keyword research", () => {
   it("uses Ads targeting and read metrics without inventing difficulty, CPC or classification", async () => {

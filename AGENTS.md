@@ -74,3 +74,11 @@ Changes to `AGENTS.md`, `.claude/CLAUDE.md`, `.agents/skills/**`, `.github/**`, 
   - `历史分析 · fields-full-v2 · 归属阈值 0.80`
 - 删除此类内容时，不要换成另一段说明，也不要移到 tooltip、badge、placeholder 或页脚继续展示。
 - 保留完成操作必需的加载、错误、表单校验和覆盖确认提示；不要借此扩展成解释性描述。
+
+## Cordis domain ownership
+
+- Implement new business modules as complete Cordis plugins, following `docs/PLUGINS.md` and `docs/maintainers/domain-plugins.md`. Inspect existing domain boundaries before splitting a service.
+- A plugin owns its business implementation, repositories, public contracts, client components and state. Moving imports behind a wrapper or registering individual helper calls is not domain extraction. Remove superseded implementations after migrating their consumers.
+- Declare service dependencies with `inject`; register providers, tools and subscriptions as lifecycle-owned effects. Pass request/user/project scope per operation, never retain credentials or tenant state on the root service.
+- Consumers use public domain contracts and installed services. Routes, server functions and platform exports remain transport/mount adapters; they must not bypass the plugin through its private repositories or implementation files.
+- Keep framework-owned persistence bindings stable during extraction. Provider selection, retries, fallback behavior, billing and security policies require separate treatment; do not change them incidentally while moving code.

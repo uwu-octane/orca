@@ -1,8 +1,8 @@
 import { AiProviderSettings } from "@/client/features/settings/AiProviderSettings";
 import { queryClient } from "@/client/tanstack-db/queryClient";
-import { googleConnectionOptions } from "@/client/features/integrations/googleProviders";
+import { googleConnectionOptions } from "@/plugins/google-oauth/client/googleProviders";
 import { createFileRoute } from "@tanstack/react-router";
-import { GoogleConnectionCard } from "@/client/features/integrations/GoogleConnectionCard";
+import { GoogleConnectionCard } from "@/plugins/google-oauth/client/views";
 import { CrawlerAccessSettings } from "@/client/features/settings/CrawlerAccessSettings";
 
 export const Route = createFileRoute(

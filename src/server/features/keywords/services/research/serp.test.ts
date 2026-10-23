@@ -10,6 +10,15 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("cloudflare:workers", () => ({ waitUntil: vi.fn() }));
+vi.mock("@/plugins/server/context", () => ({
+  getSeoData: async () => ({
+    serpCacheIdentity: () => ({
+      provider: "dataforseo",
+      version: "2",
+      schemaVersion: 1,
+    }),
+  }),
+}));
 
 vi.mock("@/server/lib/r2-cache", () => ({
   buildCacheKey: mocks.buildCacheKey,

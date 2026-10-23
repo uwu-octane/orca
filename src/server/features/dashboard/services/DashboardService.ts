@@ -1,11 +1,11 @@
+// FORK: Google grant and connection operations resolve the installed plugin.
+import { getGoogleOAuth } from "@/plugins/server/context";
 import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
 import { sort } from "remeda";
 import { safeHostname } from "@/shared/safe-url";
 import { ActivationRepository } from "@/server/features/activation/repositories/ActivationRepository";
 import { AuditRepository } from "@/server/features/audit/repositories/AuditRepository";
 import { getIssueTypePageCountsForAudit } from "@/server/features/audit/repositories/auditSummaryQueries";
-import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
-import { GscConnectionRepository } from "@/server/features/gsc/repositories/GscConnectionRepository";
 
 export type DashboardActivation = {
   domain: string | null;
@@ -65,8 +65,8 @@ async function getActivation(input: {
     dismissed,
     latestAudit,
   ] = await Promise.all([
-    Ga4ConnectionRepository.getByProjectId(input.projectId),
-    GscConnectionRepository.getByProjectId(input.projectId),
+    (await getGoogleOAuth()).ga4.getConnection(input.projectId),
+    (await getGoogleOAuth()).gsc.getConnection(input.projectId),
     ActivationRepository.getOrganizationActivation(input.organizationId),
     ActivationRepository.getProjectActivation(input.projectId),
     ProjectRepository.countProjects(input.organizationId),
