@@ -1,3 +1,4 @@
+import { getSam } from "@/plugins/server/context";
 // FORK: SAM uses project-scoped Cordis model providers and Gateway billing.
 import { Think } from "@cloudflare/think";
 import type {
@@ -24,12 +25,12 @@ import { staticAssistantModel } from "@/server/lib/chatAgent";
 import { createSamModel, gatewayCostUsd } from "./samModel";
 import { DEFAULT_LLM_MODEL, llmModelSchema } from "@/types/schemas/ai-provider";
 import { AppError } from "@/server/lib/errors";
-import { SamSessionRepository } from "@/server/features/sam/SamSessionRepository";
+import { SamSessionRepository } from "@/plugins/sam/server/SamSessionRepository";
 import { ProjectContextService } from "@/server/features/project-context/services/ProjectContextService";
 import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
-import { buildSamSkillSource } from "@/server/features/sam/samSkills";
-import { buildSamSystemPrompt } from "@/server/features/sam/samSystemPrompt";
-import { SamTelemetry } from "@/server/features/sam/samTurnTelemetry";
+import { buildSamSkillSource } from "@/plugins/sam/server/samSkills";
+import { buildSamSystemPrompt } from "@/plugins/sam/server/samSystemPrompt";
+import { SamTelemetry } from "@/plugins/sam/server/samTurnTelemetry";
 import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import { checkUsageCreditsDepleted } from "@/server/billing/subscription";
 import { getPublicOrigin } from "@/server/mcp/public-origin";
@@ -344,14 +345,18 @@ export class SamChatAgent extends Think {
       };
 
       // Loaded per turn, not at startup: the tool schemas are costly to build.
-      const samTools = await import("@/server/features/sam/samChatTools");
+      const sam = await getSam();
       const selectedModel = llmModelSchema.parse(
         turnCtx.body?.model ?? DEFAULT_LLM_MODEL,
       );
       return {
         model: this.buildModel(selectedModel),
         maxRetries: 0,
-        tools: samTools.buildSamMcpTools(authContext, ctx.project, turn.turnId),
+        tools: await sam.buildTools({
+          auth: authContext,
+          project: ctx.project,
+          turnId: turn.turnId,
+        }),
         // Preserve the established tool-loop bounds. The Gateway adapter
         // enforces provider restrictions and the configured request timeout.
         maxSteps: 40,

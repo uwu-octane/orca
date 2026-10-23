@@ -26,7 +26,7 @@ import { ProjectSwitcher } from "@/client/features/projects/ProjectSwitcher";
 import {
   SamChatListSkeleton,
   SamSidebarPanel,
-} from "@/client/features/sam/SamSidebarPanel";
+} from "@/plugins/sam/client/views";
 import { ThemePreferenceRadio } from "@/client/components/ThemePreferenceMenuItems";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { signOutAndRedirect, useSession } from "@/lib/auth-client";

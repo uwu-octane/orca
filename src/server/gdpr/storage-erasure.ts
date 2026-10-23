@@ -1,7 +1,7 @@
 // FORK: Google grant and connection operations resolve the installed plugin.
 import { getGoogleOAuth } from "@/plugins/server/context";
 
-import type { SamChatAgent } from "@/server/features/sam/SamChatAgent";
+import type { SamChatAgent } from "@/plugins/sam/platform";
 import { captureServerError } from "@/server/lib/posthog";
 import { deleteProjectAiObjects } from "@/server/features/ai-visibility/services/aiVisibilityStorage";
 import {

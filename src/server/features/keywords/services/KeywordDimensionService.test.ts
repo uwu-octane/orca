@@ -18,7 +18,7 @@ import {
 } from "vitest";
 import { z } from "zod";
 import { KeywordDimensionService } from "./KeywordDimensionService";
-import { keywordDimensionTool } from "@/server/features/sam/keywordDimensionTool";
+import { keywordDimensionTool } from "@/plugins/keyword-dimension-agent/sam-tool";
 import { AppError } from "@/server/lib/errors";
 import type { GenerateKeywordDimensionsInput } from "@/types/schemas/keyword-dimensions";
 

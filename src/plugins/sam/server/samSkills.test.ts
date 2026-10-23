@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSamSkillSource } from "@/server/features/sam/samSkills";
+import { buildSamSkillSource } from "@/plugins/sam/server/samSkills";
 
 describe("buildSamSkillSource", () => {
   // Guards the real failure modes: a skill whose frontmatter breaks (build

@@ -73,3 +73,9 @@ export async function getGoogleAds() {
   if (!service) throw new Error("Google Ads plugin is not configured");
   return service;
 }
+
+export async function getSam() {
+  const service = (await getAppContext()).get("sam");
+  if (!service) throw new Error("SAM plugin is not configured");
+  return service;
+}

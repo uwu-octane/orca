@@ -1,5 +1,9 @@
 # Fork maintenance log
 
+## 2026-10-23 SAM domain
+
+The `sam` plugin owns the complete Think-backed Agent, session operations and repository, tool adaptation, prompts, telemetry, and chat UI. Server functions and Worker connection authorization call the installed service; the static `SamChatAgent` export and DO identity remain stable. The keyword domain contributes its dimension tool through lifecycle-owned registration. SAM disposal cancels model requests and contributed tools, and the client plugin releases preference subscriptions. Existing session storage, permissions, billing, recovery and provider policies are preserved.
+
 ## 2026-10-23 AI domain
 
 AI configuration, credential persistence and decision validation now belong to `plugins/ai/server`; the full provider settings UI belongs to its client entry. Gateway owns its text and catalog implementations, while provider plugins share the SystemOne wire library. Public callers resolve the installed `ai` service; superseded feature implementations and the `ai-models` registry are removed. Registrations own cancellation, and each request revalidates its scoped credential revision. Existing routing, billing, DNS and error policies remain unchanged.

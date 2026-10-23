@@ -3,14 +3,9 @@ import {
   defaultStreamHandler,
 } from "@tanstack/react-start/server";
 import { routeAgentRequest } from "agents";
-import { resolveUserContextFromHeaders } from "@/middleware/ensure-user/resolve";
-import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
-import { SamSessionRepository } from "@/server/features/sam/SamSessionRepository";
 import { runScheduledRankChecks } from "@/server/features/rank-tracking/services/scheduledRankChecks";
 import { SCHEDULED_RANK_CHECKS_PAUSED } from "@/shared/rank-tracking-pause";
 import { reconcileStaleAudits } from "@/server/features/audit/services/auditReconciler";
-import { getOrCreateOrganizationCustomer } from "@/server/billing/subscription";
-import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import { getAuthMode, isHostedAuthMode } from "@/lib/auth-mode";
 import {
   createOpenSeoOAuthProvider,
@@ -28,7 +23,7 @@ import { maybeSendSelfHostHeartbeat } from "@/server/lib/self-host-telemetry";
 import { handleGdprStorageErasure } from "@/server/gdpr/storage-erasure";
 import { GDPR_STORAGE_ERASURE_PATH } from "@/shared/gdpr-erasure";
 // FORK: cordis plugin layer — boot the server plugin tree (lazy singleton).
-import { getAppContext } from "@/plugins/server/context";
+import { getAppContext, getSam } from "@/plugins/server/context";
 
 const startHandler = createStartHandler(defaultStreamHandler);
 
@@ -65,53 +60,15 @@ async function appFetch(request: Request): Promise<Response> {
 
 const openSeoOAuthProvider = createOpenSeoOAuthProvider(appFetch);
 
-// Authorize a SAM agent connection in the Worker, before it reaches the Durable
-// Object. The DO instance name is the sessionId (set client-side); we resolve
-// the session here and authorize the caller against the session's project via
-// the same canonical project-access check the rest of the app uses, so the DO
-// can trust its `name` and derive org/project/user from the session row.
-// Returning a Response rejects; void lets it through.
-async function authorizeSamChat(
-  request: Request,
-  sessionId: string,
-): Promise<Response | undefined> {
-  let context;
-  try {
-    context = await resolveUserContextFromHeaders(request.headers);
-  } catch {
-    return new Response("Unauthorized", { status: 401 });
-  }
-  const session = await SamSessionRepository.getActiveSession(
-    sessionId,
-    context.userId,
-  );
-  const project = session
-    ? await ProjectRepository.getProjectForOrganization(
-        session.projectId,
-        context.organizationId,
-      )
-    : null;
-  if (!session || !project) {
-    return new Response("Forbidden", { status: 403 });
-  }
-  // Make sure the Autumn customer (and its default free-plan credits) exists
-  // before the DO's balance gate runs, or a brand-new org's first message hits
-  // a false "out of credits". Hosted-only; self-hosted has no Autumn.
-  if (await isHostedServerAuthMode()) {
-    await getOrCreateOrganizationCustomer(context);
-  }
-  return undefined;
-}
-
 // The chat DO lives behind /agents/*. Dispatch on the DO binding partyserver
 // resolved for the request (rather than re-parsing the path), and fail closed
 // on anything unrecognized.
-function authorizeChatAgent(
+async function authorizeChatAgent(
   request: Request,
   lobby: { className: string; name: string },
-): Promise<Response | undefined> | Response {
+): Promise<Response | undefined> {
   if (lobby.className === "SAM_CHAT") {
-    return authorizeSamChat(request, lobby.name);
+    return (await getSam()).sessions.authorizeConnection(request, lobby.name);
   }
   return new Response("Forbidden", { status: 403 });
 }
@@ -196,7 +153,7 @@ async function handleFetch(
 export { RankCheckWorkflow } from "./server/workflows/RankCheckWorkflow";
 export { AiVisibilityWorkflow } from "./server/workflows/AiVisibilityWorkflow";
 // Durable Object class for the SAM in-app agent (Agents SDK).
-export { SamChatAgent } from "./server/features/sam/SamChatAgent";
+export { SamChatAgent } from "./plugins/sam/platform";
 
 // Daily OAuth KV garbage collection; must match a trigger in wrangler.jsonc.
 const MCP_OAUTH_PURGE_CRON = "17 3 * * *";

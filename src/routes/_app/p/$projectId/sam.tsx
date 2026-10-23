@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { SamChat } from "@/client/features/sam/SamChat";
+import { SamChat } from "@/plugins/sam/client/views";
 
 const samSearchSchema = z.object({
   // Active session id. Omitted until a session is selected/created.

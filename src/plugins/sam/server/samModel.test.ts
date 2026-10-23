@@ -1,9 +1,8 @@
-import { createAiTestRuntime } from "@/plugins/ai/server/testRuntime";
+import { createSamTestRuntime } from "./testRuntime";
 import type { Context } from "cordis";
 let runtime: Context;
 vi.mock("@/plugins/server/context", () => ({
-  getAi: async () => runtime.ai,
-  getAiAgents: async () => runtime.aiAgents,
+  getSam: async () => runtime.sam,
 }));
 import { z } from "zod";
 import { beforeAll, afterAll, beforeEach, expect, it, vi } from "vitest";
@@ -116,7 +115,7 @@ it("does not report missing Gateway costs as free usage", () => {
 });
 
 beforeAll(async () => {
-  runtime = await createAiTestRuntime();
+  runtime = await createSamTestRuntime();
 });
 afterAll(async () => {
   await runtime?.fiber.dispose();

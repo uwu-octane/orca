@@ -9,7 +9,7 @@ import { archiveSamSession } from "@/serverFunctions/sam";
 import {
   invalidateSamSessions,
   samSessionsQueryOptions,
-} from "@/client/features/sam/samQueries";
+} from "@/plugins/sam/client/samQueries";
 import { QueryState } from "@/client/components/QueryState";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
@@ -109,7 +109,7 @@ export function SamSidebarPanel({
   const queryClient = useQueryClient();
   const location = useLocation();
   const activeSessionId = (location.search as { s?: string }).s;
-  const optedIn = useSamBetaOptIn();
+  const { optedIn } = useSamBetaOptIn();
   const { sessionsQuery, goToSession, createSession } = useSamSessions(
     projectId,
     { onNavigate },

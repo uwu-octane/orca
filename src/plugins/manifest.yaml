@@ -4,6 +4,8 @@
 # Configs are plain YAML data — `!js` expressions
 # are unsupported on workerd (see docs/PLUGINS.md).
 server:
+  - id: sam
+    name: sam
   - id: google-oauth
     name: google-oauth
   - id: google-ads
@@ -30,6 +32,8 @@ server:
   - id: dataforseo
     name: dataforseo
 client:
+  - id: sam
+    name: sam
   - id: locale
     name: locale
   - id: google-oauth

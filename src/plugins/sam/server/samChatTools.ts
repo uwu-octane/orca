@@ -15,8 +15,6 @@ import {
   exportAiVisibilityDataTool,
 } from "@/server/mcp/tools/ai-visibility-tools";
 import { tool, type Tool, type ToolSet } from "ai";
-// FORK: project-bound keyword field generation, internal to SAM.
-import { keywordDimensionTool } from "./keywordDimensionTool";
 import { z, type ZodRawShape } from "zod";
 import { withPgClient } from "@/db";
 import type { CallToolResult } from "@modelcontextprotocol/server";
@@ -80,8 +78,8 @@ import {
 import { whoamiTool } from "@/server/mcp/tools/whoami";
 import { explorePromptTool } from "@/server/mcp/tools/explore-prompt";
 import { discoverSiteUrls, readPages, readSite } from "@/server/lib/scrape";
-import { capToolOutput } from "@/server/features/sam/samToolOutput";
-import openSeoFactSheet from "@/server/features/sam/openseo-fact-sheet.md?raw";
+import { capToolOutput } from "@/plugins/sam/server/samToolOutput";
+import openSeoFactSheet from "@/plugins/sam/server/openseo-fact-sheet.md?raw";
 
 // Enough pages for SAM to work out what a business does, sells, and positions
 // against on its own.
@@ -235,6 +233,7 @@ export function waitingAuditStatusTool(
   return {
     ...base,
     execute: async (args, options) => {
+      options.abortSignal?.throwIfAborted();
       const deadline = Date.now() + AUDIT_STATUS_WAIT_BUDGET_MS;
       let result: unknown = await baseExecute(args, options);
       const initial = auditProgressLine(result);
@@ -243,9 +242,20 @@ export function waitingAuditStatusTool(
         auditProgressLine(result) === initial &&
         Date.now() < deadline
       ) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, AUDIT_STATUS_POLL_MS),
-        );
+        options.abortSignal?.throwIfAborted();
+        await new Promise<void>((resolve, reject) => {
+          const signal = options.abortSignal;
+          const onAbort = () => {
+            clearTimeout(timer);
+            reject(signal?.reason);
+          };
+          const timer = setTimeout(() => {
+            signal?.removeEventListener("abort", onAbort);
+            resolve();
+          }, AUDIT_STATUS_POLL_MS);
+          signal?.addEventListener("abort", onAbort, { once: true });
+        });
+        options.abortSignal?.throwIfAborted();
         result = await baseExecute(args, options);
       }
       return result;
@@ -386,10 +396,6 @@ export function buildSamMcpTools(
     list_saved_keywords: adaptTool(listSavedKeywordsTool),
     remove_saved_keywords: adaptTool(removeSavedKeywordsTool),
     research_keywords: adaptTool(researchKeywordsTool),
-    generate_keyword_dimensions: keywordDimensionTool({
-      projectId,
-      organizationId: authContext.organizationId,
-    }),
     save_keywords: adaptTool(saveKeywordsTool),
     get_domain_overview: adaptTool(getDomainOverviewTool),
     get_domain_keyword_suggestions: adaptTool(getDomainKeywordSuggestionsTool),

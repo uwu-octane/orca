@@ -43,6 +43,22 @@ describe("waitingAuditStatusTool", () => {
     expect(execute).toHaveBeenCalledTimes(1);
   });
 
+  it("cancels its polling timer without another tool execution when the turn is aborted", async () => {
+    vi.useFakeTimers();
+    const { tool, execute } = buildTool([running("running")]);
+    const controller = new AbortController();
+    const pending: unknown = tool.execute?.(
+      {},
+      { ...callOptions, abortSignal: controller.signal },
+    );
+    const rejected = expect(pending).rejects.toThrow("disposed");
+    await vi.advanceTimersByTimeAsync(0);
+    controller.abort(new Error("disposed"));
+    await rejected;
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it("waits while running and returns as soon as progress changes", async () => {
     vi.useFakeTimers();
     const { tool, execute } = buildTool([

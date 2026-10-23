@@ -167,6 +167,13 @@ The full domain migration and ownership rules are maintained in
 - The client `ai` entry owns settings, credential dialogs, model lists and decision testing. The project settings route mounts its registered view through `useClientService`.
 - SAM and dimension generation use the same installed `ai` service. Their business prompts and session semantics remain in their own domains. The DeepSeek official-only routing, retry/error policies and custom-endpoint DNS validation remain unchanged.
 
+## SAM
+
+- `sam` injects `ai` and owns session access, the Think Agent, prompts, tool adaptation, telemetry and the complete chat UI. Framework routes and server functions delegate to this domain.
+- Cloudflare loads the actual Agent class through `plugins/sam/platform.ts`; its binding and durable transcript identity remain unchanged. Per-session state belongs to the DO, not the root Cordis service.
+- Business domains contribute tools through `registerTool`. Registrations release with their owning plugin; each execution receives its own authorized project context and cancellation signal. The keyword dimension tool is an optional contribution rather than a SAM dependency.
+- Model requests and polling timers honor cancellation. The client `samUi` service owns chat surfaces and beta-preference subscriptions, with static mount views handling activation and disposal.
+
 ## Planned services
 
 - **`billing`** — `BillingProvider` interface mirroring the six functions of

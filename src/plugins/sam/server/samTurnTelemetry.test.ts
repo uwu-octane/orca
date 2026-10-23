@@ -3,7 +3,7 @@ import type { StepContext, ToolCallResultContext } from "@cloudflare/think";
 import {
   SamTelemetry,
   SamTurnStats,
-} from "@/server/features/sam/samTurnTelemetry";
+} from "@/plugins/sam/server/samTurnTelemetry";
 import { captureServerEvent } from "@/server/lib/posthog";
 
 vi.mock("@/server/lib/posthog", () => ({

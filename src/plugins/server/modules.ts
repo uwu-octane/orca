@@ -1,5 +1,6 @@
 /** Server-only plugin imports; never imported by the client assembly. */
 export const serverModules: Record<string, () => Promise<unknown>> = {
+  sam: () => import("@/plugins/sam/server"),
   "google-oauth": () => import("@/plugins/google-oauth/server"),
   "google-ads": () => import("@/plugins/google-ads"),
   ai: () => import("@/plugins/ai/server"),

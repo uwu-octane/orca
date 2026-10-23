@@ -8,7 +8,7 @@ import { StatusScreen } from "@/client/components/StatusScreen";
 import { Button } from "@/client/components/ui/button";
 import { useSamAccess } from "./useSamAccess";
 import { useSamSessions } from "./useSamSessions";
-import { optInToSamBeta, useSamBetaOptIn } from "./samBetaOptIn";
+import { useSamBetaOptIn } from "./samBetaOptIn";
 import { SamBetaGate } from "./SamBetaGate";
 import { SamSetupGate } from "./SamSetupGate";
 import { SamConversation } from "./SamConversation";
@@ -28,7 +28,7 @@ export function SamChat({
 }) {
   const { t } = useLocale();
 
-  const optedIn = useSamBetaOptIn();
+  const { optedIn, optIn } = useSamBetaOptIn();
   const access = useSamAccess(projectId);
 
   // The ref (not isPending) guards the auto-create below: React can re-run the
@@ -99,7 +99,7 @@ export function SamChat({
   if (!optedIn) {
     return (
       <StatusScreen>
-        <SamBetaGate onContinue={optInToSamBeta} />
+        <SamBetaGate onContinue={optIn} />
       </StatusScreen>
     );
   }

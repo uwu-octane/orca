@@ -5,7 +5,7 @@ import { createSamSession } from "@/serverFunctions/sam";
 import {
   invalidateSamSessions,
   samSessionsQueryOptions,
-} from "@/client/features/sam/samQueries";
+} from "@/plugins/sam/client/samQueries";
 
 /**
  * The project's chat list, a way to open a chat, and a way to start one. The

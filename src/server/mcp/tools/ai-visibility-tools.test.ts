@@ -1,8 +1,24 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/server";
 import { AiVisibilityError } from "@/server/features/ai-visibility/services/aiVisibilityErrors";
-import { buildSamMcpTools } from "@/server/features/sam/samChatTools";
+import { createSamTestRuntime } from "@/plugins/sam/server/testRuntime";
+import type { Context } from "cordis";
+let runtime: Context;
+beforeAll(async () => {
+  runtime = await createSamTestRuntime();
+});
+afterAll(async () => {
+  await runtime?.fiber.dispose();
+});
 import { createOpenSeoMcpServer } from "@/server/mcp/server";
 import * as definitions from "./ai-visibility-tools";
 import { makeToolContext, textContent } from "./tool-test-support";
@@ -62,7 +78,6 @@ const run = {
   pollAfterSeconds: 30,
 };
 beforeEach(() => {
-  vi.clearAllMocks();
   mocks.authorize.mockResolvedValue({ id: projectId, domain: "example.com" });
   mocks.service.getTracker.mockResolvedValue(state);
   mocks.service.getRun.mockResolvedValue(run);
@@ -70,12 +85,15 @@ beforeEach(() => {
 });
 
 describe("AI visibility assistant tools", () => {
-  it("registers the same tools in MCP and SAM and hides SAM's project argument", () => {
+  it("registers the same tools in MCP and SAM and hides SAM's project argument", async () => {
     const register = vi.spyOn(McpServer.prototype, "registerTool");
     createOpenSeoMcpServer({ openSeoAuth: context.auth });
-    const sam = buildSamMcpTools(context.auth, {
-      id: projectId,
-      domain: "example.com",
+    const sam = await runtime.sam.buildTools({
+      auth: context.auth,
+      project: {
+        id: projectId,
+        domain: "example.com",
+      },
     });
     const tools = Object.values(definitions);
     for (const tool of tools) {
@@ -93,9 +111,12 @@ describe("AI visibility assistant tools", () => {
   it.each(["get_ai_visibility_results", "get_ai_visibility_sources"])(
     "lets SAM express one run-wide %s call with null filters",
     async (name) => {
-      const sam = buildSamMcpTools(context.auth, {
-        id: projectId,
-        domain: "example.com",
+      const sam = await runtime.sam.buildTools({
+        auth: context.auth,
+        project: {
+          id: projectId,
+          domain: "example.com",
+        },
       });
       const schema = sam[name]?.inputSchema;
       if (!(schema instanceof z.ZodObject))
