@@ -13,7 +13,7 @@ import {
 import {
   getLanguageCode,
   getLanguageOptions,
-} from "@/client/features/keywords/locations";
+} from "@/shared/keyword-locations";
 import type { ProjectMarket } from "@/client/features/projects/types";
 import type { LOCATION_OPTIONS } from "@/shared/keyword-locations";
 

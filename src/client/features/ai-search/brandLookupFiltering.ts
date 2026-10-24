@@ -1,4 +1,4 @@
-import { parseTerms } from "@/client/features/keywords/utils";
+import { parseTerms } from "@/shared/search-terms";
 import type { BrandLookupResult } from "@/types/schemas/ai-search";
 import type {
   QueriesFilterValues,

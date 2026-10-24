@@ -1,5 +1,6 @@
 /** Browser-only plugin imports. */
 export const clientModules: Record<string, () => Promise<unknown>> = {
+  keywords: () => import("@/plugins/keywords/client"),
   sam: () => import("@/plugins/sam/client"),
   "google-oauth": () => import("@/plugins/google-oauth/client"),
   ai: () => import("@/plugins/ai/client"),

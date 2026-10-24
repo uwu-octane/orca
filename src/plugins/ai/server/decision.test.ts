@@ -19,7 +19,6 @@ import type { Context } from "cordis";
 let runtime: Context;
 vi.mock("@/plugins/server/context", () => ({
   getAi: async () => runtime.ai,
-  getAiAgents: async () => runtime.aiAgents,
 }));
 
 const mocks = vi.hoisted(() => ({

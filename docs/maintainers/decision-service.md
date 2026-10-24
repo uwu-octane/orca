@@ -8,19 +8,13 @@ The previous task-specific configuration tables remain as historical schema arti
 
 ## Gateway model catalog
 
-The Gateway connection includes a searchable catalog with separate text and decision tabs. `GatewayModelService` reads the public `https://ai-gateway.vercel.sh/v1/models` endpoint without sending credentials or running inference. The authenticated project server function exposes only normalized catalog metadata. The client caches successful results for five minutes and offers an explicit refresh; failed requests show an error without substituting a static list.
+The Gateway connection includes a searchable catalog with separate text and decision tabs. The `vercel-gateway` catalog implementation reads the public `https://ai-gateway.vercel.sh/v1/models` endpoint without sending credentials or running inference. The authenticated project server function exposes only normalized catalog metadata. The client caches successful results for five minutes and offers an explicit refresh; failed requests show an error without substituting a static list.
 
 The catalog's `language` and `evaluation` types determine the tabs. `owned_by` identifies the model creator, not the inference provider. Prices are converted from USD per token into reference prices per million tokens; missing prices remain unknown rather than free. These reference prices may differ from the rate of a pinned inference provider. Missing policy or release metadata is also left unknown. Browsing or copying a model ID does not change call-site defaults, supported models, credentials, or the existing DeepSeek-only text routing policy.
 
 ## Cordis model and agent assembly
 
-The server manifest installs two independent contracts: `ctx.aiModels` for model
-providers and `ctx.aiAgents` for keyword dimension agents. The `vercel-gateway`
-plugin registers text inference and Gateway SystemOne decisions; `systemone`
-registers direct TypeSafe and custom SystemOne decisions. `DecisionService` and
-the dimension service resolve these contracts from the application context.
-Registrations follow the contributing plugin's lifetime. Missing or failed
-providers are errors, never a request to select another registered provider.
+The server manifest installs `ctx.ai` for provider configuration, model capabilities and typed decisions. The `vercel-gateway` plugin registers text inference, model discovery and Gateway SystemOne decisions; `systemone` registers direct TypeSafe and custom SystemOne decisions. Registrations follow the contributing plugin's lifetime. Missing or failed providers are errors, never a request to select another registered provider.
 
 The model registry is stateless. Each call supplies its authenticated project and
 organization plus the chosen model ID. Credentials resolve from that project's
@@ -29,9 +23,7 @@ The Gateway adapter owns the request timeout, credential revision guard, redirec
 policy, error sanitization, and DeepSeek-only routing for both generated and
 streamed text. Callers cannot override that inference-provider restriction.
 
-The `keyword-dimension-agent` plugin supplies the `ai-sdk` implementation of the
-dimension contract. Replacing its registration and manifest selection can change
-the agent runtime without changing the dimension service, card, or SAM tool.
+The `keywords` domain owns dimension generation, its prompt, output validation and the internal SAM tool. There is no separate dimension-agent registry. The domain calls the installed AI service with its authorized project/organization scope and the selected model.
 Its AI SDK `ToolLoopAgent` has a terminal `submit_keyword_dimensions` tool, a
 16,000-token output budget shared with reasoning, and one model step. DeepSeek
 thinking uses automatic tool choice; exactly one valid submission is required.
@@ -39,7 +31,7 @@ Truncated, duplicate, prose-only, or invalid submissions fail explicitly. There
 is no second attempt, JSON repair, or alternate provider.
 
 SAM retains Think for session persistence, streaming, tools and context compaction.
-Its model hook is a lazy adapter to `ctx.aiModels`; it resolves credentials only
+Its model hook is a lazy adapter to `ctx.ai`; it resolves credentials only
 when inference starts. Chat and compaction use the same project connection and
 default text model. `generate_keyword_dimensions` is an internal SAM tool bound
 to the session's project and organization, reusing the authorized dimension

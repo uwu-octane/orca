@@ -19,7 +19,3 @@ export async function fetchLiveSerp(
 ) {
   return (await getSeoData()).serpLive(input, customer);
 }
-
-export async function getSerpCacheIdentity() {
-  return (await getSeoData()).serpCacheIdentity();
-}

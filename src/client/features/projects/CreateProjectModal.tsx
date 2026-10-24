@@ -24,7 +24,7 @@ import {
 import {
   DEFAULT_LOCATION_CODE,
   getLanguageCode,
-} from "@/client/features/keywords/locations";
+} from "@/shared/keyword-locations";
 import { ProjectMarketFields } from "@/client/features/projects/ProjectMarketFields";
 import { toastInitialAudit } from "@/client/features/projects/initialAuditToast";
 import { createProject } from "@/serverFunctions/projects";

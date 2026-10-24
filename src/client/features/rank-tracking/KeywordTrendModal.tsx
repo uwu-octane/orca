@@ -34,7 +34,7 @@ import { exportRows } from "@/client/lib/exportRows";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { getRankKeywordHistory } from "@/serverFunctions/rank-tracking";
 import type { RankKeywordHistoryPoint } from "@/serverFunctions/rank-tracking";
-import { LOCATIONS } from "@/client/features/keywords/locations";
+import { LOCATIONS } from "@/shared/keyword-locations";
 import { formatLocationLabel } from "@/shared/keyword-locations";
 import { googleSerpUrl } from "@/shared/google-serp-url";
 import { csvChange, DeviceRankCell } from "./RankTrackingTableParts";

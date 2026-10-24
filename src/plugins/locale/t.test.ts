@@ -1,4 +1,4 @@
-import { MONTH_SHORT_LABELS } from "@/client/features/keywords/utils";
+import { MONTH_SHORT_LABELS } from "@/plugins/keywords/client/utils";
 import { LIGHTHOUSE_CATEGORY_TABS } from "@/shared/lighthouse";
 import { categoryLabel } from "@/client/features/lighthouse/issues/utils";
 import { passwordSchema } from "@/client/features/auth/passwordSchema";
@@ -55,7 +55,7 @@ import {
   getProjectNavGroups,
 } from "@/client/navigation/items";
 import { setupSteps } from "@/client/features/dashboard/dashboardSteps";
-import { INTENT_LABELS } from "@/client/features/keywords/components/IntentBadge";
+import { INTENT_LABELS } from "@/plugins/keywords/client/components/IntentBadge";
 
 function memoryStorage(entries: Record<string, string>): LocaleStorage {
   const data = new Map(Object.entries(entries));

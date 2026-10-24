@@ -32,15 +32,12 @@ import { removeRankTrackingKeywordsTool } from "@/server/mcp/tools/remove-rank-t
 import { pinRankTrackingKeywordsTool } from "@/server/mcp/tools/pin-rank-tracking-keywords";
 import { runRankTrackerTool } from "@/server/mcp/tools/run-rank-tracker";
 import { searchSerpLocationsTool } from "@/server/mcp/tools/search-serp-locations";
-import { getSerpResultsTool } from "@/server/mcp/tools/get-serp-results";
 import {
   getAuditIssuesTool,
   getAuditPagesTool,
   getAuditStatusTool,
   runSiteAuditTool,
 } from "@/server/mcp/tools/site-audit-tools";
-import { listSavedKeywordsTool } from "@/server/mcp/tools/list-saved-keywords";
-import { removeSavedKeywordsTool } from "@/server/mcp/tools/remove-saved-keywords";
 import { buildUpdateProjectContextTool } from "@/server/mcp/tools/project-context";
 import {
   getGoogleAnalyticsAudienceBreakdownTool,
@@ -69,8 +66,6 @@ import {
   getLocalRankGridTool,
   listBusinessCategoriesTool,
 } from "@/server/mcp/tools/local-seo-tools";
-import { researchKeywordsTool } from "@/server/mcp/tools/research-keywords";
-import { saveKeywordsTool } from "@/server/mcp/tools/save-keywords";
 import {
   getSearchConsolePerformanceTool,
   inspectUrlsTool,
@@ -80,23 +75,12 @@ import { explorePromptTool } from "@/server/mcp/tools/explore-prompt";
 import { discoverSiteUrls, readPages, readSite } from "@/server/lib/scrape";
 import { capToolOutput } from "@/plugins/sam/server/samToolOutput";
 import openSeoFactSheet from "@/plugins/sam/server/openseo-fact-sheet.md?raw";
+import type { SamMcpToolDefinition as McpToolDefinition } from "../contracts";
 
 // Enough pages for SAM to work out what a business does, sells, and positions
 // against on its own.
 const SAM_MAX_SCRAPE_PAGES = 10;
 const SAM_MAX_MAPPED_URLS = 60;
-
-// Shape of the MCP tool objects exported from src/server/mcp/tools/*. SAM reuses
-// the exact same definitions the MCP server registers, so the in-app agent and
-// the MCP server can never drift in what a tool does or how it bills.
-type McpToolDefinition<Shape extends ZodRawShape> = {
-  name: string;
-  config: { description: string; inputSchema: Shape };
-  handler: (
-    args: z.infer<z.ZodObject<Shape>>,
-    context: ToolContext,
-  ) => Promise<CallToolResult>;
-};
 
 // Flatten an MCP CallToolResult into a plain value for the model. The text
 // block renders the same rows the structured data carries (see
@@ -139,7 +123,7 @@ export function toModelOutput(result: CallToolResult): {
 // server-side: any tool with a `projectId` input has it stripped from the schema
 // the model sees and injected at call time. The model never has to know or pass
 // the id, can't target another project, and can't hallucinate a wrong one.
-function adaptMcpTool<Shape extends ZodRawShape>(
+export function adaptMcpTool<Shape extends ZodRawShape>(
   def: McpToolDefinition<Shape>,
   context: ToolContext,
   projectId: string,
@@ -393,15 +377,10 @@ export function buildSamMcpTools(
     // Writes only: the project's memory is already injected into every turn as
     // a read-only context block, so get_project_context would just re-fetch it.
     update_project_context: adaptTool(buildUpdateProjectContextTool("sam")),
-    list_saved_keywords: adaptTool(listSavedKeywordsTool),
-    remove_saved_keywords: adaptTool(removeSavedKeywordsTool),
-    research_keywords: adaptTool(researchKeywordsTool),
-    save_keywords: adaptTool(saveKeywordsTool),
     get_domain_overview: adaptTool(getDomainOverviewTool),
     get_domain_keyword_suggestions: adaptTool(getDomainKeywordSuggestionsTool),
     get_backlinks_overview: adaptTool(getBacklinksOverviewTool),
     get_backlinks_profile: adaptTool(getBacklinksProfileTool),
-    get_serp_results: adaptTool(getSerpResultsTool),
     search_serp_locations: adaptTool(searchSerpLocationsTool),
     get_ai_visibility_tracker: adaptTool(getAiVisibilityTrackerTool),
     generate_ai_visibility_prompts: adaptTool(generateAiVisibilityPromptsTool),

@@ -1,7 +1,12 @@
+import type { ZodRawShape } from "zod";
 import { Service, type Context } from "cordis";
 import { wrapLanguageModel, type ToolSet } from "ai";
 import type { AiProviderScope } from "@/plugins/ai/contracts";
-import type { SamToolContext, SamToolFactory } from "../contracts";
+import type {
+  SamToolContext,
+  SamToolFactory,
+  SamMcpToolDefinition,
+} from "../contracts";
 import { sessions } from "./sessions";
 
 declare module "cordis" {
@@ -59,6 +64,18 @@ export default class SamService extends Service {
         },
       },
     });
+  }
+
+  registerMcpTool<Shape extends ZodRawShape>(
+    definition: SamMcpToolDefinition<Shape>,
+  ) {
+    return this.registerTool(
+      definition.name,
+      async ({ auth, project, turnId }) => {
+        const { adaptMcpTool } = await import("./samChatTools");
+        return adaptMcpTool(definition, { auth, turnId }, project.id);
+      },
+    );
   }
 
   registerTool(name: string, factory: SamToolFactory) {

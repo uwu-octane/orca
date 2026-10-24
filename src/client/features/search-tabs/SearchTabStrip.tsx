@@ -10,7 +10,7 @@ import {
   buildKeywordResearchQueryKey,
   buildKeywordResearchRequest,
   keywordResearchQueryFn,
-} from "@/client/features/keywords/hooks/useKeywordResearchData";
+} from "@/plugins/keywords/client/queries";
 import {
   PROMPT_EXPLORER_STALE_TIME_MS,
   buildPromptExplorerQueryKey,

@@ -39,7 +39,7 @@ import { removeRankTrackingKeywordsTool } from "@/server/mcp/tools/remove-rank-t
 import { pinRankTrackingKeywordsTool } from "@/server/mcp/tools/pin-rank-tracking-keywords";
 import { runRankTrackerTool } from "@/server/mcp/tools/run-rank-tracker";
 import { searchSerpLocationsTool } from "@/server/mcp/tools/search-serp-locations";
-import { getSerpResultsTool } from "@/server/mcp/tools/get-serp-results";
+import { getSerpResultsTool } from "@/plugins/keywords/tools/get-serp-results";
 import {
   getGoogleAnalyticsAudienceBreakdownTool,
   getGoogleAnalyticsEcommercePerformanceTool,
@@ -62,8 +62,8 @@ import {
   getProjectContextTool,
   updateProjectContextTool,
 } from "@/server/mcp/tools/project-context";
-import { listSavedKeywordsTool } from "@/server/mcp/tools/list-saved-keywords";
-import { removeSavedKeywordsTool } from "@/server/mcp/tools/remove-saved-keywords";
+import { listSavedKeywordsTool } from "@/plugins/keywords/tools/list-saved-keywords";
+import { removeSavedKeywordsTool } from "@/plugins/keywords/tools/remove-saved-keywords";
 import {
   findSerpCompetitorsTool,
   getGoogleBusinessQuestionsTool,
@@ -91,8 +91,8 @@ import {
   listReportTemplatesTool,
   saveReportTemplateTool,
 } from "@/server/mcp/tools/report-template-tools";
-import { researchKeywordsTool } from "@/server/mcp/tools/research-keywords";
-import { saveKeywordsTool } from "@/server/mcp/tools/save-keywords";
+import { researchKeywordsTool } from "@/plugins/keywords/tools/research-keywords";
+import { saveKeywordsTool } from "@/plugins/keywords/tools/save-keywords";
 import {
   getSearchConsolePerformanceTool,
   inspectUrlsTool,

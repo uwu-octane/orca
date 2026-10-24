@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { removeSavedKeywordsTool } from "./remove-saved-keywords";
+import { removeSavedKeywordsTool } from "@/plugins/keywords/tools/remove-saved-keywords";
 import { deleteReportTool } from "./report-tools";
 import { deleteReportTemplateTool } from "./report-template-tools";
 import { deleteSiteAuditTool } from "./site-audit-cleanup-tools";
@@ -29,7 +29,7 @@ vi.mock("@/server/features/projects/services/ProjectService", () => ({
   },
 }));
 vi.mock(
-  "@/server/features/keywords/repositories/KeywordResearchRepository",
+  "@/plugins/keywords/server/repositories/KeywordResearchRepository",
   () => ({
     KeywordResearchRepository: mocks,
   }),

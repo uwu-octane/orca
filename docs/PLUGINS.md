@@ -171,8 +171,16 @@ The full domain migration and ownership rules are maintained in
 
 - `sam` injects `ai` and owns session access, the Think Agent, prompts, tool adaptation, telemetry and the complete chat UI. Framework routes and server functions delegate to this domain.
 - Cloudflare loads the actual Agent class through `plugins/sam/platform.ts`; its binding and durable transcript identity remain unchanged. Per-session state belongs to the DO, not the root Cordis service.
-- Business domains contribute tools through `registerTool`. Registrations release with their owning plugin; each execution receives its own authorized project context and cancellation signal. The keyword dimension tool is an optional contribution rather than a SAM dependency.
+- Business domains contribute internal tools through `registerTool` or shared MCP definitions through `registerMcpTool`. Registrations release with their owning plugin; each execution receives its own authorized project context and cancellation signal. The keyword dimension tool is an optional contribution rather than a SAM dependency.
 - Model requests and polling timers honor cancellation. The client `samUi` service owns chat surfaces and beta-preference subscriptions, with static mount views handling activation and disposal.
+
+## Keywords
+
+- `keywords` owns research, result caching, metric repositories, saved keywords/tags, SERP analysis and dimension generation. DataForSEO and Google retain their separate query and persistence semantics.
+- Supplier and AI dependencies use capability-specific `ctx.inject` scopes. Saved-keyword operations need neither supplier credentials nor AI. AI removal cancels dimension generation; removing Keywords withdraws its SAM tool contributions.
+- The client plugin owns the research and saved-keyword components, query state, history, filters and editable dimension drafts. Routes mount `keywordUi` views. `client/queries.ts`, `client/keywordSearchParams.ts` and `client/keywordResearchTypes.ts` are the public client contracts used by the router and search tabs.
+- `tools/` owns the keyword MCP definitions. External MCP and SAM share these definitions, permissions and billing. Their handlers use the installed domain service; private repositories and research helpers are not public entry points.
+- Database schemas/migrations, R2 transport and base UI components remain shared infrastructure. This extraction does not add durable dimensions or bulk classification.
 
 ## Planned services
 

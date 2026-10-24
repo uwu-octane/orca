@@ -11,7 +11,7 @@ import {
 import { toast } from "sonner";
 import { getDomainKeywordSuggestions } from "@/serverFunctions/domain";
 import { addTrackingKeywords } from "@/serverFunctions/rank-tracking";
-import { isLabsLocationCode } from "@/client/features/keywords/locations";
+import { isLabsLocationCode } from "@/shared/keyword-locations";
 import { Spinner } from "@/client/components/Spinner";
 import {
   DataTable,

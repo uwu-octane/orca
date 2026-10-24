@@ -24,7 +24,7 @@ metric is introduced.
 ## Execution and storage
 
 `researchGoogleKeywords` validates input and uses `requireProjectContext`.
-`GoogleKeywordResearchService` injects the verified project ID, then uses the
+The Keywords domain injects the verified project ID, then uses the
 Google adapter and the existing R2 cache service.
 
 The cache identity includes provider/version, organization, project, Ads

@@ -1,5 +1,9 @@
 # Fork maintenance log
 
+## 2026-10-23 Keywords domain
+
+The `keywords` plugin owns both research providers' orchestration, cache semantics, metrics and saved-keyword repositories, SERP analysis, dimension generation, and research/saved-keyword UI state. Shared routes and server functions mount or call the installed domain. Keyword MCP tools now belong to the domain and are contributed to SAM with reversible registrations, retaining the existing project binding, authorization and metering adapter. The dimension-only agent registry is retired. Query meanings, cache identities, SQL tables, billing and fallback policies remain unchanged. Common location data and search-term parsing stay shared instead of depending on keyword UI internals.
+
 ## 2026-10-23 SAM domain
 
 The `sam` plugin owns the complete Think-backed Agent, session operations and repository, tool adaptation, prompts, telemetry, and chat UI. Server functions and Worker connection authorization call the installed service; the static `SamChatAgent` export and DO identity remain stable. The keyword domain contributes its dimension tool through lifecycle-owned registration. SAM disposal cancels model requests and contributed tools, and the client plugin releases preference subscriptions. Existing session storage, permissions, billing, recovery and provider policies are preserved.

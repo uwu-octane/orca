@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { researchKeywordsTool } from "./research-keywords";
+import { researchKeywordsTool } from "@/plugins/keywords/tools/research-keywords";
 import { AppError } from "@/server/lib/errors";
 import { makeToolContext } from "./tool-test-support";
 
@@ -16,8 +16,8 @@ vi.mock("@/server/features/projects/services/ProjectService", () => ({
 vi.mock("@/server/auth/repositories/AuthRepository", () => ({
   AuthRepository: { getMembership: vi.fn() },
 }));
-vi.mock("@/server/features/keywords/services/KeywordResearchService", () => ({
-  KeywordResearchService: { research: mocks.research },
+vi.mock("@/plugins/server/context", () => ({
+  getKeywords: async () => ({ research: mocks.research }),
 }));
 
 describe("research_keywords", () => {

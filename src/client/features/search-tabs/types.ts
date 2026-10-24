@@ -1,7 +1,7 @@
 import type {
   KeywordMode,
   ResultLimit,
-} from "@/client/features/keywords/keywordResearchTypes";
+} from "@/plugins/keywords/client/keywordResearchTypes";
 import type { PromptExplorerSearch } from "@/client/features/ai-search/promptExplorerQuery";
 import type { ResearchScope } from "@/shared/researchScope";
 

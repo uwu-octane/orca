@@ -11,7 +11,8 @@ import {
   updateSavedKeywordTagSchema,
   updateSavedKeywordTagsSchema,
 } from "@/types/schemas/keywords";
-import { KeywordResearchService } from "@/server/features/keywords/services/KeywordResearchService";
+// FORK: business operations resolve the installed Keywords domain.
+import { getKeywords } from "@/plugins/server/context";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import { resolveMarket } from "@/shared/keyword-locations";
 
@@ -37,14 +38,14 @@ export const researchKeywords = createServerFn({ method: "POST" })
       return fixtures.getKeywordResearchFixture(input);
     }
 
-    return KeywordResearchService.research(input, context);
+    return (await getKeywords()).research(input, context);
   });
 
 export const saveKeywords = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(saveKeywordsSchema)
   .handler(async ({ data, context }) => {
-    return KeywordResearchService.saveKeywords({
+    return (await getKeywords()).saveKeywords({
       ...data,
       ...resolveMarket(data, context.project),
       projectId: context.projectId,
@@ -55,7 +56,7 @@ export const getSavedKeywords = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(getSavedKeywordsSchema)
   .handler(async ({ data, context }) => {
-    return KeywordResearchService.getSavedKeywords({
+    return (await getKeywords()).getSavedKeywords({
       ...data,
       projectId: context.projectId,
     });
@@ -65,7 +66,7 @@ export const exportSavedKeywords = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(exportSavedKeywordsSchema)
   .handler(async ({ data, context }) => {
-    return KeywordResearchService.exportSavedKeywords({
+    return (await getKeywords()).exportSavedKeywords({
       ...data,
       projectId: context.projectId,
     });
@@ -75,7 +76,7 @@ export const updateSavedKeywordTags = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(updateSavedKeywordTagsSchema)
   .handler(async ({ data, context }) => {
-    return KeywordResearchService.updateSavedKeywordTags({
+    return (await getKeywords()).updateSavedKeywordTags({
       ...data,
       projectId: context.projectId,
     });
@@ -85,7 +86,7 @@ export const updateSavedKeywordTag = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(updateSavedKeywordTagSchema)
   .handler(async ({ data, context }) => {
-    return KeywordResearchService.updateSavedKeywordTag({
+    return (await getKeywords()).updateSavedKeywordTag({
       ...data,
       projectId: context.projectId,
     });
@@ -95,7 +96,7 @@ export const deleteSavedKeywordTag = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(deleteSavedKeywordTagSchema)
   .handler(async ({ data, context }) => {
-    return KeywordResearchService.deleteSavedKeywordTag({
+    return (await getKeywords()).deleteSavedKeywordTag({
       ...data,
       projectId: context.projectId,
     });
@@ -107,14 +108,14 @@ export const removeSavedKeywords = createServerFn({
   .middleware(requireProjectContext)
   .validator(removeSavedKeywordsSchema)
   .handler(async ({ data, context }) => {
-    return KeywordResearchService.removeSavedKeywords(context.projectId, data);
+    return (await getKeywords()).removeSavedKeywords(context.projectId, data);
   });
 
 export const refreshSavedKeywordMetrics = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(refreshSavedKeywordMetricsSchema)
   .handler(async ({ context }) => {
-    return KeywordResearchService.refreshSavedKeywordMetrics(
+    return (await getKeywords()).refreshSavedKeywordMetrics(
       { projectId: context.projectId },
       context,
     );
@@ -124,7 +125,7 @@ export const getSerpAnalysis = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(serpAnalysisSchema)
   .handler(async ({ data, context }) =>
-    KeywordResearchService.getSerpAnalysis(
+    (await getKeywords()).getSerpAnalysis(
       {
         ...data,
         ...resolveMarket(data, context.project),

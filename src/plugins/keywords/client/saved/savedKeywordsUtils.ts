@@ -1,0 +1,72 @@
+import { translate } from "@/plugins/locale";
+import type { CsvValue } from "@/client/lib/csv";
+import { KEYWORD_RESEARCH_HEADERS } from "@/plugins/keywords/client/state/keywordControllerActions";
+import type { SavedKeywordRow } from "@/types/keywords";
+import type { GetSavedKeywordsInput } from "@/types/schemas/keywords";
+
+export const SAVED_KEYWORD_PAGE_SIZES = [50, 100, 250] as const;
+export const SAVED_KEYWORD_EXPORT_HEADERS = [
+  ...KEYWORD_RESEARCH_HEADERS,
+  "Tags",
+  "Fetched At",
+];
+
+export function savedKeywordExportRow(row: SavedKeywordRow): CsvValue[] {
+  return [
+    row.keyword,
+    row.searchVolume ?? "",
+    row.cpc ?? "",
+    row.competition ?? "",
+    row.keywordDifficulty ?? "",
+    row.intent ?? "",
+    row.tags.map((tag) => tag.name).join(", "),
+    row.fetchedAt ?? "",
+  ];
+}
+
+export function toSavedKeywordSort(
+  value: string | undefined,
+): GetSavedKeywordsInput["sort"] {
+  if (
+    value === "keyword" ||
+    value === "searchVolume" ||
+    value === "cpc" ||
+    value === "competition" ||
+    value === "keywordDifficulty" ||
+    value === "fetchedAt"
+  ) {
+    return value;
+  }
+  return "createdAt";
+}
+
+export function formatSavedKeywordNumber(value: number | null | undefined) {
+  if (value == null) return "-";
+  return new Intl.NumberFormat().format(value);
+}
+
+export function formatSavedKeywordDate(value: string | null | undefined) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString();
+}
+
+/** Localized confirmations for saved-keyword actions, with English plurals. */
+export function savedKeywordActionMessage(
+  action: "removed" | "tags" | "metrics" | "copied",
+  count: number,
+): string {
+  const keywords =
+    count === 1
+      ? translate("{count} keyword", { count })
+      : translate("{count} keywords", { count });
+  switch (action) {
+    case "removed":
+      return translate("{keywords} removed", { keywords });
+    case "tags":
+      return translate("Updated tags for {keywords}", { keywords });
+    case "metrics":
+      return translate("Updated stats for {keywords}", { keywords });
+    case "copied":
+      return translate("{keywords} copied", { keywords });
+  }
+}

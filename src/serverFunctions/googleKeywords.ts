@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import { googleKeywordIdeasSchema } from "@/types/schemas/google-keywords";
-import { GoogleKeywordResearchService } from "@/server/features/keywords/services/GoogleKeywordResearchService";
+// FORK: business operations resolve the installed Keywords domain.
+import { getKeywords } from "@/plugins/server/context";
 // FORK: targeting resolves the installed Ads provider.
 import { getGoogleAds } from "@/plugins/server/context";
 import {
@@ -29,5 +30,5 @@ export const researchGoogleKeywords = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(googleKeywordIdeasSchema)
   .handler(async ({ data, context }) =>
-    GoogleKeywordResearchService.research(data, context),
+    (await getKeywords()).researchGoogle(data, context),
   );

@@ -23,7 +23,6 @@ export function getAppContext(): Promise<Context> {
       await bootPlugins(ctx, manifest.server, serverModules);
       ctx.get("seoData")?.validateRoutes();
       ctx.get("ai")?.validateRoutes();
-      ctx.get("aiAgents")?.validateRoutes();
       return ctx;
     } catch (error) {
       await ctx.fiber.dispose();
@@ -56,12 +55,6 @@ export async function getAi() {
   return service;
 }
 
-export async function getAiAgents() {
-  const service = (await getAppContext()).get("aiAgents");
-  if (!service) throw new Error("AI agent service is not configured");
-  return service;
-}
-
 export async function getGoogleOAuth() {
   const service = (await getAppContext()).get("googleOAuth");
   if (!service) throw new Error("Google OAuth plugin is not configured");
@@ -77,5 +70,11 @@ export async function getGoogleAds() {
 export async function getSam() {
   const service = (await getAppContext()).get("sam");
   if (!service) throw new Error("SAM plugin is not configured");
+  return service;
+}
+
+export async function getKeywords() {
+  const service = (await getAppContext()).get("keywords");
+  if (!service) throw new Error("Keywords plugin is not configured");
   return service;
 }

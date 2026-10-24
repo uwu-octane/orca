@@ -6,7 +6,7 @@ import { getFieldError } from "@/client/lib/forms";
 import type { DomainOverviewControlsForm } from "@/client/features/domain/DomainOverviewPage";
 import { toSortMode } from "@/client/features/domain/utils";
 import type { DomainSortMode } from "@/client/features/domain/types";
-import { LABS_LOCATION_OPTIONS } from "@/client/features/keywords/locations";
+import { LABS_LOCATION_OPTIONS } from "@/shared/keyword-locations";
 import { LocationSelect } from "@/client/components/LocationSelect";
 import { ResearchScopeSelect } from "@/client/components/ResearchScopeSelect";
 import { SearchCard, SearchInput } from "@/client/components/SearchCard";

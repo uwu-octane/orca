@@ -11,7 +11,7 @@ Branches stack in this order. Finish validation and commit a domain before start
 | Google authorization | `codex/cordis-google-auth` | Complete |
 | AI                   | `codex/cordis-ai`          | Complete |
 | SAM                  | `codex/cordis-sam`         | Complete |
-| Keywords             | `codex/cordis-keywords`    | Pending  |
+| Keywords             | `codex/cordis-keywords`    | Complete |
 
 The starting checkpoint is `712454e1` on `codex/google-keyword-provider`. Each domain commit and its validation evidence are recorded below as it completes.
 
@@ -45,7 +45,7 @@ SAM consumes AI and project context. Its tool registration accepts lifecycle-own
 
 ### Keywords
 
-`keywords` will own both research flows, cache orchestration, SQL metrics repositories, saved keywords/tags, SERP analysis, dimension generation, keyword tools and both research/saved-keyword UIs. Move the current `features/keywords`, `features/saved-keywords`, dimension Agent and its SAM tool. Fold the dimension-only `ai-agents` and `keyword-dimension-agent` composition into this domain.
+`keywords` owns both research flows, cache orchestration, SQL metrics repositories, saved keywords/tags, SERP analysis, dimension generation, keyword tools and both research/saved-keyword UIs. The implementation and state moved from `features/keywords`, `features/saved-keywords` and the saved-keyword route. The dimension-only `ai-agents` and `keyword-dimension-agent` registrations are removed. Capability-specific `ctx.inject` scopes let saved data remain available without a supplier or AI provider. Keywords contributes its MCP tool definitions and internal dimension tool to SAM through lifecycle-owned registration; external MCP mounts the same definitions. The shared SAM adapter still owns project binding, instrumentation and output shaping.
 
 Keep DataForSEO and direct Google Ads semantics distinct. DataForSEO's Ads-derived dataset is not the direct Google Ads API. Existing metrics and caches remain provider-specific. Dimension drafts are currently component state; durable dimensions and bulk classification are separate product work.
 
@@ -63,3 +63,7 @@ Google authorization checkpoint: `a1d5dc81`. AI work is stacked on that commit i
 AI checkpoint: `35181007`. SAM work is stacked on that commit in `codex/cordis-sam`.
 
 SAM validation: 256 test files / 1,843 tests passed, followed by 43 focused tests after type/lint cleanup. `pnpm ci:check` and `pnpm build` passed. The app and SAM client modules return HTTP 200. Tests cover session authorization and archival through real SQL, lifecycle-owned tool cancellation, request context isolation, model cancellation on SAM unload, and client preference teardown. No paid supplier calls or visual checks were used.
+
+SAM checkpoint: `3ffc5cfa`. Keywords is stacked on that commit in `codex/cordis-keywords`.
+
+Keywords validation: 256 test files / 1,846 tests passed; `pnpm ci:check` and `pnpm build` passed. Real SQL tests cover Google metrics persistence (including cache hits) and saved-keyword/tag isolation. Service tests cover optional dependency activation, SAM contribution disposal and cancellation of dimension generation when Keywords or AI is unloaded. External MCP and SAM retain the shared authorization, billing and output adapter. After rebuilding, the local app and all four domains’ client entry modules return HTTP 200. Supplier responses were mocked; visual UI verification remains with the maintainer. No push or merge was performed.

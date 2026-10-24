@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { listSavedKeywordsTool } from "./list-saved-keywords";
-import { saveKeywordsTool } from "./save-keywords";
+import { listSavedKeywordsTool } from "@/plugins/keywords/tools/list-saved-keywords";
+import { saveKeywordsTool } from "@/plugins/keywords/tools/save-keywords";
 import { makeToolContext, textContent } from "./tool-test-support";
 
 const mocks = vi.hoisted(() => ({
@@ -21,11 +21,11 @@ vi.mock("@/server/auth/repositories/AuthRepository", () => ({
   AuthRepository: { getMembership: vi.fn() },
 }));
 
-vi.mock("@/server/features/keywords/services/KeywordResearchService", () => ({
-  KeywordResearchService: {
+vi.mock("@/plugins/server/context", () => ({
+  getKeywords: async () => ({
     getSavedKeywords: mocks.getSavedKeywords,
     saveKeywords: mocks.saveKeywords,
-  },
+  }),
 }));
 
 const toolContext = makeToolContext();

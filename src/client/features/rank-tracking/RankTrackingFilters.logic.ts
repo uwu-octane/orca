@@ -1,5 +1,5 @@
 import { sort } from "remeda";
-import { LOCATIONS } from "@/client/features/keywords/locations";
+import { LOCATIONS } from "@/shared/keyword-locations";
 import { devicesLabel } from "@/shared/rank-tracking";
 import type {
   RankTrackingConfig,

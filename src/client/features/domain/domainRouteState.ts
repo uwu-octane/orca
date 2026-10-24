@@ -5,7 +5,7 @@ import {
 import {
   DEFAULT_LOCATION_CODE,
   isLabsLocationCode,
-} from "@/client/features/keywords/locations";
+} from "@/shared/keyword-locations";
 import type { ProjectMarket } from "@/client/features/projects/types";
 import {
   EMPTY_DOMAIN_FILTERS,

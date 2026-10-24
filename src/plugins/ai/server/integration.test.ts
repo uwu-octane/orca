@@ -1,7 +1,5 @@
-import AiAgentsService from "@/plugins/ai-agents";
-import * as dimensions from "@/plugins/keyword-dimension-agent";
+import KeywordsService from "@/plugins/keywords/server";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
-import { KeywordDimensionService } from "@/server/features/keywords/services/KeywordDimensionService";
 import { AI_PROVIDERS, DEFAULT_LLM_MODEL } from "@/types/schemas/ai-provider";
 
 import {
@@ -14,7 +12,6 @@ import type { Context } from "cordis";
 let runtime: Context;
 vi.mock("@/plugins/server/context", () => ({
   getAi: async () => runtime.ai,
-  getAiAgents: async () => runtime.aiAgents,
 }));
 
 vi.mock("@/db", async () => {
@@ -38,8 +35,7 @@ beforeAll(async () => {
   await initializeAiDatabase();
   await resetAiDatabase();
   runtime = await createAiTestRuntime();
-  await runtime.plugin(AiAgentsService, { keywordDimensions: "ai-sdk" });
-  await runtime.plugin(dimensions);
+  await runtime.plugin(KeywordsService);
 });
 afterAll(async () => {
   await runtime?.fiber.dispose();
@@ -111,10 +107,10 @@ it("shares one Gateway connection across LLM and decision calls with caller-sele
     language: "en" as const,
   };
   expect(
-    await KeywordDimensionService.generate(generationInput, scope),
+    await runtime.keywords.generateDimensions(generationInput, scope),
   ).toEqual(fields);
   await runtime.ai.decide(input, scope);
-  await KeywordDimensionService.generate(
+  await runtime.keywords.generateDimensions(
     { ...generationInput, model: "deepseek/deepseek-v4-flash" },
     scope,
   );

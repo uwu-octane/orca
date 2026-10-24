@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { LOCATIONS } from "@/client/features/keywords/locations";
+import { LOCATIONS } from "@/shared/keyword-locations";
 import {
   AlertTriangle,
   Archive,

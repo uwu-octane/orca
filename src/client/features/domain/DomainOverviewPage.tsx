@@ -14,10 +14,7 @@ import {
   DEFAULT_DOMAIN_KEYWORDS_PAGE_SIZE,
   type DomainSearchParams,
 } from "@/types/schemas/domain";
-import {
-  LOCATIONS,
-  isLabsLocationCode,
-} from "@/client/features/keywords/locations";
+import { LOCATIONS, isLabsLocationCode } from "@/shared/keyword-locations";
 import { useDomainSearchHistory } from "@/client/hooks/useDomainSearchHistory";
 import type { DomainSearchHistoryItem } from "@/client/hooks/useDomainSearchHistory";
 import {

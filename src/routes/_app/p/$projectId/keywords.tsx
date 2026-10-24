@@ -1,13 +1,16 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { KeywordResearchPage } from "@/client/features/keywords/page/KeywordResearchPage";
-import { GoogleKeywordResearchPage } from "@/client/features/keywords/google/GoogleKeywordResearchPage";
+// FORK: the Keywords plugin owns research views and state.
+import {
+  KeywordResearchPage,
+  GoogleKeywordResearchPage,
+} from "@/plugins/keywords/client/views";
 import {
   isResultLimit,
   normalizeKeywordMode,
   normalizeLegacyKeywordSearch,
   normalizeSortDir,
   normalizeSortField,
-} from "@/client/features/keywords/keywordSearchParams";
+} from "@/plugins/keywords/client/keywordSearchParams";
 import { keywordsSearchSchema } from "@/types/schemas/keywords";
 
 export const Route = createFileRoute("/_app/p/$projectId/keywords")({

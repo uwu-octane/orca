@@ -1,10 +1,17 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getSerpResultsTool } from "./get-serp-results";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { getSerpResultsTool } from "@/plugins/keywords/tools/get-serp-results";
 import { makeToolContext, textContent } from "./tool-test-support";
 import type * as r2CacheModule from "@/server/lib/r2-cache";
 
 const mocks = vi.hoisted(() => ({
-  createDataforseoClient: vi.fn(),
+  createDataforseoClient: vi.fn<
+    () => {
+      serp: Pick<
+        ReturnType<typeof createMeteredDataforseoClient>["serp"],
+        "live"
+      >;
+    }
+  >(),
   getProjectForOrganization: vi.fn(),
   cache: new Map<string, unknown>(),
 }));
@@ -20,10 +27,16 @@ vi.mock("@/server/lib/r2-cache", async (importOriginal) => ({
     mocks.cache.set(key, value);
   },
 }));
-vi.mock("@/server/lib/dataforseo", () => ({
-  createDataforseoClient: mocks.createDataforseoClient,
-  SERP_ANALYSIS_DEPTH: 20,
+import { createKeywordTestRuntime } from "@/plugins/keywords/server/testRuntime";
+import { createMeteredDataforseoClient } from "@/plugins/dataforseo/client";
+import type { Context } from "cordis";
+let runtime: Context;
+vi.mock("@/plugins/server/context", () => ({
+  getKeywords: async () => runtime.keywords,
 }));
+afterEach(async () => {
+  await runtime.fiber.dispose();
+});
 vi.mock("@/server/features/projects/services/ProjectService", () => ({
   ProjectService: {
     getProjectForOrganization: mocks.getProjectForOrganization,
@@ -48,7 +61,17 @@ function mockLiveSerp(rows: number) {
 }
 
 describe("get_serp_results", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    runtime = await createKeywordTestRuntime();
+    vi.spyOn(runtime.dataforseo, "createClient").mockImplementation(
+      (customer) => {
+        const client = createMeteredDataforseoClient(customer);
+        return {
+          ...client,
+          serp: { ...client.serp, ...mocks.createDataforseoClient().serp },
+        };
+      },
+    );
     mocks.cache.clear();
     mocks.getProjectForOrganization.mockResolvedValue({
       id: "project_1",

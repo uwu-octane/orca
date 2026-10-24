@@ -22,7 +22,7 @@ import { Field, FieldLabel } from "@/client/components/ui/field";
 import type { RankTrackingConfig } from "@/types/schemas/rank-tracking";
 import { domainField, normalizeDomain } from "@/types/schemas/domain";
 import { pagesToDepth } from "@/shared/rank-tracking";
-import { getLanguageCode } from "@/client/features/keywords/locations";
+import { getLanguageCode } from "@/shared/keyword-locations";
 import {
   SERP_LANGUAGE_OPTIONS,
   getIsoCountryCode,
