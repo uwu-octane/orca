@@ -175,15 +175,20 @@ export function createGa4AdminClient(opts: {
   userId: string;
   ga4AccountId: string;
   getAccessToken?: () => Promise<string>;
+  /** FORK: connection discovery is owned by the OAuth plugin's lifetime. */
+  signal?: AbortSignal;
 }) {
   const accessToken = memoizedGa4AccessToken(opts);
 
   async function request(url: string): Promise<unknown> {
+    opts.signal?.throwIfAborted();
     const token = await accessToken();
+    opts.signal?.throwIfAborted();
     let response: Response;
     try {
       response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
+        signal: opts.signal,
       });
     } catch (error) {
       if (isAbortError(error)) throw error;
@@ -192,6 +197,7 @@ export function createGa4AdminClient(opts: {
         "Google Analytics Admin API is temporarily unavailable.",
       );
     }
+    opts.signal?.throwIfAborted();
     if (!response.ok) {
       throw new Ga4AdminApiError(
         response.status,

@@ -9,6 +9,7 @@ type Project = { projectId: string; organizationId: string };
 export function createGoogleAdsConnections(
   getAccessToken: GoogleAccessToken,
   discovery: () => GoogleAdsDiscovery,
+  signal: AbortSignal,
 ) {
   async function googleAdsAccessToken(userId: string, accountId: string) {
     try {
@@ -22,13 +23,16 @@ export function createGoogleAdsConnections(
     }
   }
   async function requireAvailable() {
+    signal.throwIfAborted();
     if (await isHostedServerAuthMode())
       throw new AppError("GOOGLE_ADS_NOT_CONFIGURED");
   }
   async function getConnection(input: Project) {
+    signal.throwIfAborted();
     return repository.get(input.projectId, input.organizationId);
   }
   async function userHasGrant(userId: string) {
+    signal.throwIfAborted();
     return (
       (
         await GoogleAccountRepository.listGrants(
@@ -114,6 +118,7 @@ export function createGoogleAdsConnections(
     const customer = customers.find((item) => item.id === input.propertyId);
     if (!customer) throw new AppError("NOT_FOUND");
     const email = await discovery().accountEmail(token);
+    signal.throwIfAborted();
     return repository.save({
       projectId: input.projectId,
       organizationId: input.organizationId,
@@ -133,10 +138,12 @@ export function createGoogleAdsConnections(
       connection.connectedByUserId,
       connection.googleAccountId,
     );
+    signal.throwIfAborted();
     return { ...connection, accessToken };
   }
   async function disconnect(input: Project) {
     await requireAvailable();
+    signal.throwIfAborted();
     await repository.disconnect(input.projectId, input.organizationId);
   }
   return {

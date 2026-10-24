@@ -96,12 +96,15 @@ async function tokenCrypto() {
   };
 }
 
-async function upsertGrant(input: {
-  integration: GoogleOAuthIntegration;
-  userId: string;
-  googleAccountId: string;
-  tokens: GoogleTokenResponse;
-}) {
+async function upsertGrant(
+  input: {
+    integration: GoogleOAuthIntegration;
+    userId: string;
+    googleAccountId: string;
+    tokens: GoogleTokenResponse;
+  },
+  signal: AbortSignal,
+) {
   const { encrypt } = await tokenCrypto();
   const accountValues = {
     accountId: input.googleAccountId,
@@ -120,16 +123,23 @@ async function upsertGrant(input: {
       : input.integration.scopes.join(","),
     password: null,
   };
+  signal.throwIfAborted();
   await GoogleAccountRepository.upsertGrant(accountValues);
 }
 
 /** Google's token endpoint; null when it rejects the grant. */
-async function fetchTokens(params: Record<string, string>) {
+async function fetchTokens(
+  params: Record<string, string>,
+  signal: AbortSignal,
+) {
+  signal.throwIfAborted();
   const response = await fetch(GOOGLE_TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams(params),
+    signal,
   });
+  signal.throwIfAborted();
   if (!response.ok) return null;
   return googleTokenResponseSchema.parse(await response.json());
 }
@@ -146,11 +156,14 @@ declare module "cordis" {
 
 /** Google data authorization and project connections, scoped on each operation. */
 export default class GoogleOAuthService extends Service {
-  readonly gsc = createGscConnections((input) =>
-    this.getGoogleAccessToken(input),
+  private readonly lifetime = new AbortController();
+  readonly gsc = createGscConnections(
+    (input) => this.getGoogleAccessToken(input),
+    this.lifetime.signal,
   );
-  readonly ga4 = createGa4Connections((input) =>
-    this.getGoogleAccessToken(input),
+  readonly ga4 = createGa4Connections(
+    (input) => this.getGoogleAccessToken(input),
+    this.lifetime.signal,
   );
   readonly ads = createGoogleAdsConnections(
     (input) => this.getGoogleAccessToken(input),
@@ -158,9 +171,11 @@ export default class GoogleOAuthService extends Service {
       if (!this.adsDiscovery) throw new AppError("GOOGLE_ADS_NOT_CONFIGURED");
       return this.adsDiscovery;
     },
+    this.lifetime.signal,
   );
   private adsDiscovery?: GoogleAdsDiscovery;
   registerAdsDiscovery(discovery: GoogleAdsDiscovery) {
+    this.lifetime.signal.throwIfAborted();
     if (this.adsDiscovery)
       throw new Error("Google Ads discovery is already registered");
     return this.ctx.effect(() => {
@@ -173,12 +188,18 @@ export default class GoogleOAuthService extends Service {
   readonly hasGoogleOAuthConfig = hasGoogleOAuthConfig;
   constructor(ctx: Context) {
     super(ctx, "googleOAuth");
+    ctx.effect(
+      () => () =>
+        this.lifetime.abort(new Error("Google OAuth plugin is not active")),
+    );
   }
 
   getRemovalImpact(input: GoogleAccountInput) {
+    this.lifetime.signal.throwIfAborted();
     return GoogleAccountRepository.getRemovalImpact(input);
   }
   async removeAccount(input: GoogleAccountInput) {
+    this.lifetime.signal.throwIfAborted();
     // Removing a personal grant releases every associated binding without deleting sign-in.
     await GoogleAccountRepository.remove(input);
     return { removed: true as const };
@@ -190,6 +211,7 @@ export default class GoogleOAuthService extends Service {
     callbackURL: string;
     publicOrigin: string;
   }) {
+    this.lifetime.signal.throwIfAborted();
     const config = await getGoogleOAuthClientConfig();
     if (!config || !(await hasGoogleOAuthConfig(config))) {
       throw new AppError(
@@ -197,6 +219,7 @@ export default class GoogleOAuthService extends Service {
         `${input.integration.displayName} is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and BETTER_AUTH_SECRET.`,
       );
     }
+    this.lifetime.signal.throwIfAborted();
     const state = await createState({
       provider: input.integration.provider,
       userId: input.userId,
@@ -239,6 +262,7 @@ export default class GoogleOAuthService extends Service {
     userId: string;
     publicOrigin: string;
   }) {
+    this.lifetime.signal.throwIfAborted();
     const config = await getGoogleOAuthClientConfig();
     if (!config) {
       throw new AppError(
@@ -272,18 +296,21 @@ export default class GoogleOAuthService extends Service {
     if (!code) return fail("missing_code");
     let tokens: GoogleTokenResponse | null;
     try {
-      tokens = await fetchTokens({
-        code,
-        client_id: config.clientId,
-        client_secret: config.clientSecret,
-        redirect_uri: getRedirectUri(input.publicOrigin, input.integration),
-        grant_type: "authorization_code",
-        code_verifier: await getCodeVerifier({
-          state: rawState,
-          clientSecret: config.clientSecret,
-          provider: input.integration.provider,
-        }),
-      });
+      tokens = await fetchTokens(
+        {
+          code,
+          client_id: config.clientId,
+          client_secret: config.clientSecret,
+          redirect_uri: getRedirectUri(input.publicOrigin, input.integration),
+          grant_type: "authorization_code",
+          code_verifier: await getCodeVerifier({
+            state: rawState,
+            clientSecret: config.clientSecret,
+            provider: input.integration.provider,
+          }),
+        },
+        this.lifetime.signal,
+      );
     } catch {
       return fail("oauth_code_verification_failed");
     }
@@ -308,12 +335,15 @@ export default class GoogleOAuthService extends Service {
       return fail("oauth_code_verification_failed");
     }
     try {
-      await upsertGrant({
-        integration: input.integration,
-        userId: input.userId,
-        googleAccountId,
-        tokens,
-      });
+      await upsertGrant(
+        {
+          integration: input.integration,
+          userId: input.userId,
+          googleAccountId,
+          tokens,
+        },
+        this.lifetime.signal,
+      );
     } catch (error) {
       console.error("google.oauth.grant_save_failed", {
         provider: input.integration.provider,
@@ -335,13 +365,18 @@ export default class GoogleOAuthService extends Service {
     providerId: string;
     accountId?: string;
   }): Promise<string> {
+    this.lifetime.signal.throwIfAborted();
     const grant = await GoogleAccountRepository.findGrant(input);
     if (!grant) throw new Error(`No ${input.providerId} grant for this user.`);
     const { encrypt, decrypt } = await tokenCrypto();
     const expiresAt = grant.accessTokenExpiresAt?.getTime();
     const fresh =
       expiresAt !== undefined && expiresAt - Date.now() > ACCESS_TOKEN_SKEW_MS;
-    if (fresh && grant.accessToken) return decrypt(grant.accessToken);
+    if (fresh && grant.accessToken) {
+      const token = await decrypt(grant.accessToken);
+      this.lifetime.signal.throwIfAborted();
+      return token;
+    }
     if (!grant.refreshToken) {
       // Google only issues a refresh token on the first consent, so a grant
       // without one cannot recover once its access token expires. Failing here
@@ -351,6 +386,7 @@ export default class GoogleOAuthService extends Service {
         `The ${input.providerId} grant has expired and cannot be refreshed.`,
       );
     }
+    this.lifetime.signal.throwIfAborted();
     const config = await getGoogleOAuthClientConfig();
     if (!config) {
       throw new AppError(
@@ -358,18 +394,21 @@ export default class GoogleOAuthService extends Service {
         "Google OAuth is not configured.",
       );
     }
-    const tokens = await fetchTokens({
-      client_id: config.clientId,
-      client_secret: config.clientSecret,
-      refresh_token: await decrypt(grant.refreshToken),
-      grant_type: "refresh_token",
-    });
+    const tokens = await fetchTokens(
+      {
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
+        refresh_token: await decrypt(grant.refreshToken),
+        grant_type: "refresh_token",
+      },
+      this.lifetime.signal,
+    );
     if (!tokens) {
       throw new Error(
         `Google refused to refresh the ${input.providerId} grant.`,
       );
     }
-    await GoogleAccountRepository.updateTokens(grant.id, {
+    const values = {
       accessToken: await encrypt(tokens.access_token),
       accessTokenExpiresAt: new Date(
         Date.now() + (tokens.expires_in ?? 3600) * 1_000,
@@ -379,7 +418,9 @@ export default class GoogleOAuthService extends Service {
         ? { refreshToken: await encrypt(tokens.refresh_token) }
         : {}),
       updatedAt: new Date(),
-    });
+    };
+    this.lifetime.signal.throwIfAborted();
+    await GoogleAccountRepository.updateTokens(grant.id, values);
     return tokens.access_token;
   }
 
@@ -388,6 +429,7 @@ export default class GoogleOAuthService extends Service {
     integration: GoogleOAuthIntegration,
   ) {
     try {
+      this.lifetime.signal.throwIfAborted();
       const context = await resolveUserContextFromHeaders(request.headers);
       return await this.handleGoogleOAuthCallback({
         integration,

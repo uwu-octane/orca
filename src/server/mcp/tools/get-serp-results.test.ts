@@ -1,5 +1,7 @@
+import { getKeywords } from "@/plugins/server/context";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getSerpResultsTool } from "@/plugins/keywords/tools/get-serp-results";
+import { buildGetSerpResultsTool } from "@/plugins/keywords/tools/get-serp-results";
+const getSerpResultsTool = buildGetSerpResultsTool(getKeywords);
 import { makeToolContext, textContent } from "./tool-test-support";
 import type * as r2CacheModule from "@/server/lib/r2-cache";
 

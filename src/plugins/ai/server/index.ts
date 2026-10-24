@@ -18,7 +18,7 @@ import type {
   AiProviderDefinition,
   AiProviderScope,
 } from "../contracts";
-import { configuration } from "./configuration";
+import { createConfiguration } from "./configuration";
 import { validateAnswers } from "./decisionResult";
 
 const configSchema = z.strictObject({ textProvider: aiProviderSchema });
@@ -36,10 +36,12 @@ declare module "cordis" {
 /** Owns AI configuration, capability dispatch and per-request credential scope. */
 export default class AiService extends Service {
   static Config = configSchema;
+  private readonly lifetime = new AbortController();
+  private readonly settings = createConfiguration(this.lifetime.signal);
   readonly configuration = {
-    getConfig: configuration.getConfig,
-    saveConfig: configuration.saveConfig,
-    removeConfig: configuration.removeConfig,
+    getConfig: this.settings.getConfig,
+    saveConfig: this.settings.saveConfig,
+    removeConfig: this.settings.removeConfig,
   };
   private readonly providers = new Map<AiProvider, Registration>();
 
@@ -48,9 +50,13 @@ export default class AiService extends Service {
     private readonly config: z.infer<typeof configSchema>,
   ) {
     super(ctx, "ai");
+    ctx.effect(
+      () => () => this.lifetime.abort(new Error("AI plugin is not active")),
+    );
   }
 
   register(provider: AiProviderDefinition) {
+    this.lifetime.signal.throwIfAborted();
     if (this.providers.has(provider.id))
       throw new Error(`Duplicate AI provider: ${provider.id}`);
     return this.ctx.effect(() => {
@@ -64,6 +70,7 @@ export default class AiService extends Service {
   }
 
   private select(id: AiProvider) {
+    this.lifetime.signal.throwIfAborted();
     const registration = this.providers.get(id);
     if (!registration) throw new Error(`AI provider is not registered: ${id}`);
     return registration;
@@ -81,7 +88,7 @@ export default class AiService extends Service {
     const signal = registration.lifetime.signal;
     signal.throwIfAborted();
     const connection = await withPgClient(() =>
-      configuration.resolve(scope, registration.provider.id),
+      this.settings.resolve(scope, registration.provider.id),
     );
     signal.throwIfAborted();
     return {
@@ -90,7 +97,7 @@ export default class AiService extends Service {
       beforeRequest: async () => {
         signal.throwIfAborted();
         await withPgClient(() =>
-          configuration.recordUse(
+          this.settings.recordUse(
             scope,
             registration.provider.id,
             connection.revision,

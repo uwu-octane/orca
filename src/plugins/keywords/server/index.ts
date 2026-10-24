@@ -20,11 +20,11 @@ import type {
 } from "@/types/schemas/keywords";
 import type { SerpResultsInput } from "../serp-contracts";
 import { getSerpResults } from "./services/research/serp-results";
-import { researchKeywordsTool } from "../tools/research-keywords";
-import { saveKeywordsTool } from "../tools/save-keywords";
-import { listSavedKeywordsTool } from "../tools/list-saved-keywords";
-import { removeSavedKeywordsTool } from "../tools/remove-saved-keywords";
-import { getSerpResultsTool } from "../tools/get-serp-results";
+import { buildResearchKeywordsTool } from "../tools/research-keywords";
+import { buildSaveKeywordsTool } from "../tools/save-keywords";
+import { buildListSavedKeywordsTool } from "../tools/list-saved-keywords";
+import { buildRemoveSavedKeywordsTool } from "../tools/remove-saved-keywords";
+import { buildGetSerpResultsTool } from "../tools/get-serp-results";
 
 declare module "cordis" {
   interface Context {
@@ -77,11 +77,11 @@ export default class KeywordsService extends Service {
       });
     });
     ctx.inject(["sam"], (scope) => {
-      scope.sam.registerMcpTool(researchKeywordsTool);
-      scope.sam.registerMcpTool(saveKeywordsTool);
-      scope.sam.registerMcpTool(listSavedKeywordsTool);
-      scope.sam.registerMcpTool(removeSavedKeywordsTool);
-      scope.sam.registerMcpTool(getSerpResultsTool);
+      scope.sam.registerMcpTool(buildResearchKeywordsTool(() => this));
+      scope.sam.registerMcpTool(buildSaveKeywordsTool(() => this));
+      scope.sam.registerMcpTool(buildListSavedKeywordsTool(() => this));
+      scope.sam.registerMcpTool(buildRemoveSavedKeywordsTool(() => this));
+      scope.sam.registerMcpTool(buildGetSerpResultsTool(() => this));
       scope.sam.registerTool(
         "generate_keyword_dimensions",
         ({ auth, project }) =>

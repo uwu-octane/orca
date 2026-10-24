@@ -151,3 +151,19 @@ it("prevents a retained language model from using credentials after its provider
   });
   expect(fetch).not.toHaveBeenCalled();
 });
+
+it("rejects configuration mutations through a retained AI service after unload", async () => {
+  const config = runtime.ai.configuration;
+  const saved = await config.saveConfig(connection(), scope);
+  await runtime.loader.remove("ai");
+  await expect(
+    config.removeConfig(scope, "vercel_gateway", saved!.revision),
+  ).rejects.toThrow(/not active/);
+  expect(
+    (
+      await database.client.execute(
+        "SELECT project_id FROM ai_provider_configs",
+      )
+    ).rows,
+  ).toHaveLength(1);
+});

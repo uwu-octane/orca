@@ -18,10 +18,14 @@ type GscSiteListResult = {
 };
 
 /** Thrown when a project has no connected GSC property. */
-export function createGscConnections(getAccessToken: GoogleAccessToken) {
+export function createGscConnections(
+  getAccessToken: GoogleAccessToken,
+  signal: AbortSignal,
+) {
   async function getConnection(
     projectId: string,
   ): Promise<GscConnection | null> {
+    signal.throwIfAborted();
     return GscConnectionRepository.getByProjectId(projectId);
   }
 
@@ -32,6 +36,7 @@ export function createGscConnections(getAccessToken: GoogleAccessToken) {
   }
 
   function listGrantsForUser(userId: string) {
+    signal.throwIfAborted();
     return GoogleAccountRepository.listGrants(userId, GSC_OAUTH_PROVIDER_ID);
   }
 
@@ -42,6 +47,7 @@ export function createGscConnections(getAccessToken: GoogleAccessToken) {
     const accounts = await Promise.all(
       grants.map(async (grant) => {
         const client = createGscClient({
+          signal,
           userId,
           gscAccountId: grant.accountId,
           getAccessToken: () =>
@@ -149,6 +155,7 @@ export function createGscConnections(getAccessToken: GoogleAccessToken) {
     }
 
     const client = createGscClient({
+      signal,
       userId: input.userId,
       gscAccountId: input.accountId,
       getAccessToken: () =>
@@ -178,6 +185,7 @@ export function createGscConnections(getAccessToken: GoogleAccessToken) {
     } catch {
       connectedAccountEmail = null;
     }
+    signal.throwIfAborted();
     return GscConnectionRepository.upsert({
       projectId: input.projectId,
       organizationId: input.organizationId,
@@ -189,6 +197,7 @@ export function createGscConnections(getAccessToken: GoogleAccessToken) {
   }
 
   async function disconnect(input: { projectId: string }): Promise<void> {
+    signal.throwIfAborted();
     await GscConnectionRepository.deleteByProjectId(input.projectId);
   }
 

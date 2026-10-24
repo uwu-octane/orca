@@ -1,6 +1,9 @@
+import { getKeywords } from "@/plugins/server/context";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { listSavedKeywordsTool } from "@/plugins/keywords/tools/list-saved-keywords";
-import { saveKeywordsTool } from "@/plugins/keywords/tools/save-keywords";
+import { buildListSavedKeywordsTool } from "@/plugins/keywords/tools/list-saved-keywords";
+const listSavedKeywordsTool = buildListSavedKeywordsTool(getKeywords);
+import { buildSaveKeywordsTool } from "@/plugins/keywords/tools/save-keywords";
+const saveKeywordsTool = buildSaveKeywordsTool(getKeywords);
 import { makeToolContext, textContent } from "./tool-test-support";
 
 const mocks = vi.hoisted(() => ({

@@ -18,7 +18,7 @@ import {
 } from "@/server/mcp/schemas";
 
 import { serpItemSchema, type SerpItem } from "../serp-contracts";
-import { getKeywords } from "@/plugins/server/context";
+import type { KeywordToolResolver } from "../contracts";
 
 // `type` is load-bearing: the advanced SERP is a mixed list, so without it a
 // featured_snippet or people_also_ask row (which has no domain/title/url) reads
@@ -80,81 +80,85 @@ const inputSchema = {
 
 type Args = z.infer<z.ZodObject<typeof inputSchema>>;
 
-export const getSerpResultsTool = {
-  name: "get_serp_results",
-  config: {
-    title: "Get Google SERP results",
-    description:
-      "Fetch live Google organic search results for 1-10 keywords. Use this to inspect who ranks for a query, verify competitors, compare SERPs across keywords, or gather source URLs before content planning. Returns the top `depth` result rows per keyword (default 20). `rank` counts every SERP element (ads, People Also Ask, ...); `organicRank` counts organic results only and matches rank tracker positions. Charges credits per keyword: ~5 each at the default depth 20, and each additional 10 of depth adds ~2.5. A keyword fetched in this project in the last 12 hours with the same market, device, and depth returns those rows again at no charge once the original call has finished, so if a response is lost, wait a minute and repeat the same call. Per-keyword errors don't fail the batch.",
-    inputSchema,
-    outputSchema: z.looseObject({
-      results: z.array(
-        z.union([
-          z
-            .object({
-              keyword: z.string(),
-              ok: z.literal(true),
-              items: z.array(serpItemSchema),
-            })
-            .passthrough(),
-          z
-            .object({
-              keyword: z.string(),
-              ok: z.literal(false),
-              error: z.string(),
-            })
-            .passthrough(),
-        ]),
-      ),
-      ...optionalMetaOutputSchema,
-    }),
-    annotations: {
-      readOnlyHint: false,
-      openWorldHint: true,
-      destructiveHint: false,
-    },
-  },
-  handler: withMcpProjectAuth(async (args: Args, context) => {
-    const results = await (
-      await getKeywords()
-    ).getSerpResults(
-      {
-        projectId: args.projectId,
-        depth: args.depth ?? SERP_ANALYSIS_DEPTH,
-        queries: args.queries.map((query) => ({
-          ...query,
-          ...resolveMarket(query, context.project),
-        })),
+export function buildGetSerpResultsTool(
+  getKeywords: KeywordToolResolver<"getSerpResults">,
+) {
+  return {
+    name: "get_serp_results",
+    config: {
+      title: "Get Google SERP results",
+      description:
+        "Fetch live Google organic search results for 1-10 keywords. Use this to inspect who ranks for a query, verify competitors, compare SERPs across keywords, or gather source URLs before content planning. Returns the top `depth` result rows per keyword (default 20). `rank` counts every SERP element (ads, People Also Ask, ...); `organicRank` counts organic results only and matches rank tracker positions. Charges credits per keyword: ~5 each at the default depth 20, and each additional 10 of depth adds ~2.5. A keyword fetched in this project in the last 12 hours with the same market, device, and depth returns those rows again at no charge once the original call has finished, so if a response is lost, wait a minute and repeat the same call. Per-keyword errors don't fail the batch.",
+      inputSchema,
+      outputSchema: z.looseObject({
+        results: z.array(
+          z.union([
+            z
+              .object({
+                keyword: z.string(),
+                ok: z.literal(true),
+                items: z.array(serpItemSchema),
+              })
+              .passthrough(),
+            z
+              .object({
+                keyword: z.string(),
+                ok: z.literal(false),
+                error: z.string(),
+              })
+              .passthrough(),
+          ]),
+        ),
+        ...optionalMetaOutputSchema,
+      }),
+      annotations: {
+        readOnlyHint: false,
+        openWorldHint: true,
+        destructiveHint: false,
       },
-      context.billing,
-    );
+    },
+    handler: withMcpProjectAuth(async (args: Args, context) => {
+      const results = await (
+        await getKeywords()
+      ).getSerpResults(
+        {
+          projectId: args.projectId,
+          depth: args.depth ?? SERP_ANALYSIS_DEPTH,
+          queries: args.queries.map((query) => ({
+            ...query,
+            ...resolveMarket(query, context.project),
+          })),
+        },
+        context.billing,
+      );
 
-    const okCount = results.filter((r) => r.ok).length;
-    // One budget for the whole response: ten queries split it, so a 10 × depth
-    // 100 call can't render 300k characters of text.
-    const budget = sectionTableBudget(results.length);
-    const text =
-      results
-        .map((r) => {
-          if (!r.ok) {
-            return `"${r.keyword}": FAILED — ${r.error}`;
-          }
-          if (r.items.length === 0) {
-            return `"${r.keyword}" (0 results)`;
-          }
-          return `"${r.keyword}" (${r.items.length} results):\n${formatMcpTable(r.items, SERP_ITEM_COLUMNS, budget)}`;
-        })
-        .join("\n\n") +
-      `\n\n${okCount} of ${results.length} queries succeeded.`;
+      const okCount = results.filter((r) => r.ok).length;
+      // One budget for the whole response: ten queries split it, so a 10 × depth
+      // 100 call can't render 300k characters of text.
+      const budget = sectionTableBudget(results.length);
+      const text =
+        results
+          .map((r) => {
+            if (!r.ok) {
+              return `"${r.keyword}": FAILED — ${r.error}`;
+            }
+            if (r.items.length === 0) {
+              return `"${r.keyword}" (0 results)`;
+            }
+            return `"${r.keyword}" (${r.items.length} results):\n${formatMcpTable(r.items, SERP_ITEM_COLUMNS, budget)}`;
+          })
+          .join("\n\n") +
+        `\n\n${okCount} of ${results.length} queries succeeded.`;
 
-    return mcpResponse({
-      text,
-      meta: buildProjectMeta(
-        context,
-        args.projectId,
-        `/p/${args.projectId}/keywords`,
-      ),
-      structuredContent: { results },
-    });
-  }),
-};
+      return mcpResponse({
+        text,
+        meta: buildProjectMeta(
+          context,
+          args.projectId,
+          `/p/${args.projectId}/keywords`,
+        ),
+        structuredContent: { results },
+      });
+    }),
+  };
+}

@@ -1,3 +1,5 @@
+// FORK: keyword tools are bound at the transport to the installed domain.
+import { getKeywords } from "@/plugins/server/context";
 import {
   getAiVisibilityTrackerTool,
   generateAiVisibilityPromptsTool,
@@ -39,7 +41,7 @@ import { removeRankTrackingKeywordsTool } from "@/server/mcp/tools/remove-rank-t
 import { pinRankTrackingKeywordsTool } from "@/server/mcp/tools/pin-rank-tracking-keywords";
 import { runRankTrackerTool } from "@/server/mcp/tools/run-rank-tracker";
 import { searchSerpLocationsTool } from "@/server/mcp/tools/search-serp-locations";
-import { getSerpResultsTool } from "@/plugins/keywords/tools/get-serp-results";
+import { buildGetSerpResultsTool } from "@/plugins/keywords/tools/get-serp-results";
 import {
   getGoogleAnalyticsAudienceBreakdownTool,
   getGoogleAnalyticsEcommercePerformanceTool,
@@ -62,8 +64,8 @@ import {
   getProjectContextTool,
   updateProjectContextTool,
 } from "@/server/mcp/tools/project-context";
-import { listSavedKeywordsTool } from "@/plugins/keywords/tools/list-saved-keywords";
-import { removeSavedKeywordsTool } from "@/plugins/keywords/tools/remove-saved-keywords";
+import { buildListSavedKeywordsTool } from "@/plugins/keywords/tools/list-saved-keywords";
+import { buildRemoveSavedKeywordsTool } from "@/plugins/keywords/tools/remove-saved-keywords";
 import {
   findSerpCompetitorsTool,
   getGoogleBusinessQuestionsTool,
@@ -91,8 +93,8 @@ import {
   listReportTemplatesTool,
   saveReportTemplateTool,
 } from "@/server/mcp/tools/report-template-tools";
-import { researchKeywordsTool } from "@/plugins/keywords/tools/research-keywords";
-import { saveKeywordsTool } from "@/plugins/keywords/tools/save-keywords";
+import { buildResearchKeywordsTool } from "@/plugins/keywords/tools/research-keywords";
+import { buildSaveKeywordsTool } from "@/plugins/keywords/tools/save-keywords";
 import {
   getSearchConsolePerformanceTool,
   inspectUrlsTool,
@@ -207,15 +209,15 @@ export function createOpenSeoMcpServer(authProps: McpProps) {
   register(saveProjectWebsiteSetupTool);
   register(getProjectContextTool);
   register(updateProjectContextTool);
-  register(listSavedKeywordsTool);
-  register(removeSavedKeywordsTool);
-  register(researchKeywordsTool);
-  register(saveKeywordsTool);
+  register(buildListSavedKeywordsTool(getKeywords));
+  register(buildRemoveSavedKeywordsTool(getKeywords));
+  register(buildResearchKeywordsTool(getKeywords));
+  register(buildSaveKeywordsTool(getKeywords));
   register(getDomainOverviewTool);
   register(getDomainKeywordSuggestionsTool);
   register(getBacklinksOverviewTool);
   register(getBacklinksProfileTool);
-  register(getSerpResultsTool);
+  register(buildGetSerpResultsTool(getKeywords));
   register(searchSerpLocationsTool);
   register(getAiVisibilityTrackerTool);
   register(explorePromptTool);

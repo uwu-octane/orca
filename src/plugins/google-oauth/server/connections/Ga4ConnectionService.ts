@@ -6,14 +6,19 @@ import { Ga4AdminApiError, Ga4TokenError } from "@/server/lib/ga4Errors";
 import { GA4_OAUTH_PROVIDER_ID } from "@/shared/ga4";
 import { Ga4ConnectionRepository } from "@/plugins/google-oauth/server/connections/Ga4ConnectionRepository";
 
-export function createGa4Connections(getAccessToken: GoogleAccessToken) {
+export function createGa4Connections(
+  getAccessToken: GoogleAccessToken,
+  signal: AbortSignal,
+) {
   async function getConnection(
     projectId: string,
   ): Promise<Ga4Connection | null> {
+    signal.throwIfAborted();
     return Ga4ConnectionRepository.getByProjectId(projectId);
   }
 
   function listGrantsForUser(userId: string) {
+    signal.throwIfAborted();
     return GoogleAccountRepository.listGrants(userId, GA4_OAUTH_PROVIDER_ID);
   }
 
@@ -34,6 +39,7 @@ export function createGa4Connections(getAccessToken: GoogleAccessToken) {
     const accounts = await Promise.all(
       grants.map(async (grant) => {
         const client = createGa4AdminClient({
+          signal,
           userId,
           ga4AccountId: grant.accountId,
           getAccessToken: () =>
@@ -114,6 +120,7 @@ export function createGa4Connections(getAccessToken: GoogleAccessToken) {
     }
 
     const client = createGa4AdminClient({
+      signal,
       userId: input.userId,
       ga4AccountId: input.accountId,
       getAccessToken: () =>
@@ -141,6 +148,7 @@ export function createGa4Connections(getAccessToken: GoogleAccessToken) {
       connectedAccountEmail = null;
     }
 
+    signal.throwIfAborted();
     return Ga4ConnectionRepository.upsert({
       projectId: input.projectId,
       organizationId: input.organizationId,
@@ -155,6 +163,7 @@ export function createGa4Connections(getAccessToken: GoogleAccessToken) {
   }
 
   async function disconnect(input: { projectId: string }): Promise<void> {
+    signal.throwIfAborted();
     await Ga4ConnectionRepository.deleteByProjectId(input.projectId);
   }
 

@@ -135,7 +135,7 @@ export function adaptMcpTool<Shape extends ZodRawShape>(
   return tool({
     description: def.config.description,
     inputSchema: z.object(bindsProject ? modelShape : def.config.inputSchema),
-    execute: async (args) => {
+    execute: async (args, { abortSignal }) => {
       // Reconstruct the handler's validated arg shape by injecting the session
       // projectId that we stripped from the model-facing schema above.
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- projectId re-added to rebuild the tool's Shape; the handler re-validates project access
@@ -147,7 +147,12 @@ export function adaptMcpTool<Shape extends ZodRawShape>(
         // request scope, so each execution scopes its own Postgres client
         // (no-op in D1 mode) — same rule as the DO's other DB-touching seams.
         return capToolOutput(
-          toModelOutput(await withPgClient(() => handler(fullArgs, context))),
+          toModelOutput(
+            await withPgClient(() => {
+              abortSignal?.throwIfAborted();
+              return handler(fullArgs, { ...context, abortSignal });
+            }),
+          ),
         );
       } catch (error) {
         // Surface the failure to the model so it can recover or report it,

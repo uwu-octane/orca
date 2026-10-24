@@ -1,6 +1,6 @@
 import { z } from "zod";
 // FORK: business operations resolve the installed Keywords domain.
-import { getKeywords } from "@/plugins/server/context";
+import type { KeywordToolResolver } from "../contracts";
 import type { EnrichedKeyword } from "@/plugins/keywords/server/services/research/helpers";
 import { mcpResponse } from "@/server/mcp/formatters";
 import { buildProjectMeta } from "@/server/mcp/context";
@@ -112,117 +112,121 @@ const RESEARCH_COLUMNS: McpTableColumn<ResearchRow>[] = [
   { header: "intent", value: (row) => row.intent },
 ];
 
-export const researchKeywordsTool = {
-  name: "research_keywords",
-  config: {
-    title: "Research keywords (bulk)",
-    description:
-      "Research keyword data (search volume, difficulty, CPC, related ideas) for 1-5 seed keywords in one call. Charges credits per seed (~54 at the default result limit, ~110 at 500, plus ~40 more (~95 at 500) when an obscure seed needs a fallback lookup; flat ~96 for countries served from Google Ads data, where difficulty/intent are unavailable). Returns per-seed results — a single bad seed won't fail the batch.",
-    inputSchema,
-    outputSchema: z.looseObject({
-      results: z.array(
-        z.union([
-          z
-            .object({
-              seed: z.string(),
-              ok: z.literal(true),
-              rowCount: z.number(),
-              source: z.string(),
-              usedFallback: z.boolean(),
-              rows: z.array(looseObjectOutputSchema),
-            })
-            .passthrough(),
-          z
-            .object({
-              seed: z.string(),
-              ok: z.literal(false),
-              error: z.string(),
-            })
-            .passthrough(),
-        ]),
-      ),
-      ...optionalMetaOutputSchema,
-    }),
-    annotations: {
-      readOnlyHint: false,
-      openWorldHint: true,
-      destructiveHint: false,
-    },
-  },
-  handler: withMcpProjectAuth(async (args: Args, context) => {
-    const results = await Promise.all(
-      args.seeds.map(async (item) => {
-        try {
-          const { locationCode, languageCode } = resolveMarket(
-            item,
-            context.project,
-          );
-          assertLanguageForLocation(locationCode, languageCode);
-          const data = await (
-            await getKeywords()
-          ).research(
-            {
-              projectId: args.projectId,
-              keywords: [item.seed],
-              locationCode,
-              languageCode,
-              locationName: item.locationName,
-              resultLimit: args.resultLimit ?? 150,
-              mode: "auto",
-              clickstream: args.includeClickstreamData ?? false,
-              groupKeywords: args.groupKeywords ?? false,
-            },
-            context.billing,
-          );
-          return {
-            seed: item.seed,
-            ok: true as const,
-            locationName: item.locationName,
-            rowCount: data.rows.length,
-            source: data.source,
-            usedFallback: data.usedFallback,
-            rows: data.rows.map(toResearchRow),
-          };
-        } catch (error) {
-          return {
-            seed: item.seed,
-            ok: false as const,
-            error: toolErrorMessage(error),
-          };
-        }
+export function buildResearchKeywordsTool(
+  getKeywords: KeywordToolResolver<"research">,
+) {
+  return {
+    name: "research_keywords",
+    config: {
+      title: "Research keywords (bulk)",
+      description:
+        "Research keyword data (search volume, difficulty, CPC, related ideas) for 1-5 seed keywords in one call. Charges credits per seed (~54 at the default result limit, ~110 at 500, plus ~40 more (~95 at 500) when an obscure seed needs a fallback lookup; flat ~96 for countries served from Google Ads data, where difficulty/intent are unavailable). Returns per-seed results — a single bad seed won't fail the batch.",
+      inputSchema,
+      outputSchema: z.looseObject({
+        results: z.array(
+          z.union([
+            z
+              .object({
+                seed: z.string(),
+                ok: z.literal(true),
+                rowCount: z.number(),
+                source: z.string(),
+                usedFallback: z.boolean(),
+                rows: z.array(looseObjectOutputSchema),
+              })
+              .passthrough(),
+            z
+              .object({
+                seed: z.string(),
+                ok: z.literal(false),
+                error: z.string(),
+              })
+              .passthrough(),
+          ]),
+        ),
+        ...optionalMetaOutputSchema,
       }),
-    );
-
-    const okCount = results.filter((r) => r.ok).length;
-    const failCount = results.length - okCount;
-    // One text budget for the whole response, split across the seeds.
-    const budget = sectionTableBudget(results.length);
-    const text =
-      results
-        .map((r) => {
-          if (!r.ok) {
-            return `## "${r.seed}" — FAILED\n${r.error}`;
+      annotations: {
+        readOnlyHint: false,
+        openWorldHint: true,
+        destructiveHint: false,
+      },
+    },
+    handler: withMcpProjectAuth(async (args: Args, context) => {
+      const results = await Promise.all(
+        args.seeds.map(async (item) => {
+          try {
+            const { locationCode, languageCode } = resolveMarket(
+              item,
+              context.project,
+            );
+            assertLanguageForLocation(locationCode, languageCode);
+            const data = await (
+              await getKeywords()
+            ).research(
+              {
+                projectId: args.projectId,
+                keywords: [item.seed],
+                locationCode,
+                languageCode,
+                locationName: item.locationName,
+                resultLimit: args.resultLimit ?? 150,
+                mode: "auto",
+                clickstream: args.includeClickstreamData ?? false,
+                groupKeywords: args.groupKeywords ?? false,
+              },
+              context.billing,
+            );
+            return {
+              seed: item.seed,
+              ok: true as const,
+              locationName: item.locationName,
+              rowCount: data.rows.length,
+              source: data.source,
+              usedFallback: data.usedFallback,
+              rows: data.rows.map(toResearchRow),
+            };
+          } catch (error) {
+            return {
+              seed: item.seed,
+              ok: false as const,
+              error: toolErrorMessage(error),
+            };
           }
-          const scope = r.locationName
-            ? `, volume/CPC/competition for ${r.locationName}, KD/intent national`
-            : "";
-          const header = `## "${r.seed}" — ${r.rowCount} keywords (source: ${r.source}${r.usedFallback ? ", fallback" : ""}${scope})`;
-          if (r.rowCount === 0) {
-            return `${header}\n(no keywords returned)`;
-          }
-          return `${header}\n${formatMcpTable(r.rows, RESEARCH_COLUMNS, budget)}`;
-        })
-        .join("\n\n") +
-      `\n\nResearched ${okCount} of ${results.length} seeds${failCount > 0 ? ` (${failCount} failed)` : ""}. Columns: volume = monthly searches, KD = keyword difficulty (0-100), CPC in USD, competition = paid competition (0-1); "—" = unavailable. Google Ads close variants may share search volumes; do not add their volumes together.`;
+        }),
+      );
 
-    return mcpResponse({
-      text,
-      meta: buildProjectMeta(
-        context,
-        args.projectId,
-        `/p/${args.projectId}/keywords`,
-      ),
-      structuredContent: { results },
-    });
-  }),
-};
+      const okCount = results.filter((r) => r.ok).length;
+      const failCount = results.length - okCount;
+      // One text budget for the whole response, split across the seeds.
+      const budget = sectionTableBudget(results.length);
+      const text =
+        results
+          .map((r) => {
+            if (!r.ok) {
+              return `## "${r.seed}" — FAILED\n${r.error}`;
+            }
+            const scope = r.locationName
+              ? `, volume/CPC/competition for ${r.locationName}, KD/intent national`
+              : "";
+            const header = `## "${r.seed}" — ${r.rowCount} keywords (source: ${r.source}${r.usedFallback ? ", fallback" : ""}${scope})`;
+            if (r.rowCount === 0) {
+              return `${header}\n(no keywords returned)`;
+            }
+            return `${header}\n${formatMcpTable(r.rows, RESEARCH_COLUMNS, budget)}`;
+          })
+          .join("\n\n") +
+        `\n\nResearched ${okCount} of ${results.length} seeds${failCount > 0 ? ` (${failCount} failed)` : ""}. Columns: volume = monthly searches, KD = keyword difficulty (0-100), CPC in USD, competition = paid competition (0-1); "—" = unavailable. Google Ads close variants may share search volumes; do not add their volumes together.`;
+
+      return mcpResponse({
+        text,
+        meta: buildProjectMeta(
+          context,
+          args.projectId,
+          `/p/${args.projectId}/keywords`,
+        ),
+        structuredContent: { results },
+      });
+    }),
+  };
+}

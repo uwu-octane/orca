@@ -1,6 +1,6 @@
 import { z } from "zod";
 // FORK: business operations resolve the installed Keywords domain.
-import { getKeywords } from "@/plugins/server/context";
+import type { KeywordToolResolver } from "../contracts";
 import { mcpResponse } from "@/server/mcp/formatters";
 import { buildProjectMeta } from "@/server/mcp/context";
 import { optionalMetaOutputSchema } from "@/server/mcp/output-schemas";
@@ -46,70 +46,79 @@ const inputSchema = {
 
 type Args = z.infer<z.ZodObject<typeof inputSchema>>;
 
-export const saveKeywordsTool = {
-  name: "save_keywords",
-  config: {
-    title: "Save keywords",
-    description:
-      "Save keywords to a project's saved-keywords list. Uses no credits — does not call DataForSEO. Idempotent: re-saving an existing keyword is a no-op. If tags are provided, missing tags may be created. By default tags are appended; set tagMode=replace to remove existing tags from these saved keywords before applying the provided tags, which is useful for reorganizing keywords into page/topic clusters. Ask the user for confirmation before applying or replacing tags broadly.",
-    inputSchema,
-    outputSchema: z.looseObject({
-      projectId: z.string(),
-      savedCount: z.number(),
-      keywords: z.array(z.string()),
-      tags: z.array(z.string()),
-      tagMode: z.enum(["append", "replace"]),
-      locationCode: z.number(),
-      languageCode: z.string(),
-      ...optionalMetaOutputSchema,
-    }),
-    annotations: {
-      readOnlyHint: false,
-      openWorldHint: false,
-      destructiveHint: true,
+export function buildSaveKeywordsTool(
+  getKeywords: KeywordToolResolver<"saveKeywords">,
+) {
+  return {
+    name: "save_keywords",
+    config: {
+      title: "Save keywords",
+      description:
+        "Save keywords to a project's saved-keywords list. Uses no credits — does not call DataForSEO. Idempotent: re-saving an existing keyword is a no-op. If tags are provided, missing tags may be created. By default tags are appended; set tagMode=replace to remove existing tags from these saved keywords before applying the provided tags, which is useful for reorganizing keywords into page/topic clusters. Ask the user for confirmation before applying or replacing tags broadly.",
+      inputSchema,
+      outputSchema: z.looseObject({
+        projectId: z.string(),
+        savedCount: z.number(),
+        keywords: z.array(z.string()),
+        tags: z.array(z.string()),
+        tagMode: z.enum(["append", "replace"]),
+        locationCode: z.number(),
+        languageCode: z.string(),
+        ...optionalMetaOutputSchema,
+      }),
+      annotations: {
+        readOnlyHint: false,
+        openWorldHint: false,
+        destructiveHint: true,
+      },
     },
-  },
-  handler: withMcpProjectAuth(async (args: Args, context) => {
-    if (args.tagMode === "replace" && (args.tags?.length ?? 0) === 0) {
-      throw new Error("Replacement tags are required when tagMode is replace.");
-    }
+    handler: withMcpProjectAuth(async (args: Args, context) => {
+      if (args.tagMode === "replace" && (args.tags?.length ?? 0) === 0) {
+        throw new Error(
+          "Replacement tags are required when tagMode is replace.",
+        );
+      }
 
-    const { locationCode, languageCode } = resolveMarket(args, context.project);
+      const { locationCode, languageCode } = resolveMarket(
+        args,
+        context.project,
+      );
 
-    await (
-      await getKeywords()
-    ).saveKeywords({
-      projectId: args.projectId,
-      keywords: args.keywords,
-      metrics: args.metrics,
-      tags: args.tags,
-      tagMode: args.tagMode ?? "append",
-      locationCode,
-      languageCode,
-    });
-
-    const tagText =
-      args.tags && args.tags.length > 0
-        ? ` with tag(s): ${args.tags.join(", ")}`
-        : "";
-    const modeText = args.tagMode === "replace" ? " Replaced tags." : "";
-
-    return mcpResponse({
-      text: `Saved ${args.keywords.length} keyword(s)${tagText} to project ${args.projectId}.${modeText}`,
-      meta: buildProjectMeta(
-        context,
-        args.projectId,
-        `/p/${args.projectId}/saved`,
-      ),
-      structuredContent: {
+      await (
+        await getKeywords()
+      ).saveKeywords({
         projectId: args.projectId,
-        savedCount: args.keywords.length,
         keywords: args.keywords,
-        tags: args.tags ?? [],
+        metrics: args.metrics,
+        tags: args.tags,
         tagMode: args.tagMode ?? "append",
         locationCode,
         languageCode,
-      },
-    });
-  }),
-};
+      });
+
+      const tagText =
+        args.tags && args.tags.length > 0
+          ? ` with tag(s): ${args.tags.join(", ")}`
+          : "";
+      const modeText = args.tagMode === "replace" ? " Replaced tags." : "";
+
+      return mcpResponse({
+        text: `Saved ${args.keywords.length} keyword(s)${tagText} to project ${args.projectId}.${modeText}`,
+        meta: buildProjectMeta(
+          context,
+          args.projectId,
+          `/p/${args.projectId}/saved`,
+        ),
+        structuredContent: {
+          projectId: args.projectId,
+          savedCount: args.keywords.length,
+          keywords: args.keywords,
+          tags: args.tags ?? [],
+          tagMode: args.tagMode ?? "append",
+          locationCode,
+          languageCode,
+        },
+      });
+    }),
+  };
+}

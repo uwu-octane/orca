@@ -1,5 +1,9 @@
 # Fork maintenance log
 
+## Cordis domain review
+
+The four domain extraction commits were reviewed together. Keyword tools now bind their registering Cordis context instead of the global runtime. AI configuration, SAM sessions, Google token operations and Google discovery clients enforce their owner's lifetime. The SAM MCP adapter propagates cancellation through project authorization before dispatching business work. Shared GSC/GA4 clients accept an optional discovery lifetime; existing report callers and metered request settlement keep their behavior. No provider, fallback, retry or DNS policy changed. Review details are in `docs/maintainers/domain-plugins.md`.
+
 ## 2026-10-23 Keywords domain
 
 The `keywords` plugin owns both research providers' orchestration, cache semantics, metrics and saved-keyword repositories, SERP analysis, dimension generation, and research/saved-keyword UI state. Shared routes and server functions mount or call the installed domain. Keyword MCP tools now belong to the domain and are contributed to SAM with reversible registrations, retaining the existing project binding, authorization and metering adapter. The dimension-only agent registry is retired. Query meanings, cache identities, SQL tables, billing and fallback policies remain unchanged. Common location data and search-term parsing stay shared instead of depending on keyword UI internals.

@@ -15,14 +15,14 @@ vi.mock("cloudflare:workers", () => ({
 }));
 vi.mock("@/db", () => ({ withPgClient: (fn: () => unknown) => fn() }));
 vi.mock("@/plugins/ai/server/configuration", () => ({
-  configuration: {
+  createConfiguration: () => ({
     resolve: async () => ({
       apiKey: "test-key",
       timeoutMs: 60000,
       revision: "r1",
     }),
     recordUse: async () => {},
-  },
+  }),
 }));
 
 let ctx: Context;

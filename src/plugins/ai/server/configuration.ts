@@ -96,123 +96,129 @@ function summary(
   };
 }
 
-async function getConfig(scope: AiProviderScope, provider: AiProvider) {
-  const row = await AiProviderConfigRepository.get(scope, provider);
-  return row ? summary(row) : null;
-}
+export function createConfiguration(signal: AbortSignal) {
+  async function getConfig(scope: AiProviderScope, provider: AiProvider) {
+    signal.throwIfAborted();
+    const row = await AiProviderConfigRepository.get(scope, provider);
+    return row ? summary(row) : null;
+  }
 
-async function saveConfig(raw: SaveAiProviderConfig, scope: AiProviderScope) {
-  const input = saveAiProviderConfigSchema.parse(raw);
-  if (
-    input.projectId !== scope.projectId ||
-    !(await AiProviderConfigRepository.hasProject(scope))
-  )
-    throw new AppError("NOT_FOUND");
-  await validateEndpoint(input);
-  const previous = await AiProviderConfigRepository.get(scope, input.provider);
-  if ((previous?.revision ?? null) !== input.revision)
-    throw new AppError("CONFLICT");
-
-  let encryptedApiKey: string | null = null;
-  if (input.credential.action === "keep") {
-    // Never replay an old credential to a newly selected endpoint/provider.
+  async function saveConfig(raw: SaveAiProviderConfig, scope: AiProviderScope) {
+    signal.throwIfAborted();
+    const input = saveAiProviderConfigSchema.parse(raw);
     if (
-      !previous ||
-      previous.provider !== input.provider ||
-      previous.endpoint !== input.endpoint
+      input.projectId !== scope.projectId ||
+      !(await AiProviderConfigRepository.hasProject(scope))
     )
-      throw new AppError("AI_PROVIDER_CONFIG_INVALID");
-    encryptedApiKey = previous.encryptedApiKey;
-  } else if (input.credential.action === "replace") {
-    encryptedApiKey = await symmetricEncrypt({
-      key: await encryptionKey(),
-      data: input.credential.value,
-    });
-  }
-  if (input.provider !== "systemone" && !encryptedApiKey)
-    throw new AppError("AI_PROVIDER_CONFIG_INVALID");
-  const replacing = input.credential.action === "replace";
-  const saved = await AiProviderConfigRepository.save(
-    scope,
-    {
-      projectId: scope.projectId,
-      provider: input.provider,
-      endpoint: input.endpoint,
-      timeoutMs: input.timeoutMs,
-      encryptedApiKey,
-      keyName:
-        input.credential.action === "clear"
-          ? null
-          : (input.credential.name ?? previous?.keyName ?? null),
-      // Short custom credentials must never be returned in full as a suffix.
-      keyLastFour:
-        input.credential.action === "replace"
-          ? input.credential.value.length > 8
-            ? input.credential.value.slice(-4)
-            : null
-          : input.credential.action === "keep"
-            ? previous.keyLastFour
-            : null,
-      keyAddedAt: replacing
-        ? new Date().toISOString()
-        : input.credential.action === "keep"
-          ? previous.keyAddedAt
-          : null,
-      ...(input.credential.action !== "keep" ? { lastUsedAt: null } : {}),
-      revision: crypto.randomUUID(),
-    },
-    input.revision,
-  );
-  if (saved.length === 0) throw new AppError("CONFLICT");
-  return getConfig(scope, input.provider);
-}
+      throw new AppError("NOT_FOUND");
+    await validateEndpoint(input);
+    const previous = await AiProviderConfigRepository.get(
+      scope,
+      input.provider,
+    );
+    if ((previous?.revision ?? null) !== input.revision)
+      throw new AppError("CONFLICT");
 
-async function removeConfig(
-  scope: AiProviderScope,
-  provider: AiProvider,
-  revision: string,
-) {
-  if (
-    (await AiProviderConfigRepository.remove(scope, provider, revision))
-      .length === 0
-  )
-    throw new AppError("CONFLICT");
-}
-
-async function resolve(scope: AiProviderScope, provider: AiProvider) {
-  const row = await AiProviderConfigRepository.get(scope, provider);
-  if (!row) throw new AppError("AI_PROVIDER_NOT_CONFIGURED");
-  await validateEndpoint(row);
-  let apiKey: string | undefined;
-  if (row.encryptedApiKey) {
-    const key = await encryptionKey();
-    try {
-      apiKey = await symmetricDecrypt({ key, data: row.encryptedApiKey });
-    } catch {
-      throw new AppError("AI_PROVIDER_CONFIG_INVALID");
+    let encryptedApiKey: string | null = null;
+    if (input.credential.action === "keep") {
+      // Never replay an old credential to a newly selected endpoint/provider.
+      if (
+        !previous ||
+        previous.provider !== input.provider ||
+        previous.endpoint !== input.endpoint
+      )
+        throw new AppError("AI_PROVIDER_CONFIG_INVALID");
+      encryptedApiKey = previous.encryptedApiKey;
+    } else if (input.credential.action === "replace") {
+      encryptedApiKey = await symmetricEncrypt({
+        key: await encryptionKey(),
+        data: input.credential.value,
+      });
     }
+    if (input.provider !== "systemone" && !encryptedApiKey)
+      throw new AppError("AI_PROVIDER_CONFIG_INVALID");
+    const replacing = input.credential.action === "replace";
+    signal.throwIfAborted();
+    const saved = await AiProviderConfigRepository.save(
+      scope,
+      {
+        projectId: scope.projectId,
+        provider: input.provider,
+        endpoint: input.endpoint,
+        timeoutMs: input.timeoutMs,
+        encryptedApiKey,
+        keyName:
+          input.credential.action === "clear"
+            ? null
+            : (input.credential.name ?? previous?.keyName ?? null),
+        // Short custom credentials must never be returned in full as a suffix.
+        keyLastFour:
+          input.credential.action === "replace"
+            ? input.credential.value.length > 8
+              ? input.credential.value.slice(-4)
+              : null
+            : input.credential.action === "keep"
+              ? previous.keyLastFour
+              : null,
+        keyAddedAt: replacing
+          ? new Date().toISOString()
+          : input.credential.action === "keep"
+            ? previous.keyAddedAt
+            : null,
+        ...(input.credential.action !== "keep" ? { lastUsedAt: null } : {}),
+        revision: crypto.randomUUID(),
+      },
+      input.revision,
+    );
+    if (saved.length === 0) throw new AppError("CONFLICT");
+    return getConfig(scope, input.provider);
   }
-  return { ...summary(row), apiKey };
-}
 
-async function recordUse(
-  scope: AiProviderScope,
-  provider: AiProvider,
-  revision: string,
-) {
-  // Reject a stale/deleted connection before sending a paid request. A request
-  // already sent cannot be recalled; upstream revocation belongs to the provider.
-  if (
-    (await AiProviderConfigRepository.recordUse(scope, provider, revision))
-      .length === 0
-  )
-    throw new AppError("CONFLICT");
-}
+  async function removeConfig(
+    scope: AiProviderScope,
+    provider: AiProvider,
+    revision: string,
+  ) {
+    signal.throwIfAborted();
+    if (
+      (await AiProviderConfigRepository.remove(scope, provider, revision))
+        .length === 0
+    )
+      throw new AppError("CONFLICT");
+  }
 
-export const configuration = {
-  recordUse,
-  getConfig,
-  saveConfig,
-  removeConfig,
-  resolve,
-} as const;
+  async function resolve(scope: AiProviderScope, provider: AiProvider) {
+    signal.throwIfAborted();
+    const row = await AiProviderConfigRepository.get(scope, provider);
+    if (!row) throw new AppError("AI_PROVIDER_NOT_CONFIGURED");
+    await validateEndpoint(row);
+    let apiKey: string | undefined;
+    if (row.encryptedApiKey) {
+      const key = await encryptionKey();
+      try {
+        apiKey = await symmetricDecrypt({ key, data: row.encryptedApiKey });
+      } catch {
+        throw new AppError("AI_PROVIDER_CONFIG_INVALID");
+      }
+    }
+    signal.throwIfAborted();
+    return { ...summary(row), apiKey };
+  }
+
+  async function recordUse(
+    scope: AiProviderScope,
+    provider: AiProvider,
+    revision: string,
+  ) {
+    signal.throwIfAborted();
+    // Reject a stale/deleted connection before sending a paid request. A request
+    // already sent cannot be recalled; upstream revocation belongs to the provider.
+    if (
+      (await AiProviderConfigRepository.recordUse(scope, provider, revision))
+        .length === 0
+    )
+      throw new AppError("CONFLICT");
+  }
+
+  return { recordUse, getConfig, saveConfig, removeConfig, resolve };
+}

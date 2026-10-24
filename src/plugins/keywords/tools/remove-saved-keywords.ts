@@ -1,6 +1,6 @@
 import { z } from "zod";
 // FORK: business operations resolve the installed Keywords domain.
-import { getKeywords } from "@/plugins/server/context";
+import type { KeywordToolResolver } from "../contracts";
 import { buildProjectMeta } from "@/server/mcp/context";
 import { mcpResponse } from "@/server/mcp/formatters";
 import { optionalMetaOutputSchema } from "@/server/mcp/output-schemas";
@@ -17,47 +17,51 @@ const inputSchema = {
 
 type Args = z.infer<z.ZodObject<typeof inputSchema>>;
 
-export const removeSavedKeywordsTool = {
-  name: "remove_saved_keywords",
-  config: {
-    title: "Remove saved keywords",
-    description:
-      "Permanently deletes keywords from a project's saved-keywords list by their row ID. Uses no credits — does not call DataForSEO. Missing, foreign-project, and repeated IDs are ignored; deletedCount reports rows actually removed. This does not affect Rank Tracking; use remove_rank_tracking_keywords for that list separately.",
-    inputSchema,
-    outputSchema: z
-      .object({
-        projectId: z.string(),
-        requested: z.number(),
-        deletedCount: z.number(),
-        ...optionalMetaOutputSchema,
-      })
-      .passthrough(),
-    annotations: {
-      readOnlyHint: false,
-      openWorldHint: false,
-      destructiveHint: true,
-    },
-  },
-  handler: withMcpProjectAuth(async (args: Args, context) => {
-    const requested = args.savedKeywordIds.length;
-    const result = await (
-      await getKeywords()
-    ).removeSavedKeywords(args.projectId, {
-      projectId: args.projectId,
-      savedKeywordIds: args.savedKeywordIds,
-    });
-    return mcpResponse({
-      text: `Deleted ${result.deletedCount} of ${requested} requested saved keyword${requested === 1 ? "" : "s"}.`,
-      meta: buildProjectMeta(
-        context,
-        args.projectId,
-        `/p/${args.projectId}/saved`,
-      ),
-      structuredContent: {
-        projectId: args.projectId,
-        requested,
-        deletedCount: result.deletedCount,
+export function buildRemoveSavedKeywordsTool(
+  getKeywords: KeywordToolResolver<"removeSavedKeywords">,
+) {
+  return {
+    name: "remove_saved_keywords",
+    config: {
+      title: "Remove saved keywords",
+      description:
+        "Permanently deletes keywords from a project's saved-keywords list by their row ID. Uses no credits — does not call DataForSEO. Missing, foreign-project, and repeated IDs are ignored; deletedCount reports rows actually removed. This does not affect Rank Tracking; use remove_rank_tracking_keywords for that list separately.",
+      inputSchema,
+      outputSchema: z
+        .object({
+          projectId: z.string(),
+          requested: z.number(),
+          deletedCount: z.number(),
+          ...optionalMetaOutputSchema,
+        })
+        .passthrough(),
+      annotations: {
+        readOnlyHint: false,
+        openWorldHint: false,
+        destructiveHint: true,
       },
-    });
-  }),
-};
+    },
+    handler: withMcpProjectAuth(async (args: Args, context) => {
+      const requested = args.savedKeywordIds.length;
+      const result = await (
+        await getKeywords()
+      ).removeSavedKeywords(args.projectId, {
+        projectId: args.projectId,
+        savedKeywordIds: args.savedKeywordIds,
+      });
+      return mcpResponse({
+        text: `Deleted ${result.deletedCount} of ${requested} requested saved keyword${requested === 1 ? "" : "s"}.`,
+        meta: buildProjectMeta(
+          context,
+          args.projectId,
+          `/p/${args.projectId}/saved`,
+        ),
+        structuredContent: {
+          projectId: args.projectId,
+          requested,
+          deletedCount: result.deletedCount,
+        },
+      });
+    }),
+  };
+}

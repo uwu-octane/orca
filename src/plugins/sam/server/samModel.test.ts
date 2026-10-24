@@ -13,10 +13,10 @@ const mocks = vi.hoisted(() => ({ config: vi.fn(), recordUse: vi.fn() }));
 vi.mock("cloudflare:workers", () => ({ env: {} }));
 vi.mock("@/db", () => ({ withPgClient: (fn: () => unknown) => fn() }));
 vi.mock("@/plugins/ai/server/configuration", () => ({
-  configuration: {
+  createConfiguration: () => ({
     resolve: mocks.config,
     recordUse: mocks.recordUse,
-  },
+  }),
 }));
 const scope = { projectId: "project-1", organizationId: "org-1" };
 const params = {

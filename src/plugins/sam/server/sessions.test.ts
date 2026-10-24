@@ -167,3 +167,17 @@ it("bootstraps hosted billing only after authorizing the session", async () => {
   ).toBeUndefined();
   expect(mocks.customer).toHaveBeenCalledWith(expect.objectContaining(scope));
 });
+
+it("rejects session creation through a retained SAM service after unload", async () => {
+  const isolated = await createSamTestRuntime();
+  try {
+    const sessions = isolated.sam.sessions;
+    await isolated.fiber.dispose();
+    await expect(sessions.create(scope)).rejects.toThrow(/not active/);
+    expect(
+      (await fixture.client.execute("SELECT id FROM sam_sessions")).rows,
+    ).toHaveLength(0);
+  } finally {
+    await isolated.fiber.dispose();
+  }
+});

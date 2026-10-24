@@ -6,25 +6,43 @@ import SamService from "@/plugins/sam/server";
 import { makeToolContext } from "@/server/mcp/tools/tool-test-support";
 import KeywordsService from ".";
 
+const projectAccess = vi.hoisted(() => vi.fn(async () => ({ id: "p1" })));
+
 vi.mock("cloudflare:workers", () => ({
   env: {},
+  waitUntil: (work: Promise<unknown>) => work,
   DurableObject: class {
     kind = "mock";
   },
 }));
 vi.mock("@/db", () => ({ withPgClient: (fn: () => unknown) => fn() }));
+vi.mock("@/plugins/server/context", () => ({
+  getKeywords: () => {
+    throw new Error("Unexpected global keyword lookup");
+  },
+}));
+vi.mock("@/server/features/projects/services/ProjectService", () => ({
+  ProjectService: { getProjectForOrganization: projectAccess },
+}));
+vi.mock("@/server/lib/posthog", () => ({
+  captureServerEvent: async () => {},
+  captureServerError: async () => {},
+}));
+vi.mock("@/server/lib/self-host-telemetry", () => ({
+  incrementSelfHostMcpToolCallCount: async () => {},
+}));
 vi.mock("@/server/features/projects/repositories/ProjectRepository", () => ({
   ProjectRepository: { getProjectForOrganization: async () => ({ id: "p1" }) },
 }));
 vi.mock("@/plugins/ai/server/configuration", () => ({
-  configuration: {
+  createConfiguration: () => ({
     resolve: async () => ({
       apiKey: "test-key",
       timeoutMs: 60000,
       revision: "r1",
     }),
     recordUse: async () => {},
-  },
+  }),
 }));
 let ctx: Context;
 const scope = { projectId: "p1", organizationId: "org_1" };
@@ -39,6 +57,7 @@ const context = {
 };
 beforeEach(() => {
   ctx = new Context();
+  projectAccess.mockResolvedValue({ id: "p1" });
 });
 afterEach(async () => {
   await ctx.fiber.dispose();
@@ -108,3 +127,58 @@ it.each(["keywords", "ai"] as const)(
     expect(fetch).toHaveBeenCalledTimes(1);
   },
 );
+
+it("executes contributed keyword tools in the registering context", async () => {
+  await ctx.plugin(KeywordsService);
+  await ctx.plugin(AiService, { textProvider: "vercel_gateway" });
+  await ctx.plugin(SamService);
+  vi.spyOn(ctx.keywords, "getSavedKeywords").mockResolvedValue({
+    rows: [],
+    totalCount: 0,
+    tags: [],
+  });
+  const tools = await ctx.sam.buildTools(context);
+  expect(
+    await tools.list_saved_keywords.execute!(
+      {},
+      { toolCallId: "t", messages: [] },
+    ),
+  ).toMatchObject({ data: { rows: [], totalCount: 0 } });
+});
+
+it("does not dispatch a keyword tool after SAM is unloaded during authorization", async () => {
+  await ctx.plugin(KeywordsService);
+  await ctx.plugin(AiService, { textProvider: "vercel_gateway" });
+  const sam = ctx.plugin(SamService);
+  await sam;
+  const readKeywords = vi
+    .spyOn(ctx.keywords, "getSavedKeywords")
+    .mockResolvedValue({
+      rows: [],
+      totalCount: 0,
+      tags: [],
+    });
+  let beginAuthorization!: () => void;
+  const authorizing = new Promise<void>((resolve) => {
+    beginAuthorization = resolve;
+  });
+  let finishAuthorization!: () => void;
+  const authorized = new Promise<void>((resolve) => {
+    finishAuthorization = resolve;
+  });
+  projectAccess.mockImplementation(async () => {
+    beginAuthorization();
+    await authorized;
+    return { id: "p1" };
+  });
+  const tools = await ctx.sam.buildTools(context);
+  const pending: unknown = tools.list_saved_keywords.execute!(
+    {},
+    { toolCallId: "t", messages: [] },
+  );
+  await authorizing;
+  await sam.dispose();
+  finishAuthorization();
+  await pending;
+  expect(readKeywords).not.toHaveBeenCalled();
+});

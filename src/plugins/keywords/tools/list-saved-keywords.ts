@@ -1,6 +1,6 @@
 import { z } from "zod";
 // FORK: business operations resolve the installed Keywords domain.
-import { getKeywords } from "@/plugins/server/context";
+import type { KeywordToolResolver } from "../contracts";
 import { mcpResponse } from "@/server/mcp/formatters";
 import { buildProjectMeta } from "@/server/mcp/context";
 import { optionalMetaOutputSchema } from "@/server/mcp/output-schemas";
@@ -60,66 +60,70 @@ const inputSchema = {
     .describe("Maximum rows to return. Defaults to 100."),
 } as const;
 
-export const listSavedKeywordsTool = {
-  name: "list_saved_keywords",
-  config: {
-    title: "List saved keywords",
-    description:
-      "Lists keywords saved to a project (with cached metrics like search volume, difficulty, CPC, and tags if available). Uses no credits — reads from OpenSEO's database, no DataForSEO call. Each row includes its saved-keyword ID for remove_saved_keywords. Use tag filters when the user asks for a saved segment; multiple tags match ANY tag.",
-    inputSchema,
-    outputSchema: z.looseObject({
-      rows: z.array(savedKeywordOutputSchema),
-      totalCount: z.number(),
-      tags: z.array(
-        z.looseObject({ name: z.string(), keywordCount: z.number() }),
-      ),
-      ...optionalMetaOutputSchema,
-    }),
-    annotations: {
-      readOnlyHint: true,
-      openWorldHint: false,
-      destructiveHint: false,
-    },
-  },
-  handler: withMcpProjectAuth(
-    async (args: z.infer<z.ZodObject<typeof inputSchema>>, context) => {
-      const { rows, totalCount, tags } = await (
-        await getKeywords()
-      ).getSavedKeywords({
-        projectId: args.projectId,
-        search: args.search,
-        tagNames: args.tags,
-        page: 1,
-        pageSize: args.limit ?? 100,
-        sort: "createdAt",
-        order: "desc",
-      });
-      const text =
-        rows.length === 0
-          ? "No saved keywords yet."
-          : `Saved keywords (${rows.length} of ${totalCount}):\n` +
-            rows
-              .map((row) => {
-                const tagText =
-                  row.tags.length > 0
-                    ? `  tags:${row.tags.map((tag) => tag.name).join(",")}`
-                    : "";
-                return `- ${row.keyword}  id:${row.id}  vol:${row.searchVolume ?? "?"}  kd:${row.keywordDifficulty ?? "?"}  cpc:${row.cpc != null ? `$${row.cpc.toFixed(2)}` : "?"}${tagText}`;
-              })
-              .join("\n");
-      return mcpResponse({
-        text,
-        meta: buildProjectMeta(
-          context,
-          args.projectId,
-          `/p/${args.projectId}/saved`,
+export function buildListSavedKeywordsTool(
+  getKeywords: KeywordToolResolver<"getSavedKeywords">,
+) {
+  return {
+    name: "list_saved_keywords",
+    config: {
+      title: "List saved keywords",
+      description:
+        "Lists keywords saved to a project (with cached metrics like search volume, difficulty, CPC, and tags if available). Uses no credits — reads from OpenSEO's database, no DataForSEO call. Each row includes its saved-keyword ID for remove_saved_keywords. Use tag filters when the user asks for a saved segment; multiple tags match ANY tag.",
+      inputSchema,
+      outputSchema: z.looseObject({
+        rows: z.array(savedKeywordOutputSchema),
+        totalCount: z.number(),
+        tags: z.array(
+          z.looseObject({ name: z.string(), keywordCount: z.number() }),
         ),
-        structuredContent: {
-          rows: rows.map(toMcpRow),
-          totalCount,
-          tags: tags.map(toMcpTag),
-        },
-      });
+        ...optionalMetaOutputSchema,
+      }),
+      annotations: {
+        readOnlyHint: true,
+        openWorldHint: false,
+        destructiveHint: false,
+      },
     },
-  ),
-};
+    handler: withMcpProjectAuth(
+      async (args: z.infer<z.ZodObject<typeof inputSchema>>, context) => {
+        const { rows, totalCount, tags } = await (
+          await getKeywords()
+        ).getSavedKeywords({
+          projectId: args.projectId,
+          search: args.search,
+          tagNames: args.tags,
+          page: 1,
+          pageSize: args.limit ?? 100,
+          sort: "createdAt",
+          order: "desc",
+        });
+        const text =
+          rows.length === 0
+            ? "No saved keywords yet."
+            : `Saved keywords (${rows.length} of ${totalCount}):\n` +
+              rows
+                .map((row) => {
+                  const tagText =
+                    row.tags.length > 0
+                      ? `  tags:${row.tags.map((tag) => tag.name).join(",")}`
+                      : "";
+                  return `- ${row.keyword}  id:${row.id}  vol:${row.searchVolume ?? "?"}  kd:${row.keywordDifficulty ?? "?"}  cpc:${row.cpc != null ? `$${row.cpc.toFixed(2)}` : "?"}${tagText}`;
+                })
+                .join("\n");
+        return mcpResponse({
+          text,
+          meta: buildProjectMeta(
+            context,
+            args.projectId,
+            `/p/${args.projectId}/saved`,
+          ),
+          structuredContent: {
+            rows: rows.map(toMcpRow),
+            totalCount,
+            tags: tags.map(toMcpTag),
+          },
+        });
+      },
+    ),
+  };
+}

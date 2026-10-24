@@ -8,7 +8,7 @@ import {
   googleTargetingOptionsInputSchema,
 } from "@/types/schemas/google-keyword-targeting";
 
-import { googleAdsRequest } from "./client";
+import type { createGoogleAdsClient } from "./client";
 
 type Context = { projectId: string; organizationId: string };
 const locationFields =
@@ -22,44 +22,45 @@ function headers(config: GoogleAdsCredentials) {
   };
 }
 
-async function searchRows<T>(
-  config: GoogleAdsCredentials,
-  query: string,
-  row: z.ZodType<T>,
-) {
-  const schema = z.object({
-    results: z.array(row).optional(),
-    nextPageToken: z.string().optional(),
-  });
-  const rows: T[] = [];
-  const visited = new Set<string>();
-  let pageToken: string | undefined;
-  do {
-    const page = schema.safeParse(
-      await googleAdsRequest(
-        `https://googleads.googleapis.com/v25/customers/${config.customerId}/googleAds:search`,
-        {
-          method: "POST",
-          headers: headers(config),
-          body: JSON.stringify({ query, pageToken }),
-        },
-      ),
-    );
-    if (!page.success) throw new AppError("GOOGLE_ADS_REQUEST_FAILED");
-    rows.push(...(page.data.results ?? []));
-    pageToken = page.data.nextPageToken;
-    if (pageToken) {
-      if (visited.has(pageToken))
-        throw new AppError("GOOGLE_ADS_REQUEST_FAILED");
-      visited.add(pageToken);
-    }
-  } while (pageToken);
-  return rows;
-}
-
 export function createTargeting(
   credentials: (scope: Context) => Promise<GoogleAdsCredentials>,
+  googleAdsRequest: ReturnType<typeof createGoogleAdsClient>["request"],
 ) {
+  async function searchRows<T>(
+    config: GoogleAdsCredentials,
+    query: string,
+    row: z.ZodType<T>,
+  ) {
+    const schema = z.object({
+      results: z.array(row).optional(),
+      nextPageToken: z.string().optional(),
+    });
+    const rows: T[] = [];
+    const visited = new Set<string>();
+    let pageToken: string | undefined;
+    do {
+      const page = schema.safeParse(
+        await googleAdsRequest(
+          `https://googleads.googleapis.com/v25/customers/${config.customerId}/googleAds:search`,
+          {
+            method: "POST",
+            headers: headers(config),
+            body: JSON.stringify({ query, pageToken }),
+          },
+        ),
+      );
+      if (!page.success) throw new AppError("GOOGLE_ADS_REQUEST_FAILED");
+      rows.push(...(page.data.results ?? []));
+      pageToken = page.data.nextPageToken;
+      if (pageToken) {
+        if (visited.has(pageToken))
+          throw new AppError("GOOGLE_ADS_REQUEST_FAILED");
+        visited.add(pageToken);
+      }
+    } while (pageToken);
+    return rows;
+  }
+
   async function options(
     input: z.infer<typeof googleTargetingOptionsInputSchema>,
     context: Context,

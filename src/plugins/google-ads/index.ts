@@ -1,6 +1,6 @@
 import type { GoogleAdsService } from "./contracts";
 import type { Context } from "cordis";
-import { discoverGoogleAdsCustomers, googleAdsAccountEmail } from "./client";
+import { createGoogleAdsClient } from "./client";
 import { fetchGoogleKeywordIdeas } from "./keywordIdeas";
 import { createTargeting } from "./targeting";
 
@@ -14,12 +14,21 @@ declare module "cordis" {
 }
 
 export function apply(ctx: Context) {
+  const lifetime = new AbortController();
+  ctx.effect(
+    () => () => lifetime.abort(new Error("Google Ads plugin is not active")),
+  );
+  const client = createGoogleAdsClient(lifetime.signal);
   ctx.googleOAuth.registerAdsDiscovery({
-    discoverCustomers: discoverGoogleAdsCustomers,
-    accountEmail: googleAdsAccountEmail,
+    discoverCustomers: client.discoverCustomers,
+    accountEmail: client.accountEmail,
   });
   ctx.provide("googleAds", {
-    ...createTargeting((scope) => ctx.googleOAuth.ads.credentials(scope)),
-    keywordIdeas: fetchGoogleKeywordIdeas,
+    ...createTargeting(
+      (scope) => ctx.googleOAuth.ads.credentials(scope),
+      client.request,
+    ),
+    keywordIdeas: (input, credentials) =>
+      fetchGoogleKeywordIdeas(input, credentials, client.request),
   });
 }

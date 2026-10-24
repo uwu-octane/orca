@@ -30,10 +30,10 @@ vi.mock("@/server/features/projects/repositories/ProjectRepository", () => ({
   ProjectRepository: { getProjectForOrganization: mocks.project },
 }));
 vi.mock("@/plugins/ai/server/configuration", () => ({
-  configuration: {
+  createConfiguration: () => ({
     resolve: mocks.config,
     recordUse: mocks.recordUse,
-  },
+  }),
 }));
 
 const input: GenerateKeywordDimensionsInput = {

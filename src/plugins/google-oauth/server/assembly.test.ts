@@ -64,6 +64,93 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
+it("rejects token access through a retained OAuth service after unload", async () => {
+  const oauth = ctx.googleOAuth;
+  const input = {
+    userId: "u1",
+    providerId: "google-ads",
+    accountId: "google-a",
+  };
+  expect(await oauth.getGoogleAccessToken(input)).toBe("access");
+  await ctx.loader.remove("auth");
+  await expect(oauth.getGoogleAccessToken(input)).rejects.toThrow(/not active/);
+});
+
+it("aborts Ads discovery with its owning plugin", async () => {
+  let started!: () => void;
+  const ready = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  const finishes: Array<() => void> = [];
+  const signals: Array<AbortSignal | null | undefined> = [];
+  mocks.fetch.mockImplementation(
+    (_url, init) =>
+      new Promise((resolve) => {
+        signals.push(init?.signal);
+        finishes.push(() =>
+          resolve(
+            Response.json({ resourceNames: [], email: "owner@example.com" }),
+          ),
+        );
+        started();
+      }),
+  );
+  const pending = ctx.googleOAuth.ads.listAccounts({
+    projectId: "p1",
+    organizationId: "org1",
+    userId: "u1",
+  });
+  await ready;
+  await ctx.loader.remove("ads");
+  try {
+    expect(signals).toHaveLength(2);
+    expect(signals.every((signal) => signal?.aborted)).toBe(true);
+  } finally {
+    for (const finish of finishes) finish();
+    await pending;
+  }
+});
+
+it.each(["gsc", "ga4"] as const)(
+  "aborts %s property discovery when OAuth unloads",
+  async (integration) => {
+    await database.grant(
+      integration === "gsc" ? "google-search-console" : "google-analytics",
+    );
+    let started!: () => void;
+    const ready = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    let finish!: () => void;
+    let signal: AbortSignal | null | undefined;
+    let held = false;
+    mocks.fetch.mockImplementation((_url, init) => {
+      if (held)
+        return Promise.resolve(Response.json({ email: "owner@example.com" }));
+      held = true;
+      return new Promise((resolve) => {
+        signal = init?.signal;
+        finish = () =>
+          resolve(Response.json({ siteEntry: [], accountSummaries: [] }));
+        started();
+      });
+    });
+    const input = { userId: "u1", projectId: "p1" };
+    const pending =
+      integration === "gsc"
+        ? ctx.googleOAuth.gsc.listSites(input)
+        : ctx.googleOAuth.ga4.listProperties(input);
+    await ready;
+    await ctx.loader.remove("auth");
+    try {
+      expect(signal?.aborted).toBe(true);
+    } finally {
+      finish();
+      await pending;
+    }
+  },
+);
+
 it("assembles discovery even when Ads precedes OAuth without reading credentials at boot", async () => {
   expect(mocks.fetch).not.toHaveBeenCalled();
   expect(mocks.auth).not.toHaveBeenCalled();

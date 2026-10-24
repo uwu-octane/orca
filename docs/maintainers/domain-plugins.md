@@ -67,3 +67,19 @@ SAM validation: 256 test files / 1,843 tests passed, followed by 43 focused test
 SAM checkpoint: `3ffc5cfa`. Keywords is stacked on that commit in `codex/cordis-keywords`.
 
 Keywords validation: 256 test files / 1,846 tests passed; `pnpm ci:check` and `pnpm build` passed. Real SQL tests cover Google metrics persistence (including cache hits) and saved-keyword/tag isolation. Service tests cover optional dependency activation, SAM contribution disposal and cancellation of dimension generation when Keywords or AI is unloaded. External MCP and SAM retain the shared authorization, billing and output adapter. After rebuilding, the local app and all four domains’ client entry modules return HTTP 200. Supplier responses were mocked; visual UI verification remains with the maintainer. No push or merge was performed.
+
+## Four-commit review
+
+Reviewed `a1d5dc81`, `35181007`, `3ffc5cfa` and `d5623eb7` together. Services, repositories, provider implementations and client state are domain-owned. Framework route mounts, the static Durable Object export and MCP transport registration are integration boundaries, not parallel legacy implementations.
+
+The review found and corrected these lifetime and context leaks:
+
+- Keyword tools registered with SAM resolved the process-global Keywords service. Tool builders now bind the registering instance; external MCP supplies its own runtime resolver at its transport boundary.
+- AI configuration and SAM session objects retained after plugin disposal could still mutate SQL. Their actual operation implementations now close over their owner's lifetime and check it before new writes.
+- Retained Google authorization could still return access tokens. Token operations now observe the OAuth lifetime, including refresh requests and grant writes.
+- Ads discovery, GSC discovery and GA4 discovery requests were not canceled on unload. Their protocol clients now receive the owner's signal; cached GA4 tokens cannot start later requests after disposal.
+- SAM's MCP adapter dropped the tool cancellation signal. It now carries that signal through project authorization so business work does not begin after the turn or plugin is canceled.
+
+Eight regression cases failed before their corresponding fixes and passed afterward. Already-dispatched SQL transactions and metered research accounting retain their existing completion behavior; this is not a rollback mechanism. Provider selection, fallback, retry, DNS and billing policies are unchanged.
+
+Review validation: all 256 test files / 1,854 tests, `pnpm ci:check` and `pnpm build` passed. Supplier responses were mocked. The local application and all four client plugin entries returned HTTP 200 after restarting the development server. No live supplier calls or visual UI checks were performed. Review fixes are isolated on `codex/cordis-keywords`; no push or merge was performed.

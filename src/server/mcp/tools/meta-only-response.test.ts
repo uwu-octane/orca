@@ -1,3 +1,4 @@
+import { getKeywords } from "@/plugins/server/context";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { identity, sortBy } from "remeda";
@@ -49,19 +50,20 @@ const toolExports: Record<string, unknown> = {
   ...getDomainKeywordSuggestions,
   ...getDomainOverview,
   ...getRankTracker,
-  ...getSerpResults,
+  getSerpResultsTool: getSerpResults.buildGetSerpResultsTool(getKeywords),
   ...googleAnalyticsTools,
   ...listProjects,
-  ...listSavedKeywords,
+  listSavedKeywordsTool:
+    listSavedKeywords.buildListSavedKeywordsTool(getKeywords),
   ...localSeoTools,
   ...pinRankTrackingKeywords,
   ...projectContext,
   ...removeRankTrackingKeywords,
   ...reportTemplateTools,
   ...reportTools,
-  ...researchKeywords,
+  researchKeywordsTool: researchKeywords.buildResearchKeywordsTool(getKeywords),
   ...runRankTracker,
-  ...saveKeywords,
+  saveKeywordsTool: saveKeywords.buildSaveKeywordsTool(getKeywords),
   ...searchConsoleTools,
   ...siteAuditTools,
   ...whoami,

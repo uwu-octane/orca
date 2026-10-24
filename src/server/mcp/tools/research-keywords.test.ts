@@ -1,5 +1,7 @@
+import { getKeywords } from "@/plugins/server/context";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { researchKeywordsTool } from "@/plugins/keywords/tools/research-keywords";
+import { buildResearchKeywordsTool } from "@/plugins/keywords/tools/research-keywords";
+const researchKeywordsTool = buildResearchKeywordsTool(getKeywords);
 import { AppError } from "@/server/lib/errors";
 import { makeToolContext } from "./tool-test-support";
 

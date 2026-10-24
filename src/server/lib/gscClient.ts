@@ -86,6 +86,8 @@ export function createGscClient(opts: {
   userId: string;
   gscAccountId?: string;
   getAccessToken?: () => Promise<string>;
+  /** FORK: connection discovery is owned by the OAuth plugin's lifetime. */
+  signal?: AbortSignal;
 }) {
   async function getToken(): Promise<string> {
     try {
@@ -109,7 +111,9 @@ export function createGscClient(opts: {
     url: string,
     init?: { method?: string; body?: unknown },
   ): Promise<T> {
+    opts.signal?.throwIfAborted();
     const token = await getToken();
+    opts.signal?.throwIfAborted();
     const hasBody = init?.body !== undefined;
     const response = await fetch(url, {
       method: init?.method ?? "GET",
@@ -118,7 +122,9 @@ export function createGscClient(opts: {
         ...(hasBody ? { "Content-Type": "application/json" } : {}),
       },
       body: hasBody ? JSON.stringify(init?.body) : undefined,
+      signal: opts.signal,
     });
+    opts.signal?.throwIfAborted();
     if (!response.ok) {
       const body = await response.text().catch(() => "");
       throw new GscApiError(

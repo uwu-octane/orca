@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AppError } from "@/server/lib/errors";
-import { googleAdsRequest as request } from "@/plugins/google-ads/client";
+import type { createGoogleAdsClient } from "./client";
 import type {
   GoogleKeywordIdeasInput,
   GoogleKeywordResult,
@@ -61,6 +61,7 @@ import type { GoogleAdsCredentials } from "@/plugins/google-oauth/contracts";
 export async function fetchGoogleKeywordIdeas(
   input: GoogleKeywordIdeasInput,
   config: GoogleAdsCredentials,
+  request: ReturnType<typeof createGoogleAdsClient>["request"],
 ): Promise<GoogleKeywordResult> {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${config.accessToken}`,

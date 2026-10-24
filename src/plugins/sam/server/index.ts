@@ -7,7 +7,7 @@ import type {
   SamToolFactory,
   SamMcpToolDefinition,
 } from "../contracts";
-import { sessions } from "./sessions";
+import { createSessions } from "./sessions";
 
 declare module "cordis" {
   interface Context {
@@ -18,8 +18,8 @@ declare module "cordis" {
 /** Complete SAM domain; request identities belong to calls and DO instances. */
 export default class SamService extends Service {
   static inject = ["ai"];
-  readonly sessions = sessions;
   private readonly lifetime = new AbortController();
+  readonly sessions = createSessions(this.lifetime.signal);
   private readonly tools = new Map<
     string,
     { factory: SamToolFactory; lifetime: AbortController }
@@ -33,6 +33,7 @@ export default class SamService extends Service {
   }
 
   async setup(scope: AiProviderScope) {
+    this.lifetime.signal.throwIfAborted();
     const config = await this.ctx.ai.configuration.getConfig(
       scope,
       "vercel_gateway",
@@ -79,6 +80,7 @@ export default class SamService extends Service {
   }
 
   registerTool(name: string, factory: SamToolFactory) {
+    this.lifetime.signal.throwIfAborted();
     if (this.tools.has(name)) throw new Error(`Duplicate SAM tool: ${name}`);
     return this.ctx.effect(() => {
       const registration = { factory, lifetime: new AbortController() };

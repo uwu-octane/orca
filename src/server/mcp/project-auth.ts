@@ -75,7 +75,11 @@ export function withMcpProjectAuth<TArgs extends ProjectScopedArgs, TResult>(
   ) => Promise<TResult> | TResult,
 ) {
   return async (args: TArgs, toolContext: ToolContext) => {
+    // FORK: authorization may outlive a turn or plugin. Do not begin business
+    // work after cancellation; already dispatched billing/settlement stays intact.
+    toolContext.abortSignal?.throwIfAborted();
     const context = await requireProjectAccess(toolContext, args.projectId);
+    toolContext.abortSignal?.throwIfAborted();
     return handler(args, context);
   };
 }

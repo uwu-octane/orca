@@ -1,5 +1,7 @@
+import { getKeywords } from "@/plugins/server/context";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { removeSavedKeywordsTool } from "@/plugins/keywords/tools/remove-saved-keywords";
+import { buildRemoveSavedKeywordsTool } from "@/plugins/keywords/tools/remove-saved-keywords";
+const removeSavedKeywordsTool = buildRemoveSavedKeywordsTool(getKeywords);
 import { deleteReportTool } from "./report-tools";
 import { deleteReportTemplateTool } from "./report-template-tools";
 import { deleteSiteAuditTool } from "./site-audit-cleanup-tools";
