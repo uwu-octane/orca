@@ -55,7 +55,6 @@ jobs:
           cache-to: type=gha,mode=max,scope=oracle-arm64
   deploy:
     needs: image
-    if: vars.ORACLE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -71,13 +70,14 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/orca_deploy
           chmod 600 ~/.ssh/orca_deploy
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-      - name: Deploy immutable image
+      - name: Stage or deploy immutable image
         env:
+          MODE: ${{ vars.ORACLE_DEPLOY_ENABLED == 'true' && 'deploy' || 'stage' }}
           DIGEST: ${{ needs.image.outputs.digest }}
           REVISION: ${{ github.sha }}
           REGISTRY_TOKEN: ${{ github.token }}
         run: |
-          printf '%s' "$REGISTRY_TOKEN" | ssh -T -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15 -i ~/.ssh/orca_deploy orca-deploy@129.146.162.30 "deploy $DIGEST $REVISION"
+          printf '%s' "$REGISTRY_TOKEN" | ssh -T -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15 -i ~/.ssh/orca_deploy orca-deploy@129.146.162.30 "$MODE $DIGEST $REVISION"
       - name: Remove ephemeral SSH key
         if: always()
         run: rm -f ~/.ssh/orca_deploy

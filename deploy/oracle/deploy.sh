@@ -5,9 +5,10 @@ umask 077
 cd /opt/orca
 exec 9>/run/lock/orca-deploy.lock
 flock -n 9
-[[ -f postgres-ready ]]
 image="ghcr.io/uwu-octane/orca@$1"
 revision=$2
+mode=${3:-deploy}
+[[ "$mode" == stage || "$mode" == deploy ]]
 registry_config=$(mktemp -d)
 trap 'rm -rf "$registry_config"' EXIT
 # The workflow's short-lived token arrives over stdin, never as an argument.
@@ -15,6 +16,13 @@ docker --config "$registry_config" login ghcr.io -u uwu-octane --password-stdin 
 docker --config "$registry_config" pull "$image"
 [[ $(docker image inspect "$image" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}') == "$revision" ]]
 [[ $(docker image inspect "$image" --format '{{.Architecture}}') == arm64 ]]
+if [[ "$mode" == stage ]]; then
+  printf '%s\n' "$image" > staged-image
+  printf '%s\n' "$revision" > staged-revision
+  echo "Staged $revision"
+  exit 0
+fi
+[[ -f postgres-ready ]]
 previous=$(docker inspect orca --format '{{.Config.Image}}')
 stamp=$(date -u +%Y%m%dT%H%M%SZ)
 mkdir -p backups

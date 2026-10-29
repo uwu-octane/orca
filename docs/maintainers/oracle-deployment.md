@@ -9,11 +9,12 @@ from the maintained `orca` branch, not upstream `main`.
 ARM64 production image on GitHub, and publishes `ghcr.io/uwu-octane/orca`.
 Deployment uses the immutable digest and verifies the image's commit label.
 The server does not compile releases. `ORACLE_DEPLOY_ENABLED=true` enables
-promotion; leave it false while bootstrapping or migrating the database.
+promotion; when false, the workflow only pulls and stages the image while the
+current application keeps running.
 
 GitHub secrets `ORACLE_DEPLOY_KEY` and `ORACLE_KNOWN_HOSTS` provide a dedicated,
 host-key-pinned SSH identity. The server's `orca-deploy` user accepts only
-`deploy <sha256 digest> <commit SHA>` through a forced command. It has no shell,
+`stage <sha256 digest> <commit SHA>` or `deploy <sha256 digest> <commit SHA>` through a forced command. It has no shell,
 forwarding, Docker group membership, or unrestricted sudo access. The workflow's
 short-lived package token is passed on stdin and its temporary Docker login is
 removed after use. Application secrets stay on the server.
@@ -79,7 +80,8 @@ the job; there is no automatic database rollback. Diagnose before resuming.
 Never switch back to the stale SQLite snapshot after new PostgreSQL writes.
 
 Journald retains at most three days and 100 MB of system/container logs. It
-rotates files daily. Daily maintenance keeps the current and previous Orca
+rotates files daily. `X_LOCAL_OBSERVABILITY=false` disables the extra local
+SQLite log store; `X_LOCAL_EXPLORER=false` disables the development data explorer. Daily maintenance keeps the current and previous Orca
 images and removes deployment backups older than seven days. Cleanup never
 prunes volumes or shared database directories. Initial migration snapshots are
 kept separately. Routine off-server database backups are not configured.
