@@ -108,11 +108,7 @@ export function RankTrackingDetailHeader({
             </>
           )}
           {costEstimate && costEstimate.keywordCount > 0 && (
-            <>
-              {" "}
-              &middot;{" "}
-              {t("~${cost}/check", { cost: costEstimate.costUsd.toFixed(2) })}
-            </>
+            <> &middot; up to ${costEstimate.costUsd.toFixed(2)}/check</>
           )}
         </p>
       </div>

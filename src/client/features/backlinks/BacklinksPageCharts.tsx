@@ -42,7 +42,7 @@ export function BacklinksTrendChart({
   const { t } = useLocale();
   const trendChartConfig = {
     backlinks: { label: t("Backlinks"), color: "#2563eb" },
-    referringDomains: { label: t("Referring domains"), color: "#14b8a6" },
+    referringDomains: { label: t("Referring domains"), color: "#e69f00" },
   } satisfies ChartConfig;
 
   if (data.length === 0) {
@@ -99,8 +99,8 @@ export function BacklinksNewLostChart({
 }) {
   const { t } = useLocale();
   const newLostChartConfig = {
-    lostBacklinks: { label: t("Lost backlinks"), color: "#ef4444" },
-    newBacklinks: { label: t("New backlinks"), color: "#16a34a" },
+    lostBacklinks: { label: t("Lost backlinks"), color: "#d55e00" },
+    newBacklinks: { label: t("New backlinks"), color: "#2563eb" },
   } satisfies ChartConfig;
 
   if (data.length === 0) {

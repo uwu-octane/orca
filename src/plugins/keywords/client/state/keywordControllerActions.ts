@@ -1,3 +1,4 @@
+import { parseKeywordInput } from "@/shared/keyword-input";
 import { useLocale } from "@/plugins/client/context";
 import { useMemo } from "react";
 import { toast } from "sonner";
@@ -51,13 +52,6 @@ type SaveExportActionParams = {
   ) => void;
   setShowSaveDialog: (show: boolean) => void;
 };
-
-export function parseKeywordInput(value: string) {
-  return value
-    .split(/[\n,]/)
-    .map((keyword) => keyword.trim())
-    .filter(Boolean);
-}
 
 /**
  * Stable identity for a keyword-research request. Used to dedup the

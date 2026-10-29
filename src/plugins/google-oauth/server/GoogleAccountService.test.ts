@@ -14,6 +14,11 @@ import { createGoogleTestDatabase } from "./testDatabase";
 import { Ga4ConnectionRepository } from "./connections/Ga4ConnectionRepository";
 import { GscConnectionRepository } from "./connections/GscConnectionRepository";
 
+const oauth = vi.hoisted(() => ({
+  getGoogleAccessToken: vi.fn(),
+  revokeGoogleToken: vi.fn(),
+  deleteGscCache: vi.fn(),
+}));
 vi.mock("cloudflare:workers", () => ({ env: {} }));
 vi.mock("@/lib/auth", () => ({ getAuth: vi.fn() }));
 let database: Awaited<ReturnType<typeof createGoogleTestDatabase>>;
@@ -28,6 +33,9 @@ vi.mock("@/db/runBatch", () => ({
   runBatch: (...args: Parameters<typeof database.runBatch>) =>
     database.runBatch(...args),
 }));
+vi.mock("@/server/features/dashboard/services/DashboardCacheService", () => ({
+  DashboardCacheService: { deleteGscCache: oauth.deleteGscCache },
+}));
 beforeAll(async () => {
   database = await createGoogleTestDatabase();
 });
@@ -38,13 +46,30 @@ beforeEach(async () => {
   ctx = new Context();
   await ctx.plugin(GoogleOAuthService);
   service = ctx.googleOAuth;
+  vi.spyOn(service, "getGoogleAccessToken").mockImplementation(
+    async ({ accountId }) => `token-${accountId}`,
+  );
+  vi.spyOn(service, "revokeGoogleToken").mockImplementation(
+    oauth.revokeGoogleToken,
+  );
+  oauth.revokeGoogleToken.mockResolvedValue(undefined);
+  oauth.deleteGscCache.mockResolvedValue(undefined);
 });
 afterEach(async () => {
   await ctx.fiber.dispose();
 });
 
-async function grant(provider: string, accountId = "google-a", userId = "u1") {
+async function grant(
+  provider: string,
+  accountId = "google-a",
+  userId = "u1",
+  updatedAt = 1,
+) {
   await database.grant(provider, accountId, userId);
+  await database.client.execute({
+    sql: "UPDATE account SET updated_at = ? WHERE account_id = ? AND user_id = ? AND provider_id = ?",
+    args: [updatedAt, accountId, userId, provider],
+  });
 }
 async function mapping(
   provider: "gsc" | "ga4" | "google_ads",
@@ -235,3 +260,33 @@ it.each(["same-account", "other-account", "other-user"] as const)(
     );
   },
 );
+
+it.each(["ga4", "google_ads"] as const)(
+  "revokes only after the remaining %s grant is removed",
+  async (provider) => {
+    await grant("google-search-console");
+    await grant(provider === "ga4" ? "google-analytics" : "google-ads");
+    const input = {
+      provider: "gsc" as const,
+      accountId: "google-a",
+      userId: "u1",
+    };
+    await service.removeAccount(input);
+    expect(oauth.revokeGoogleToken).not.toHaveBeenCalled();
+    await service.removeAccount({ ...input, provider });
+    expect(oauth.revokeGoogleToken.mock.calls).toEqual([["token-google-a"]]);
+  },
+);
+
+it("purges and revokes grants no project uses that were last updated before the cutoff", async () => {
+  await grant("google-search-console", "unused");
+  await grant("google-search-console", "mapped");
+  await grant("google-analytics", "recent", "u1", 2_000);
+  await mapping("gsc", "p1", "mapped");
+  expect(await service.purgeUnusedGrants(new Date(1_000))).toBe(1);
+  expect((await rows("account")).map((row) => row.account_id)).toEqual([
+    "recent",
+    "mapped",
+  ]);
+  expect(oauth.revokeGoogleToken.mock.calls).toEqual([["token-unused"]]);
+});

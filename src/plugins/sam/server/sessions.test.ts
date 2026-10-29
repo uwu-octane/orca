@@ -43,7 +43,7 @@ beforeAll(async () => {
     CREATE TABLE user (id TEXT PRIMARY KEY);
     CREATE TABLE projects (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, name TEXT NOT NULL,
       domain TEXT, location_code INTEGER DEFAULT 2840, language_code TEXT DEFAULT 'en',
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP, archived_at TEXT, ai_research_keywords TEXT);
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP, archived_at TEXT, ai_research_keywords TEXT, indexnow_key TEXT);
     INSERT INTO user VALUES ('u1'), ('u2');
   `);
   await fixture.client.executeMultiple(

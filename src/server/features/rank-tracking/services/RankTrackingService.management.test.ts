@@ -13,10 +13,6 @@ const mocks = vi.hoisted(() => ({
   fetchKeywordMetrics: vi.fn(),
 }));
 
-// These tests cover normal scheduling, not the temporary pause.
-vi.mock("@/shared/rank-tracking-pause", () => ({
-  SCHEDULED_RANK_CHECKS_PAUSED: false,
-}));
 vi.mock("cloudflare:workers", () => ({ env: { RANK_CHECK_WORKFLOW: {} } }));
 vi.mock(
   "@/server/features/rank-tracking/repositories/RankTrackingRepository",
@@ -122,8 +118,7 @@ describe("RankTrackingService management invariants", () => {
     expect(error).toBeInstanceOf(Error);
     if (!(error instanceof Error) || !("code" in error)) throw error;
     expect(error.code).toBe("VALIDATION_ERROR");
-    expect(error.message).toContain("nominal queued estimate");
-    expect(error.message).toContain("Live fallback");
+    expect(error.message).toContain("including retries");
     expect(mocks.addKeywordsToConfig).not.toHaveBeenCalled();
   });
 
@@ -145,14 +140,14 @@ describe("RankTrackingService management invariants", () => {
         ["seo", "technical seo"],
         {
           kind: "credit_ceiling",
-          maxEstimatedScheduledCheckCredits: 4,
+          maxEstimatedScheduledCheckCredits: 12,
         },
       ),
     ).resolves.toMatchObject({
       added: 2,
       scheduledEstimate: {
         scheduleInterval: "weekly",
-        costCredits: 4,
+        costCredits: 12,
         checksPerMonth: 4,
       },
     });
@@ -180,7 +175,7 @@ describe("RankTrackingService management invariants", () => {
       ["seo", "technical seo"],
       {
         kind: "credit_ceiling",
-        maxEstimatedScheduledCheckCredits: 4,
+        maxEstimatedScheduledCheckCredits: 12,
       },
     ).catch((cause: unknown) => cause);
     expect(error).toBeInstanceOf(Error);
@@ -265,19 +260,19 @@ describe("RankTrackingService management invariants", () => {
 
     const error: unknown = await RankTrackingService.triggerCheck({
       ...run,
-      maxCostCredits: 11,
+      maxCostCredits: 19,
     }).catch((cause: unknown) => cause);
     expect(error).toBeInstanceOf(Error);
     if (!(error instanceof Error) || !("code" in error)) throw error;
     expect(error.code).toBe("VALIDATION_ERROR");
-    expect(error.message).toContain("costs 12 credits");
+    expect(error.message).toContain("costs 20 credits");
     expect(mocks.beginRankCheckRun).not.toHaveBeenCalled();
 
     await expect(
-      RankTrackingService.triggerCheck({ ...run, maxCostCredits: 12 }),
+      RankTrackingService.triggerCheck({ ...run, maxCostCredits: 20 }),
     ).resolves.toEqual({ ok: true, runId: "run_1" });
     expect(mocks.beginRankCheckRun).toHaveBeenCalledWith(
-      expect.objectContaining({ maxCostCredits: 12 }),
+      expect.objectContaining({ maxCostCredits: 20 }),
     );
   });
 

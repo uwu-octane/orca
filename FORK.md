@@ -1,5 +1,25 @@
 # Fork maintenance log
 
+## 2026-10-29 Upstream 0.1.20 sync
+
+Merged upstream `f24a8334` (129 commits after `d7ea7852`) through `main`
+into an Orca integration branch. Preserve Orca branding, theme, locale, Google
+Ads keyword research, persisted dimensions and intents, AI provider settings,
+and the complete Cordis domain implementations. Upstream Google gateway and
+grant cleanup behavior lives inside the OAuth plugin; its last-grant check also
+protects Google Ads authorizations. SAM keeps its Gateway model policy. Website
+and AI visibility research retain their upstream OpenRouter configuration.
+
+Existing SQLite/Postgres migration SQL and snapshots remain immutable. The
+merged schemas and API-key organization backfill are appended after Orca's
+migration history. Keep pnpm overrides together in `pnpm-workspace.yaml` so
+upstream's Zod pin does not replace the existing security version floors.
+
+The maintainer approved the incoming fallback and retry policies. MCP widgets
+reuse the UI bindings without importing the application plugin boot graph.
+New upstream UI vocabulary may remain English; existing translated flows remain
+connected to the locale plugin.
+
 ## 2026-10-29 OpenAI decisions and model selection
 
 The AI client plugin owns a shared, searchable Gateway picker backed by the live
@@ -72,10 +92,11 @@ Branch model and rules: see "Fork maintenance" in [README.md](./README.md).
 
 ## Sync log
 
-| Date       | Upstream base | Notes                                                            |
-| ---------- | ------------- | ---------------------------------------------------------------- |
-| 2026-10-20 | `d7ea7852`    | Synced upstream 0.1.13, preserving Orca customizations.          |
-| 2026-08-24 | `c469a48`     | Fork created; `orca` branch cut from upstream main at `c469a48`. |
+| Date       | Upstream base | Notes                                                                               |
+| ---------- | ------------- | ----------------------------------------------------------------------------------- |
+| 2026-10-29 | `f24a8334`    | Synced upstream 0.1.20 through main, preserving Orca domains and migration history. |
+| 2026-10-20 | `d7ea7852`    | Synced upstream 0.1.13, preserving Orca customizations.                             |
+| 2026-08-24 | `c469a48`     | Fork created; `orca` branch cut from upstream main at `c469a48`.                    |
 
 ## Customizations
 

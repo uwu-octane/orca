@@ -50,6 +50,13 @@ export function RankTrackingTableToolbar({
   hasData: boolean;
 }) {
   const { t } = useLocale();
+  // Once every keyword has had its first check, a running run is retrying the
+  // ones that errored or came back missing. Retries wait on DataForSEO's task
+  // queue, so a full progress bar would sit there for up to an hour.
+  const isDoubleChecking =
+    latestRun?.status === "running" &&
+    latestRun.keywordsTotal > 0 &&
+    latestRun.keywordsChecked >= latestRun.keywordsTotal;
 
   return (
     <div className="shrink-0 flex flex-wrap items-center gap-2 px-4 py-2 border-y border-border">
@@ -91,25 +98,27 @@ export function RankTrackingTableToolbar({
       {isRunning && latestRun ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Spinner className="size-3.5 text-primary" />
-          <span>
-            {latestRun.status === "pending"
-              ? t("Preparing...")
-              : latestRun.keywordsTotal === 1
-                ? t("Getting rankings for {count} keyword...", {
-                    count: latestRun.keywordsTotal,
-                  })
-                : t("Getting rankings for {count} keywords...", {
-                    count: latestRun.keywordsTotal || "?",
-                  })}{" "}
-            {latestRun.keywordsChecked}/{latestRun.keywordsTotal || "?"}
-          </span>
-          {latestRun.keywordsTotal > 0 && (
-            <Progress
-              className="w-24"
-              aria-label={t("Rank check progress")}
-              value={latestRun.keywordsChecked}
-              max={latestRun.keywordsTotal}
-            />
+          {isDoubleChecking ? (
+            <span>
+              Double-checking some results. This can take up to an hour.
+            </span>
+          ) : (
+            <>
+              <span>
+                {latestRun.status === "pending"
+                  ? t("Preparing...")
+                  : `Getting rankings for ${latestRun.keywordsTotal || "?"} keyword${latestRun.keywordsTotal !== 1 ? "s" : ""}...`}{" "}
+                {latestRun.keywordsChecked}/{latestRun.keywordsTotal || "?"}
+              </span>
+              {latestRun.keywordsTotal > 0 && (
+                <Progress
+                  className="w-24"
+                  aria-label={t("Rank check progress")}
+                  value={latestRun.keywordsChecked}
+                  max={latestRun.keywordsTotal}
+                />
+              )}
+            </>
           )}
         </div>
       ) : (

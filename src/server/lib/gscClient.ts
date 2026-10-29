@@ -86,25 +86,58 @@ export function createGscClient(opts: {
   userId: string;
   gscAccountId?: string;
   getAccessToken?: () => Promise<string>;
+  getGatewayFetch?: () => Promise<typeof fetch | null>;
   /** FORK: connection discovery is owned by the OAuth plugin's lifetime. */
   signal?: AbortSignal;
 }) {
-  async function getToken(): Promise<string> {
-    try {
-      if (opts.getAccessToken) return await opts.getAccessToken();
-      return await (
-        await getGoogleOAuth()
-      ).getGoogleAccessToken({
-        providerId: GSC_OAUTH_PROVIDER_ID,
-        userId: opts.userId,
-        accountId: opts.gscAccountId,
-      });
-    } catch (error) {
+  // One mint per client: a client lives for a single service call, and
+  // concurrent requests (inspectUrls fans out) must not race the refresh.
+  let tokenPromise: Promise<string> | undefined;
+  function getToken(): Promise<string> {
+    tokenPromise ??= (
+      opts.getAccessToken
+        ? opts.getAccessToken()
+        : getGoogleOAuth().then((service) =>
+            service.getGoogleAccessToken({
+              providerId: GSC_OAUTH_PROVIDER_ID,
+              userId: opts.userId,
+              accountId: opts.gscAccountId,
+            }),
+          )
+    ).catch((error: unknown) => {
+      tokenPromise = undefined;
       throw new GscTokenError(
         "Could not mint a Search Console access token (grant revoked or expired).",
         error,
       );
-    }
+    });
+    return tokenPromise;
+  }
+
+  /**
+   * The fetch and the headers that reach Google authenticated: behind the
+   * gateway, the gateway's fetch puts the member's token on the call
+   * (gatewayGoogle.ts); otherwise OpenSEO's own grant mints one.
+   */
+  async function authenticated(): Promise<{
+    fetch: typeof fetch;
+    headers: Record<string, string>;
+  }> {
+    const gatewayFetch = await (
+      opts.getGatewayFetch
+        ? opts.getGatewayFetch()
+        : (await getGoogleOAuth()).getGatewayGoogleFetch()
+    ).catch((error: unknown) => {
+      throw new GscTokenError(
+        "Could not authenticate Google through the gateway.",
+        error,
+      );
+    });
+    if (gatewayFetch) return { fetch: gatewayFetch, headers: {} };
+    return {
+      fetch,
+      headers: { Authorization: `Bearer ${await getToken()}` },
+    };
   }
 
   async function request<T>(
@@ -112,13 +145,13 @@ export function createGscClient(opts: {
     init?: { method?: string; body?: unknown },
   ): Promise<T> {
     opts.signal?.throwIfAborted();
-    const token = await getToken();
+    const { fetch: send, headers } = await authenticated();
     opts.signal?.throwIfAborted();
     const hasBody = init?.body !== undefined;
-    const response = await fetch(url, {
+    const response = await send(url, {
       method: init?.method ?? "GET",
       headers: {
-        Authorization: `Bearer ${token}`,
+        ...headers,
         ...(hasBody ? { "Content-Type": "application/json" } : {}),
       },
       body: hasBody ? JSON.stringify(init?.body) : undefined,

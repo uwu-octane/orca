@@ -2,6 +2,7 @@
 import { useLocale } from "@/plugins/client/context";
 import { createFileRoute } from "@tanstack/react-router";
 import {
+  CommandBlock,
   helpLinkClassName,
   SecretHelpPage,
 } from "@/client/features/help/SecretHelpPage";
@@ -14,7 +15,34 @@ export const Route = createFileRoute("/_app/help/openrouter-api-key")({
 
 function OpenrouterApiKeyHelpPage() {
   const { t } = useLocale();
-
+  const accountStep = (
+    <li>
+      {t("Create an account at")}{" "}
+      <a
+        className={helpLinkClassName}
+        href="https://openrouter.ai"
+        target="_blank"
+        rel="noreferrer"
+      >
+        openrouter.ai
+      </a>{" "}
+      {t("and add credits (pay-as-you-go, like DataForSEO).")}
+    </li>
+  );
+  const keyStep = (
+    <li>
+      {t("Go to")}{" "}
+      <a
+        className={helpLinkClassName}
+        href={OPENROUTER_KEYS_URL}
+        target="_blank"
+        rel="noreferrer"
+      >
+        {t("OpenRouter API Keys")}
+      </a>{" "}
+      {t('and click "Create API Key".')}
+    </li>
+  );
   return (
     <SecretHelpPage
       title={t("Set up your OpenRouter API key")}
@@ -26,33 +54,12 @@ function OpenrouterApiKeyHelpPage() {
           )}
         </>
       }
+      everyAppIntro="SAM, prompt suggestions and website research run on OpenRouter. On Every App the gateway holds the key once, for every app."
       secretName="OPENROUTER_API_KEY"
       steps={
         <>
-          <li>
-            {t("Create an account at")}{" "}
-            <a
-              className={helpLinkClassName}
-              href="https://openrouter.ai"
-              target="_blank"
-              rel="noreferrer"
-            >
-              openrouter.ai
-            </a>{" "}
-            {t("and add credits (pay-as-you-go, like DataForSEO).")}
-          </li>
-          <li>
-            {t("Go to")}{" "}
-            <a
-              className={helpLinkClassName}
-              href={OPENROUTER_KEYS_URL}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {t("OpenRouter API Keys")}
-            </a>{" "}
-            {t('and click "Create API Key".')}
-          </li>
+          {accountStep}
+          {keyStep}
           <li>
             {t("Save the key as the")} <code>OPENROUTER_API_KEY</code>{" "}
             {t("secret in your environment:")}
@@ -69,8 +76,20 @@ function OpenrouterApiKeyHelpPage() {
           <li>{t("Restart Orca.")}</li>
         </>
       }
-      dashboardPasteStep={t("Paste your OpenRouter API key and save.")}
-      terminalPromptHint={t("Paste your OpenRouter API key when prompted.")}
+      everyAppSteps={
+        <>
+          {accountStep}
+          {keyStep}
+          <li>
+            An owner or admin runs this from the Every App checkout and pastes
+            the key:
+            <CommandBlock command="pnpm everyapp secret set OPENROUTER_API_KEY" />
+          </li>
+          <li>Reload OpenSEO.</li>
+        </>
+      }
+      dashboardPasteStep="Paste your OpenRouter API key and save."
+      terminalPromptHint="Paste your OpenRouter API key when prompted."
     />
   );
 }

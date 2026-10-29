@@ -1,16 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { createContext, useContext, useSyncExternalStore } from "react";
 import type { Context as CordisContext } from "cordis";
-import {
-  createClientContext,
-  getClientBoot,
-} from "@/plugins/client/client-context";
 import { translate } from "@/plugins/locale";
 import type { LocaleId, LocalePreference, T } from "@/plugins/locale";
 
@@ -22,7 +11,7 @@ interface ClientCordisState {
   settled: boolean;
 }
 
-const CordisCtx = createContext<ClientCordisState | null>(null);
+export const CordisCtx = createContext<ClientCordisState | null>(null);
 
 /** Reads the live client service, including activation and disposal after boot. */
 export function useClientService<K extends keyof CordisContext & string>(
@@ -41,34 +30,6 @@ export function useClientService<K extends keyof CordisContext & string>(
     () => undefined,
   );
   return { service, pending: !state?.settled };
-}
-
-/**
- * Mounts the client plugin tree. Lives inside `ClientOnly` in __root.tsx.
- * Fiber activation is async, so the first render happens before any service
- * exists; `useLocale` tolerates that window (English fallback) and the
- * settled flip re-subscribes mounted hooks once boot completes.
- */
-export function CordisProvider({ children }: { children: React.ReactNode }) {
-  const [ctx] = useState(createClientContext);
-  const [settled, setSettled] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-    void getClientBoot().then(() => {
-      if (mounted) setSettled(true);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  // A stable ctx alone would short-circuit context propagation (React skips
-  // consumers when the value is Object.is-equal), so settled lives in the
-  // value itself.
-  const value = useMemo(() => ({ ctx, settled }), [ctx, settled]);
-
-  return <CordisCtx.Provider value={value}>{children}</CordisCtx.Provider>;
 }
 
 /** English passthrough while the tree boots or after it fails. */

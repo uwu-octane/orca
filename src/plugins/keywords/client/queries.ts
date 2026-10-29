@@ -6,7 +6,7 @@ import { captureClientEvent } from "@/client/lib/posthog";
 import { useLocale } from "@/plugins/client/context";
 import { LOCATIONS } from "@/plugins/keywords/client/utils";
 import { formatLocationLabel } from "@/shared/keyword-locations";
-import { parseKeywordInput } from "@/plugins/keywords/client/state/keywordControllerActions";
+import { parseKeywordInput } from "@/shared/keyword-input";
 import { researchKeywords } from "@/serverFunctions/keywords";
 import type {
   KeywordMode,

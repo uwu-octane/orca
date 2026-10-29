@@ -13,7 +13,7 @@ import type {
   KeywordResearchControllerInput,
   KeywordSubmitValues,
 } from "@/plugins/keywords/client/state/useKeywordResearchController";
-import { parseKeywordInput } from "@/plugins/keywords/client/state/keywordControllerActions";
+import { parseKeywordInput } from "@/shared/keyword-input";
 import {
   useKeywordSearchParams,
   useResolvedKeywordLocation,

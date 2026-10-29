@@ -20,6 +20,7 @@ vi.mock("cloudflare:workers", () => ({ env: {} }));
 vi.mock("@/lib/auth", () => ({ getAuth: mocks.auth }));
 vi.mock("@/server/lib/runtime-env", () => ({
   isHostedServerAuthMode: async () => false,
+  getOptionalEnvValue: async () => undefined,
 }));
 let database: Awaited<ReturnType<typeof createGoogleTestDatabase>>;
 let ctx: Context;

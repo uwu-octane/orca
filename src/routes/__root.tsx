@@ -1,5 +1,5 @@
 // FORK: plugin assembly and persisted locale bootstrap.
-import { CordisProvider } from "@/plugins/client/context";
+import { CordisProvider } from "@/plugins/client/provider";
 import { localeInitScript } from "@/plugins/locale/client/init-script";
 /// <reference types="vite/client" />
 import {
@@ -17,20 +17,13 @@ import { DefaultCatchBoundary } from "@/client/components/DefaultCatchBoundary";
 import { captureGoogleLinkError } from "@/plugins/google-oauth/client/googleLinkError";
 import { ExportToSheetsModal } from "@/client/components/table/ExportToSheetsModal";
 import { themePreferenceInitScript } from "@/client/lib/theme";
-import {
-  identifyAnalyticsUser,
-  resetAnalyticsUser,
-  startAnalyticsCapture,
-  stopAnalyticsCapture,
-} from "@/client/lib/posthog";
+import { runtimeAuthModeScript } from "@/lib/auth-mode";
 import { NotFound } from "@/client/components/NotFound";
+import { PrivacyBootstrap } from "@/client/components/PrivacyChoices";
 import { TooltipProvider } from "@/client/components/ui/tooltip";
 import appCss from "@/client/styles/app.css?url";
-import { useSession } from "@/lib/auth-client";
-import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { Toaster } from "sonner";
 import { queryClient } from "@/client/tanstack-db";
-import { getActiveOrganizationId } from "@/lib/auth-session";
 
 // Capture Google link error params before the router starts — a route loader
 // redirect would otherwise replace the URL and lose them. See googleLinkError.ts.
@@ -101,34 +94,6 @@ function AppLayout() {
   return <Outlet />;
 }
 
-function PostHogBootstrap() {
-  const isHostedMode = isHostedClientAuthMode();
-  const { data: session, isPending: isSessionPending } = useSession();
-  const userId = session?.user?.id ?? null;
-  const optedOut = session?.user?.analyticsOptedOut === true;
-  const organizationId = getActiveOrganizationId(session);
-  const previousUserIdRef = React.useRef<string | null>(null);
-
-  React.useEffect(() => {
-    if (!isHostedMode || isSessionPending) {
-      return;
-    }
-
-    if (userId && !optedOut) {
-      startAnalyticsCapture();
-      identifyAnalyticsUser({ userId, organizationId });
-      previousUserIdRef.current = userId;
-    } else if (userId && optedOut) {
-      stopAnalyticsCapture();
-    } else if (previousUserIdRef.current) {
-      previousUserIdRef.current = null;
-      resetAnalyticsUser();
-    }
-  }, [isHostedMode, isSessionPending, optedOut, organizationId, userId]);
-
-  return null;
-}
-
 function RootDocument({ children }: { children: React.ReactNode }) {
   const showDevtools =
     import.meta.env.DEV && import.meta.env.VITE_SHOW_DEVTOOLS !== "false";
@@ -140,6 +105,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           dangerouslySetInnerHTML={{ __html: themePreferenceInitScript }}
         />
         <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: runtimeAuthModeScript() }} />
         <HeadContent />
       </head>
       <body>
@@ -147,7 +113,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <CordisProvider>
             <QueryClientProvider client={queryClient}>
               <TooltipProvider>
-                <PostHogBootstrap />
+                <PrivacyBootstrap />
                 {children}
                 <ExportToSheetsModal />
                 <Toaster

@@ -1,3 +1,8 @@
+import { getOpenRouterAccess } from "@/server/lib/openrouter";
+import {
+  getWorkersEnv,
+  isHostedServerAuthMode,
+} from "@/server/lib/runtime-env";
 import { getTracker } from "./aiVisibilityState";
 import { saveTracker } from "./aiVisibilitySetup";
 import { estimateCost } from "./aiVisibilityCost";
@@ -15,6 +20,12 @@ import { listAiResearchKeywords, researchAiPrompts } from "./aiPromptResearch";
 import type { GenerateAiPromptsInput } from "@/types/schemas/aiPromptSuggestions";
 import type { BillingCustomerContext } from "@/server/billing/subscription";
 export const AiVisibilityService = {
+  // FORK: visibility research still uses OpenRouter; SAM's Gateway setup is separate.
+  getResearchAccess: async () => ({
+    enabled:
+      (await isHostedServerAuthMode()) ||
+      Boolean(getOpenRouterAccess((await getWorkersEnv()) ?? {})),
+  }),
   generatePrompts: async (
     input: GenerateAiPromptsInput,
     billing: BillingCustomerContext,

@@ -16,6 +16,7 @@ vi.mock("cloudflare:workers", () => ({ env: {} }));
 vi.mock("@/plugins/server/context", () => ({
   getGoogleOAuth: async () => ({
     hasGoogleOAuthConfig: mocks.hasGoogleOAuthConfig,
+    getGoogleAccessMode: async () => "own_client",
   }),
 }));
 vi.mock("@/server/features/projects/services/ProjectService", () => ({

@@ -9,6 +9,7 @@ import { GSC_INTEGRATION } from "@/plugins/google-oauth/contracts";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import { requireOrgPermission } from "@/server/auth/org-gate";
 import { captureServerEvent } from "@/server/lib/posthog";
+import { markOnboardingMilestone } from "@/server/email/onboarding-drip";
 import { getPublicOrigin } from "@/server/mcp/public-origin";
 import {
   requireAuthenticatedContext,
@@ -80,12 +81,13 @@ export const setGscSite = createServerFn({ method: "POST" })
       siteUrl: data.siteUrl,
       userId: context.userId,
     });
+    await markOnboardingMilestone(context, "gscConnected");
     waitUntil(
       captureServerEvent({
         distinctId: context.userId,
         event: "gsc:property_select",
         organizationId: context.organizationId,
-        properties: { project_id: context.projectId, site_url: data.siteUrl },
+        properties: { project_id: context.projectId },
       }),
     );
     return {
@@ -115,6 +117,9 @@ export const disconnectGsc = createServerFn({ method: "POST" })
     return { connected: false as const };
   });
 
+// Behind the gateway the connect page is the gateway's: one Google
+// connection per member serves Search Console and Analytics alike, and the
+// gateway sends the person back to `callbackURL` afterwards.
 export const startGscLink = createServerFn({ method: "POST" })
   .middleware(requireAuthenticatedContext)
   .validator(startLinkSchema)

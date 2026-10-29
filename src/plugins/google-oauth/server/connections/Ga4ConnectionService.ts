@@ -1,3 +1,8 @@
+import { getGoogleAccessMode } from "../googleAccess";
+import {
+  GATEWAY_GOOGLE_ACCOUNT_ID,
+  getGatewayGoogleStatus,
+} from "../gatewayGoogle";
 import { GoogleAccountRepository } from "../GoogleAccountRepository";
 import type { GoogleAccessToken, Ga4Connection } from "../../contracts";
 import { AppError } from "@/server/lib/errors";
@@ -9,6 +14,7 @@ import { Ga4ConnectionRepository } from "@/plugins/google-oauth/server/connectio
 export function createGa4Connections(
   getAccessToken: GoogleAccessToken,
   signal: AbortSignal,
+  getGatewayFetch: () => Promise<typeof fetch | null>,
 ) {
   async function getConnection(
     projectId: string,
@@ -17,8 +23,18 @@ export function createGa4Connections(
     return Ga4ConnectionRepository.getByProjectId(projectId);
   }
 
-  function listGrantsForUser(userId: string) {
+  async function listGrantsForUser(userId: string) {
     signal.throwIfAborted();
+    if ((await getGoogleAccessMode()) === "gateway") {
+      return (await getGatewayGoogleStatus()).connected
+        ? [
+            {
+              id: GATEWAY_GOOGLE_ACCOUNT_ID,
+              accountId: GATEWAY_GOOGLE_ACCOUNT_ID,
+            },
+          ]
+        : [];
+    }
     return GoogleAccountRepository.listGrants(userId, GA4_OAUTH_PROVIDER_ID);
   }
 
@@ -39,6 +55,7 @@ export function createGa4Connections(
     const accounts = await Promise.all(
       grants.map(async (grant) => {
         const client = createGa4AdminClient({
+          getGatewayFetch,
           signal,
           userId,
           ga4AccountId: grant.accountId,
@@ -120,6 +137,7 @@ export function createGa4Connections(
     }
 
     const client = createGa4AdminClient({
+      getGatewayFetch,
       signal,
       userId: input.userId,
       ga4AccountId: input.accountId,

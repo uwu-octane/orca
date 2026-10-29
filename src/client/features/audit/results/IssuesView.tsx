@@ -104,10 +104,8 @@ export function IssuesView({
       {issues.length === 0 ? (
         <EmptyState
           variant="plain"
-          title={t("No issues recorded for this audit.")}
-          description={t(
-            "Either the site is in great shape, or this audit ran before issue checks existed — run a new audit to get the full report.",
-          )}
+          title={t("No issues found.")}
+          description={t("Every crawled page passed the issue checks.")}
         />
       ) : (
         <div>

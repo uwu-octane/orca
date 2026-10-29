@@ -1,4 +1,8 @@
-import { isHostedAuthMode } from "@/lib/auth-mode";
+import {
+  isEveryAppAuthMode,
+  isHostedAuthMode,
+  usesBetterAuth,
+} from "@/lib/auth-mode";
 
 let workersEnvPromise: Promise<Record<string, unknown> | null> | null = null;
 
@@ -8,9 +12,7 @@ export async function getOptionalEnvValue(
   return getEnvValueSync((await getWorkersEnv()) ?? {}, name);
 }
 
-// FORK: SAM now resolves its model connection lazily through Cordis.
-// Environment lookup remains internal to the async runtime helpers.
-function getEnvValueSync(
+export function getEnvValueSync(
   // `object` so interface-typed envs (e.g. Cloudflare.Env) are accepted
   // without a cast.
   env: object,
@@ -37,7 +39,15 @@ export async function isHostedServerAuthMode(): Promise<boolean> {
   return isHostedAuthMode(await getOptionalEnvValue("AUTH_MODE"));
 }
 
-async function getWorkersEnv(): Promise<Record<string, unknown> | null> {
+export async function isEveryAppServerAuthMode(): Promise<boolean> {
+  return isEveryAppAuthMode(await getOptionalEnvValue("AUTH_MODE"));
+}
+
+export async function usesBetterAuthServer(): Promise<boolean> {
+  return usesBetterAuth(await getOptionalEnvValue("AUTH_MODE"));
+}
+
+export async function getWorkersEnv(): Promise<Record<string, unknown> | null> {
   if (!workersEnvPromise) {
     workersEnvPromise = loadWorkersEnv();
   }

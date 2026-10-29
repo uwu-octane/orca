@@ -1,3 +1,8 @@
+import { getGoogleAccessMode } from "../googleAccess";
+import {
+  GATEWAY_GOOGLE_ACCOUNT_ID,
+  getGatewayGoogleStatus,
+} from "../gatewayGoogle";
 import { GoogleAccountRepository } from "../GoogleAccountRepository";
 import type { GoogleAccessToken, GscConnection } from "../../contracts";
 import { GSC_OAUTH_PROVIDER_ID } from "@/shared/gsc";
@@ -21,6 +26,7 @@ type GscSiteListResult = {
 export function createGscConnections(
   getAccessToken: GoogleAccessToken,
   signal: AbortSignal,
+  getGatewayFetch: () => Promise<typeof fetch | null>,
 ) {
   async function getConnection(
     projectId: string,
@@ -35,8 +41,18 @@ export function createGscConnections(
     return (await listGrantsForUser(userId)).length > 0;
   }
 
-  function listGrantsForUser(userId: string) {
+  async function listGrantsForUser(userId: string) {
     signal.throwIfAborted();
+    if ((await getGoogleAccessMode()) === "gateway") {
+      return (await getGatewayGoogleStatus()).connected
+        ? [
+            {
+              id: GATEWAY_GOOGLE_ACCOUNT_ID,
+              accountId: GATEWAY_GOOGLE_ACCOUNT_ID,
+            },
+          ]
+        : [];
+    }
     return GoogleAccountRepository.listGrants(userId, GSC_OAUTH_PROVIDER_ID);
   }
 
@@ -47,6 +63,7 @@ export function createGscConnections(
     const accounts = await Promise.all(
       grants.map(async (grant) => {
         const client = createGscClient({
+          getGatewayFetch,
           signal,
           userId,
           gscAccountId: grant.accountId,
@@ -155,6 +172,7 @@ export function createGscConnections(
     }
 
     const client = createGscClient({
+      getGatewayFetch,
       signal,
       userId: input.userId,
       gscAccountId: input.accountId,

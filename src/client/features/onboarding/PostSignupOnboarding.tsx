@@ -6,6 +6,7 @@ import { WebsiteOnboardingStep } from "./WebsiteOnboardingStep";
 import { AgentSetup } from "@/client/features/ai-mcp/AgentSetup";
 // FORK: mount the installed Google connection feature.
 import { SearchConsoleOnboardingStep } from "@/plugins/google-oauth/client/views";
+import { AnalyticsOnboardingStep } from "./AnalyticsOnboardingStep";
 
 type PostSignupOnboardingProps = {
   step: number;
@@ -37,7 +38,12 @@ export function PostSignupOnboarding({
       {accountMenu}
       <OnboardingCard
         step={step + 1}
-        steps={[t("Website"), "Google Search Console", t("Agent setup")]}
+        steps={[
+          t("Website"),
+          t("Google Search Console"),
+          t("Preferences"),
+          t("Agent setup"),
+        ]}
         onStepChange={onStepChange}
         disabled={isSaving}
       >
@@ -54,8 +60,10 @@ export function PostSignupOnboarding({
               onBack={onBack}
               onSkip={onSkip}
             />
+          ) : ONBOARDING_STEPS[step] === "analytics" ? (
+            <AnalyticsOnboardingStep onBack={onBack} onNext={onNext} />
           ) : (
-            <AgentSetup onNext={onFinish} onBack={onBack} disabled={isSaving} />
+            <AgentSetup onFinish={onFinish} onBack={onBack} />
           )}
         </fieldset>
       </OnboardingCard>

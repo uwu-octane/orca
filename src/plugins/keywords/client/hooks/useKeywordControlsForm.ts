@@ -10,7 +10,7 @@ import {
   type KeywordMode,
   type ResultLimit,
 } from "@/plugins/keywords/client/keywordResearchTypes";
-import { parseKeywordInput } from "@/plugins/keywords/client/state/keywordControllerActions";
+import { parseKeywordInput } from "@/shared/keyword-input";
 
 type UseKeywordControlsFormInput = {
   keywordInput: string;

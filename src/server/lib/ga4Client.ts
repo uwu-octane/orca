@@ -130,6 +130,7 @@ async function getGa4AccessToken(opts: {
   userId: string;
   ga4AccountId: string;
   getAccessToken?: () => Promise<string>;
+  getGatewayFetch?: () => Promise<typeof fetch | null>;
 }): Promise<string> {
   try {
     if (opts.getAccessToken) return await opts.getAccessToken();
@@ -161,13 +162,39 @@ function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === "AbortError";
 }
 
-function memoizedGa4AccessToken(opts: {
+type Authenticated = { fetch: typeof fetch; headers: Record<string, string> };
+
+/**
+ * The fetch and headers that reach Google Analytics authenticated, resolved
+ * once per client: behind the gateway, the gateway's fetch with the
+ * member's token on it (gatewayGoogle.ts); otherwise OpenSEO's own grant.
+ */
+async function authenticateGa4(opts: {
   userId: string;
   ga4AccountId: string;
   getAccessToken?: () => Promise<string>;
-}) {
-  let accessTokenPromise: Promise<string> | undefined;
-  return () => (accessTokenPromise ??= getGa4AccessToken(opts));
+  getGatewayFetch?: () => Promise<typeof fetch | null>;
+}): Promise<Authenticated> {
+  const gatewayFetch = await (
+    opts.getGatewayFetch
+      ? opts.getGatewayFetch()
+      : (await getGoogleOAuth()).getGatewayGoogleFetch()
+  ).catch((error: unknown) => {
+    throw new Ga4TokenError(
+      "Could not authenticate Google through the gateway.",
+      error,
+    );
+  });
+  if (gatewayFetch) return { fetch: gatewayFetch, headers: {} };
+  return {
+    fetch,
+    headers: { Authorization: `Bearer ${await getGa4AccessToken(opts)}` },
+  };
+}
+
+function memoizedGa4Access(opts: Parameters<typeof authenticateGa4>[0]) {
+  let authenticated: Promise<Authenticated> | undefined;
+  return () => (authenticated ??= authenticateGa4(opts));
 }
 
 /** Read-only Admin API client used only for account/property discovery. */
@@ -175,21 +202,19 @@ export function createGa4AdminClient(opts: {
   userId: string;
   ga4AccountId: string;
   getAccessToken?: () => Promise<string>;
+  getGatewayFetch?: () => Promise<typeof fetch | null>;
   /** FORK: connection discovery is owned by the OAuth plugin's lifetime. */
   signal?: AbortSignal;
 }) {
-  const accessToken = memoizedGa4AccessToken(opts);
+  const access = memoizedGa4Access(opts);
 
   async function request(url: string): Promise<unknown> {
     opts.signal?.throwIfAborted();
-    const token = await accessToken();
+    const { fetch: send, headers } = await access();
     opts.signal?.throwIfAborted();
     let response: Response;
     try {
-      response = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: opts.signal,
-      });
+      response = await send(url, { headers, signal: opts.signal });
     } catch (error) {
       if (isAbortError(error)) throw error;
       throw new Ga4AdminApiError(
@@ -425,19 +450,19 @@ export function createGa4DataClient(opts: {
   propertyId: string;
 }) {
   const propertyId = propertyIdSchema.parse(opts.propertyId);
-  const accessToken = memoizedGa4AccessToken(opts);
+  const access = memoizedGa4Access(opts);
 
   return {
     async runReport(
       request: Ga4RunReportRequest,
     ): Promise<Ga4RunReportResponse> {
-      const token = await accessToken();
+      const { fetch: send, headers } = await access();
       let response: Response;
       try {
-        response = await fetch(`${GA4_DATA_API_BASE}/${propertyId}:runReport`, {
+        response = await send(`${GA4_DATA_API_BASE}/${propertyId}:runReport`, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
+            ...headers,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(request),

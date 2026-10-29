@@ -7,7 +7,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/plugins/server/context", () => ({
-  getGoogleOAuth: async () => ({ getGoogleAccessToken: mocks.getAccessToken }),
+  getGoogleOAuth: async () => ({
+    getGoogleAccessToken: mocks.getAccessToken,
+    getGatewayGoogleFetch: async () => null,
+  }),
 }));
 
 function jsonResponse(body: unknown, status = 200) {
@@ -149,6 +152,20 @@ describe("gscClient", () => {
     await expect(
       createGscClient({ userId: "u1" }).listSites(),
     ).rejects.toMatchObject({ status: 429 });
+  });
+
+  it("mints the access token once for concurrent requests on one client", async () => {
+    mocks.fetch.mockImplementation(async () =>
+      jsonResponse({ inspectionResult: {} }),
+    );
+    const client = createGscClient({ userId: "u1" });
+
+    await Promise.all([
+      client.inspectUrl("sc-domain:example.com", "https://example.com/a"),
+      client.inspectUrl("sc-domain:example.com", "https://example.com/b"),
+    ]);
+
+    expect(mocks.getAccessToken).toHaveBeenCalledTimes(1);
   });
 
   it("throws GscTokenError when no access token can be minted", async () => {

@@ -1,3 +1,4 @@
+import type { AiTrackingHold } from "@/server/lib/dataforseo/ai-tracking-billing";
 // FORK: the Cordis provider owns metering; section code loads on first use.
 import type * as sections from "@/server/lib/dataforseo/sections";
 export type DataforseoSections = typeof sections;
@@ -199,6 +200,20 @@ export function createMeteredDataforseoClient(
         dataforseoPricing.serp.rankCheckTaskPost,
         "rank_tracking",
       ),
+      localBatch: (
+        inputs: Parameters<DataforseoSections["fetchLocalSerp"]>[0][],
+      ) =>
+        meterDataforseoCalls(
+          customer,
+          inputs.map(
+            (input) => async () =>
+              (await loadDataforseoSections()).fetchLocalSerp(input),
+          ),
+          inputs.map((input) =>
+            creditsForProviderUsd(dataforseoPricing.serp.local(input)),
+          ),
+          "local_seo",
+        ),
       local: meter(
         customer,
         (s) => s.fetchLocalSerp,
@@ -263,14 +278,18 @@ export function createMeteredDataforseoClient(
         (s) => s.fetchLlmResponse,
         dataforseoPricing.aiSearch.llmResponse,
       ),
-      // Posts up to 100 tracked prompts for one engine; one metered charge
-      // covers the batch (DataForSEO bills task_post, collection is free).
-      trackingTaskPost: meter(
-        customer,
-        (s) => s.postAiTrackingTasks,
-        dataforseoPricing.aiSearch.trackingTaskPost,
-        "ai_prompt_responses",
-      ),
+      trackingTaskPost: async (
+        input: Parameters<DataforseoSections["postAiTrackingTasksOnHold"]>[1],
+      ) =>
+        (await loadDataforseoSections()).postAiTrackingTasksOnHold(
+          customer,
+          input,
+        ),
+      settleTrackingHold: async (input: {
+        hold: AiTrackingHold;
+        costs: number[];
+      }) =>
+        (await loadDataforseoSections()).settleAiTrackingHold(customer, input),
       // A manual run's live answers share one credit hold and one settle (see
       // meterDataforseoCalls). Resolves per call, in order.
       trackingLiveBatch: (

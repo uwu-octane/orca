@@ -17,6 +17,8 @@ import {
   googleProviders,
 } from "@/plugins/google-oauth/client/googleProviders";
 import { useGoogleLink } from "./useGoogleLink";
+import { hasNoGscWebsites } from "./GscPropertySetupHelp";
+import { getErrorCode } from "@/client/lib/error-messages";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { Button } from "@/client/components/ui/button";
 import { Spinner as SpinnerIcon } from "@/client/components/ui/spinner";
@@ -123,11 +125,24 @@ function GscConnect({
     void queryClient.invalidateQueries({ queryKey: GRANT_STATUS_KEY });
   }, [requiresReconnect, queryClient, projectId]);
 
+  const noWebsites = hasNoGscWebsites(
+    accounts,
+    sitesQuery.isLoading,
+    sitesQuery.isError,
+  );
+  React.useEffect(() => {
+    if (noWebsites) captureClientEvent("onboarding:gsc_no_properties");
+  }, [noWebsites]);
+
   const setSiteMutation = useMutation({
     mutationFn: (selected: GooglePickerSelection) =>
       googleProviders.gsc.save(projectId, selected),
+    onError: (error) => {
+      captureClientEvent("onboarding:gsc_property_select_failed", {
+        error_code: getErrorCode(error) ?? "UNKNOWN",
+      });
+    },
     onSuccess: () => {
-      captureClientEvent("gsc:property_select");
       void queryClient.invalidateQueries({ queryKey: connectionKey });
       // The dashboard checklist reads the same connection state.
       void queryClient.invalidateQueries({

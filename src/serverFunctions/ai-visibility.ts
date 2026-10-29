@@ -152,3 +152,8 @@ export const exportAiVisibilityData = createServerFn({ method: "POST" })
       getPublicOrigin(getRequest()),
     ),
   );
+
+export const getAiVisibilityResearchAccess = createServerFn({ method: "GET" })
+  .middleware(requireProjectContext)
+  .validator(aiProjectSchema)
+  .handler(() => AiVisibilityService.getResearchAccess());

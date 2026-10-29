@@ -53,6 +53,7 @@ export function createDataforseoClient(
       rankCheckTaskPost: defer((client) => client.serp.rankCheckTaskPost),
       localTaskPost: defer((client) => client.serp.localTaskPost),
       local: defer((client) => client.serp.local),
+      localBatch: defer((client) => client.serp.localBatch),
     },
     labs: {
       keywordOverview: defer((client) => client.labs.keywordOverview),
@@ -63,6 +64,7 @@ export function createDataforseoClient(
     },
     aiSearch: {
       trackingTaskPost: defer((client) => client.aiSearch.trackingTaskPost),
+      settleTrackingHold: defer((client) => client.aiSearch.settleTrackingHold),
       trackingLiveBatch: defer((client) => client.aiSearch.trackingLiveBatch),
       mentionsSearch: defer((client) => client.aiSearch.mentionsSearch),
       aggregatedMetrics: defer((client) => client.aiSearch.aggregatedMetrics),

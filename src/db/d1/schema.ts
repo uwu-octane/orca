@@ -20,3 +20,4 @@ export * from "../decision.schema";
 export * from "../keyword-generation.schema";
 
 export * from "../ai-provider.schema";
+export * from "../local-seo.schema";

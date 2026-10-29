@@ -5,6 +5,7 @@ import { googleConnectionOptions } from "@/plugins/google-oauth/client/googlePro
 import { createFileRoute } from "@tanstack/react-router";
 import { GoogleConnectionCard } from "@/plugins/google-oauth/client/views";
 import { CrawlerAccessSettings } from "@/client/features/settings/CrawlerAccessSettings";
+import { IndexNowSettings } from "@/client/features/settings/IndexNowSettings";
 
 export const Route = createFileRoute(
   "/_app/p/$projectId/settings/integrations",
@@ -47,6 +48,7 @@ function ProjectIntegrationsRoute() {
       <section id="ai-providers" className="scroll-mt-6">
         <AiProviderSettings projectId={projectId} />
       </section>
+      <IndexNowSettings projectId={projectId} />
 
       <CrawlerAccessSettings projectId={projectId} />
     </div>

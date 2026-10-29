@@ -1,12 +1,15 @@
 // FORK: retain locale subscriptions across upstream component changes.
 import { useLocale } from "@/plugins/client/context";
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { PageLoading } from "@/client/components/Spinner";
 import { useAppForm } from "@/client/components/form/useAppForm";
 import { Button } from "@/client/components/ui/button";
 import {
   AuthPageCard,
   AuthMethodChooser,
+  TermsAgreementNotice,
   authInputClassName,
   authSubmitClassName,
   authRedirectSearchSchema,
@@ -18,12 +21,24 @@ import {
   useTurnstileCaptcha,
 } from "@/client/features/auth/TurnstileWidget";
 import { passwordSchema } from "@/client/features/auth/passwordSchema";
+import { signUpStatusQueryOptions } from "@/client/features/auth/signUpStatus";
 import { useGoogleAuth } from "@/client/features/auth/useGoogleAuth";
 import { getFormError } from "@/client/lib/forms";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { authClient } from "@/lib/auth-client";
-import { getSignInSearch, getVerifyEmailSearch } from "@/lib/auth-redirect";
+import {
+  getSignInSearch,
+  getVerifyEmailSearch,
+  toAuthCallbackURL,
+} from "@/lib/auth-redirect";
 import { z } from "zod";
+
+const UTM_PARAMS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+] as const;
 
 const signUpSchema = z
   .object({
@@ -41,6 +56,13 @@ export const Route = createFileRoute("/_auth/sign-up")({
     // A site checked with the marketing site's free tool; onboarding
     // prefills it, and the website step validates it on save.
     domain: z.string().optional().catch(undefined),
+    // An ad's campaign tags, which the marketing site's landing pages carry
+    // onto the sign-up link. Passed on through the post-signup redirect so the
+    // server can save the campaign on the new account.
+    utm_source: z.string().optional().catch(undefined),
+    utm_medium: z.string().optional().catch(undefined),
+    utm_campaign: z.string().optional().catch(undefined),
+    utm_content: z.string().optional().catch(undefined),
   }),
   component: SignUpPage,
 });
@@ -50,15 +72,34 @@ function SignUpPage() {
 
   const search = Route.useSearch();
   const navigate = useNavigate();
-  const { redirectTo, isHostedMode } = useAuthPageState(search.redirect);
+  const { redirectTo, isHostedMode, isBetterAuthMode } = useAuthPageState(
+    search.redirect,
+  );
+  const onboardingSearch = new URLSearchParams();
+  if (search.domain) onboardingSearch.set("domain", search.domain);
+  for (const name of UTM_PARAMS) {
+    const value = search[name];
+    if (value) onboardingSearch.set(name, value);
+  }
   const postSignupRedirect =
     redirectTo !== "/"
       ? redirectTo
-      : search.domain
-        ? `/onboarding?${new URLSearchParams({ domain: search.domain }).toString()}`
+      : onboardingSearch.size > 0
+        ? `/onboarding?${onboardingSearch.toString()}`
         : "/onboarding";
   const [showEmailForm, setShowEmailForm] = useState(false);
   const google = useGoogleAuth({ redirectTo, postSignupRedirect });
+  // The standalone Docker edition: no Google, no email verification, and the
+  // server accepts a sign-up only for the first account or an invited address
+  // (src/server/standalone/sign-up.ts).
+  const standalone = isBetterAuthMode && !isHostedMode;
+  const invited = redirectTo.startsWith("/accept-invitation/");
+  const signUpStatus = useQuery({
+    ...signUpStatusQueryOptions(),
+    enabled: standalone,
+  });
+  const firstAccount = signUpStatus.data?.firstAccount === true;
+  const emailFormVisible = showEmailForm || standalone;
 
   // Turnstile is active only in hosted mode with a configured site key.
   const isTurnstileEnabled = isHostedMode && Boolean(TURNSTILE_SITE_KEY);
@@ -123,6 +164,27 @@ function SignUpPage() {
         captureClientEvent("auth:sign_up_success", {
           redirect_to: redirectTo,
         });
+        if (standalone) {
+          // Nothing to verify here, and autoSignIn is off so the operator's
+          // create-user never mints a session: sign in explicitly, and the
+          // layout sends the new session to redirectTo.
+          const signedIn = await authClient.signIn.email({
+            email,
+            password: value.password,
+            callbackURL: toAuthCallbackURL(redirectTo),
+          });
+          if (signedIn.error) {
+            formApi.setErrorMap({
+              onSubmit: {
+                form:
+                  signedIn.error.message ||
+                  "Account created. Sign in to continue.",
+                fields: {},
+              },
+            });
+          }
+          return;
+        }
         void navigate({
           to: "/verify-email",
           search: getVerifyEmailSearch(email, postSignupRedirect),
@@ -140,11 +202,56 @@ function SignUpPage() {
     },
   });
 
+  if (standalone && !firstAccount && !invited) {
+    if (signUpStatus.isPending) return <PageLoading />;
+    return (
+      <AuthPageCard
+        title="Registration is closed"
+        helperText="Ask an administrator for an invitation."
+        footer={
+          <p className="text-sm">
+            <Link
+              to="/sign-in"
+              search={getSignInSearch(redirectTo)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Back to sign in
+            </Link>
+          </p>
+        }
+      >
+        {null}
+      </AuthPageCard>
+    );
+  }
+
   return (
     <AuthPageCard
-      title={t("Create your account")}
+      title={
+        firstAccount ? "Create the admin account" : t("Create your account")
+      }
+      helperText={
+        firstAccount
+          ? "This installation has no accounts yet. The first one becomes the administrator."
+          : invited
+            ? "Use the email address that received the invitation."
+            : undefined
+      }
       footer={
-        isHostedMode ? (
+        standalone ? (
+          firstAccount ? null : (
+            <p className="text-sm text-foreground/50">
+              {t("Already have an account?")}{" "}
+              <Link
+                to="/sign-in"
+                search={getSignInSearch(redirectTo)}
+                className="text-foreground underline underline-offset-2 hover:text-foreground/80 transition-colors"
+              >
+                {t("Sign in")}
+              </Link>
+            </p>
+          )
+        ) : isHostedMode ? (
           showEmailForm ? (
             <button
               type="button"
@@ -158,28 +265,6 @@ function SignUpPage() {
             </button>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {t("By signing up, you agree to our")}{" "}
-                <a
-                  href="https://openseo.so/terms-and-conditions"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-foreground underline underline-offset-2 hover:text-foreground/80 transition-colors"
-                >
-                  {t("Terms")}
-                </a>{" "}
-                {"and"}{" "}
-                <a
-                  href="https://openseo.so/privacy"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-foreground underline underline-offset-2 hover:text-foreground/80 transition-colors"
-                >
-                  {t("Privacy Policy")}
-                </a>
-                {t(".")}
-              </p>
-
               <p className="text-sm text-foreground/50">
                 {t("Already have an account?")}{" "}
                 <Link
@@ -195,7 +280,7 @@ function SignUpPage() {
         ) : null
       }
     >
-      {!showEmailForm ? (
+      {!emailFormVisible ? (
         <>
           <AuthMethodChooser
             googleLabel={t("Continue with Google")}
@@ -209,6 +294,9 @@ function SignUpPage() {
               google.clearError();
             }}
           />
+          {isHostedMode ? (
+            <TermsAgreementNotice action="By continuing" />
+          ) : null}
           {google.error ? (
             <p className="text-sm text-destructive">{google.error}</p>
           ) : null}
@@ -287,6 +375,9 @@ function SignUpPage() {
                         ? t("Creating account...")
                         : t("Create account")}
                     </Button>
+                    {isHostedMode ? (
+                      <TermsAgreementNotice action="By creating an account" />
+                    ) : null}
                   </>
                 );
               }}

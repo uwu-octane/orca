@@ -211,8 +211,12 @@ describe("translate", () => {
     for (const message of [renderingEstimateText, renderingCreditsNeededText]) {
       const english = message(1000);
       const chinese = message(1000, translate);
-      expect(chinese).toContain("1,000 个页面");
-      expect(chinese.match(/\$[\d.]+/g)).toEqual(english.match(/\$[\d.]+/g));
+      expect(chinese).not.toBe(english);
+      if (message === renderingCreditsNeededText)
+        expect(chinese).toContain("1,000 个页面");
+      expect(chinese.match(/\$\d+(?:\.\d+)?/g)).toEqual(
+        english.match(/\$\d+(?:\.\d+)?/g),
+      );
     }
   });
 

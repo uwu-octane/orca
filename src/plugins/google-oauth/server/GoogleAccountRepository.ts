@@ -1,5 +1,17 @@
 import { GOOGLE_ADS_OAUTH_PROVIDER_ID } from "@/shared/google-ads";
-import { and, count, eq, isNull, or, sql } from "drizzle-orm";
+import {
+  and,
+  count,
+  eq,
+  isNull,
+  or,
+  sql,
+  exists,
+  inArray,
+  lt,
+  not,
+  type SQL,
+} from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import {
@@ -147,7 +159,107 @@ async function updateTokens(
   await db.update(account).set(values).where(eq(account.id, id));
 }
 
+async function listGscProjectIds(input: GoogleAccountInput) {
+  const rows = await db
+    .select({ projectId: gscConnections.projectId })
+    .from(gscConnections)
+    .where(scope({ ...input, provider: "gsc" }).usage);
+  return rows.map((row) => row.projectId);
+}
+
+const DATA_PROVIDER_IDS = [GSC_OAUTH_PROVIDER_ID, GA4_OAUTH_PROVIDER_ID];
+
+// Correlated on the outer `account` row: true while a project mapping still
+// relies on that grant, with the same rules `scope().usage` applies.
+function grantInUse(): SQL {
+  const inUse = or(
+    and(
+      eq(account.providerId, GSC_OAUTH_PROVIDER_ID),
+      exists(
+        db
+          .select({ id: gscConnections.id })
+          .from(gscConnections)
+          .where(
+            and(
+              eq(gscConnections.connectedByUserId, account.userId),
+              or(
+                eq(gscConnections.gscAccountId, account.accountId),
+                isNull(gscConnections.gscAccountId),
+              ),
+            ),
+          ),
+      ),
+    ),
+    and(
+      eq(account.providerId, GA4_OAUTH_PROVIDER_ID),
+      exists(
+        db
+          .select({ id: ga4Connections.id })
+          .from(ga4Connections)
+          .where(
+            and(
+              eq(ga4Connections.connectedByUserId, account.userId),
+              eq(ga4Connections.ga4AccountId, account.accountId),
+            ),
+          ),
+      ),
+    ),
+  );
+  // `or` is only undefined when given no conditions.
+  return inUse ?? sql`false`;
+}
+
+/** Search Console / Analytics grants no project uses, last touched before the cutoff. */
+async function listUnusedGrants(updatedBefore: Date, limit: number) {
+  return db
+    .select({
+      id: account.id,
+      userId: account.userId,
+      providerId: account.providerId,
+      accountId: account.accountId,
+    })
+    .from(account)
+    .where(
+      and(
+        inArray(account.providerId, DATA_PROVIDER_IDS),
+        lt(account.updatedAt, updatedBefore),
+        not(grantInUse()),
+      ),
+    )
+    .limit(limit);
+}
+
+/** Deletes the grant unless a project started using it since it was listed. */
+async function deleteUnusedGrant(id: string) {
+  const deleted = await db
+    .delete(account)
+    .where(and(eq(account.id, id), not(grantInUse())))
+    .returning({ id: account.id });
+  return deleted.length > 0;
+}
+
+/** Whether any OpenSEO user still stores a data grant for this Google account. */
+async function hasDataGrantsForGoogleAccount(accountId: string) {
+  const [result] = await db
+    .select({ grants: count() })
+    .from(account)
+    .where(
+      and(
+        inArray(account.providerId, [
+          ...DATA_PROVIDER_IDS,
+          GOOGLE_ADS_OAUTH_PROVIDER_ID,
+        ]),
+        eq(account.accountId, accountId),
+      ),
+    );
+  return (result?.grants ?? 0) > 0;
+}
+
 export const GoogleAccountRepository = {
+  listGscProjectIds,
+  listUnusedGrants,
+  deleteUnusedGrant,
+  hasDataGrantsForGoogleAccount,
   getRemovalImpact,
   remove,
   listGrants,

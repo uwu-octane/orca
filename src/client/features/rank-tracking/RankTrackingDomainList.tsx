@@ -8,6 +8,7 @@ import { LOCATIONS } from "@/shared/keyword-locations";
 import {
   AlertTriangle,
   Archive,
+  CircleAlert,
   Globe,
   Plus,
   ChevronRight,
@@ -18,9 +19,13 @@ import {
 } from "@/serverFunctions/rank-tracking";
 import { devicesLabel, scheduleLabel } from "@/shared/rank-tracking";
 import { formatNextCheck } from "./scheduleTime";
-import { formatLocationLabel } from "@/shared/keyword-locations";
+import {
+  formatLocationLabel,
+  SERP_LANGUAGE_OPTIONS,
+} from "@/shared/keyword-locations";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { EmptyState } from "@/client/components/EmptyState";
+import { GetCreditsButton } from "@/client/features/billing/InsufficientCreditsError";
 import { Button } from "@/client/components/ui/button";
 import {
   Card,
@@ -205,6 +210,14 @@ export function RankTrackingDomainList({
               key={summary.id}
               projectId={projectId}
               summary={summary}
+              // Only needed to tell apart trackers that differ by language
+              // alone; otherwise the language is just noise.
+              showLanguage={allSummaries.some(
+                (other) =>
+                  other.domain === summary.domain &&
+                  other.locationCode === summary.locationCode &&
+                  other.languageCode !== summary.languageCode,
+              )}
               onArchive={() => setArchiveTarget(summary)}
             />
           ))
@@ -232,10 +245,12 @@ export function RankTrackingDomainList({
 function DomainRow({
   projectId,
   summary,
+  showLanguage,
   onArchive,
 }: {
   projectId: string;
   summary: ConfigSummary;
+  showLanguage: boolean;
   onArchive: () => void;
 }) {
   const { t } = useLocale();
@@ -254,8 +269,16 @@ function DomainRow({
           {summary.locationName
             ? formatLocationLabel(summary.locationName, 2)
             : (LOCATIONS[summary.locationCode] ?? "US")}{" "}
-          &middot; {t(devicesLabel(summary.devices))} &middot;{" "}
-          {t(scheduleLabel(summary.scheduleInterval))}
+          {showLanguage && (
+            <>
+              &middot;{" "}
+              {SERP_LANGUAGE_OPTIONS.find(
+                (option) => option.code === summary.languageCode,
+              )?.label ?? summary.languageCode}{" "}
+            </>
+          )}
+          &middot; {devicesLabel(summary.devices)} &middot;{" "}
+          {scheduleLabel(summary.scheduleInterval)}
           {summary.scheduleInterval !== "manual" && summary.nextCheckAt && (
             <>
               {" "}
@@ -276,10 +299,14 @@ function DomainRow({
           )}
         </p>
         {summary.lastSkipReason === "insufficient_credits" && (
-          <p className="flex items-center gap-1 text-xs text-warning">
-            <AlertTriangle className="size-3" />
-            {t("Scheduled check skipped — insufficient credits")}
-          </p>
+          <div className="mt-1 flex items-center gap-2 text-xs text-destructive">
+            <CircleAlert className="size-3" />
+            Scheduled check skipped: out of credits
+            {/* Above the row link, like the archive button. */}
+            <span className="pointer-events-auto relative z-10">
+              <GetCreditsButton />
+            </span>
+          </div>
         )}
         {summary.lastSkipReason === "plan_required" && (
           <p className="flex items-center gap-1 text-xs text-warning">

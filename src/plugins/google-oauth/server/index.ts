@@ -1,16 +1,28 @@
+import { createAccountManagement } from "./accounts";
+import {
+  getSafeCallbackPath,
+  getRedirectUri,
+  tokenCrypto,
+  upsertGrant,
+  fetchTokens,
+  type GoogleTokenResponse,
+} from "./oauth-protocol";
+import {
+  getGoogleAccessMode,
+  isGatewayGoogleAvailable,
+  ownGoogleCallbackDisabled,
+} from "./googleAccess";
+import {
+  getGatewayGoogleFetch,
+  getGatewayGoogleConnectUrl,
+} from "./gatewayGoogle";
+import { purgeUnusedGoogleData } from "./googleDataRetention";
 import { Service, type Context } from "cordis";
 import { GoogleAccountRepository } from "./GoogleAccountRepository";
 import { createGscConnections } from "./connections/GscConnectionService";
 import { createGa4Connections } from "./connections/Ga4ConnectionService";
 import { createGoogleAdsConnections } from "./connections/GoogleAdsConnectionService";
-import type {
-  GoogleOAuthIntegration,
-  GoogleAdsDiscovery,
-  GoogleAccountInput,
-} from "../contracts";
-import { symmetricDecrypt, symmetricEncrypt } from "better-auth/crypto";
-import { z } from "zod";
-import { getAuth } from "@/lib/auth";
+import type { GoogleOAuthIntegration, GoogleAdsDiscovery } from "../contracts";
 import { resolveUserContextFromHeaders } from "@/middleware/ensure-user/resolve";
 import { AppError } from "@/server/lib/errors";
 import { responseForAppError } from "@/server/lib/http-errors";
@@ -43,106 +55,8 @@ import {
  */
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
-const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 // Refresh when the stored access token is within this many ms of expiry.
 const ACCESS_TOKEN_SKEW_MS = 5_000;
-
-const googleTokenResponseSchema = z.object({
-  access_token: z.string().min(1),
-  expires_in: z.number().optional(),
-  refresh_token: z.string().optional(),
-  scope: z.string().optional(),
-  id_token: z.string().optional(),
-});
-
-type GoogleTokenResponse = z.infer<typeof googleTokenResponseSchema>;
-
-/** Same-origin path to return to after consent. A pathname can start with
- *  `//host`, which browsers treat as protocol-relative, so the reduced path is
- *  re-parsed to prove it still resolves to our origin. */
-function getSafeCallbackPath(callbackURL: string, publicOrigin: string) {
-  try {
-    const url = new URL(callbackURL, publicOrigin);
-    const path = `${url.pathname}${url.search}${url.hash}`;
-    if (url.origin !== publicOrigin) return "/";
-    if (new URL(path, publicOrigin).origin !== publicOrigin) return "/";
-    return path;
-  } catch {
-    return "/";
-  }
-}
-
-function getRedirectUri(
-  publicOrigin: string,
-  integration: GoogleOAuthIntegration,
-) {
-  return `${publicOrigin}${integration.callbackPath}`;
-}
-
-/** Token encryption matches Better Auth's own `account` rows so grants
- *  written before this module (and google social-login rows) stay readable. */
-async function tokenCrypto() {
-  const ctx = await getAuth().$context;
-  const enabled = Boolean(ctx.options.account?.encryptOAuthTokens);
-  return {
-    encrypt: (value: string) =>
-      enabled
-        ? symmetricEncrypt({ key: ctx.secretConfig, data: value })
-        : value,
-    decrypt: (value: string) =>
-      enabled
-        ? symmetricDecrypt({ key: ctx.secretConfig, data: value })
-        : value,
-  };
-}
-
-async function upsertGrant(
-  input: {
-    integration: GoogleOAuthIntegration;
-    userId: string;
-    googleAccountId: string;
-    tokens: GoogleTokenResponse;
-  },
-  signal: AbortSignal,
-) {
-  const { encrypt } = await tokenCrypto();
-  const accountValues = {
-    accountId: input.googleAccountId,
-    providerId: input.integration.providerId,
-    userId: input.userId,
-    accessToken: await encrypt(input.tokens.access_token),
-    refreshToken: input.tokens.refresh_token
-      ? await encrypt(input.tokens.refresh_token)
-      : null,
-    accessTokenExpiresAt: new Date(
-      Date.now() + (input.tokens.expires_in ?? 3600) * 1_000,
-    ),
-    refreshTokenExpiresAt: null,
-    scope: input.tokens.scope
-      ? input.tokens.scope.trim().split(/\s+/).join(",")
-      : input.integration.scopes.join(","),
-    password: null,
-  };
-  signal.throwIfAborted();
-  await GoogleAccountRepository.upsertGrant(accountValues);
-}
-
-/** Google's token endpoint; null when it rejects the grant. */
-async function fetchTokens(
-  params: Record<string, string>,
-  signal: AbortSignal,
-) {
-  signal.throwIfAborted();
-  const response = await fetch(GOOGLE_TOKEN_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams(params),
-    signal,
-  });
-  signal.throwIfAborted();
-  if (!response.ok) return null;
-  return googleTokenResponseSchema.parse(await response.json());
-}
 
 function redirect(location: string) {
   return new Response(null, { status: 303, headers: { Location: location } });
@@ -160,10 +74,12 @@ export default class GoogleOAuthService extends Service {
   readonly gsc = createGscConnections(
     (input) => this.getGoogleAccessToken(input),
     this.lifetime.signal,
+    () => this.getGatewayGoogleFetch(),
   );
   readonly ga4 = createGa4Connections(
     (input) => this.getGoogleAccessToken(input),
     this.lifetime.signal,
+    () => this.getGatewayGoogleFetch(),
   );
   readonly ads = createGoogleAdsConnections(
     (input) => this.getGoogleAccessToken(input),
@@ -194,16 +110,60 @@ export default class GoogleOAuthService extends Service {
     );
   }
 
-  getRemovalImpact(input: GoogleAccountInput) {
+  async getGoogleAccessMode() {
     this.lifetime.signal.throwIfAborted();
-    return GoogleAccountRepository.getRemovalImpact(input);
+    return getGoogleAccessMode();
   }
-  async removeAccount(input: GoogleAccountInput) {
+  async isGatewayGoogleAvailable() {
     this.lifetime.signal.throwIfAborted();
-    // Removing a personal grant releases every associated binding without deleting sign-in.
-    await GoogleAccountRepository.remove(input);
-    return { removed: true as const };
+    return isGatewayGoogleAvailable();
   }
+  async getGatewayGoogleFetch(): Promise<typeof fetch | null> {
+    this.lifetime.signal.throwIfAborted();
+    if ((await getGoogleAccessMode()) !== "gateway") return null;
+    const send = await getGatewayGoogleFetch();
+    this.lifetime.signal.throwIfAborted();
+    if (!send)
+      throw new AppError(
+        "AUTH_CONFIG_MISSING",
+        "Google is not available through the gateway.",
+      );
+    return (input, init) => {
+      this.lifetime.signal.throwIfAborted();
+      const signal = AbortSignal.any([
+        this.lifetime.signal,
+        ...(init?.signal ? [init.signal] : []),
+      ]);
+      return send(input, { ...init, signal });
+    };
+  }
+  async purgeUnusedGoogleData(now = new Date()) {
+    this.lifetime.signal.throwIfAborted();
+    return purgeUnusedGoogleData(this, now);
+  }
+  async revokeGoogleToken(token: string) {
+    this.lifetime.signal.throwIfAborted();
+    const response = await fetch("https://oauth2.googleapis.com/revoke", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ token }),
+      signal: AbortSignal.any([
+        this.lifetime.signal,
+        AbortSignal.timeout(10_000),
+      ]),
+    });
+    if (!response.ok && response.status !== 400)
+      throw new Error(`Google token revocation failed: ${response.status}`);
+  }
+
+  private readonly accountManagement = createAccountManagement(
+    (input) => this.getGoogleAccessToken(input),
+    (token) => this.revokeGoogleToken(token),
+    this.lifetime.signal,
+  );
+  readonly getRemovalImpact = this.accountManagement.getRemovalImpact;
+  readonly removeAccount = this.accountManagement.removeAccount;
+  readonly purgeUnusedGrants = this.accountManagement.purgeUnusedGrants;
 
   async createGoogleAuthorizationUrl(input: {
     integration: GoogleOAuthIntegration;
@@ -212,6 +172,17 @@ export default class GoogleOAuthService extends Service {
     publicOrigin: string;
   }) {
     this.lifetime.signal.throwIfAborted();
+    if (
+      input.integration.provider !== "google_ads" &&
+      (await getGoogleAccessMode()) === "gateway"
+    ) {
+      return getGatewayGoogleConnectUrl(
+        new URL(
+          getSafeCallbackPath(input.callbackURL, input.publicOrigin),
+          input.publicOrigin,
+        ).toString(),
+      );
+    }
     const config = await getGoogleOAuthClientConfig();
     if (!config || !(await hasGoogleOAuthConfig(config))) {
       throw new AppError(
@@ -428,6 +399,12 @@ export default class GoogleOAuthService extends Service {
     request: Request,
     integration: GoogleOAuthIntegration,
   ) {
+    this.lifetime.signal.throwIfAborted();
+    if (
+      integration.provider !== "google_ads" &&
+      (await ownGoogleCallbackDisabled())
+    )
+      return new Response("Not found", { status: 404 });
     try {
       this.lifetime.signal.throwIfAborted();
       const context = await resolveUserContextFromHeaders(request.headers);

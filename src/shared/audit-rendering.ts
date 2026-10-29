@@ -12,7 +12,16 @@ const CLOUDFLARE_USD_PER_BROWSER_HOUR = 0.09;
 const CLOUDFLARE_USD_PER_ATTEMPT =
   (CLOUDFLARE_RENDER_TIMEOUT_MS / 3_600_000) * CLOUDFLARE_USD_PER_BROWSER_HOUR;
 // Context.dev list price on the Developer plan. One scrape is one credit.
-const CONTEXT_USD_PER_CREDIT = 0.0025;
+export const CONTEXT_USD_PER_CREDIT = 0.0025;
+
+/**
+ * Why a rendered audit can't start behind an Every App gateway: the Context
+ * key is the gateway's, and optional in the manifest, so audits run
+ * unrendered until an admin sets it once for every app. Plain text: it is
+ * shown by ErrorState, toasts and MCP answers as is.
+ */
+export const GATEWAY_RENDERING_NOT_SET_UP_MESSAGE =
+  "JavaScript rendering isn't set up on your Every App gateway yet. An owner or admin sets it with pnpm everyapp secret set CONTEXT_API_KEY.";
 
 /** Provider units a rendered audit used, counted per crawl chunk. */
 export type RenderUsage = {
@@ -29,8 +38,8 @@ export function renderUsageCredits(usage: RenderUsage): number {
 
 /**
  * Usage-credit range for rendering up to `maxPages` pages. The low end renders
- * every page on Cloudflare. The high end is every page falling back to Context
- * after its Cloudflare attempt, which is also what a hosted audit reserves.
+ * every page on Cloudflare, which is what most sites cost. The high end is
+ * every page falling back to Context after its Cloudflare attempt.
  */
 export function estimateRenderingCredits(maxPages: number) {
   return {
@@ -46,6 +55,15 @@ export function estimateRenderingCredits(maxPages: number) {
 }
 
 /**
+ * What a hosted rendered audit holds when it starts, and the most it charges:
+ * twice the Cloudflare-only estimate. Most pages render on Cloudflare, so
+ * this covers almost every audit without holding the Context worst case.
+ */
+export function renderingHoldCredits(maxPages: number) {
+  return estimateRenderingCredits(maxPages).low * 2;
+}
+
+/**
  * Usage credits as the dollars users see everywhere else. Rounded up to the
  * cent, so an account holding the shown amount always covers the hold.
  */
@@ -56,30 +74,26 @@ function formatRenderingUsd(credits: number) {
 
 /** Why a hosted account cannot start a rendered audit of `maxPages` pages. */
 export function renderingCreditsNeededText(maxPages: number, t?: T) {
-  const { high } = estimateRenderingCredits(maxPages);
-  if (t) {
+  if (t)
     return t(
       "Rendering up to {pages} pages needs {cost} of credits available. Lower the page limit or add credits.",
       {
         pages: maxPages.toLocaleString("en-US"),
-        cost: formatRenderingUsd(high),
+        cost: formatRenderingUsd(renderingHoldCredits(maxPages)),
       },
     );
-  }
-  return `Rendering up to ${maxPages.toLocaleString("en-US")} pages needs ${formatRenderingUsd(high)} of credits available. Lower the page limit or add credits.`;
+  return `Rendering up to ${maxPages.toLocaleString("en-US")} pages needs ${formatRenderingUsd(renderingHoldCredits(maxPages))} of credits available. Lower the page limit or add credits.`;
+}
+
+export const RENDERING_COST_NOTE =
+  "Sites that block our browser need an advanced renderer. If the cost is higher than expected, it will stop.";
+
+export function renderingCostText(maxPages: number) {
+  return `Costs up to ${formatRenderingUsd(renderingHoldCredits(maxPages))}.`;
 }
 
 export function renderingEstimateText(maxPages: number, t?: T) {
-  const { low, high } = estimateRenderingCredits(maxPages);
-  if (t) {
-    return t(
-      "Estimated {low} to {high} for up to {pages} pages. Sites with aggressive bot detection need our more capable renderer and cost more.",
-      {
-        low: formatRenderingUsd(low),
-        high: formatRenderingUsd(high),
-        pages: maxPages.toLocaleString("en-US"),
-      },
-    );
-  }
-  return `Estimated ${formatRenderingUsd(low)} to ${formatRenderingUsd(high)} for up to ${maxPages.toLocaleString("en-US")} pages. Sites with aggressive bot detection need our more capable renderer and cost more.`;
+  return t
+    ? `${t("Costs up to {cost}.", { cost: formatRenderingUsd(renderingHoldCredits(maxPages)) })} ${t(RENDERING_COST_NOTE)}`
+    : `${renderingCostText(maxPages)} ${RENDERING_COST_NOTE}`;
 }

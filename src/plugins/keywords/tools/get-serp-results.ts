@@ -2,7 +2,7 @@ import { z } from "zod";
 import { SERP_ANALYSIS_DEPTH } from "@/server/lib/dataforseo";
 import { mcpResponse } from "@/server/mcp/formatters";
 import { buildProjectMeta } from "@/server/mcp/context";
-import { optionalMetaOutputSchema } from "@/server/mcp/output-schemas";
+import { serpSchema } from "@/shared/mcp-contracts";
 import { withMcpProjectAuth } from "@/server/mcp/project-auth";
 import { resolveMarket } from "@/shared/keyword-locations";
 import {
@@ -17,7 +17,7 @@ import {
   projectIdSchema,
 } from "@/server/mcp/schemas";
 
-import { serpItemSchema, type SerpItem } from "../serp-contracts";
+import { type SerpItem } from "../serp-contracts";
 import type { KeywordToolResolver } from "../contracts";
 
 // `type` is load-bearing: the advanced SERP is a mixed list, so without it a
@@ -90,27 +90,7 @@ export function buildGetSerpResultsTool(
       description:
         "Fetch live Google organic search results for 1-10 keywords. Use this to inspect who ranks for a query, verify competitors, compare SERPs across keywords, or gather source URLs before content planning. Returns the top `depth` result rows per keyword (default 20). `rank` counts every SERP element (ads, People Also Ask, ...); `organicRank` counts organic results only and matches rank tracker positions. Charges credits per keyword: ~5 each at the default depth 20, and each additional 10 of depth adds ~2.5. A keyword fetched in this project in the last 12 hours with the same market, device, and depth returns those rows again at no charge once the original call has finished, so if a response is lost, wait a minute and repeat the same call. Per-keyword errors don't fail the batch.",
       inputSchema,
-      outputSchema: z.looseObject({
-        results: z.array(
-          z.union([
-            z
-              .object({
-                keyword: z.string(),
-                ok: z.literal(true),
-                items: z.array(serpItemSchema),
-              })
-              .passthrough(),
-            z
-              .object({
-                keyword: z.string(),
-                ok: z.literal(false),
-                error: z.string(),
-              })
-              .passthrough(),
-          ]),
-        ),
-        ...optionalMetaOutputSchema,
-      }),
+      outputSchema: serpSchema,
       annotations: {
         readOnlyHint: false,
         openWorldHint: true,

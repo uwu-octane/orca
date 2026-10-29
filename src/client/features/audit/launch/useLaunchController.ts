@@ -71,6 +71,7 @@ export function useLaunchController({
   const { startMutation, deleteMutation } = useLaunchMutations({ projectId });
   // Pages of a large crawl waiting for the user to confirm it.
   const [largeCrawlPages, setLargeCrawlPages] = useState<number | null>(null);
+  const [outOfCredits, setOutOfCredits] = useState(false);
   const largeCrawlConfirmed = useRef(false);
 
   const launchForm = useForm({
@@ -86,7 +87,7 @@ export function useLaunchController({
     onSubmit: async ({ formApi, value }) => {
       const effectiveMaxPages = commitMaxPagesInput(
         launchForm,
-        getMaxPagesLimit(isFreePlan, value.renderJavaScript),
+        getMaxPagesLimit(isFreePlan),
       );
       formApi.setErrorMap({ onSubmit: undefined });
 
@@ -109,11 +110,13 @@ export function useLaunchController({
       } catch (error) {
         // Starting an audit refuses for credits only when the rendering hold
         // does not fit, so the form can say how much the audit needs.
-        const message =
+        const creditsShort =
           value.renderJavaScript &&
-          getErrorCode(error) === "INSUFFICIENT_CREDITS"
-            ? renderingCreditsNeededText(effectiveMaxPages, t)
-            : getStandardErrorMessage(error, t("Failed to start audit"), t);
+          getErrorCode(error) === "INSUFFICIENT_CREDITS";
+        setOutOfCredits(creditsShort);
+        const message = creditsShort
+          ? renderingCreditsNeededText(effectiveMaxPages, t)
+          : getStandardErrorMessage(error, t("Failed to start audit"), t);
         formApi.setErrorMap({
           onSubmit: createFormValidationErrors({ form: message }),
         });
@@ -125,20 +128,18 @@ export function useLaunchController({
     launchForm.store,
     (state) => state.values.renderJavaScript,
   );
-  const maxPagesLimit = getMaxPagesLimit(isFreePlan, renderJavaScript);
-  // What an upgrade offers with the current options, so the upgrade hint
-  // never promises pages a rendered audit cannot crawl.
-  const paidMaxPagesLimit = getMaxPagesLimit(false, renderJavaScript);
+  const maxPagesLimit = getMaxPagesLimit(isFreePlan);
 
   return {
     launchForm,
     historyQuery,
     canRenderJavaScript: capabilitiesQuery.data?.canRenderJavaScript,
     maxPagesLimit,
-    paidMaxPagesLimit,
+    renderJavaScript,
     commitMaxPagesInput: () => commitMaxPagesInput(launchForm, maxPagesLimit),
     deleteAudit: (auditId: string) => deleteMutation.mutate(auditId),
     largeCrawlPages,
+    outOfCredits,
     cancelLargeCrawl: () => setLargeCrawlPages(null),
     confirmLargeCrawl: () => {
       setLargeCrawlPages(null);
