@@ -42,6 +42,7 @@ for attempt in $(seq 1 30); do
   if docker exec orca node deploy/oracle/health.mjs; then
     printf '%s\n' "$previous" > previous-image
     printf '%s\n' "$revision" > deployed-revision
+    rm -f staged-image staged-revision
     /usr/local/sbin/orca-maintenance
     echo "Deployed $revision"
     exit 0
