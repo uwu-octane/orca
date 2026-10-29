@@ -92,7 +92,12 @@ beforeAll(async () => {
       ";" +
       readFileSync("drizzle/sqlite/0062_military_triton.sql", "utf8") +
       ";" +
-      readFileSync("drizzle/sqlite/0063_keyword_intents.sql", "utf8"),
+      readFileSync("drizzle/sqlite/0063_keyword_intents.sql", "utf8") +
+      ";" +
+      readFileSync(
+        "drizzle/sqlite/0066_keyword_membership_questions.sql",
+        "utf8",
+      ),
   );
 });
 afterAll(async () => {

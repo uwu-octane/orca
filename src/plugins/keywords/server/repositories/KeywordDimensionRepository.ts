@@ -69,6 +69,21 @@ async function get(searchId: string, scope: KeywordScope) {
         name: child.name,
         labelZh: child.labelZh,
         active: child.active,
+        ...(child.decisionInstructions !== null
+          ? {
+              decision: {
+                instructions: child.decisionInstructions,
+                ...(child.decisionTrue !== null && child.decisionFalse !== null
+                  ? {
+                      criteria: {
+                        true: child.decisionTrue,
+                        false: child.decisionFalse,
+                      },
+                    }
+                  : {}),
+              },
+            }
+          : {}),
       });
   }
   return {
@@ -116,7 +131,7 @@ async function save(
     tx
       .insert(children)
       .select(
-        sql`select ${searchId}, ${jsonField(item, "id")}, ${jsonField(child, "id")}, ${jsonField(child, "position", "bigint")}, ${jsonField(child, "name")}, ${jsonField(child, "labelZh")}, ${jsonField(child, "active", "boolean")} from ${source} as item cross join ${jsonRows(jsonField(item, "children", "json"))} as child where ${claimed}`,
+        sql`select ${searchId}, ${jsonField(item, "id")}, ${jsonField(child, "id")}, ${jsonField(child, "position", "bigint")}, ${jsonField(child, "name")}, ${jsonField(child, "labelZh")}, ${jsonField(child, "active", "boolean")}, ${jsonField(jsonField(child, "decision", "json"), "instructions")}, ${jsonField(jsonField(jsonField(child, "decision", "json"), "criteria", "json"), "true")}, ${jsonField(jsonField(jsonField(child, "decision", "json"), "criteria", "json"), "false")} from ${source} as item cross join ${jsonRows(jsonField(item, "children", "json"))} as child where ${claimed}`,
       ),
   ]);
   const saved = await get(searchId, scope);

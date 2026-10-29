@@ -1,6 +1,21 @@
 export const keywordsZh = {
-  "Identify intent": "判断意图",
-  "Identify intent for {keyword}": "判断“{keyword}”的意图",
+  "Decision questions": "Decision API 问题配置",
+  "Question for {name}": "{name}的分类问题",
+  "Membership question": "归属判断问题",
+  "Yes criterion (optional)": "判定为“是”的标准（可选）",
+  "No criterion (optional)": "判定为“否”的标准（可选）",
+  "Configure question": "配置问题",
+  "Edit question": "编辑问题",
+  "Remove question": "移除问题",
+  "Request preview": "请求预览",
+  "Enter a question.": "请输入判定问题。",
+  "Enter both criteria or leave both empty.":
+    "请同时填写是、否标准，或将两项都留空。",
+  "Decision input is too large.":
+    "问题和关键词超出请求长度限制，请缩短后重试。",
+  "Identify search intents with AI": "AI 批量判断搜索意图",
+  "Search intent is the purpose behind a search: finding information, comparing options, taking an action, or reaching a specific website.":
+    "搜索意图是用户搜索时想达成的目的：获取信息、比较选择、完成行动或访问特定网站。",
   "About {label}": "{label}说明",
   "Google Ads estimates the average monthly searches over the past 12 months for the selected targeting settings. This is search demand, not visits to your website. — means unavailable.":
     "Google Ads 按所选定位条件估算的近 12 个月月均搜索次数，代表搜索需求，不是你的网站访问量。— 表示暂无数据。",
@@ -16,8 +31,8 @@ export const keywordsZh = {
   "Generate dimensions": "生成维度",
   "Regenerate dimensions": "重新生成",
   "Regenerate dimensions?": "重新生成维度？",
-  "The generated dimensions will replace this draft, including your edits.":
-    "生成成功后将替换当前草案，包括你修改的内容。",
+  "The generated dimensions will replace your dimensions and their question configurations.":
+    "生成成功后将替换当前维度及其问题配置。",
   "Generating dimensions...": "正在生成维度…",
   "No dimensions yet": "暂无维度",
   "Add dimension": "新增维度",

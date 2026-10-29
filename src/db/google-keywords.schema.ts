@@ -227,6 +227,10 @@ export const keywordResearchSubdimensions = sqliteTable(
     name: text("name").notNull(),
     labelZh: text("label_zh").notNull(),
     active: integer("active", { mode: "boolean" }).notNull(),
+    // FORK: Membership questions belong to the subdimension, not a JSON settings blob.
+    decisionInstructions: text("decision_instructions"),
+    decisionTrue: text("decision_true"),
+    decisionFalse: text("decision_false"),
   },
   (table) => [
     primaryKey({ columns: [table.searchId, table.id] }),

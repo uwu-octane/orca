@@ -1,3 +1,4 @@
+// FORK: Persisted keyword intent contracts include explicit batch classification.
 import { z } from "zod";
 import { aiProviderSchema } from "./ai-provider";
 import { decisionSelectionSchema } from "./decision";
@@ -19,6 +20,6 @@ export const savedKeywordIntentSchema = z.object({
 export const classifyKeywordIntentSchema = z.object({
   projectId: z.string().min(1),
   searchId: z.string().min(1),
-  keyword: z.string().min(1),
+  keywords: z.array(z.string().min(1).max(8_000)).min(1).max(500),
   selection: decisionSelectionSchema.optional(),
 });

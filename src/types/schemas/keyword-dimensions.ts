@@ -1,11 +1,12 @@
 import { z } from "zod";
-import { llmModelSchema } from "./ai-provider";
+// FORK: Keyword dimension generation uses the model shown in AI settings.
+import { DEFAULT_LLM_MODEL } from "./ai-provider";
 
 export const keywordDimensionInputSchema = z
   .object({
     keywords: z.array(z.string().trim().min(1).max(256)).min(1).max(500),
     language: z.enum(["en", "zh"]),
-    model: llmModelSchema.optional(),
+    model: z.literal(DEFAULT_LLM_MODEL).optional(),
   })
   .strict()
   .refine((input) => input.keywords.join("\n").length <= 64_000);
@@ -51,10 +52,33 @@ export type GenerateKeywordDimensionsInput = z.infer<
   typeof generateKeywordDimensionsSchema
 >;
 
+// FORK: Each subdimension owns a user-authored, independent membership question.
+export const keywordMembershipQuestionSchema = z.strictObject({
+  instructions: z.string().trim().min(1, "Enter a question.").max(8_000),
+  criteria: z
+    .strictObject({
+      true: z
+        .string()
+        .trim()
+        .min(1, "Enter both criteria or leave both empty.")
+        .max(8_000),
+      false: z
+        .string()
+        .trim()
+        .min(1, "Enter both criteria or leave both empty.")
+        .max(8_000),
+    })
+    .optional(),
+});
+export type KeywordMembershipQuestion = z.infer<
+  typeof keywordMembershipQuestionSchema
+>;
+
 // FORK: Durable taxonomy edits share stable IDs across labels and activation.
 const subdimensionSchema = keywordDimensionFieldSchema.extend({
   id: z.uuid(),
   active: z.boolean(),
+  decision: keywordMembershipQuestionSchema.optional(),
 });
 export const keywordDimensionDraftSchema = z
   .array(
@@ -105,5 +129,5 @@ export const generateSavedKeywordDimensionsSchema =
   keywordSearchIdentitySchema.extend({
     revision: z.uuid().nullable(),
     language: z.enum(["en", "zh"]),
-    model: llmModelSchema.optional(),
+    model: z.literal(DEFAULT_LLM_MODEL).optional(),
   });

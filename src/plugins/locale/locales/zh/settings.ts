@@ -52,6 +52,7 @@ export const settingsZh = {
     "请检查 AI 服务商设置和 API 密钥。",
 
   "AI providers": "AI 服务商",
+  "Model settings": "模型设置",
   "Custom service": "自定义服务",
   "Provider saved": "服务商已保存",
   "Provider removed": "服务商已移除",

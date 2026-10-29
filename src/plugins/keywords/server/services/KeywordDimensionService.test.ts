@@ -17,6 +17,7 @@ import {
 import { z } from "zod";
 import { keywordDimensionTool } from "@/plugins/keywords/server/dimensions/sam-tool";
 import { AppError } from "@/server/lib/errors";
+import { DEFAULT_LLM_MODEL } from "@/types/schemas/ai-provider";
 import type {
   GenerateKeywordDimensionsInput,
   keywordDimensionsSchema,
@@ -42,7 +43,6 @@ vi.mock("@/plugins/ai/server/configuration", () => ({
 const input: GenerateKeywordDimensionsInput = {
   projectId: "project-1",
   language: "zh",
-  model: "deepseek/deepseek-v4-flash",
   keywords: ["espresso machine", "commercial coffee maker"],
 };
 const context = {
@@ -90,7 +90,7 @@ beforeEach(() => {
 });
 
 describe("keyword field generation", () => {
-  it("returns English names with Chinese labels through the project's selected Gateway model", async () => {
+  it("returns English names with Chinese labels through the fixed Flash model", async () => {
     expect(await runtime.keywords.generateDimensions(input, context)).toEqual(
       fields,
     );
@@ -99,9 +99,7 @@ describe("keyword field generation", () => {
     );
     const headers = new Headers(vi.mocked(fetch).mock.calls[0][1]?.headers);
     expect(headers.get("authorization")).toBe("Bearer project-gateway-key");
-    expect(headers.get("ai-language-model-id")).toBe(
-      "deepseek/deepseek-v4-flash",
-    );
+    expect(headers.get("ai-language-model-id")).toBe(DEFAULT_LLM_MODEL);
     expect(
       JSON.parse(z.string().parse(vi.mocked(fetch).mock.calls[0][1]?.body)),
     ).toMatchObject({

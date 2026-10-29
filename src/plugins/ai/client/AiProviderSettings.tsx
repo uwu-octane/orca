@@ -42,6 +42,7 @@ import {
 import {
   aiProviderSchema,
   AI_PROVIDERS,
+  DEFAULT_LLM_MODEL,
   type AiProvider,
   type AiProviderConfigSummary,
 } from "@/types/schemas/ai-provider";
@@ -69,7 +70,23 @@ export function AiProviderSettings({ projectId }: { projectId: string }) {
               provider={provider}
             />
             {provider === "vercel_gateway" && (
-              <GatewayModelList projectId={projectId} />
+              <div className="space-y-6">
+                <section aria-label={t("Model settings")} className="space-y-3">
+                  <h3 className="text-sm font-medium">{t("Model settings")}</h3>
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
+                    <span className="text-sm">
+                      {t("Dimension generation model")}
+                    </span>
+                    <span
+                      className="text-sm font-medium"
+                      title={DEFAULT_LLM_MODEL}
+                    >
+                      DeepSeek V4.1 Flash
+                    </span>
+                  </div>
+                </section>
+                <GatewayModelList projectId={projectId} />
+              </div>
             )}
           </TabsContent>
         ))}

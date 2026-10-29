@@ -42,7 +42,7 @@ afterAll(async () => {
   database.client.close();
 });
 const scope = { organizationId: "org-1", projectId: "project-1" };
-it("shares one Gateway connection across LLM and decision calls with caller-selected models", async () => {
+it("shares one Gateway connection for Flash generation and caller-selected decision models", async () => {
   await runtime.ai.configuration.saveConfig(
     {
       projectId: scope.projectId,
@@ -119,7 +119,7 @@ it("shares one Gateway connection across LLM and decision calls with caller-sele
   ).toEqual(fields);
   await runtime.ai.decide(input, scope);
   await runtime.keywords.generateDimensions(
-    { ...generationInput, model: "deepseek/deepseek-v4-flash" },
+    { ...generationInput, model: DEFAULT_LLM_MODEL },
     scope,
   );
   await runtime.ai.decide(input, scope, {
@@ -144,7 +144,7 @@ it("shares one Gateway connection across LLM and decision calls with caller-sele
     new Headers(fetchMock.mock.calls[2][1]?.headers).get(
       "ai-language-model-id",
     ),
-  ).toBe("deepseek/deepseek-v4-flash");
+  ).toBe(DEFAULT_LLM_MODEL);
   expect(JSON.parse(requestBody(3))).toMatchObject({
     model: "typesafe-ai/jev-preview",
   });

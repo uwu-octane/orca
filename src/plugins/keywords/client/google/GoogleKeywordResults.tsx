@@ -1,5 +1,10 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { classifyKeywordIntent } from "@/serverFunctions/keywordIntent";
+import type { getGoogleKeywordSearch } from "@/serverFunctions/keywordDimensions";
+import { IntentBadge } from "../components/IntentBadge";
 import { useMemo, useState } from "react";
-import { CircleHelp } from "lucide-react";
+import { CircleHelp, Sparkles } from "lucide-react";
 import { useForm, useStore } from "@tanstack/react-form";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import { useLocale } from "@/plugins/client/context";
@@ -23,7 +28,6 @@ import {
 import { formatNumber } from "@/plugins/keywords/client/utils";
 import type { GoogleKeywordResult } from "@/types/schemas/google-keywords";
 import { KeywordDimensionsCard } from "../dimensions/KeywordDimensionsCard";
-import { GoogleKeywordIntentCell } from "./GoogleKeywordIntentCell";
 import {
   EMPTY_GOOGLE_KEYWORD_FILTERS,
   filterGoogleKeywords,
@@ -104,6 +108,46 @@ export function GoogleKeywordResults({
   canRequestNext: boolean;
 }) {
   const { t } = useLocale();
+  const client = useQueryClient();
+  const decision = useMutation({
+    mutationFn: (data: Parameters<typeof classifyKeywordIntent>[0]["data"]) =>
+      classifyKeywordIntent({ data }),
+    retry: false,
+    onSuccess: (saved, request) => {
+      const byKeyword = new Map(
+        saved.decisions.map((item) => [item.keyword, item]),
+      );
+      client.setQueryData<Awaited<ReturnType<typeof getGoogleKeywordSearch>>>(
+        ["googleKeywordSearch", request.projectId, request.searchId],
+        (current) =>
+          current
+            ? {
+                ...current,
+                result: {
+                  ...current.result,
+                  rows: current.result.rows.map((row) => {
+                    const intent = byKeyword.get(row.keyword);
+                    return intent
+                      ? {
+                          ...row,
+                          intent: intent.intent,
+                          intentDecision: intent,
+                        }
+                      : row;
+                  }),
+                },
+              }
+            : current,
+      );
+    },
+    // Earlier successful batches remain saved if a later batch fails. Refresh
+    // only the persisted snapshot, never repeat a paid classification or Ads call.
+    onError: (_error, request) =>
+      client.invalidateQueries({
+        queryKey: ["googleKeywordSearch", request.projectId, request.searchId],
+        exact: true,
+      }),
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
   const form = useForm({ defaultValues: EMPTY_GOOGLE_KEYWORD_FILTERS });
@@ -117,6 +161,7 @@ export function GoogleKeywordResults({
     (value) => value.trim() !== "",
   ).length;
   const cpcLabel = result ? `${t("CPC")} (${result.currencyCode})` : t("CPC");
+  const { isPending: intentPending, mutate: identifyIntents } = decision;
   const columns = useMemo<ColumnDef<KeywordRow>[]>(
     () => [
       {
@@ -131,15 +176,45 @@ export function GoogleKeywordResults({
       },
       {
         accessorKey: "intent",
-        header: () => t("Intent"),
-        cell: ({ row }) =>
-          result ? (
-            <GoogleKeywordIntentCell
-              projectId={projectId}
-              searchId={result.searchId}
-              row={row.original}
-              disabled={pending}
+        header: () => (
+          <span className="inline-flex items-center gap-1">
+            <span>{t("Intent")}</span>
+            <MetricHelpButton
+              label={t("Intent")}
+              text={t(
+                "Search intent is the purpose behind a search: finding information, comparing options, taking an action, or reaching a specific website.",
+              )}
             />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={t("Identify search intents with AI")}
+              title={t("Identify search intents with AI")}
+              pending={intentPending}
+              disabled={
+                pending ||
+                !result ||
+                !filtered.some((row) => !row.intentDecision)
+              }
+              onClick={() => {
+                if (!result || intentPending) return;
+                identifyIntents({
+                  projectId,
+                  searchId: result.searchId,
+                  keywords: filtered
+                    .filter((row) => !row.intentDecision)
+                    .map((row) => row.keyword),
+                });
+              }}
+            >
+              {!intentPending && <Sparkles className="size-4" aria-hidden />}
+            </Button>
+          </span>
+        ),
+        cell: ({ row }) =>
+          row.original.intentDecision ? (
+            <IntentBadge intent={row.original.intentDecision.intent} />
           ) : null,
         enableSorting: false,
       },
@@ -173,7 +248,16 @@ export function GoogleKeywordResults({
         }),
       ),
     ],
-    [cpcLabel, t, result, projectId, pending],
+    [
+      cpcLabel,
+      t,
+      result,
+      projectId,
+      pending,
+      filtered,
+      intentPending,
+      identifyIntents,
+    ],
   );
   const table = useDataTable({
     data: filtered,
@@ -196,6 +280,13 @@ export function GoogleKeywordResults({
         />
       ) : null}
       <section aria-label={t("Keyword results")} aria-busy={pending}>
+        {decision.error &&
+        decision.variables?.projectId === projectId &&
+        decision.variables?.searchId === result?.searchId ? (
+          <p role="alert" className="mb-2 text-sm text-destructive">
+            {getStandardErrorMessage(decision.error, undefined, t)}
+          </p>
+        ) : null}
         <DataTable
           table={table}
           isLoading={pending}

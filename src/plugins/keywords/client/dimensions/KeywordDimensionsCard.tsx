@@ -1,5 +1,3 @@
-import { DEFAULT_LLM_MODEL, llmModelSchema } from "@/types/schemas/ai-provider";
-import { AiModelPicker } from "@/plugins/ai/client/views";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Sparkles } from "lucide-react";
@@ -20,6 +18,7 @@ import {
   saveKeywordDimensions,
 } from "@/serverFunctions/keywordDimensions";
 import { KeywordDimensionTabs } from "./KeywordDimensionTabs";
+import { KeywordDecisionQuestions } from "./KeywordDecisionQuestions";
 import type { KeywordDimension } from "@/types/schemas/keyword-dimensions";
 import { asAppError } from "@/server/lib/errors";
 
@@ -33,7 +32,6 @@ export function KeywordDimensionsCard({
   disabled: boolean;
 }) {
   const { t, active: language } = useLocale();
-  const [model, setModel] = useState<string>(DEFAULT_LLM_MODEL);
   const queryClient = useQueryClient();
   const queryKey = ["keywordDimensions", projectId, searchId];
   const saved = useQuery({
@@ -52,7 +50,6 @@ export function KeywordDimensionsCard({
           searchId,
           revision: saved.data!.revision,
           language,
-          model,
         },
       }),
     retry: false,
@@ -103,19 +100,11 @@ export function KeywordDimensionsCard({
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle>{t("Keyword dimensions")}</CardTitle>
         <div className="flex flex-wrap items-center gap-2">
-          <AiModelPicker
-            projectId={projectId}
-            kind="language"
-            value={model}
-            onChange={setModel}
-            disabled={busy}
-            className="w-full sm:w-72"
-          />
           <Button
             type="button"
             variant="outline"
             pending={generation.isPending}
-            disabled={busy || !llmModelSchema.safeParse(model).success}
+            disabled={busy}
             onClick={() => {
               if (busy) return;
               if (dimensions.length) setConfirmReplacement(true);
@@ -182,12 +171,22 @@ export function KeywordDimensionsCard({
             </div>
           </div>
         ) : (
-          <KeywordDimensionTabs
-            dimensions={dimensions}
-            error={errorMessage}
-            disabled={busy}
-            onChange={changeDimensions}
-          />
+          <>
+            <KeywordDimensionTabs
+              dimensions={dimensions}
+              error={errorMessage}
+              disabled={busy}
+              onChange={changeDimensions}
+            />
+            {dimensions.some((dimension) => dimension.children.length) ? (
+              <KeywordDecisionQuestions
+                dimensions={dimensions}
+                error={errorMessage}
+                disabled={busy}
+                onChange={changeDimensions}
+              />
+            ) : null}
+          </>
         )}
       </CardContent>
       {confirmReplacement ? (
@@ -215,7 +214,7 @@ export function KeywordDimensionsCard({
         >
           <p className="text-sm text-muted-foreground">
             {t(
-              "The generated dimensions will replace this draft, including your edits.",
+              "The generated dimensions will replace your dimensions and their question configurations.",
             )}
           </p>
         </FormDialog>

@@ -1,5 +1,27 @@
 # Fork maintenance log
 
+## 2026-10-29 Dimension membership questions
+
+Dimension generation uses DeepSeek V4.1 Flash, displayed in model settings rather
+than selected on the research card. The Keywords domain stores user-authored
+membership questions and optional true/false criteria on each subdimension;
+SQLite and Postgres migrations add matching nullable columns. Renaming or
+toggling a subdimension preserves its question, while regeneration replaces it.
+The card provides editing and a local preview of bounded SystemOne `noul`
+requests. Each subdimension is an independent question and receives only the
+keyword as evidence. The shared dimension schema and both database schemas are
+fork-owned; provider routing and decision model selection remain unchanged.
+
+## 2026-10-29 Batch search intent
+
+Google keyword intent classification uses one header action and the shared
+keyword table help/badge components. The shared request schema accepts up to
+500 keywords; the Keywords domain deduplicates them, reuses saved decisions,
+and sends bounded multi-question requests through the existing AI service.
+Each successful batch is persisted atomically with ownership checks and survives
+a later failure. Provider selection, no-retry policy and database schemas stay
+unchanged.
+
 ## 2026-10-29 Upstream 0.1.20 sync
 
 Merged upstream `f24a8334` (129 commits after `d7ea7852`) through `main`

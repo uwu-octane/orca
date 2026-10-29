@@ -26,12 +26,22 @@ function taxonomy(): KeywordDimension[] {
           name: "Coffee makers",
           labelZh: "咖啡机",
           active: true,
+          decision: {
+            instructions:
+              "Does the keyword explicitly refer to a coffee maker?",
+            criteria: {
+              true: "The keyword names a coffee maker or espresso machine.",
+              false:
+                "Only beans, accessories, a brand, or an ambiguous root term.",
+            },
+          },
         },
         {
           id: crypto.randomUUID(),
           name: "Grinders",
           labelZh: "磨豆机",
           active: false,
+          decision: { instructions: "Does the keyword name a coffee grinder?" },
         },
       ],
     },
@@ -167,6 +177,37 @@ it("isolates saved searches and dimension writes by project and organization", a
   expect(
     await runtime.keywords.getSavedDimensions(search.searchId, context),
   ).toEqual(saved);
+});
+
+it("updates and removes independent authored questions", async () => {
+  const search = await runtime.keywords.researchGoogle(input, context);
+  const dimensions = taxonomy();
+  const first = await runtime.keywords.saveDimensions(
+    {
+      projectId: context.projectId,
+      searchId: search.searchId,
+      revision: null,
+      dimensions,
+    },
+    context,
+  );
+  dimensions[0].children[0].decision = undefined;
+  dimensions[0].children[1].decision = {
+    instructions: "Does this keyword explicitly mention a manual grinder?",
+  };
+  const edited = await runtime.keywords.saveDimensions(
+    { ...first, projectId: context.projectId, dimensions },
+    context,
+  );
+  const reloaded = await runtime.keywords.getSavedDimensions(
+    search.searchId,
+    context,
+  );
+  expect(reloaded).toEqual(edited);
+  expect(reloaded.dimensions[0].children[0].decision).toBeUndefined();
+  expect(reloaded.dimensions[0].children[1].decision).toEqual(
+    dimensions[0].children[1].decision,
+  );
 });
 
 it("rejects stale edits and rolls back failed child writes without losing the saved taxonomy", async () => {
