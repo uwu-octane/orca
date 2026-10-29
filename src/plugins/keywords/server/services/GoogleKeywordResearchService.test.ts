@@ -16,7 +16,24 @@ vi.mock("../repositories/GoogleKeywordRepository", () => ({
   GoogleKeywordRepository: { upsertResult: async () => undefined },
 }));
 
+vi.mock("../repositories/GoogleKeywordSearchRepository", () => ({
+  GoogleKeywordSearchRepository: {
+    save: async (
+      _input: unknown,
+      _customer: string,
+      key: string,
+      result: object,
+    ) => {
+      const saved = { ...result, searchId: key };
+      mocks.searches.set(key, saved);
+      return saved;
+    },
+    get: async (key: string) => ({ result: mocks.searches.get(key) }),
+  },
+}));
+
 const mocks = vi.hoisted(() => ({
+  searches: new Map<string, object>(),
   getConnection: vi.fn(),
   getToken: vi.fn(),
   objects: new Map<
@@ -101,6 +118,7 @@ function defaultResponse(url: RequestInfo | URL) {
 }
 
 beforeEach(async () => {
+  mocks.searches.clear();
   ctx = new Context();
   await ctx.plugin(GoogleOAuthService);
   vi.spyOn(ctx.googleOAuth, "getGoogleAccessToken").mockImplementation(

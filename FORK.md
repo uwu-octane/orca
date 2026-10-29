@@ -1,5 +1,20 @@
 # Fork maintenance log
 
+## 2026-10-29 OpenAI decisions and model selection
+
+The AI client plugin owns a shared, searchable Gateway picker backed by the live
+catalog. Decision tests include OpenAI's native `openai/gpt-6-luna-decisions`;
+dimension generation retains the DeepSeek text policy. The existing Gateway
+SystemOne transport preserves typed decisions and pins OpenAI requests to the
+official provider, with no model fallbacks or application retries. The maintainer
+accepted Gateway's existing BYOK-to-system-credential policy. Shared model
+validation and error-code additions are fork-owned; provider credentials, default
+models and data tables remain unchanged.
+
+## Workers cancellation runtime
+
+The plugin lifetime guards exposed the old local workerd runtime's request-bound `AbortController`: a service initialized on one HTTP request failed when used by the next. Cloudflare tooling now requires Vite plugin 1.54.0 / Wrangler 4.126.0, which ship workerd 1.20260825.1 with isolate-scoped cancellation. Matching runtime types and a Miniflare regression cover repeated requests and canceling active I/O from a separate request. No lifecycle protection, auth check or business policy was removed.
+
 ## Cordis domain review
 
 The four domain extraction commits were reviewed together. Keyword tools now bind their registering Cordis context instead of the global runtime. AI configuration, SAM sessions, Google token operations and Google discovery clients enforce their owner's lifetime. The SAM MCP adapter propagates cancellation through project authorization before dispatching business work. Shared GSC/GA4 clients accept an optional discovery lifetime; existing report callers and metered request settlement keep their behavior. No provider, fallback, retry or DNS policy changed. Review details are in `docs/maintainers/domain-plugins.md`.
@@ -89,3 +104,11 @@ Branch model and rules: see "Fork maintenance" in [README.md](./README.md).
 | 2026-08-28      | Cordis plugin layer, fix 3: `translate` was locale-blind — it returned the zh entry whenever a key existed in the dictionary, so the shell always rendered Chinese and selecting English (or any preference) had no visible effect. It now reads `readActiveLocale()` at call time; the zh dictionary applies only while zh is active, and English passes the keys through. Regression tests cover en preference and browser-following preference. | `b3670ed` |
 | 2026-08-28      | Cordis plugin layer, phase 6 prep: zh dictionary split into per-scope files behind a merge entry (`locales/zh/index.ts` merges `shellZh`; feature dictionaries join the merge and extend `ShellKey` automatically). Zero behavior change.                                                                                                                                                                                                          | `30a49c5` |
 | 2026-08-30      | Auth: `cloudflare_access` mode gains a private-origin fallback — requests without an Access JWT from private/loopback hosts (localhost, `.local`, RFC1918, 198.18/15) resolve as `local_noauth`, public hosts fail closed. One deployment serves LAN dev and a tunneled public hostname; TEAM_DOMAIN/POLICY_AUD are only required when a token is verified.                                                                                        | `e8bb602` |
+
+### Saved keyword dimensions
+
+The Keywords domain persists Google search snapshots and editable taxonomies, including English names, Chinese display labels and child activation. Shared schema/route adapters expose `searchId` and dimension reads/writes through the installed service; SQLite and Postgres migrations add normalized tables. SAM reads the same data through lifecycle-owned internal tools. See `docs/maintainers/google-keyword-provider.md` for revision and restoration behavior.
+
+Google keyword history lists the same persisted searches through a project-authorized server function, including when the Ads connection is absent. The shared recent-search component accepts stable snapshot keys and limits removal to browser-only entries; existing local-history consumers keep their behavior.
+
+Google keyword rows support explicit intent decisions through the Keywords Cordis domain and the shared AI service. Matching SQLite/Postgres tables persist each decision against its search row; the server-function adapter and schema barrel expose it without changing provider routing or cached Google metrics.

@@ -79,8 +79,11 @@ and result table. Its scope is the complete current result page, before table
 filters; it does not fetch other pages. Generation uses these result keywords
 directly and infers their subject without a separate industry input. An operator
 explicitly requests generation or adds fields manually. Dimensions
-use the existing line tabs; subdimensions use editable badge buttons. Existing
-form dialogs support adding, renaming and deleting names. Regeneration requires
+use the existing line tabs, with a pencil icon for editing. Subdimension pills
+toggle `active` on click; their separate pencil buttons open editing without
+changing activation. New and generated subdimensions start active. Renaming and
+switching tabs preserve IDs and activation. Existing form dialogs support adding,
+editing and deleting English names and Chinese display names. Regeneration requires
 confirmation before replacing edits, and a failed request retains the draft.
 
 `generateKeywordDimensions` uses project authorization and the shared connection
@@ -91,8 +94,8 @@ Only integration managers can change connections. Revision checks prevent stale
 updates; project/organization scoping and matching SQLite/Postgres schemas protect
 stored credentials. Summaries never return the key.
 
-The service resolves a Cordis-registered dimension agent, whose model comes from
-the separate Cordis model-provider registry. The installed implementation uses
+The `keywords` Cordis service owns dimension generation and obtains its text
+model from the installed `ai` service. Its implementation uses
 AI SDK `ToolLoopAgent` with an internal `submit_keyword_dimensions` tool and a
 16,000-token output budget, including reasoning. Submission ends the single
 model step; no extra explanation call or automatic repair follows it. SAM exposes
@@ -109,19 +112,85 @@ service; these calls do not consume the app's shared research-credit pool.
 Authentication, budget/credit and rate-limit failures have actionable messages;
 provider bodies and credentials are not exposed to clients or logs.
 
-Output contains
-only dimension and subdimension names, with no fixed industry template or
-field quota. Invalid, duplicate, missing-tool or incomplete output is rejected;
+Output contains only dimension and subdimension names: `name` is canonical
+English and `labelZh` is its Simplified Chinese display translation. Generation
+always produces both, independent of UI locale. Form validation shares the
+generation schema; Chinese cannot replace the canonical name. English UI uses
+`name`, Chinese UI uses `labelZh`. Original search keywords remain unchanged.
+There is no fixed industry template or field quota. Invalid, duplicate,
+missing-tool or incomplete output is rejected;
 output exhaustion has a separate error. No Jev
 classification is triggered by this card.
 
-This first card stores its editable draft in the current result component.
-It is not yet saved to SQL and is cleared when leaving/replacing that result
-or refreshing the page. Its React identity includes project, request and fetch
-time, so delayed generation for an earlier result cannot populate a new one.
-Durable research sets and classification remain subsequent work.
+Search results now have immutable SQL snapshots in `google_keyword_searches`
+with normalized seed, location, keyword, monthly-volume and variant rows. The
+snapshot identity includes the scoped cache key and supplier fetch timestamp.
+A cache hit returns the same search ID without touching its taxonomy; a newly
+fetched page creates a different snapshot. Latest market metrics remain in their
+existing tables. Empty pages are also stored.
+
+`keyword_research_dimensions` and `keyword_research_subdimensions` belong to a
+search snapshot, with explicit foreign keys, ordered positions, stable IDs,
+English names, Chinese labels and child activation. Project deletion cascades
+through both results and taxonomy. Reads and writes enforce project and
+organization ownership, including archived-project exclusion.
+
+The page URL carries `searchId`; reloads read SQL without running another Ads or
+model request. The history list reads recent snapshots from the installed
+Keywords service, so saved searches remain discoverable across browsers and
+origins within the same authorized project. Saved searches can be opened even
+after disconnecting Google Ads. Browser-only history entries are retained and
+deduplicated against persisted searches; entries without a search ID retain
+their explicit repeat-search action. Removing a browser-only entry never deletes
+a saved snapshot or its taxonomy. History load failures display a retry action.
+
+The Keywords Cordis service owns snapshot reads, taxonomy edits and persisted
+generation. The generation endpoint reads the stored keywords by ID rather than
+accepting a replacement keyword list from the client. Each edit or generation
+uses the loaded revision. One transaction claims that revision and replaces the
+normalized rows; stale writes cannot delete or replace newer edits. Generation
+failures and transaction failures leave the previous version intact. The UI
+updates its query cache only after a successful save; errors retain the edit
+form and conflicts require an explicit reload. No automatic merging or retries.
+
+SAM discovers the project's recent snapshots through `list_keyword_searches`
+and reads `get_keyword_dimensions` by search ID. That tool returns the same
+persisted taxonomy as the page, original keywords and a `decisionDimensions`
+projection containing only active children with IDs and English names. These
+are internal, lifecycle-owned Keywords contributions to SAM, not independent
+storage or new public MCP tools. They can read saved data without Google or AI
+supplier configuration. The existing `generate_keyword_dimensions` discovery
+tool remains non-mutating; it does not silently replace an operator's edits.
 
 ## Jev boundary
+
+The Google results table offers an explicit per-row intent action through the
+Keywords service and `ctx.ai.decide`. Intent classification defaults to
+`openai/gpt-6-luna-decisions` through Vercel AI Gateway;
+the operation also accepts the shared decision selection contract. Google does
+not supply intent. Unclassified cells stay blank; a choice decision uses the
+existing informational, commercial, transactional, navigational and unknown
+categories. Unknown is an explicit ambiguous-query outcome, not an error fallback.
+Prompts and stored category IDs are English; labels use the locale plugin.
+
+`google_keyword_search_intents` relates each decision to a saved search row and
+stores the provider, actual model, prompt version and timestamp. Snapshot reads
+include that same result. Already classified rows return it without another model
+call. Writes recheck project ownership and preserve the first saved decision under
+concurrent clicks. Concurrent requests that start before either write may both
+invoke the provider. Failures leave the row unclassified; no automatic retries,
+bulk inference, threshold, provider substitution or Google API call is added.
+
+There is currently no dimension-based classification job. Neither dimension
+generation nor pill activation invokes decisions. The persisted taxonomy,
+revision and active-only English projection are available to SAM.
+
+A future classification run must bind to a specific search ID and taxonomy
+revision. Inactive children and dimensions with no active children are omitted
+before inference; `labelZh` is never a decision criterion. Re-enabling a child
+makes it eligible for a subsequent run, not a retroactive assignment. No active
+children means no model call. An old result must not be presented as current
+after its taxonomy revision changes.
 
 The result contract reserves classification execution state. Newly collected
 keywords have `status: not_requested`. A future scored result identifies Jev,

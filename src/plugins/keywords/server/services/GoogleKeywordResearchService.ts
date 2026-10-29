@@ -12,6 +12,7 @@ import {
 } from "@/types/schemas/google-keywords";
 
 import { GoogleKeywordRepository } from "../repositories/GoogleKeywordRepository";
+import { GoogleKeywordSearchRepository } from "../repositories/GoogleKeywordSearchRepository";
 
 export async function researchGoogle(
   services: Pick<Context, "googleOAuth" | "googleAds">,
@@ -41,7 +42,14 @@ export async function researchGoogle(
       config.customerId,
       cached.data,
     );
-    return cached.data;
+    const saved = await GoogleKeywordSearchRepository.save(
+      request,
+      config.customerId,
+      key,
+      cached.data,
+    );
+    return (await GoogleKeywordSearchRepository.get(saved.searchId, context))
+      .result;
   }
 
   const result = googleKeywordResultSchema.parse(
@@ -53,5 +61,10 @@ export async function researchGoogle(
     config.customerId,
     result,
   );
-  return result;
+  return GoogleKeywordSearchRepository.save(
+    request,
+    config.customerId,
+    key,
+    result,
+  );
 }

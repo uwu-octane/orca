@@ -18,6 +18,17 @@ export const AI_PROVIDERS = {
   },
 } as const;
 export const DEFAULT_LLM_MODEL = "deepseek/deepseek-v4.1-flash";
+// FORK: OpenAI's native decision model has a different Gateway ID from chat.
+export const OPENAI_DECISION_MODEL = "openai/gpt-6-luna-decisions";
+export const gatewayDecisionModelSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(200)
+  .refine(
+    (model) => !model.startsWith("openai/") || model === OPENAI_DECISION_MODEL,
+    "Select a supported decision model.",
+  );
 export const llmModelSchema = z
   .string()
   .trim()

@@ -37,6 +37,7 @@ export async function executeSystemOneDecision(
   execution: AiExecution,
   model: string,
   endpoint: string,
+  gateway?: { only: string[]; models: [] },
 ) {
   const config = execution.connection;
   const headers: Record<string, string> = {
@@ -53,7 +54,11 @@ export async function executeSystemOneDecision(
     const response = await fetch(endpoint, {
       method: "POST",
       headers,
-      body: JSON.stringify({ ...input, model }),
+      body: JSON.stringify({
+        ...input,
+        model,
+        ...(gateway ? { providerOptions: { gateway } } : {}),
+      }),
       // Workerd supports manual/follow, not error. Non-2xx below rejects redirects.
       redirect: "manual",
       signal,

@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  keywordIntentSchema,
+  savedKeywordIntentSchema,
+} from "./keyword-intent";
 
 // Google targeting constants are deliberately separate from DataForSEO's
 // location/language identifiers. No implicit market conversion.
@@ -52,7 +56,8 @@ export const googleKeywordResultSchema = z.object({
       cpc: z.number().nonnegative().nullable(),
       competition: z.number().min(0).max(1).nullable(),
       keywordDifficulty: z.null(),
-      intent: z.literal("unknown"),
+      intent: keywordIntentSchema,
+      intentDecision: savedKeywordIntentSchema.optional(),
       closeVariants: z.array(z.string()),
       classification: keywordClassificationSchema,
     }),

@@ -1,5 +1,8 @@
 import { useId } from "react";
-import { z } from "zod";
+import {
+  keywordDimensionFieldSchema,
+  type KeywordDimensionField,
+} from "@/types/schemas/keyword-dimensions";
 import { useLocale } from "@/plugins/client/context";
 import { useAppForm } from "@/client/components/form/useAppForm";
 import { FormDialog } from "@/client/components/FormDialog";
@@ -7,42 +10,46 @@ import { Button } from "@/client/components/ui/button";
 
 export function KeywordFieldDialog({
   title,
-  initialName,
-  names,
+  pending,
+  error,
+  initialField,
+  siblings,
   onSave,
   onDelete,
   onClose,
 }: {
   title: string;
-  initialName: string;
-  names: string[];
-  onSave: (name: string) => void;
-  onDelete?: () => void;
+  pending: boolean;
+  error?: string;
+  initialField: KeywordDimensionField;
+  siblings: KeywordDimensionField[];
+  onSave: (field: KeywordDimensionField) => Promise<void>;
+  onDelete?: () => Promise<void>;
   onClose: () => void;
 }) {
   const { t } = useLocale();
   const formId = useId();
   const form = useAppForm({
-    defaultValues: { name: initialName },
+    defaultValues: initialField,
     validators: {
-      onSubmit: z.object({
-        name: z
-          .string()
-          .trim()
-          .min(1, t("Enter a name."))
-          .max(80)
-          .refine(
-            (name) =>
-              !names.some(
-                (existing) =>
-                  existing.normalize("NFKC").toLocaleLowerCase() ===
-                  name.normalize("NFKC").toLocaleLowerCase(),
-              ),
-            t("This name already exists."),
-          ),
+      onSubmit: keywordDimensionFieldSchema.superRefine((value, ctx) => {
+        for (const key of ["name", "labelZh"] as const) {
+          if (
+            siblings.some(
+              (field) =>
+                field[key].normalize("NFKC").toLocaleLowerCase() ===
+                value[key].normalize("NFKC").toLocaleLowerCase(),
+            )
+          )
+            ctx.addIssue({
+              code: "custom",
+              path: [key],
+              message: t("This name already exists."),
+            });
+        }
       }),
     },
-    onSubmit: ({ value }) => onSave(value.name.trim()),
+    onSubmit: ({ value }) => onSave(keywordDimensionFieldSchema.parse(value)),
   });
   return (
     <FormDialog
@@ -52,6 +59,7 @@ export function KeywordFieldDialog({
         <>
           {onDelete ? (
             <Button
+              disabled={pending}
               variant="destructive"
               onClick={onDelete}
               className="mr-auto"
@@ -62,17 +70,41 @@ export function KeywordFieldDialog({
           <Button variant="outline" onClick={onClose}>
             {t("Cancel")}
           </Button>
-          <Button type="submit" form={formId}>
+          <Button
+            type="submit"
+            form={formId}
+            disabled={pending}
+            pending={pending}
+          >
             {t("Save")}
           </Button>
         </>
       }
     >
+      {error ? (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      ) : null}
       <form.AppForm>
         <form.Form id={formId}>
           <form.AppField name="name">
             {(field) => (
-              <field.TextField label={t("Name")} autoFocus maxLength={80} />
+              <field.TextField
+                label={t("English name")}
+                disabled={pending}
+                autoFocus
+                maxLength={80}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="labelZh">
+            {(field) => (
+              <field.TextField
+                label={t("Chinese name")}
+                disabled={pending}
+                maxLength={80}
+              />
             )}
           </form.AppField>
         </form.Form>

@@ -4,7 +4,21 @@ import type {
   AiProviderConfigSummary,
 } from "@/types/schemas/ai-provider";
 import type { DecisionInput, DecisionResponse } from "@/types/schemas/decision";
-import type { GatewayModel } from "@/types/schemas/gateway-model";
+import type {
+  GatewayModel,
+  GatewayModelKind,
+} from "@/types/schemas/gateway-model";
+
+export interface GatewayModelPickerProps {
+  projectId: string;
+  kind: GatewayModelKind;
+  value: string;
+  onChange: (value: string) => void;
+  onBlur?: () => void;
+  id?: string;
+  disabled?: boolean;
+  className?: string;
+}
 
 export type AiProviderScope = { organizationId: string; projectId: string };
 export type TextModel = Extract<LanguageModel, { specificationVersion: "v3" }>;

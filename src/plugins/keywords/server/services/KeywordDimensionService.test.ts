@@ -17,7 +17,10 @@ import {
 import { z } from "zod";
 import { keywordDimensionTool } from "@/plugins/keywords/server/dimensions/sam-tool";
 import { AppError } from "@/server/lib/errors";
-import type { GenerateKeywordDimensionsInput } from "@/types/schemas/keyword-dimensions";
+import type {
+  GenerateKeywordDimensionsInput,
+  keywordDimensionsSchema,
+} from "@/types/schemas/keyword-dimensions";
 
 const mocks = vi.hoisted(() => ({
   project: vi.fn(),
@@ -38,7 +41,7 @@ vi.mock("@/plugins/ai/server/configuration", () => ({
 
 const input: GenerateKeywordDimensionsInput = {
   projectId: "project-1",
-  language: "en",
+  language: "zh",
   model: "deepseek/deepseek-v4-flash",
   keywords: ["espresso machine", "commercial coffee maker"],
 };
@@ -46,9 +49,16 @@ const context = {
   projectId: "project-1",
   organizationId: "org-1",
 };
-const fields = {
+const fields: z.infer<typeof keywordDimensionsSchema> = {
   dimensions: [
-    { name: "Equipment", children: ["Espresso machines", "Coffee makers"] },
+    {
+      name: "Equipment",
+      labelZh: "设备类型",
+      children: [
+        { name: "Espresso machines", labelZh: "意式咖啡机" },
+        { name: "Coffee makers", labelZh: "咖啡机" },
+      ],
+    },
   ],
 };
 function completion(output = fields, finishReason = "tool-calls") {
@@ -80,7 +90,7 @@ beforeEach(() => {
 });
 
 describe("keyword field generation", () => {
-  it("uses the project's saved Gateway key and the caller's selected model to generate fields from search keywords", async () => {
+  it("returns English names with Chinese labels through the project's selected Gateway model", async () => {
     expect(await runtime.keywords.generateDimensions(input, context)).toEqual(
       fields,
     );
@@ -129,10 +139,37 @@ describe("keyword field generation", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("rejects duplicate fields without silently rewriting or generating replacements", async () => {
+  it.each(["name", "labelZh"] as const)(
+    "rejects duplicate %s without generating replacements",
+    async (key) => {
+      const dimension = fields.dimensions[0];
+      vi.mocked(fetch).mockImplementation(async () =>
+        completion({
+          dimensions: [
+            {
+              ...dimension,
+              children: [
+                dimension.children[0],
+                {
+                  ...dimension.children[1],
+                  [key]: dimension.children[0][key].toUpperCase(),
+                },
+              ],
+            },
+          ],
+        }),
+      );
+      await expect(
+        runtime.keywords.generateDimensions(input, context),
+      ).rejects.toMatchObject({ code: "KEYWORD_DIMENSIONS_INVALID_RESPONSE" });
+      expect(fetch).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("rejects Chinese canonical names even for Chinese UI requests", async () => {
     vi.mocked(fetch).mockImplementation(async () =>
       completion({
-        dimensions: [{ name: "Equipment", children: ["Espresso", "ESPRESSO"] }],
+        dimensions: [{ ...fields.dimensions[0], name: "设备类型" }],
       }),
     );
     await expect(

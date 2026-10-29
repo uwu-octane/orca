@@ -7,6 +7,9 @@ import { useAppForm } from "@/client/components/form/useAppForm";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { runDecision } from "@/serverFunctions/decision";
+import { useId } from "react";
+import { Field, FieldLabel } from "@/client/components/ui/field";
+import { GatewayModelPicker } from "./GatewayModelPicker";
 
 export function DecisionTest({
   projectId,
@@ -16,6 +19,7 @@ export function DecisionTest({
   provider: AiProvider;
 }) {
   const { t } = useLocale();
+  const modelId = useId();
   const test = useMutation({
     mutationFn: (value: { state: string; question: string; model: string }) =>
       runDecision({
@@ -58,7 +62,24 @@ export function DecisionTest({
               name="model"
               listeners={{ onChange: () => test.reset() }}
             >
-              {(field) => <field.TextField label={t("Model name")} required />}
+              {(field) =>
+                provider === "vercel_gateway" ? (
+                  <Field>
+                    <FieldLabel htmlFor={modelId}>{t("Model name")}</FieldLabel>
+                    <GatewayModelPicker
+                      id={modelId}
+                      projectId={projectId}
+                      kind="evaluation"
+                      value={field.state.value}
+                      onChange={field.handleChange}
+                      onBlur={field.handleBlur}
+                      disabled={test.isPending}
+                    />
+                  </Field>
+                ) : (
+                  <field.TextField label={t("Model name")} required />
+                )
+              }
             </form.AppField>
             <form.AppField
               name="state"

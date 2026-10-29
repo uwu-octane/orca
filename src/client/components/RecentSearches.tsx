@@ -13,6 +13,9 @@ type Props<TItem extends { timestamp: number }> = {
   items: TItem[];
   loaded: boolean;
   onRemove: (timestamp: number) => void;
+  // FORK: saved snapshots have stable IDs and cannot be deleted as local history.
+  canRemove?: (item: TItem) => boolean;
+  getKey?: (item: TItem) => string | number;
   renderLink: (item: TItem, props: ClickableProps) => ReactNode;
   getTitle: (item: TItem) => ReactNode;
   getSubtitle: (item: TItem) => ReactNode;
@@ -25,6 +28,8 @@ export function RecentSearches<TItem extends { timestamp: number }>({
   items,
   loaded,
   onRemove,
+  canRemove,
+  getKey,
   renderLink,
   getTitle,
   getSubtitle,
@@ -60,7 +65,7 @@ export function RecentSearches<TItem extends { timestamp: number }>({
         <ul className="grid gap-2">
           {items.map((item) => (
             <li
-              key={item.timestamp}
+              key={getKey ? getKey(item) : item.timestamp}
               className="group flex min-w-0 items-center gap-2 rounded-lg border border-border p-2"
             >
               {renderLink(item, {
@@ -90,15 +95,17 @@ export function RecentSearches<TItem extends { timestamp: number }>({
                     day: "numeric",
                   })}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className="reveal-on-hover"
-                  onClick={() => onRemove(item.timestamp)}
-                  aria-label={t("Remove from recent searches")}
-                >
-                  <X />
-                </Button>
+                {(!canRemove || canRemove(item)) && (
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="reveal-on-hover"
+                    onClick={() => onRemove(item.timestamp)}
+                    aria-label={t("Remove from recent searches")}
+                  >
+                    <X />
+                  </Button>
+                )}
               </div>
             </li>
           ))}

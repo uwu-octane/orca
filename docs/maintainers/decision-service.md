@@ -12,6 +12,40 @@ The Gateway connection includes a searchable catalog with separate text and deci
 
 The catalog's `language` and `evaluation` types determine the tabs. `owned_by` identifies the model creator, not the inference provider. Prices are converted from USD per token into reference prices per million tokens; missing prices remain unknown rather than free. These reference prices may differ from the rate of a pinned inference provider. Missing policy or release metadata is also left unknown. Browsing or copying a model ID does not change call-site defaults, supported models, credentials, or the existing DeepSeek-only text routing policy.
 
+The AI client plugin also owns a searchable model picker exposed to other domains
+through `aiSettings.ModelPicker`. Settings, decision tests and dimension generation
+share the same project-scoped catalog query. Decision tests select native
+`evaluation` models, including `openai/gpt-6-luna-decisions`; the dimension picker
+selects `language` models allowed by its existing DeepSeek policy. Search matches
+model ID, name and creator. Typing filters choices without changing the selected
+model or starting inference. Local and direct TypeSafe connections retain their
+explicit model-name field because they do not have this Gateway catalog.
+
+## OpenAI decisions through Gateway
+
+Select **Vercel AI Gateway → Test decision → openai/gpt-6-luna-decisions**. Keep
+Orca's saved Gateway API key; the OpenAI key is managed in Gateway's BYOK settings.
+The default remains Jev. No separate OpenAI connection or SDK is installed.
+
+The Gateway plugin sends the existing `state` and `questions` to
+`/typesafe/v1/systemone`. Gateway adapts OpenAI's native Decisions API to the
+existing `noul`, `choice`, `score`, confidence, legend and usage response shape.
+Orca validates those native outputs without generating distributions with a chat
+model. `openai/gpt-6-luna` is a text model and is rejected for this decision path;
+the supported native ID is `openai/gpt-6-luna-decisions`.
+
+OpenAI decisions send `providerOptions.gateway: { only: ["openai"], models: [] }`.
+There is one application inference request, no application retry, no model
+fallback and no alternate serving provider. The project's authorization,
+encrypted credential, revision check, timeout, cancellation and sanitized errors
+are shared with the existing decision transport.
+
+Gateway may use system credentials if the dashboard's OpenAI BYOK credential
+fails, charging Gateway credits. The maintainer explicitly accepted this existing
+Gateway credential policy. `only: ["openai"]` does not disable it; successful
+inference alone does not prove which credential funded the request. Credential
+source is verified in Gateway Logs.
+
 ## Cordis model and agent assembly
 
 The server manifest installs `ctx.ai` for provider configuration, model capabilities and typed decisions. The `vercel-gateway` plugin registers text inference, model discovery and Gateway SystemOne decisions; `systemone` registers direct TypeSafe and custom SystemOne decisions. Registrations follow the contributing plugin's lifetime. Missing or failed providers are errors, never a request to select another registered provider.
@@ -35,7 +69,11 @@ Its model hook is a lazy adapter to `ctx.ai`; it resolves credentials only
 when inference starts. Chat and compaction use the same project connection and
 default text model. `generate_keyword_dimensions` is an internal SAM tool bound
 to the session's project and organization, reusing the authorized dimension
-service. It returns names without saving or replacing a page's editable draft.
+service. It returns canonical English names plus Chinese display labels, without
+saving or replacing a page's editable draft. Separate `list_keyword_searches` and `get_keyword_dimensions` tools read the
+persisted search taxonomy shared with the UI, including active/inactive switches. The planned keyword classifier must filter inactive
+subdimensions before calling `ctx.ai.decide`, using English names and stable
+field IDs; see the [Jev boundary](google-keyword-provider.md#jev-boundary).
 The provider catalog does not replace Think's session runtime.
 
 SAM's model requests are paid by the saved project Gateway key. They do not also
@@ -127,6 +165,9 @@ Set the model name to the checkpoint served by the process. The Strands server i
 
 - [TypeSafe System One API](https://docs.typesafe.ai/api/system-one)
 - [Vercel AI Gateway TypeSafe-compatible API](https://vercel.com/docs/ai-gateway/sdks-and-apis/typesafe)
+- [OpenAI Decisions API](https://developers.openai.com/api/docs/guides/decisions)
+- [Gateway decision models and compatibility](https://vercel.com/docs/ai-gateway/modalities/decision)
+- [Gateway BYOK credential behavior](https://vercel.com/docs/ai-gateway/authentication-and-byok/byok)
 - [Laya model card and HTTP serving](https://huggingface.co/convaiinnovations/laya#self-hosting-jev-compatible-http-server)
 - [Strands inference and serving](https://github.com/strands-labs/strands-decider/blob/main/docs/inference.md)
 - [Strands response schemas](https://github.com/strands-labs/strands-decider/blob/main/src/strands_decider/schema.py)

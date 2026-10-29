@@ -69,6 +69,7 @@ export const settingsZh = {
   "The model could not read the full input. Shorten the content or select a model with a larger context window.":
     "模型未能读取完整输入，请缩短内容或选择支持更长上下文的模型。",
   "Decision model": "决策模型",
+  "Select a supported decision model.": "请选择支持的决策模型。",
   "Couldn't load the decision model settings.": "无法加载决策模型配置。",
   "Decision model saved": "决策模型已保存",
   "Decision model removed": "决策模型配置已移除",

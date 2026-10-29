@@ -73,7 +73,15 @@ it("shares one Gateway connection across LLM and decision calls with caller-sele
     if (typeof body !== "string") throw new Error("Expected JSON body");
     return body;
   };
-  const fields = { dimensions: [{ name: "Products", children: ["Coffee"] }] };
+  const fields = {
+    dimensions: [
+      {
+        name: "Products",
+        labelZh: "产品",
+        children: [{ name: "Coffee", labelZh: "咖啡" }],
+      },
+    ],
+  };
   fetchMock.mockImplementation(async (url) =>
     typeof url === "string" && url.endsWith("/language-model")
       ? Response.json({

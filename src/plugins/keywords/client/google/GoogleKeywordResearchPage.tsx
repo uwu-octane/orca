@@ -1,47 +1,45 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { SlidersHorizontal } from "lucide-react";
 import { useLocale } from "@/plugins/client/context";
 import { useAppForm } from "@/client/components/form/useAppForm";
 import { FormDialog } from "@/client/components/FormDialog";
 import { QueryError } from "@/client/components/QueryState";
-import { RecentSearches } from "@/client/components/RecentSearches";
 import { ErrorState } from "@/client/components/ErrorState";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent } from "@/client/components/ui/card";
 import { GoogleConnectionCard } from "@/plugins/google-oauth/client/views";
 import { googleConnectionOptions } from "@/plugins/google-oauth/client/googleProviders";
-import { getGoogleAdsConnection } from "@/serverFunctions/googleAds";
 import { Link } from "@tanstack/react-router";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
-import {
-  getGoogleKeywordTargetingOptions,
-  researchGoogleKeywords,
-} from "@/serverFunctions/googleKeywords";
+import { getGoogleKeywordTargetingOptions } from "@/serverFunctions/googleKeywords";
 import type { GoogleKeywordLocation } from "@/types/schemas/google-keyword-targeting";
 import {
   googleKeywordIdeasSchema,
   type GoogleKeywordIdeasInput,
-  type GoogleKeywordResult,
 } from "@/types/schemas/google-keywords";
 import { KeywordResearchLayout } from "../page/KeywordResearchLayout";
 import { KeywordSearchInput } from "../page/KeywordSearchInput";
-import { useGoogleKeywordHistory } from "./useGoogleKeywordHistory";
+import { useGoogleKeywordSearch } from "./useGoogleKeywordSearch";
 import { GoogleKeywordResults } from "./GoogleKeywordResults";
 import { GoogleLocationSelect } from "./GoogleLocationSelect";
 import { GoogleLanguageSelect } from "./GoogleLanguageSelect";
-import { GoogleKeywordHistoryLabel } from "./GoogleKeywordHistoryLabel";
+import { GoogleKeywordHistory } from "./GoogleKeywordHistory";
 
 export function GoogleKeywordResearchPage({
   projectId,
+  searchId,
 }: {
   projectId: string;
+  searchId?: string;
 }) {
   const connection = useQuery(googleConnectionOptions("google_ads", projectId));
   return (
     <GoogleKeywordResearchWorkspace
       key={connection.data?.connectionKey ?? "disconnected"}
       projectId={projectId}
+      searchId={searchId}
+      customerId={connection.data?.propertyDetail ?? undefined}
       connected={
         connection.data?.connected === true &&
         connection.data.googleOAuthConfigured
@@ -53,16 +51,23 @@ export function GoogleKeywordResearchPage({
 function GoogleKeywordResearchWorkspace({
   projectId,
   connected,
+  customerId,
+  searchId,
 }: {
   projectId: string;
   connected: boolean;
+  customerId?: string;
+  searchId?: string;
 }) {
   const { t } = useLocale();
-  const queryClient = useQueryClient();
+  const { savedSearch, current, research, runSearch, openSearch, history } =
+    useGoogleKeywordSearch(projectId, searchId);
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const history = useGoogleKeywordHistory(projectId);
   const historyLocationIds = [
-    ...new Set(history.history.flatMap((item) => item.input.geoTargetIds)),
+    ...new Set([
+      ...history.history.flatMap((item) => item.input.geoTargetIds),
+      ...(current?.input.geoTargetIds ?? []),
+    ]),
   ];
   const targeting = useQuery({
     queryKey: ["googleKeywordTargeting", projectId, historyLocationIds],
@@ -75,34 +80,6 @@ function GoogleKeywordResearchWorkspace({
     retry: false,
   });
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [current, setCurrent] = useState<{
-    input: GoogleKeywordIdeasInput;
-    result: GoogleKeywordResult;
-  } | null>(null);
-  const research = useMutation({
-    mutationFn: async (input: GoogleKeywordIdeasInput) => {
-      // Re-check the binding before selecting a browser cache entry.
-      const connection = await getGoogleAdsConnection({ data: { projectId } });
-      const result = await queryClient.fetchQuery({
-        queryKey: [
-          "googleKeywordIdeas",
-          projectId,
-          connection.connectionKey,
-          input,
-        ],
-        queryFn: () => researchGoogleKeywords({ data: input }),
-        // Every explicit search rechecks server config and the scoped R2 cache.
-        staleTime: 0,
-        retry: false,
-      });
-      return { input, result };
-    },
-    retry: false,
-    onSuccess: (data) => {
-      setCurrent(data);
-      if (!data.input.pageToken) history.addItem(data.input);
-    },
-  });
   const form = useAppForm({
     defaultValues: {
       keywords: "",
@@ -129,10 +106,26 @@ function GoogleKeywordResearchWorkspace({
         return;
       }
       setValidationError(null);
-      setCurrent(null);
-      research.mutate(parsed.data);
+      runSearch(parsed.data);
     },
   });
+  useEffect(() => {
+    if (!current || !targeting.data) return;
+    const input = current.input;
+    const locations = input.geoTargetIds
+      .map((id) =>
+        targeting.data.locations.find((location) => location.id === id),
+      )
+      .filter((location) => location !== undefined);
+    form.reset({
+      keywords: input.keywords.join("\n"),
+      locations,
+      languageId: input.languageId,
+      network: input.network,
+      includeAdultKeywords: input.includeAdultKeywords,
+      pageSize: input.pageSize,
+    });
+  }, [current, targeting.data, form]);
   const configured = connected;
 
   function repeatSearch(input: GoogleKeywordIdeasInput) {
@@ -156,8 +149,7 @@ function GoogleKeywordResearchWorkspace({
       pageSize: input.pageSize,
     });
     setValidationError(null);
-    setCurrent(null);
-    research.mutate(input);
+    runSearch(input);
   }
 
   return (
@@ -329,43 +321,44 @@ function GoogleKeywordResearchWorkspace({
           message={getStandardErrorMessage(research.error, undefined, t)}
         />
       ) : null}
-      {current || research.isPending ? (
+      {savedSearch.isError ? (
+        <QueryError
+          fallback={t("Failed to load keywords.")}
+          error={savedSearch.error}
+          onRetry={() => void savedSearch.refetch()}
+          isRetrying={savedSearch.isFetching}
+        />
+      ) : null}
+      {current || research.isPending || (searchId && savedSearch.isPending) ? (
         <GoogleKeywordResults
           projectId={projectId}
-          researchKey={JSON.stringify(current?.input)}
+          key={current?.result.searchId ?? "loading"}
           result={current?.result ?? null}
-          pending={research.isPending}
+          pending={research.isPending || savedSearch.isFetching}
+          canRequestNext={
+            connected && current?.result.customerId === customerId
+          }
           onNext={() => {
-            if (!current?.result.nextPageToken) return;
-            research.mutate({
+            if (
+              !connected ||
+              !current?.result.nextPageToken ||
+              current.result.customerId !== customerId
+            )
+              return;
+            runSearch({
               ...current.input,
               pageToken: current.result.nextPageToken,
             });
           }}
         />
-      ) : configured && !research.isPending && !research.isError ? (
-        <RecentSearches
-          items={history.history}
-          loaded={history.isLoaded}
-          onRemove={history.removeItem}
-          emptyIcon={Search}
-          emptyTitle={t("Enter a keyword to get started")}
-          getTitle={(item) => item.input.keywords.join(", ")}
-          getSubtitle={(item) => (
-            <GoogleKeywordHistoryLabel
-              input={item.input}
-              options={targeting.data}
-              failed={targeting.isError}
-            />
-          )}
-          renderLink={(item, props) => (
-            <button
-              {...props}
-              type="button"
-              disabled={!configured || !targeting.data || targeting.isError}
-              onClick={() => repeatSearch(item.input)}
-            />
-          )}
+      ) : !searchId && !research.isPending && !research.isError ? (
+        <GoogleKeywordHistory
+          history={history}
+          options={targeting.data}
+          failed={targeting.isError}
+          configured={configured}
+          openSearch={openSearch}
+          repeatSearch={repeatSearch}
         />
       ) : null}
     </KeywordResearchLayout>

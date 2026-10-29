@@ -11,7 +11,7 @@ export function keywordDimensionTool(
 ) {
   return tool({
     description:
-      "Generate industry-specific dimensions and subdimension names from keyword search results. Pass the actual keywords. Returns field names only, without classifying individual keywords or changing saved data.",
+      "Discover new industry-specific dimensions and subdimensions from keyword search results. For an existing saved taxonomy, use list_keyword_searches and get_keyword_dimensions instead. Pass the actual keywords. Returns English canonical names and Chinese display labels (labelZh). Use name for subsequent decisions, never labelZh. Does not classify individual keywords or change the page's editable draft or saved data.",
     inputSchema: keywordDimensionInputSchema,
     execute: async (input, options) => {
       try {

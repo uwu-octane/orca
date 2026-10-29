@@ -25,7 +25,7 @@ import { DataTableToolbar } from "@/client/components/table/DataTableToolbar";
 import { TablePagination } from "@/client/components/table/TablePagination";
 import { SortableHeader } from "@/client/components/table/SortableHeader";
 import { numericNullsLast } from "@/client/components/table/nullSafeSort";
-import { getGatewayModels } from "@/serverFunctions/gatewayModels";
+import { gatewayModelsQuery } from "./gatewayModelsQuery";
 import {
   gatewayModelKindSchema,
   type GatewayModel,
@@ -53,13 +53,7 @@ export function GatewayModelList({ projectId }: { projectId: string }) {
     pageIndex: 0,
     pageSize: 25,
   });
-  const query = useQuery({
-    queryKey: ["gateway-models", projectId],
-    queryFn: () => getGatewayModels({ data: { projectId } }),
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-    refetchOnWindowFocus: false,
-  });
+  const query = useQuery(gatewayModelsQuery(projectId));
   const models = query.isError ? EMPTY_MODELS : (query.data ?? EMPTY_MODELS);
   const creators = useMemo(
     () =>

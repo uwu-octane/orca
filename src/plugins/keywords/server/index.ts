@@ -2,8 +2,14 @@ import { Service, type Context } from "cordis";
 import { AppError } from "@/server/lib/errors";
 import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
 import { DEFAULT_LLM_MODEL } from "@/types/schemas/ai-provider";
+import { z } from "zod";
+import { tool } from "ai";
+import { withPgClient } from "@/db";
 import {
   generateKeywordDimensionsSchema,
+  keywordSearchIdentitySchema,
+  saveKeywordDimensionsSchema,
+  generateSavedKeywordDimensionsSchema,
   type GenerateKeywordDimensionsInput,
 } from "@/types/schemas/keyword-dimensions";
 import type { GoogleKeywordIdeasInput } from "@/types/schemas/google-keywords";
@@ -12,6 +18,10 @@ import * as research from "./services/research";
 import { researchGoogle } from "./services/GoogleKeywordResearchService";
 import { generateDimensions } from "./dimensions/agent";
 import { keywordDimensionTool } from "./dimensions/sam-tool";
+import { GoogleKeywordSearchRepository } from "./repositories/GoogleKeywordSearchRepository";
+import { KeywordDimensionRepository } from "./repositories/KeywordDimensionRepository";
+import { classifyKeywordIntent } from "./services/KeywordIntentService";
+import { classifyKeywordIntentSchema } from "@/types/schemas/keyword-intent";
 import type { BillingCustomerContext } from "@/server/billing/subscription";
 import type { CreditFeature } from "@/shared/billing-credit-features";
 import type {
@@ -82,6 +92,57 @@ export default class KeywordsService extends Service {
       scope.sam.registerMcpTool(buildListSavedKeywordsTool(() => this));
       scope.sam.registerMcpTool(buildRemoveSavedKeywordsTool(() => this));
       scope.sam.registerMcpTool(buildGetSerpResultsTool(() => this));
+      scope.sam.registerTool("list_keyword_searches", ({ auth, project }) =>
+        tool({
+          description:
+            "List saved Google keyword search pages in this project. Use a returned searchId to read its keywords and editable dimensions.",
+          inputSchema: z.strictObject({}),
+          execute: async (_input, options) => {
+            options.abortSignal?.throwIfAborted();
+            return withPgClient(() =>
+              this.listGoogleSearches({
+                projectId: project.id,
+                organizationId: auth.organizationId,
+              }),
+            );
+          },
+        }),
+      );
+      scope.sam.registerTool("get_keyword_dimensions", ({ auth, project }) =>
+        tool({
+          description:
+            "Read a saved keyword search and the same dimensions edited in its UI. Returns English names, Chinese display labels, stable IDs, active flags and revision. Inactive children are excluded from decisionDimensions. Use English names and IDs for decisions, never labelZh. Reading does not classify keywords or call a model.",
+          inputSchema: keywordSearchIdentitySchema.omit({ projectId: true }),
+          execute: async ({ searchId }, options) => {
+            options.abortSignal?.throwIfAborted();
+            const identity = {
+              projectId: project.id,
+              organizationId: auth.organizationId,
+            };
+            return withPgClient(async () => {
+              const snapshot = await this.getGoogleSearch(searchId, identity);
+              options.abortSignal?.throwIfAborted();
+              const taxonomy = await this.getSavedDimensions(
+                searchId,
+                identity,
+              );
+              return {
+                ...taxonomy,
+                keywords: snapshot.result.rows.map((row) => row.keyword),
+                decisionDimensions: taxonomy.dimensions
+                  .map((dimension) => ({
+                    id: dimension.id,
+                    name: dimension.name,
+                    children: dimension.children
+                      .filter((child) => child.active)
+                      .map((child) => ({ id: child.id, name: child.name })),
+                  }))
+                  .filter((dimension) => dimension.children.length),
+              };
+            });
+          },
+        }),
+      );
       scope.sam.registerTool(
         "generate_keyword_dimensions",
         ({ auth, project }) =>
@@ -166,6 +227,96 @@ export default class KeywordsService extends Service {
     );
     abortSignal.throwIfAborted();
     return generateDimensions(model, request, abortSignal);
+  }
+
+  getGoogleSearch(searchId: string, scope: KeywordScope) {
+    this.lifetime.signal.throwIfAborted();
+    return GoogleKeywordSearchRepository.get(searchId, scope);
+  }
+  classifyIntent(
+    input: z.infer<typeof classifyKeywordIntentSchema>,
+    scope: KeywordScope,
+  ) {
+    const request = classifyKeywordIntentSchema.parse({
+      ...input,
+      projectId: scope.projectId,
+    });
+    const generation = this.generation;
+    return classifyKeywordIntent(
+      generation?.ai,
+      request,
+      scope,
+      AbortSignal.any([
+        this.lifetime.signal,
+        ...(generation ? [generation.signal] : []),
+      ]),
+    );
+  }
+  listGoogleSearches(scope: KeywordScope) {
+    this.lifetime.signal.throwIfAborted();
+    return GoogleKeywordSearchRepository.list(scope);
+  }
+  getSavedDimensions(searchId: string, scope: KeywordScope) {
+    this.lifetime.signal.throwIfAborted();
+    return KeywordDimensionRepository.get(searchId, scope);
+  }
+  saveDimensions(
+    input: z.infer<typeof saveKeywordDimensionsSchema>,
+    scope: KeywordScope,
+  ) {
+    this.lifetime.signal.throwIfAborted();
+    const request = saveKeywordDimensionsSchema.parse({
+      ...input,
+      projectId: scope.projectId,
+    });
+    return KeywordDimensionRepository.save(
+      request.searchId,
+      request.revision,
+      request.dimensions,
+      scope,
+    );
+  }
+  async generateSavedDimensions(
+    input: z.infer<typeof generateSavedKeywordDimensionsSchema>,
+    scope: KeywordScope,
+    signal?: AbortSignal,
+  ) {
+    this.lifetime.signal.throwIfAborted();
+    const request = generateSavedKeywordDimensionsSchema.parse({
+      ...input,
+      projectId: scope.projectId,
+    });
+    const snapshot = await this.getGoogleSearch(request.searchId, scope);
+    const current = await this.getSavedDimensions(request.searchId, scope);
+    if (current.revision !== request.revision) throw new AppError("CONFLICT");
+    const generated = await this.generateDimensions(
+      {
+        projectId: scope.projectId,
+        keywords: snapshot.result.rows.map((row) => row.keyword),
+        language: request.language,
+        model: request.model,
+      },
+      scope,
+      signal,
+    );
+    signal?.throwIfAborted();
+    return this.saveDimensions(
+      {
+        projectId: scope.projectId,
+        searchId: request.searchId,
+        revision: request.revision,
+        dimensions: generated.dimensions.map((dimension) => ({
+          ...dimension,
+          id: crypto.randomUUID(),
+          children: dimension.children.map((child) => ({
+            ...child,
+            id: crypto.randomUUID(),
+            active: true,
+          })),
+        })),
+      },
+      scope,
+    );
   }
 
   saveKeywords(...args: Parameters<typeof research.saveKeywords>) {

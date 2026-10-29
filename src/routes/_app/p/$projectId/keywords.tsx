@@ -35,7 +35,13 @@ function KeywordResearchPageRoute() {
   const { projectId } = Route.useParams();
   const search = Route.useSearch();
   if (search.provider === "google_ads") {
-    return <GoogleKeywordResearchPage key={projectId} projectId={projectId} />;
+    return (
+      <GoogleKeywordResearchPage
+        key={projectId}
+        projectId={projectId}
+        searchId={search.searchId}
+      />
+    );
   }
   const {
     q: keywordInput = "",

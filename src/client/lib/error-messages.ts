@@ -64,6 +64,7 @@ const STANDARD_MESSAGES: Record<ErrorCode, string> = {
   AI_PROVIDER_CONFIG_INVALID: "Check the AI provider settings and API key.",
   DECISION_AUTH_FAILED:
     "The decision service rejected the API key. Check its access and expiry.",
+  DECISION_MODEL_UNSUPPORTED: "Select a supported decision model.",
   DECISION_REQUEST_FAILED:
     "The decision request failed. Check the service address, model name and service availability.",
   DECISION_TIMEOUT:

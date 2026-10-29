@@ -238,6 +238,8 @@ const keywordModes = ["auto", "related", "suggestions", "ideas"] as const;
 
 export const keywordsSearchSchema = z.object({
   provider: z.enum(["dataforseo", "google_ads"]).optional(),
+  // FORK: saved Google search page identity survives navigation and reloads.
+  searchId: z.string().min(1).max(256).optional(),
   q: z.string().optional(),
   loc: z.coerce.number().int().positive().optional(),
   locName: z.string().optional(),

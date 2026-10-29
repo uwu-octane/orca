@@ -281,6 +281,20 @@
       "when": 1792749889385,
       "tag": "0039_cooing_talon",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1792863719718,
+      "tag": "0040_chubby_wolfsbane",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793287598149,
+      "tag": "0041_keyword_intents",
+      "breakpoints": true
     }
   ]
 }

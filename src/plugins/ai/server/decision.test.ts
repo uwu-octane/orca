@@ -2,6 +2,7 @@ import { typedDecisionFixture } from "./decision-test-fixtures";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import {
   AI_PROVIDERS,
+  OPENAI_DECISION_MODEL,
   type SaveAiProviderConfig,
 } from "@/types/schemas/ai-provider";
 const TYPESAFE_DECISION_ENDPOINT = AI_PROVIDERS.typesafe.endpoint;
@@ -101,8 +102,13 @@ it.each([
     endpoint: VERCEL_GATEWAY_ENDPOINT,
     model: "typesafe-ai/jev",
   },
+  {
+    provider: "vercel_gateway",
+    endpoint: VERCEL_GATEWAY_ENDPOINT,
+    model: OPENAI_DECISION_MODEL,
+  },
 ] as const)(
-  "$provider forwards typed questions unchanged and preserves distributions, model identity and usage",
+  "$provider / $model forwards typed questions unchanged and preserves distributions, model identity and usage",
   async (service) => {
     // Fixed cloud endpoints are available in hosted mode without custom-origin configuration.
     mocks.hosted = true;
@@ -111,6 +117,9 @@ it.each([
       scope,
     );
     const { request, response } = typedDecisionFixture();
+    response.model = service.model;
+    if (service.model === OPENAI_DECISION_MODEL)
+      response.usage.output_tokens = 0;
     mocks.fetch.mockResolvedValue(Response.json(response));
     const result = await runtime.ai.decide(request, scope, {
       provider: service.provider,
@@ -127,7 +136,12 @@ it.each([
     expect(JSON.parse(requestBody())).toEqual({
       ...request,
       model: service.model,
+      ...(service.model === OPENAI_DECISION_MODEL
+        ? { providerOptions: { gateway: { only: ["openai"], models: [] } } }
+        : {}),
     });
+    expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    expect(mocks.fetch.mock.calls[0][1]?.redirect).toBe("manual");
     expect(result).toMatchObject({
       ...response,
       provider: service.provider,
@@ -135,6 +149,23 @@ it.each([
     });
   },
 );
+
+it("rejects an OpenAI text model before sending a paid decision request", async () => {
+  await runtime.ai.configuration.saveConfig(
+    config({
+      provider: "vercel_gateway",
+      endpoint: VERCEL_GATEWAY_ENDPOINT,
+    }),
+    scope,
+  );
+  await expect(
+    runtime.ai.decide(input, scope, {
+      provider: "vercel_gateway",
+      model: "openai/gpt-6-luna",
+    }),
+  ).rejects.toMatchObject({ code: "DECISION_MODEL_UNSUPPORTED" });
+  expect(mocks.fetch).not.toHaveBeenCalled();
+});
 
 it("uses the explicitly configured local endpoint and model, with optional bearer auth and no invented usage", async () => {
   const endpoint = "http://127.0.0.1:8765/v1/systemone";

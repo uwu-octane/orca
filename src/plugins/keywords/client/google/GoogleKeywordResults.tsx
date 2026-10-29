@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { CircleHelp } from "lucide-react";
 import { useForm, useStore } from "@tanstack/react-form";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import { useLocale } from "@/plugins/client/context";
@@ -14,9 +15,15 @@ import {
 } from "@/client/components/table/DataTableToolbar";
 import { numericNullsLast } from "@/client/components/table/nullSafeSort";
 import { SortableHeader } from "@/client/components/table/SortableHeader";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
 import { formatNumber } from "@/plugins/keywords/client/utils";
 import type { GoogleKeywordResult } from "@/types/schemas/google-keywords";
 import { KeywordDimensionsCard } from "../dimensions/KeywordDimensionsCard";
+import { GoogleKeywordIntentCell } from "./GoogleKeywordIntentCell";
 import {
   EMPTY_GOOGLE_KEYWORD_FILTERS,
   filterGoogleKeywords,
@@ -24,6 +31,41 @@ import {
 
 type KeywordRow = GoogleKeywordResult["rows"][number];
 const EMPTY_ROWS: KeywordRow[] = [];
+// Metric definitions: Google Ads v25 KeywordPlanHistoricalMetrics.
+// Unit conversion is owned by google-ads/keywordIdeas.ts; missing values stay null.
+const METRIC_HELP = {
+  searchVolume:
+    "Google Ads estimates the average monthly searches over the past 12 months for the selected targeting settings. This is search demand, not visits to your website. — means unavailable.",
+  cpc: "Historical average cost per ad click from Google Ads, in the account currency shown in the header. Actual click costs may differ. — means unavailable.",
+  competition:
+    "Competition for ad placements, based on filled ad slots relative to available slots. Google's 0–100 index is displayed as 0–1 here: 29 becomes 0.29. Higher means more advertising competition, not organic ranking difficulty. — means unavailable.",
+} as const;
+
+function MetricHelpButton({ label, text }: { label: string; text: string }) {
+  const { t } = useLocale();
+  const [open, setOpen] = useState(false);
+  return (
+    <Tooltip open={open} onOpenChange={setOpen}>
+      <TooltipTrigger
+        closeOnClick={false}
+        render={
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            aria-label={t("About {label}", { label })}
+            onClick={() => setOpen(!open)}
+          />
+        }
+      >
+        <CircleHelp className="size-3.5" aria-hidden />
+      </TooltipTrigger>
+      <TooltipContent className="text-left font-normal leading-relaxed">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 const RANGES = [
   {
     label: "Search Volume",
@@ -50,16 +92,16 @@ const RANGES = [
 
 export function GoogleKeywordResults({
   projectId,
-  researchKey,
   result,
   pending,
   onNext,
+  canRequestNext,
 }: {
   projectId: string;
-  researchKey: string;
-  result: GoogleKeywordResult | null;
+  result: (GoogleKeywordResult & { searchId: string }) | null;
   pending: boolean;
   onNext: () => void;
+  canRequestNext: boolean;
 }) {
   const { t } = useLocale();
   const [showFilters, setShowFilters] = useState(false);
@@ -88,27 +130,36 @@ export function GoogleKeywordResults({
         sortDescFirst: false,
       },
       {
-        accessorKey: "closeVariants",
-        header: () => t("Close variants"),
-        cell: ({ row }) => row.original.closeVariants.join(", ") || "—",
+        accessorKey: "intent",
+        header: () => t("Intent"),
+        cell: ({ row }) =>
+          result ? (
+            <GoogleKeywordIntentCell
+              projectId={projectId}
+              searchId={result.searchId}
+              row={row.original}
+              disabled={pending}
+            />
+          ) : null,
         enableSorting: false,
       },
       ...(["searchVolume", "cpc", "competition"] as const).map(
         (key): ColumnDef<KeywordRow> => ({
           accessorKey: key,
-          header: ({ column }) => (
-            <SortableHeader
-              column={column}
-              label={
-                key === "searchVolume"
-                  ? t("Search Volume")
-                  : key === "cpc"
-                    ? cpcLabel
-                    : t("Ads competition")
-              }
-              align="right"
-            />
-          ),
+          header: ({ column }) => {
+            const label =
+              key === "searchVolume"
+                ? t("Search Volume")
+                : key === "cpc"
+                  ? cpcLabel
+                  : t("Ads competition");
+            return (
+              <span className="flex items-center justify-end gap-1">
+                <SortableHeader column={column} label={label} />
+                <MetricHelpButton label={label} text={t(METRIC_HELP[key])} />
+              </span>
+            );
+          },
           cell: ({ row }) =>
             key === "searchVolume"
               ? formatNumber(row.original[key])
@@ -122,7 +173,7 @@ export function GoogleKeywordResults({
         }),
       ),
     ],
-    [cpcLabel, t],
+    [cpcLabel, t, result, projectId, pending],
   );
   const table = useDataTable({
     data: filtered,
@@ -138,9 +189,9 @@ export function GoogleKeywordResults({
     <>
       {result?.rows.length ? (
         <KeywordDimensionsCard
-          key={JSON.stringify([projectId, researchKey, result.fetchedAt])}
+          key={result.searchId}
           projectId={projectId}
-          keywords={result.rows.map((row) => row.keyword)}
+          searchId={result.searchId}
           disabled={pending}
         />
       ) : null}
@@ -247,7 +298,12 @@ export function GoogleKeywordResults({
           footer={
             result?.nextPageToken ? (
               <div className="flex justify-end border-t p-3">
-                <Button variant="outline" pending={pending} onClick={onNext}>
+                <Button
+                  variant="outline"
+                  pending={pending}
+                  disabled={pending || !canRequestNext}
+                  onClick={onNext}
+                >
                   {t("Next page")}
                 </Button>
               </div>

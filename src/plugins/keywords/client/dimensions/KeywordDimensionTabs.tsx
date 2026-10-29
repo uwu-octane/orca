@@ -3,6 +3,11 @@ import { Pencil, Plus } from "lucide-react";
 import { useLocale } from "@/plugins/client/context";
 import { Button } from "@/client/components/ui/button";
 import { Badge } from "@/client/components/ui/badge";
+import { Toggle } from "@/client/components/ui/toggle";
+import type {
+  KeywordDimensionField,
+  KeywordDimension,
+} from "@/types/schemas/keyword-dimensions";
 import {
   Tabs,
   TabsContent,
@@ -11,11 +16,6 @@ import {
 } from "@/client/components/ui/tabs";
 import { KeywordFieldDialog } from "./KeywordFieldDialog";
 
-export type KeywordDimension = {
-  id: string;
-  name: string;
-  children: { id: string; name: string }[];
-};
 type Editor = {
   dimensionId?: string;
   childId?: string;
@@ -25,13 +25,15 @@ type Editor = {
 export function KeywordDimensionTabs({
   dimensions,
   disabled,
+  error,
   onChange,
 }: {
   dimensions: KeywordDimension[];
   disabled: boolean;
-  onChange: (dimensions: KeywordDimension[]) => void;
+  error?: string;
+  onChange: (dimensions: KeywordDimension[]) => Promise<boolean>;
 }) {
-  const { t } = useLocale();
+  const { t, active: language } = useLocale();
   const [selected, setSelected] = useState<string | null>(null);
   const [editor, setEditor] = useState<Editor | null>(null);
   const active =
@@ -42,59 +44,59 @@ export function KeywordDimensionTabs({
   const editedChild = editedDimension?.children.find(
     (child) => child.id === editor?.childId,
   );
-  function save(name: string) {
-    if (!editor) return;
-    if (editor.kind === "dimension") {
-      if (editedDimension)
-        onChange(
-          dimensions.map((dimension) =>
-            dimension.id === editedDimension.id
-              ? { ...dimension, name }
-              : dimension,
-          ),
-        );
-      else {
-        const id = crypto.randomUUID();
-        onChange([...dimensions, { id, name, children: [] }]);
-        setSelected(id);
-      }
-    } else if (editedDimension) {
-      onChange(
-        dimensions.map((dimension) =>
-          dimension.id === editedDimension.id
-            ? {
-                ...dimension,
-                children: editedChild
-                  ? dimension.children.map((child) =>
-                      child.id === editedChild.id ? { ...child, name } : child,
-                    )
-                  : [...dimension.children, { id: crypto.randomUUID(), name }],
-              }
-            : dimension,
-        ),
-      );
-    }
-    setEditor(null);
+  function displayName(field: KeywordDimensionField) {
+    return language === "zh" ? field.labelZh : field.name;
   }
-  function remove() {
-    if (editor?.kind === "dimension")
-      onChange(
-        dimensions.filter((dimension) => dimension.id !== editor.dimensionId),
-      );
-    else if (editedDimension && editedChild)
-      onChange(
-        dimensions.map((dimension) =>
-          dimension.id === editedDimension.id
-            ? {
-                ...dimension,
-                children: dimension.children.filter(
-                  (child) => child.id !== editedChild.id,
-                ),
-              }
-            : dimension,
-        ),
-      );
-    setEditor(null);
+  async function save(field: KeywordDimensionField) {
+    if (!editor) return;
+    const newId = crypto.randomUUID();
+    const updated =
+      editor.kind === "dimension"
+        ? editedDimension
+          ? dimensions.map((dimension) =>
+              dimension.id === editedDimension.id
+                ? { ...dimension, ...field }
+                : dimension,
+            )
+          : [...dimensions, { id: newId, ...field, children: [] }]
+        : dimensions.map((dimension) =>
+            dimension.id === editedDimension?.id
+              ? {
+                  ...dimension,
+                  children: editedChild
+                    ? dimension.children.map((child) =>
+                        child.id === editedChild.id
+                          ? { ...child, ...field }
+                          : child,
+                      )
+                    : [
+                        ...dimension.children,
+                        { id: newId, ...field, active: true },
+                      ],
+                }
+              : dimension,
+          );
+    if (await onChange(updated)) {
+      if (editor.kind === "dimension" && !editedDimension) setSelected(newId);
+      setEditor(null);
+    }
+  }
+  async function remove() {
+    if (!editor) return;
+    const updated =
+      editor.kind === "dimension"
+        ? dimensions.filter((dimension) => dimension.id !== editor.dimensionId)
+        : dimensions.map((dimension) =>
+            dimension.id === editor.dimensionId
+              ? {
+                  ...dimension,
+                  children: dimension.children.filter(
+                    (child) => child.id !== editor.childId,
+                  ),
+                }
+              : dimension,
+          );
+    if (await onChange(updated)) setEditor(null);
   }
   return (
     <>
@@ -107,14 +109,37 @@ export function KeywordDimensionTabs({
             <div className="min-w-0 max-w-full overflow-x-auto">
               <TabsList variant="line" aria-label={t("Dimensions")}>
                 {dimensions.map((dimension) => (
-                  <TabsTrigger
+                  <div
                     key={dimension.id}
-                    value={dimension.id}
-                    disabled={disabled}
-                    className="px-3"
+                    className="relative flex h-full items-center"
                   >
-                    {dimension.name}
-                  </TabsTrigger>
+                    <TabsTrigger
+                      value={dimension.id}
+                      disabled={disabled}
+                      className="pl-3 pr-8"
+                    >
+                      {displayName(dimension)}
+                    </TabsTrigger>
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      className="absolute right-1 text-muted-foreground"
+                      disabled={disabled}
+                      tabIndex={active?.id === dimension.id ? 0 : -1}
+                      aria-label={t("Edit {name}", {
+                        name: displayName(dimension),
+                      })}
+                      onClick={() => {
+                        setSelected(dimension.id);
+                        setEditor({
+                          kind: "dimension",
+                          dimensionId: dimension.id,
+                        });
+                      }}
+                    >
+                      <Pencil />
+                    </Button>
+                  </div>
                 ))}
               </TabsList>
             </div>
@@ -139,45 +164,52 @@ export function KeywordDimensionTabs({
             value={dimension.id}
             className="min-h-24 space-y-3 pt-2"
           >
-            <div className="flex items-center justify-end gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={disabled}
-                onClick={() =>
-                  setEditor({ kind: "dimension", dimensionId: dimension.id })
-                }
-              >
-                <Pencil data-icon="inline-start" />
-                {t("Edit dimension")}
-              </Button>
-            </div>
             <div className="flex flex-wrap items-center gap-2">
               {dimension.children.map((child) => (
                 <Badge
                   key={child.id}
-                  variant="secondary"
-                  className="h-auto min-h-8 max-w-full gap-2 whitespace-normal px-3 py-1 text-sm"
-                  render={
-                    <button
-                      type="button"
-                      disabled={disabled}
-                      aria-label={t("Edit {name}", { name: child.name })}
-                      onClick={() =>
-                        setEditor({
-                          kind: "child",
-                          dimensionId: dimension.id,
-                          childId: child.id,
-                        })
-                      }
-                    />
-                  }
+                  variant={child.active ? "soft" : "outline"}
+                  className="h-auto min-h-8 max-w-full gap-0 whitespace-normal p-0 pr-1 text-sm"
                 >
-                  {child.name}
-                  <Pencil
-                    className="shrink-0 text-muted-foreground"
-                    aria-hidden="true"
-                  />
+                  <Toggle
+                    pressed={child.active}
+                    disabled={disabled}
+                    className="h-auto min-h-8 min-w-0 rounded-full py-1 pl-3 pr-2 whitespace-normal text-muted-foreground aria-pressed:bg-transparent aria-pressed:text-primary"
+                    onPressedChange={(pressed) =>
+                      onChange(
+                        dimensions.map((item) =>
+                          item.id === dimension.id
+                            ? {
+                                ...item,
+                                children: item.children.map((itemChild) =>
+                                  itemChild.id === child.id
+                                    ? { ...itemChild, active: pressed }
+                                    : itemChild,
+                                ),
+                              }
+                            : item,
+                        ),
+                      )
+                    }
+                  >
+                    {displayName(child)}
+                  </Toggle>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="rounded-full text-muted-foreground"
+                    disabled={disabled}
+                    aria-label={t("Edit {name}", { name: displayName(child) })}
+                    onClick={() =>
+                      setEditor({
+                        kind: "child",
+                        dimensionId: dimension.id,
+                        childId: child.id,
+                      })
+                    }
+                  >
+                    <Pencil />
+                  </Button>
                 </Badge>
               ))}
               <Button
@@ -198,24 +230,29 @@ export function KeywordDimensionTabs({
       </Tabs>
       {editor ? (
         <KeywordFieldDialog
+          pending={disabled}
+          error={error}
           title={
             editor.kind === "dimension"
               ? t(editedDimension ? "Edit dimension" : "Add dimension")
               : t(editedChild ? "Edit subdimension" : "Add subdimension")
           }
-          initialName={
+          initialField={{
+            name:
+              (editor.kind === "dimension" ? editedDimension : editedChild)
+                ?.name ?? "",
+            labelZh:
+              (editor.kind === "dimension" ? editedDimension : editedChild)
+                ?.labelZh ?? "",
+          }}
+          siblings={
             editor.kind === "dimension"
-              ? (editedDimension?.name ?? "")
-              : (editedChild?.name ?? "")
-          }
-          names={
-            editor.kind === "dimension"
-              ? dimensions
-                  .filter((dimension) => dimension.id !== editor.dimensionId)
-                  .map((dimension) => dimension.name)
-              : (editedDimension?.children
-                  .filter((child) => child.id !== editor.childId)
-                  .map((child) => child.name) ?? [])
+              ? dimensions.filter(
+                  (dimension) => dimension.id !== editor.dimensionId,
+                )
+              : (editedDimension?.children.filter(
+                  (child) => child.id !== editor.childId,
+                ) ?? [])
           }
           onSave={save}
           onDelete={

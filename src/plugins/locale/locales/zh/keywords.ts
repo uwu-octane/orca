@@ -1,4 +1,16 @@
 export const keywordsZh = {
+  "Identify intent": "判断意图",
+  "Identify intent for {keyword}": "判断“{keyword}”的意图",
+  "About {label}": "{label}说明",
+  "Google Ads estimates the average monthly searches over the past 12 months for the selected targeting settings. This is search demand, not visits to your website. — means unavailable.":
+    "Google Ads 按所选定位条件估算的近 12 个月月均搜索次数，代表搜索需求，不是你的网站访问量。— 表示暂无数据。",
+  "Historical average cost per ad click from Google Ads, in the account currency shown in the header. Actual click costs may differ. — means unavailable.":
+    "Google Ads 提供的历史平均每次广告点击费用，使用表头所示的广告账户币种。实际点击费用可能不同。— 表示暂无数据。",
+  "Competition for ad placements, based on filled ad slots relative to available slots. Google's 0–100 index is displayed as 0–1 here: 29 becomes 0.29. Higher means more advertising competition, not organic ranking difficulty. — means unavailable.":
+    "根据已填充广告位占可用广告位的比例衡量竞争。Google 的 0–100 指数在此显示为 0–1，例如 29 显示为 0.29。越高表示广告位竞争越强，不代表自然搜索排名难度。— 表示暂无数据。",
+  "Dimensions changed elsewhere. Reload them before saving.":
+    "维度已在其他位置更新，请关闭编辑窗口并重新加载后再保存。",
+  Reload: "重新加载",
   "Keyword dimensions": "关键词维度",
   Dimensions: "维度",
   "Generate dimensions": "生成维度",
@@ -13,6 +25,9 @@ export const keywordsZh = {
   "Add subdimension": "新增子维度",
   "Edit subdimension": "修改子维度",
   "Edit {name}": "修改{name}",
+  "English name": "英文名称",
+  "Chinese name": "中文名称",
+  "Use an English name.": "请使用英文名称。",
   "Enter a name.": "请输入名称。",
   "This name already exists.": "该名称已存在。",
   "Configure the dimension generation model in Settings → Integrations.":

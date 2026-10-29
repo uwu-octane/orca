@@ -44,12 +44,20 @@ it("lists text and decision models with prices per million tokens and provider m
           type: "evaluation",
           owned_by: "typesafe-ai",
         }),
+        model({
+          id: "openai/gpt-6-luna-decisions",
+          name: "GPT-6 Luna Decisions",
+          type: "evaluation",
+          owned_by: "openai",
+          pricing: { input: "0.0000001", output: "0" },
+        }),
+        model({ id: "openai/gpt-6-luna", owned_by: "openai" }),
         { type: "image", id: "image-model" },
       ],
     }),
   );
   const models = await runtime.ai.listModels("vercel_gateway");
-  expect(models).toHaveLength(2);
+  expect(models).toHaveLength(4);
   expect(models[0]).toMatchObject({
     id: "deepseek/text-model",
     kind: "language",
@@ -65,6 +73,17 @@ it("lists text and decision models with prices per million tokens and provider m
   expect(models[1]).toMatchObject({
     id: "typesafe-ai/jev",
     kind: "evaluation",
+  });
+  expect(models[2]).toMatchObject({
+    id: "openai/gpt-6-luna-decisions",
+    kind: "evaluation",
+    creator: "openai",
+    outputPrice: 0,
+  });
+  expect(models[2].inputPrice).toBeCloseTo(0.1);
+  expect(models[3]).toMatchObject({
+    id: "openai/gpt-6-luna",
+    kind: "language",
   });
   // Discovery must stay on the public catalog, without forwarding credentials
   // or following a redirect to a different host.

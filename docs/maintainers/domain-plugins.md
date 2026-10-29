@@ -47,7 +47,7 @@ SAM consumes AI and project context. Its tool registration accepts lifecycle-own
 
 `keywords` owns both research flows, cache orchestration, SQL metrics repositories, saved keywords/tags, SERP analysis, dimension generation, keyword tools and both research/saved-keyword UIs. The implementation and state moved from `features/keywords`, `features/saved-keywords` and the saved-keyword route. The dimension-only `ai-agents` and `keyword-dimension-agent` registrations are removed. Capability-specific `ctx.inject` scopes let saved data remain available without a supplier or AI provider. Keywords contributes its MCP tool definitions and internal dimension tool to SAM through lifecycle-owned registration; external MCP mounts the same definitions. The shared SAM adapter still owns project binding, instrumentation and output shaping.
 
-Keep DataForSEO and direct Google Ads semantics distinct. DataForSEO's Ads-derived dataset is not the direct Google Ads API. Existing metrics and caches remain provider-specific. Dimension drafts are currently component state; durable dimensions and bulk classification are separate product work.
+Keep DataForSEO and direct Google Ads semantics distinct. DataForSEO's Ads-derived dataset is not the direct Google Ads API. Existing metrics and caches remain provider-specific. Keywords also owns immutable Google search snapshots and normalized dimension/subdimension persistence. Revision-checked edits, persisted generation, URL-based result restoration and SAM read tools share this service and its repositories. Bulk classification remains separate product work.
 
 ## Shared infrastructure and invariants
 
@@ -57,6 +57,7 @@ Keep DataForSEO and direct Google Ads semantics distinct. DataForSEO's Ads-deriv
 - Preserve OAuth callback paths, single-use state, PKCE, encrypted grants, per-user isolation and account-removal atomicity. Existing legacy connection selection behavior remains unchanged.
 - Preserve configured DNS checks, DeepSeek-only Gateway routing, retry/fallback policies and billing seams. Any policy change requires explicit maintainer approval before implementation.
 - Validate through registered service entry points with real SQL for persistence and mocked supplier responses. Check tenant isolation, lifecycle teardown, existing behavior, type/lint checks and production build. The maintainer performs visual UI verification.
+- Shared native cancellation signals require workerd 1.20260825.1 or newer. The former June runtime bound them to the initializing request, so subsequent HTTP requests failed even though the Node suite passed. The Cloudflare toolchain and Miniflare test runtime are aligned; `shared/worker-runtime.test.ts` exercises reuse and cross-request cancellation in real workerd. Keep request-specific timeouts inside calls.
 
 Google authorization checkpoint: `a1d5dc81`. AI work is stacked on that commit in `codex/cordis-ai`.
 
@@ -83,3 +84,5 @@ The review found and corrected these lifetime and context leaks:
 Eight regression cases failed before their corresponding fixes and passed afterward. Already-dispatched SQL transactions and metered research accounting retain their existing completion behavior; this is not a rollback mechanism. Provider selection, fallback, retry, DNS and billing policies are unchanged.
 
 Review validation: all 256 test files / 1,854 tests, `pnpm ci:check` and `pnpm build` passed. Supplier responses were mocked. The local application and all four client plugin entries returned HTTP 200 after restarting the development server. No live supplier calls or visual UI checks were performed. Review fixes are isolated on `codex/cordis-keywords`; no push or merge was performed.
+
+The subsequent runtime compatibility regression exposed a gap in that smoke check: serving the app shell and client modules did not exercise reused server services. After aligning the Cloudflare toolchain, all 257 test files / 1,855 tests, `pnpm ci:check` and `pnpm build` passed. The new real-workerd regression covers repeated requests and cross-request cancellation. The running application also passed three consecutive authorized calls each to dashboard activation, Ads connection, AI configuration, SAM session listing and saved-keyword listing in the local workspace, checking decoded results rather than HTTP status alone. No paid supplier calls were made.
