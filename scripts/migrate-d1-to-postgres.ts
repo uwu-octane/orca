@@ -71,6 +71,9 @@ import { getTableConfig as getSqliteTableConfig } from "drizzle-orm/sqlite-core"
 import { getTableConfig as getPgTableConfig } from "drizzle-orm/pg-core";
 import { drizzle as drizzlePg } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { createClient } from "@libsql/client";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { loadLocalEnv, parseArgs } from "./cli-utils";
 // The Node-safe raw barrels (not ../src/db/schema, the provider-aware one, which
 // imports cloudflare:workers). Importing the barrels keeps the table list in sync
@@ -94,6 +97,11 @@ const sinceHours = Number(args["since-hours"]) || 12;
 const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
 const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 const connectionString = process.env.POSTGRES_DATABASE_URL;
+// Frozen local self-host snapshot; never infer a local source after an API failure.
+const sqliteFile = args["sqlite-file"];
+const localSource = sqliteFile
+  ? createClient({ url: pathToFileURL(resolve(sqliteFile)).href })
+  : undefined;
 
 // D1's `current_timestamp` text is `YYYY-MM-DD HH:MM:SS`. App code elsewhere
 // writes `new Date().toISOString()`, which already has a `T` separator and never
@@ -118,6 +126,12 @@ async function d1Query<T = Record<string, unknown>>(
   databaseId: string,
   statement: string,
 ): Promise<T[]> {
+  if (localSource) {
+    const result = await localSource.execute(statement);
+    return result.rows.map((row) =>
+      Object.fromEntries(Object.entries(row)),
+    ) as T[];
+  }
   const response = await fetch(
     `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`,
     {
@@ -373,7 +387,7 @@ async function copyTable(
 }
 
 async function main() {
-  if (!accountId || !apiToken) {
+  if (!localSource && (!accountId || !apiToken)) {
     throw new Error(
       "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are required.",
     );
@@ -484,6 +498,7 @@ async function main() {
   }
 
   await pgClient.end();
+  localSource?.close();
 
   const total = [...written.values()].reduce((n, v) => n + v, 0);
   console.log(

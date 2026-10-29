@@ -44,6 +44,21 @@ export default defineConfig(({ mode, command }) => {
     env.BETTER_AUTH_URL ? new URL(env.BETTER_AUTH_URL).hostname : undefined,
   ].filter((host): host is string => Boolean(host));
   const emitSourcemaps = env.POSTHOG_SOURCEMAPS === "true";
+  // Oracle images retain a local Hyperdrive binding in both compiled workers.
+  // Runtime supplies the real URL via CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE.
+  const postgresBindings =
+    env.DATABASE_PROVIDER === "postgres"
+      ? {
+          hyperdrive: [
+            {
+              binding: "HYPERDRIVE",
+              id: "00000000000000000000000000000001",
+              localConnectionString:
+                "postgres://unused:unused@127.0.0.1:5432/unused",
+            },
+          ],
+        }
+      : {};
 
   return {
     // Static files (favicons, manifest) live beside the app code instead of at
@@ -83,6 +98,7 @@ export default defineConfig(({ mode, command }) => {
           })
         : null,
       cloudflare({
+        config: postgresBindings,
         inspectorPort: false,
         viteEnvironment: { name: "ssr" },
         // The site-audit aux worker builds to dist/open_seo_audit/ and runs
@@ -94,10 +110,12 @@ export default defineConfig(({ mode, command }) => {
         auxiliaryWorkers: [
           {
             configPath: "./wrangler.audit.jsonc",
-            config:
-              command === "serve" && env.AUDIT_BROWSER_RENDERING === "true"
+            config: {
+              ...postgresBindings,
+              ...(command === "serve" && env.AUDIT_BROWSER_RENDERING === "true"
                 ? { browser: { binding: "BROWSER", remote: true } }
-                : {},
+                : {}),
+            },
           },
         ],
       }),

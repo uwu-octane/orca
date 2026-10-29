@@ -1,0 +1,52 @@
+name: shared-data
+services:
+  postgres:
+    image: postgres:17-bookworm@sha256:839fbb5a4942a7758dd93e18b42ea5649807491a0545b5eeeb8f0b8bb11857a5
+    container_name: shared-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: platform_admin
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    networks:
+      shared-data:
+        aliases: [shared-postgres]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U platform_admin -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: journald
+      options:
+        tag: shared-postgres
+  redis:
+    image: redis:8-bookworm@sha256:99ffb973380cc2f47bca06bd094f7f8c7138a0879a63cb8939896a22b7a65bba
+    container_name: shared-redis
+    restart: unless-stopped
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - ./redis:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./users.acl:/usr/local/etc/redis/users.acl:ro
+    networks:
+      shared-data:
+        aliases: [shared-redis]
+    logging:
+      driver: journald
+      options:
+        tag: shared-redis
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password
+networks:
+  shared-data:
+    name: shared-data
