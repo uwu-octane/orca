@@ -56,7 +56,7 @@
  *                     also catches updates to old rows). Deletes are not synced.
  *   --since-hours N   Window for --update (default 12).
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import process from "node:process";
 import {
   getTableColumns,
@@ -99,6 +99,9 @@ const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 const connectionString = process.env.POSTGRES_DATABASE_URL;
 // Frozen local self-host snapshot; never infer a local source after an API failure.
 const sqliteFile = args["sqlite-file"];
+if (sqliteFile && !existsSync(sqliteFile)) {
+  throw new Error("The SQLite snapshot does not exist.");
+}
 const localSource = sqliteFile
   ? createClient({ url: pathToFileURL(resolve(sqliteFile)).href })
   : undefined;

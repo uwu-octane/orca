@@ -14,7 +14,7 @@ RUN pnpm run build
 FROM node:22-bookworm-slim
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
-ENV CLOUDFLARE_INCLUDE_PROCESS_ENV=true AUTH_MODE=cloudflare_access VITE_SHOW_DEVTOOLS=false DATABASE_PROVIDER=postgres PORT=8989
+ENV CLOUDFLARE_INCLUDE_PROCESS_ENV=true AUTH_MODE=cloudflare_access VITE_SHOW_DEVTOOLS=false DATABASE_PROVIDER=postgres PORT=8989 X_LOCAL_OBSERVABILITY=false X_LOCAL_EXPLORER=false
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/* && corepack enable && corepack prepare pnpm@10.30.1 --activate
 COPY --from=build /app /app

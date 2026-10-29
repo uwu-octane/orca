@@ -10,7 +10,7 @@ services:
     ports:
       - "127.0.0.1:8989:8989"
     volumes:
-      - ./data:/app/.wrangler
+      - ./data/state:/app/.wrangler/state
     networks:
       - shared-data
     logging:
