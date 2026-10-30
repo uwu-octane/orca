@@ -107,6 +107,25 @@ export default defineConfig(
         host: true, // FORK: LAN development
         allowedHosts: [...allowedHosts, ".local"],
         port,
+        fs: {
+          // A tunneled dev server must not expose local credentials or logs.
+          // Retain Vite's default exclusions when extending its deny list.
+          deny: [
+            ".env",
+            ".env.*",
+            "*.{crt,pem,key,p12,pfx,cer,der}",
+            ".npmrc",
+            ".yarnrc.yml",
+            "**/.git/**",
+            "**/.dev.vars*",
+            "**/.localflare/**",
+            "**/.logs/**",
+            "**/.wrangler/**",
+            "**/.codex/**",
+            "**/.everyapp/**",
+            "**/.cloudflare/**",
+          ],
+        },
       },
       preview: {
         host: true, // FORK: LAN development

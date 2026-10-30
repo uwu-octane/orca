@@ -100,7 +100,8 @@ export async function runSelfhostScheduler(options) {
   }
 }
 
-async function serveWithScheduler() {
+/** @param {"preview" | "dev"} command */
+async function serveWithScheduler(command) {
   const port = process.env.PORT ?? "3001";
   scheduledUrl(port); // Validate before spawning anything.
   const stop = new AbortController();
@@ -108,7 +109,7 @@ async function serveWithScheduler() {
     process.execPath,
     [
       "node_modules/vite/bin/vite.js",
-      "preview",
+      command,
       "--host",
       "0.0.0.0",
       "--port",
@@ -147,8 +148,14 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
-  serveWithScheduler().catch(() => {
-    console.error("[scheduler] Could not start the local scheduler.");
+  const command = process.argv[2] ?? "preview";
+  if (command !== "preview" && command !== "dev") {
+    console.error("Usage: selfhost-scheduler.mjs [preview|dev]");
     process.exitCode = 1;
-  });
+  } else {
+    serveWithScheduler(command).catch(() => {
+      console.error("[scheduler] Could not start the local scheduler.");
+      process.exitCode = 1;
+    });
+  }
 }

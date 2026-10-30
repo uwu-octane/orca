@@ -1,0 +1,10 @@
+# Install as /opt/orca/compose.override.yaml after preparing the workspace.
+# Compose merges the existing state volume and shared-data network from base.
+services:
+  orca:
+    command: ["sh", "deploy/oracle/start-dev.sh"]
+    environment:
+      NODE_ENV: development
+    volumes:
+      - /data/orca-development/workspace:/app
+    mem_limit: 6g

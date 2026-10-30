@@ -3,6 +3,54 @@
 `orca.x-whale.com` runs on `ubuntu@129.146.162.30`. Production releases come
 from the maintained `orca` branch, not upstream `main`.
 
+The instance currently runs the persistent development workspace described
+below. The hostname, Access application, Google callbacks and existing data
+remain the same.
+
+## Development mode
+
+`/data/orca-development/workspace` is the live Git checkout. The application
+container bind-mounts it at `/app` and runs Vite dev through
+`deploy/oracle/start-dev.sh`. Dependencies were copied from the matching ARM64
+release image; future dependency changes use `docker exec orca pnpm install
+--frozen-lockfile`. There is no Codex installation on the server.
+
+Edit files in this remote checkout to trigger HMR. A local checkout or a
+managed Codex Cloud task is a separate filesystem and does not automatically
+update this workspace. Normal source edits need no full build or container
+restart. Apply database migrations explicitly when changing schema.
+
+The development override from `deploy/oracle/compose.dev.yaml` is installed
+as `/opt/orca/compose.override.yaml`, so normal Compose commands preserve the
+development mount and startup command. The existing PostgreSQL, KV/R2 and SAM
+state mounts, encryption secret and Google credentials are retained. The
+existing scheduler runs beside Vite with its original cadence and guards.
+
+```sh
+ssh -i ~/.ssh/oracle_server ubuntu@129.146.162.30
+cd /data/orca-development/workspace
+git status --short
+sudo docker logs --tail 100 orca
+# Restart only when needed, for example after changing environment variables.
+sudo docker restart orca
+```
+
+`ORACLE_DEPLOY_ENABLED=false` makes GitHub stage checked images instead of
+replacing the live development workspace. Keep it false during remote
+development. The installed tunnel rejects public requests to local runtime
+inspection, scheduled-handler and operator routes. Vite also denies local
+credentials, Git metadata, logs and state files; retain these protections.
+
+The conversion backup is stored under `/data/orca-development/backups/` with
+owner-only access. To return to release mode, first save any work in the live
+checkout, stop Orca, remove the development Compose override, restore the
+reviewed tunnel configuration from that backup, and start the release image
+with the original Compose file. Restore `ORACLE_DEPLOY_ENABLED=true` only
+after verifying the release. This does not roll back SQL or runtime state.
+
+The former Mac development service and `com.orca.dev-cloudflared` launch agent
+are stopped. Their local data is retained. Use `orca.x-whale.com` for testing.
+
 ## Delivery
 
 `.github/workflows/oracle-deploy.yml` checks the code and tests, builds the

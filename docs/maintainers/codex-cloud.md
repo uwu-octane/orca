@@ -37,7 +37,9 @@ Keep local_noauth bound to loopback; do not expose it publicly.
 Run the relevant existing tests and pnpm ci:check. Run pnpm build when changes
 affect the application build. The maintainer performs visual UI verification.
 Create changes on a codex/ branch and target PRs at orca. Do not deploy from
-this environment. Merging into orca triggers the existing Oracle GitHub workflow.
+this environment. Merging into orca triggers the existing Oracle GitHub workflow;
+while Oracle runs in development mode, it stages images without replacing
+the live workspace. Cloud task edits do not automatically sync to that workspace.
 ```
 
 Verify installation and startup in the cloud setup conversation, then publish
